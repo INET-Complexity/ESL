@@ -1,0 +1,18 @@
+cff-version: 1.0.3
+message: If you use this software, please cite it as below.
+
+references:
+  - type: software
+    title: Economic Simulation Library
+    institution: The Institute for New Economic Thinking, Oxford Martin School, University of Oxford
+    license: Apache-2.0
+    date-released: XXXX-XX-XX
+    version: 0.0.1
+    authors:
+      - family-names: Scholl
+        given-names: Maarten Peter
+        orcid: https://orcid.org/0000-0002-4561-401X
+        affiliation: "University of Oxford"
+  - type: conference-paper
+    title: Economic Simulation Library
+    doi: XX.XXXX/XXXX.XXXX
