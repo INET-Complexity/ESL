@@ -1,0 +1,22 @@
+sudo: require
+
+language: cpp
+
+dist: bionic
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+      - g++-7
+      - cmake
+
+script:
+    - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
+    - sudo ln -s /usr/bin/g++-7 /usr/local/bin/g++
+    - gcc -v && g++ -v && cmake --version
+    - export CC=/usr/bin/gcc-7
+    - export CXX=/usr/bin/g++-7
+    - cmake CMakeLists.txt && make && make test
