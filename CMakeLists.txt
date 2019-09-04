@@ -96,7 +96,7 @@ IF(WITH_MPI)
     ENDIF()
 ENDIF()
 
-FIND_PACKAGE(Boost 1.68 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
+FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 
 FIND_PACKAGE(Eigen3 3.3 REQUIRED NO_MODULE)
 ################################################################################
