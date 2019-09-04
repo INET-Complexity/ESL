@@ -13,6 +13,19 @@ addons:
       - g++-7
       - cmake
 
+install:
+    - sudo apt-get install libboost-all-dev
+    - wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz
+    - tar xzf 3.3.7.tar.gz
+    - rm 3.3.7.tar.gz
+    - cd eigen-eigen-323c052e1731
+    - mkdir build
+    - cd build
+#    - cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/local
+    - make install
+
+
+
 script:
     - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
     - sudo ln -s /usr/bin/g++-7 /usr/local/bin/g++
