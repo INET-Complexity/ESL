@@ -1,4 +1,24 @@
 ################################################################################
+# ESL Project specific
+
+cmake-build
+
+################################################################################
+# CMake
+
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+################################################################################
 # C++
 
 # Prerequisites
@@ -162,7 +182,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
 
 ################################################################################
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion,
