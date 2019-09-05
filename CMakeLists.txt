@@ -210,15 +210,16 @@ IF(WITH_PYTHON)
     SET_TARGET_PROPERTIES(pytest PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
-    IF(Python3_Interpreter_FOUND)
+#    IF(Python3_Interpreter_FOUND)
         ADD_CUSTOM_TARGET(make_module ALL
                   COMMAND ${CMAKE_COMMAND} -E touch test/__init__.py)
 
 
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                COMMAND ${Python3_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
-    ENDIF()
+                COMMAND python3 -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
+#                COMMAND ${Python3_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
+#    ENDIF()
 
 ENDIF()
 
