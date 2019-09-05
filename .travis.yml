@@ -16,6 +16,7 @@ addons:
 install:
     - sudo apt-get install libboost-all-dev
     - sudo apt install libeigen3-dev
+    - sudo apt-get install python3 python-dev
 
 script:
     - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
@@ -23,4 +24,4 @@ script:
     - gcc -v && g++ -v && cmake --version
     - export CC=/usr/bin/gcc-7
     - export CXX=/usr/bin/g++-7
-    - cmake CMakeLists.txt && make && make test
+    - mkdir build && cd build && cmake ../ && make && make test
