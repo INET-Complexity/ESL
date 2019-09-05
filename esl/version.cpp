@@ -25,6 +25,8 @@
 #include <sstream>
 using std::stringstream;
 
+#include <boost/python.hpp>
+
 namespace esl {
     string version()
     {
@@ -34,4 +36,15 @@ namespace esl {
         stream_ << ESL_VERSION_REVISION;
         return stream_.str();
     }
+
+
+
+    
+
+    BOOST_PYTHON_MODULE( version )
+    {
+        using namespace boost::python;
+        def("version", version);
+    }
 }//namespace esl
+

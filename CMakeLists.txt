@@ -1,11 +1,4 @@
 ################################################################################
-# cmake configuration
-
-cmake_minimum_required(VERSION 3.9.3)
-
-set (CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
-
-################################################################################
 
 file(READ "esl/version.hpp" version_header)
 
@@ -28,6 +21,14 @@ project(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         LANGUAGES CXX)
 
 MESSAGE("ESL Version ${PROJECT_VERSION}")
+MESSAGE("installing into ${CMAKE_BINARY_DIR}")
+
+################################################################################
+# cmake configuration
+
+cmake_minimum_required(VERSION 3.9.3)
+
+set(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
 
 set(CMAKE_CXX_STANDARD              17)
 set(CMAKE_CXX_STANDARD_REQUIRED     ON)
@@ -43,7 +44,6 @@ ENDIF()
 
 ################################################################################
 
-
 include(cotire)
 
 find_program(CCACHE_FOUND ccache)
@@ -52,10 +52,9 @@ if(CCACHE_FOUND)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
-
 ################################################################################
 # Library optional add-ons
-################################################################################
+
 option(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
     MESSAGE("Enabling MPI")
@@ -78,11 +77,17 @@ ENDIF()
 ################################################################################
 
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonLibs)                     # for building bindings
+    FIND_PACKAGE(Python3 COMPONENTS Interpreter) # for running tests
 ENDIF()
 
 ################################################################################
-list(APPEND Boost_LIBRARIES program_options date_time serialization unit_test_framework)
+list(APPEND Boost_LIBRARIES 
+            program_options
+            date_time 
+            serialization 
+            unit_test_framework
+    )
 
 IF(WITH_PYTHON)
     list(APPEND Boost_LIBRARIES python3)
@@ -120,7 +125,7 @@ IF(WITH_MPI)
     list(APPEND ALL_INCLUDE_DIRECTORIES MPI_INCLUDE_PATH )
 ENDIF()
 IF(WITH_PYTHON)
-    list(APPEND ALL_INCLUDE_DIRECTORIES "/usr/local/include/python3.6m/")
+    list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
@@ -142,73 +147,89 @@ LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 ################################################################################
 
 
+
+
 SET(SOURCE_FILES
         esl/version.hpp
         esl/version.cpp
 )
 
-MESSAGE("----------------------------------------")
 
-
-
-## Create an executable for the main library that contains C++ test cases.
-#ADD_EXECUTABLE(${ESL_TARGET_NAME} ${SOURCE_FILES} ${TEST_SOURCE_FILES})
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
+SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "")
 
+TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 
-IF($ENV{WITH_PYTHON})
-    FILE(COPY esl/test/test_python.py DESTINATION "${CMAKE_BINARY_DIR}")
-    ADD_TEST(NAME portfolio_base COMMAND python3 portfolio_base.py)
-    PYTHON_ADD_MODULE(${ESL_TARGET_NAME}py esl/test/test_agent.cpp)
-ENDIF()
-
-
-target_link_libraries(${ESL_TARGET_NAME} ${Boost_LIBRARIES})
+LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
 
 
 
-
+ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${ESL_TARGET_NAME}>
+        ${CMAKE_BINARY_DIR}/test/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 
 
 
 
 SET(TEST_SOURCE_FILES
         test/test_version.cpp
-        test/test_version2.cpp
         )
 
-file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
-foreach(test_src ${TEST_SRCS})
+FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
+FOREACH(test_src ${TEST_SRCS})
     MESSAGE("TEST " ${test_src})
-    get_filename_component(test_name ${test_src} NAME_WE)
+    GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
 
-    add_executable(${test_name} ${test_src})
-    target_link_libraries(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
-    set_target_properties(${test_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/cmake-build/test/)
+    ADD_EXECUTABLE(${test_name} ${test_src})
+    TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
+    SET_TARGET_PROPERTIES(${test_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
-    add_test(NAME ${test_name}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake-build/test/
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake-build/test//${test_name})
-endforeach(test_src)
-
-
+    ADD_TEST(NAME ${test_name}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+            COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
+ENDFOREACH(test_src)
 
 
+IF(WITH_PYTHON)
+    PYTHON_ADD_MODULE(version esl/version.cpp)
+
+    FILE(COPY test/test_version.py DESTINATION ${CMAKE_BINARY_DIR}/test/)
+
+    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+    FOREACH(test_src ${TEST_SRCS})
+        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
+        SET(pytest_name "${pytest_name}_python")
+        MESSAGE("PYTEST " ${pytest_name})
+    ENDFOREACH(test_src)
+
+
+    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+
+    SET_TARGET_PROPERTIES(pytest PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
+
+    IF(Python3_Interpreter_FOUND)
+        ADD_CUSTOM_TARGET(make_module ALL
+                  COMMAND ${CMAKE_COMMAND} -E touch test/__init__.py)
+
+
+        ADD_TEST(NAME pytest
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                COMMAND ${Python3_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
+    ENDIF()
+
+ENDIF()
+
+IF(WITH_MPI)
+    FILE(COPY hostfile DESTINATION ${CMAKE_BINARY_DIR}/cmake-build/)
+ENDIF()
+
+MESSAGE(${CMAKE_BINARY_DIR})
 
 
 
 
-# Copy the python module to the test folder, so we can use the latest build for Python unit tests
-#add_custom_command(TARGET ${ESL_TARGET_NAME}py POST_BUILD
-#        COMMAND cp --force "${CMAKE_BINARY_DIR}/${ESL_TARGET_NAME}py.so" "${CMAKE_BINARY_DIR}/../test/"
-#        )
 
-
-FILE(COPY hostfile DESTINATION ${CMAKE_BINARY_DIR}/../cmake-build)
-
-
-install(TARGETS ${ESL_TARGET_NAME}
-        DESTINATION ${CMAKE_BINARY_DIR}/../cmake-build
-        )
-
+INSTALL(TARGETS  ${ESL_TARGET_NAME} DESTINATION ${CMAKE_BINARY_DIR})
