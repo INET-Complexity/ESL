@@ -1,27 +1,32 @@
-sudo: require
+matrix:
+  include:
+    - language: cpp
+        sudo: require
+        dist: bionic
+        addons:
+          apt:
+            packages:
+              - gcc-7
+              - g++-7
+              - cmake
+        install:
+            - sudo apt-get install libboost-all-dev
+            - sudo apt install libeigen3-dev
+            - sudo apt-get install python3 python-dev
+        script:
+            - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
+            - sudo ln -s /usr/bin/g++-7 /usr/local/bin/g++
+            - gcc -v && g++ -v && cmake --version
+            - export CC=/usr/bin/gcc-7
+            - export CXX=/usr/bin/g++-7
+            - mkdir build && cd build && cmake ../ && make && make test
 
-language: cpp
-
-dist: bionic
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-7
-      - g++-7
-      - cmake
-
-install:
-    - sudo apt-get install libboost-all-dev
-    - sudo apt install libeigen3-dev
-    - sudo apt-get install python3 python-dev
-
-script:
-    - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
-    - sudo ln -s /usr/bin/g++-7 /usr/local/bin/g++
-    - gcc -v && g++ -v && cmake --version
-    - export CC=/usr/bin/gcc-7
-    - export CXX=/usr/bin/g++-7
-    - mkdir build && cd build && cmake ../ && make && make test
+    - language: python
+        python: 3.7
+        cache: pip
+#        install:
+#          - pip install -r requirements.txt
+        script:
+          - python3 -m pytest -r a -v build/test/
+ 
+              
