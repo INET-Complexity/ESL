@@ -1,8 +1,12 @@
 import pytest
 
-import version
+import esl.version
 
 
-def test_version():
-    if not hasattr(version, "version"):
+def test_version_built():
+    if not hasattr(esl.version, "version"):
         pytest.fail("module missing: {}".format(version))
+    
+def test_semantic_version():
+    text = esl.version.version()
+    assert text is not None and len(text) >= 5 and text.count('.') >= 2 

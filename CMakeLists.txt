@@ -54,6 +54,7 @@ endif(CCACHE_FOUND)
 
 ################################################################################
 # Library optional add-ons
+################################################################################
 
 option(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
@@ -77,8 +78,8 @@ ENDIF()
 ################################################################################
 
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs)                     # for building bindings
-    FIND_PACKAGE(Python3 COMPONENTS Interpreter) # for running tests
+    FIND_PACKAGE(PythonLibs 3)  # for building bindings
+    FIND_PACKAGE(PythonInterp 3)# for running tests
 ENDIF()
 
 ################################################################################
@@ -146,9 +147,6 @@ ENDIF()
 LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 ################################################################################
 
-
-
-
 SET(SOURCE_FILES
         esl/version.hpp
         esl/version.cpp
@@ -167,7 +165,7 @@ LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
 ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${ESL_TARGET_NAME}>
-        ${CMAKE_BINARY_DIR}/test/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
+        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 
 
 
@@ -193,7 +191,17 @@ ENDFOREACH(test_src)
 
 
 IF(WITH_PYTHON)
+
+
     PYTHON_ADD_MODULE(version esl/version.cpp)
+
+    ADD_CUSTOM_COMMAND(TARGET version POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:version>
+        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:version>)
+
+
+
 
     FILE(COPY test/test_version.py DESTINATION ${CMAKE_BINARY_DIR}/test/)
 
@@ -210,27 +218,27 @@ IF(WITH_PYTHON)
     SET_TARGET_PROPERTIES(pytest PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
-#    IF(Python3_Interpreter_FOUND)
+
+        
+    IF(PYTHONINTERP_FOUND)
+        MESSAGE(${PYTHON_EXECUTABLE})
         ADD_CUSTOM_TARGET(make_module ALL
-                  COMMAND ${CMAKE_COMMAND} -E touch test/__init__.py)
+                  COMMAND ${CMAKE_COMMAND} -E touch test/esl/__init__.py)
 
 
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                COMMAND python3 -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
-#                COMMAND ${Python3_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
-#    ENDIF()
+                #COMMAND python3 -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
+                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
+    ENDIF()
 
 ENDIF()
 
 IF(WITH_MPI)
-    FILE(COPY hostfile DESTINATION ${CMAKE_BINARY_DIR}/cmake-build/)
+    FILE(COPY hostfile DESTINATION ${CMAKE_BINARY_DIR})
 ENDIF()
 
 MESSAGE(${CMAKE_BINARY_DIR})
-
-
-
 
 
 INSTALL(TARGETS  ${ESL_TARGET_NAME} DESTINATION ${CMAKE_BINARY_DIR})
