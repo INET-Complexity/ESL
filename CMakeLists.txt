@@ -1,22 +1,22 @@
 ################################################################################
 
-file(READ "esl/version.hpp" version_header)
+FILE(READ "esl/version.hpp" version_header)
 
-string(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)" 
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
-set(version_major ${CMAKE_MATCH_1})
+SET(version_major ${CMAKE_MATCH_1})
 
-string(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ \t]*=[ \t]*([0-9]+)" 
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
-set(version_minor ${CMAKE_MATCH_1})
+SET(version_minor ${CMAKE_MATCH_1})
 
-string(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)" 
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
-set(version_revision ${CMAKE_MATCH_1})
+SET(version_revision ${CMAKE_MATCH_1})
 
-cmake_policy(SET CMP0048 NEW)
+CMAKE_POLICY(SET CMP0048 NEW)
 
-project(ESL VERSION ${version_major}.${version_minor}.${version_revision}
+PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library" 
         LANGUAGES CXX)
 
@@ -26,13 +26,13 @@ MESSAGE("installing into ${CMAKE_BINARY_DIR}")
 ################################################################################
 # cmake configuration
 
-cmake_minimum_required(VERSION 3.9.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9.3)
 
-set(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
+SET(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
 
-set(CMAKE_CXX_STANDARD              17)
-set(CMAKE_CXX_STANDARD_REQUIRED     ON)
-set(CMAKE_CXX_EXTENSIONS            OFF)
+SET(CMAKE_CXX_STANDARD              17)
+SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
+SET(CMAKE_CXX_EXTENSIONS            OFF)
 
 IF(NOT ESL_TARGET_NAME)
     SET(ESL_TARGET_NAME     "esl")
@@ -44,13 +44,13 @@ ENDIF()
 
 ################################################################################
 
-include(cotire)
+INCLUDE(cotire)
 
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
+FIND_PROGRAM(CCACHE_FOUND ccache)
+IF(CCACHE_FOUND)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-endif(CCACHE_FOUND)
+ENDIF(CCACHE_FOUND)
 
 ################################################################################
 # Library optional add-ons
@@ -83,7 +83,7 @@ IF(WITH_PYTHON)
 ENDIF()
 
 ################################################################################
-list(APPEND Boost_LIBRARIES 
+LIST(APPEND Boost_LIBRARIES
             program_options
             date_time 
             serialization 
@@ -91,14 +91,14 @@ list(APPEND Boost_LIBRARIES
     )
 
 IF(WITH_PYTHON)
-    list(APPEND Boost_LIBRARIES python3)
+    LIST(APPEND Boost_LIBRARIES python3)
 ELSE()
 ENDIF()
 
 IF(WITH_MPI)
-    list(APPEND Boost_LIBRARIES mpi)
+    LIST(APPEND Boost_LIBRARIES mpi)
     IF(WITH_PYTHON)
-        list(APPEND Boost_LIBRARIES mpi_python3)
+        LIST(APPEND Boost_LIBRARIES mpi_python3)
     ENDIF()
 ENDIF()
 
@@ -150,7 +150,7 @@ LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 SET(SOURCE_FILES
         esl/version.hpp
         esl/version.cpp
-)
+        )
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
@@ -191,8 +191,6 @@ ENDFOREACH(test_src)
 
 
 IF(WITH_PYTHON)
-
-
     PYTHON_ADD_MODULE(version esl/version.cpp)
 
     ADD_CUSTOM_COMMAND(TARGET version POST_BUILD
@@ -234,3 +232,28 @@ MESSAGE(${CMAKE_BINARY_DIR})
 
 
 INSTALL(TARGETS  ${ESL_TARGET_NAME} DESTINATION ${CMAKE_BINARY_DIR})
+
+
+
+################################################################################
+
+
+OPTION(BUILD_DOCUMENTATION "Generate documentation" OFF)
+
+IF(BUILD_DOCUMENTATION)
+    FIND_PACKAGE(Doxygen)
+    if (DOXYGEN_FOUND)
+        SET(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/esl.doxygen)
+        SET(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/esl.doxygen)
+
+        CONFIGURE_FILE(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+        ADD_CUSTOM_TARGET( documentation ALL
+                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "Documentation using Doxygen"
+                VERBATIM )
+    else (DOXYGEN_FOUND)
+        MESSAGE("Doxygen not found")
+    endif (DOXYGEN_FOUND)
+ENDIF()
