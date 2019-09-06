@@ -14,7 +14,7 @@ addons:
 
 install:
     - sudo apt install openmpi-bin libopenmpi-dev
-    - sudo apt install libboost-all-dev
+    - sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
     - sudo apt install libeigen3-dev
     - sudo apt install python3 python-dev python3-pip
     - sudo pip3 install -r requirements.txt

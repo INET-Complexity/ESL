@@ -56,20 +56,20 @@ endif(CCACHE_FOUND)
 # Library optional add-ons
 ################################################################################
 
-option(WITH_MPI "Enable MPI using Boost.MPI" OFF)
+OPTION(WITH_MPI "Enable MPI using Boost.MPI" ON)
 IF(WITH_MPI)
     MESSAGE("Enabling MPI")
-    find_package(MPI REQUIRED)
+    FIND_PACKAGE(MPI REQUIRED)
 
     ADD_COMPILE_DEFINITIONS(WITH_MPI)
 ENDIF()
 
-option(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
+OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
     ADD_COMPILE_DEFINITIONS(WITH_PYTHON)
 ENDIF()
 
-option(WITH_QL  "Enables quantlib" OFF)
+OPTION(WITH_QL  "Enables quantlib" OFF)
 IF(WITH_QL)
     ADD_COMPILE_DEFINITIONS(WITH_QL)
 ENDIF()
@@ -123,7 +123,7 @@ ENABLE_TESTING()
 ################################################################################
 list(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM "/usr/local/include/eigen3/")
 IF(WITH_MPI)
-    list(APPEND ALL_INCLUDE_DIRECTORIES MPI_INCLUDE_PATH )
+    list(APPEND ALL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_PATH})
 ENDIF()
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
@@ -137,7 +137,7 @@ IF(WITH_PYTHON)
 ENDIF()
 
 IF(WITH_MPI)
-    list(APPEND ALL_LINKED_LIBRARIES ${MPI_LIBRARIES})
+    list(APPEND ALL_LINKED_LIBRARIES ${MPI_CXX_LIBRARIES} )
 ENDIF()
 
 IF(WITH_QL)
@@ -158,7 +158,7 @@ SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "")
 
 TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 
-LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
+LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 
 
 
@@ -200,9 +200,6 @@ IF(WITH_PYTHON)
         $<TARGET_FILE:version>
         ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:version>)
 
-
-
-
     FILE(COPY test/test_version.py DESTINATION ${CMAKE_BINARY_DIR}/test/)
 
     FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
@@ -212,23 +209,18 @@ IF(WITH_PYTHON)
         MESSAGE("PYTEST " ${pytest_name})
     ENDFOREACH(test_src)
 
-
     ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
 
     SET_TARGET_PROPERTIES(pytest PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
-
-
         
     IF(PYTHONINTERP_FOUND)
         MESSAGE(${PYTHON_EXECUTABLE})
         ADD_CUSTOM_TARGET(make_module ALL
                   COMMAND ${CMAKE_COMMAND} -E touch test/esl/__init__.py)
 
-
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                #COMMAND python3 -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
                 COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
     ENDIF()
 
