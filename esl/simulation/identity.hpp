@@ -49,7 +49,6 @@ using std::vector;
 #include <type_traits>
 using std::is_base_of;
 
-
 #include <algorithm>
 using std::equal;
 using std::lexicographical_compare;
@@ -118,14 +117,13 @@ namespace esl {
         ///
         /// \param digits
         identity(std::initializer_list<digit_t> digits) noexcept
-        : digits(move(digits))
+        : digits(digits)
         {}
 
         ///
         /// \param i    Other identity
         ///
-        identity(const identity<identifiable_type_> &i)
-        : digits(i.digits)
+        identity(const identity<identifiable_type_> &i) : digits(i.digits)
         {}
 
         ///
@@ -225,21 +223,21 @@ namespace esl {
         }
 
 
-
         ///
         ///
         /// \param stream   The output stream to write into.
         /// \param i        The identity to render.
         ///
         /// \return     The (modified) output stream.
-        friend ostream &operator << (ostream &stream, const identity<identifiable_type_> &i)
+        friend ostream &operator<<(ostream &stream,
+                                   const identity<identifiable_type_> &i)
         {
             if(i.digits.empty()) {
                 return stream;
             }
 
             auto iterator_ = i.digits.begin();
-            auto width_ = setw(stream.width());
+            auto width_    = setw(stream.width());
             stream << setfill('0') << width_ << *iterator_;
             ++iterator_;
             for(; iterator_ != i.digits.end(); ++iterator_) {
@@ -260,7 +258,7 @@ namespace esl {
             assert(0 <= width && width <= 20);
 
             stringstream stream_;
-            stream_ <<std::setw(width) << *this;
+            stream_ << std::setw(width) << *this;
             return stream_.str();
         }
 

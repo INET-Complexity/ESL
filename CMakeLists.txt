@@ -152,6 +152,9 @@ SET(SOURCE_FILES
         esl/version.cpp
         esl/simulation/identity.hpp
         esl/simulation/identity.cpp
+        esl/simulation/identifiable_as.hpp
+        esl/simulation/entity.hpp
+        esl/simulation/entity.cpp
     )
 
 
