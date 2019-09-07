@@ -42,8 +42,7 @@ struct dummy_base : esl::identifiable_as<dummy_base>
 {
     esl::identity<dummy_base> identifier;
 
-    explicit dummy_base(
-        esl::identity<dummy_base> i = esl::identity<dummy_base>())
+    dummy_base(esl::identity<dummy_base> i = esl::identity<dummy_base>())
     : identifier(std::move(i))
     {}
 
@@ -54,8 +53,7 @@ struct dummy_derived_direct
 : dummy_base
 , esl::identifiable_as<dummy_derived_direct>
 {
-    explicit dummy_derived_direct(esl::identity<dummy_derived_direct> i)
-    : dummy_base(i)
+    dummy_derived_direct(esl::identity<dummy_derived_direct> i) : dummy_base(i)
     {}
 };
 

@@ -34,8 +34,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
 struct dummy_base : esl::entity<dummy_base>
 {
-    explicit dummy_base(
-        esl::identity<dummy_base> i = esl::identity<dummy_base>())
+    dummy_base(esl::identity<dummy_base> i = esl::identity<dummy_base>())
     : esl::entity<dummy_base>(std::move(i))
     {}
 
@@ -46,8 +45,7 @@ struct dummy_derived_direct
 : dummy_base
 , esl::identifiable_as<dummy_derived_direct>
 {
-    explicit dummy_derived_direct(esl::identity<dummy_derived_direct> i)
-    : dummy_base(i)
+    dummy_derived_direct(esl::identity<dummy_derived_direct> i) : dummy_base(i)
     {}
 };
 
