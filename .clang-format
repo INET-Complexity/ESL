@@ -1,7 +1,7 @@
 ---
 # clang-format-8
 BasedOnStyle: WebKit
-AccessModifierOffset: -2
+AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
