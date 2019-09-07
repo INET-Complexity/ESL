@@ -4,7 +4,8 @@
 ///
 /// \authors    Maarten P Scholl
 /// \date       2019-09-01
-/// \copyright  Copyright 2017-$YEAR The Institute for New Economic Thinking, Oxford Martin School, University of Oxford
+/// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
+///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
 ///             you may not use this file except in compliance with the License.
@@ -12,13 +13,14 @@
 ///
 ///                 http://www.apache.org/licenses/LICENSE-2.0
 ///
-///             Unless required by applicable law or agreed to in writing, software
-///             distributed under the License is distributed on an "AS IS" BASIS,
-///             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-///             See the License for the specific language governing permissions and
-///             limitations under the License.
+///             Unless required by applicable law or agreed to in writing,
+///             software distributed under the License is distributed on an "AS
+///             IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+///             express or implied. See the License for the specific language
+///             governing permissions and limitations under the License.
 ///
-///             You may obtain instructions to fulfill the attribution requirements in CITATION.cff
+///             You may obtain instructions to fulfill the attribution
+///             requirements in CITATION.cff
 ///
 #include <esl/version.hpp>
 
@@ -27,24 +29,25 @@ using std::stringstream;
 
 
 namespace esl {
-    string version() {
+    string version()
+    {
         stringstream stream_;
         stream_ << ESL_VERSION_MAJOR << '.';
         stream_ << ESL_VERSION_MINOR << '.';
         stream_ << ESL_VERSION_REVISION;
         return stream_.str();
     }
-}//namespace esl
+}  // namespace esl
 
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 namespace esl {
     using namespace boost::python;
-    BOOST_PYTHON_MODULE( version )
+    BOOST_PYTHON_MODULE(version)
     {
         def("version", version);
     }
 
-}//namespace esl
+}  // namespace esl
 #endif
