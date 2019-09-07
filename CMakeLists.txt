@@ -150,7 +150,9 @@ LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 SET(SOURCE_FILES
         esl/version.hpp
         esl/version.cpp
-        )
+        esl/simulation/identity.hpp
+        esl/simulation/identity.cpp
+    )
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
@@ -160,19 +162,14 @@ TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARI
 
 LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 
-
-
+################################################################################
+# Copy library into testing folder, so it can be linked against by Python tests
 ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${ESL_TARGET_NAME}>
         ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 
-
-
-
-SET(TEST_SOURCE_FILES
-        test/test_version.cpp
-        )
+################################################################################
 
 FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
 FOREACH(test_src ${TEST_SRCS})
@@ -189,6 +186,7 @@ FOREACH(test_src ${TEST_SRCS})
             COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
 ENDFOREACH(test_src)
 
+################################################################################
 
 IF(WITH_PYTHON)
     PYTHON_ADD_MODULE(version esl/version.cpp)
