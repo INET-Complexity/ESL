@@ -50,8 +50,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(python_identity_representation_overload,
 
 BOOST_PYTHON_MODULE(identity)
 {
-    class_<python_identity, boost::noncopyable,
-           boost::shared_ptr<python_identity>>("identity", no_init)
+    class_<python_identity>("identity")
         .def("__init__", make_constructor(convert_digit_list))
 
         .def_readonly("digits", &python_identity::digits)
@@ -60,7 +59,6 @@ BOOST_PYTHON_MODULE(identity)
              python_identity_representation_overload(args("width"), ""))
         .def("__repr__", &python_identity::representation,
              python_identity_representation_overload(args("width"), ""))
-
         // clang-format off
         .def("__eq__", &python_identity::operator== <object>)
         .def("__ne__", &python_identity::operator!= <object>)
@@ -68,6 +66,6 @@ BOOST_PYTHON_MODULE(identity)
         .def("__le__", &python_identity::operator<= <object>)
         .def("__gt__", &python_identity::operator>  <object>)
         .def("__ge__", &python_identity::operator>= <object>);
-    // clang-format on
+        // clang-format on
 }
 #endif

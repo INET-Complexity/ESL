@@ -123,7 +123,8 @@ namespace esl {
         ///
         /// \param i    Other identity
         ///
-        identity(const identity<identifiable_type_> &i) : digits(i.digits)
+        identity(const identity<identifiable_type_> &i)
+        : digits(i.digits)
         {}
 
         ///
@@ -137,7 +138,7 @@ namespace esl {
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator=(const identity<identifiable_type_> &rhs)
+        operator = (const identity<identifiable_type_> &rhs)
         {
             digits = rhs.digits;
             return *this;
@@ -147,7 +148,7 @@ namespace esl {
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator=(identity<identifiable_type_> &&rhs) noexcept
+        operator = (identity<identifiable_type_> &&rhs) noexcept
         {
             digits = move(rhs.digits);
             return *this;

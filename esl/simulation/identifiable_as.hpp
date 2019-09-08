@@ -72,16 +72,7 @@ namespace esl {
             static_assert(is_base_of<entity<void>, derived_type_>::value,
                           "derived_type_ must inherit entity for this cast");
             return identity<derived_type_>(
-                dynamic_cast<const derived_type_ *>(this)->identifier.digits);
-        }
-
-        ///
-        /// \param other
-        /// \return `true` if this instance has the same identity as the other
-        constexpr inline bool operator==(const derived_type_ &other) const
-        {
-            return (identity<derived_type_>)(*this)
-                   == (identity<derived_type_>)(other);
+                (dynamic_cast<const derived_type_ *>(this))->identifier.digits);
         }
 
         ///

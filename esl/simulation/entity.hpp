@@ -100,7 +100,8 @@ namespace esl {
         ///
         ///
         ///
-        entity() : entity(identity<entity_type_>())
+        entity()
+        : entity(identity<entity_type_>())
         {}
 
     public:
@@ -109,7 +110,9 @@ namespace esl {
         /// \param identifier
         explicit entity(identity<entity_type_> identifier)
         : identifier(move(identifier)), children_(0)
-        {}
+        {
+
+        }
 
         template<typename child_t_>
         identity<child_t_> create()

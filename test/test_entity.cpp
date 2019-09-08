@@ -30,6 +30,12 @@
 #include <esl/simulation/entity.hpp>
 #include <utility>
 
+
+#if WITH_PYTHON
+#include <boost/python.hpp>
+#endif
+
+
 BOOST_AUTO_TEST_SUITE(ESL)
 
 struct dummy_base : esl::entity<dummy_base>
@@ -41,6 +47,7 @@ struct dummy_base : esl::entity<dummy_base>
     virtual ~dummy_base() = default;
 };
 
+
 struct dummy_derived_direct
 : dummy_base
 , esl::identifiable_as<dummy_derived_direct>
@@ -49,6 +56,7 @@ struct dummy_derived_direct
     {}
 };
 
+
 BOOST_AUTO_TEST_CASE(entity_implicit_conversion)
 {
     esl::identity<dummy_base> i           = {1, 2, 3};
@@ -56,6 +64,14 @@ BOOST_AUTO_TEST_CASE(entity_implicit_conversion)
 
     dummy_derived_direct ddd {j};
     BOOST_CHECK_EQUAL(i, static_cast<esl::identity<dummy_base>>(ddd));
+}
+
+
+BOOST_AUTO_TEST_CASE(entity_implicit_dynamic_conversion)
+{
+    esl::identity<dummy_derived_direct> j = {1, 2, 3};
+    std::unique_ptr<esl::identifiable_as<dummy_derived_direct>> p =  std::make_unique<dummy_derived_direct>(j);
+    BOOST_CHECK_NO_THROW(auto X = static_cast<esl::identity<dummy_derived_direct>>(*p););
 }
 
 
@@ -72,5 +88,21 @@ BOOST_AUTO_TEST_CASE(entity_create_child)
 
     BOOST_CHECK_LT(c0, c1);
 }
+
+#if WITH_PYTHON
+
+
+    BOOST_AUTO_TEST_CASE(entity_create_python_object)
+    {
+        esl::identity<boost::python::object> i = {1, 2};
+        esl::entity<boost::python::object> e(i);
+        BOOST_CHECK_NO_THROW(e.template create<boost::python::object>());
+
+        auto c = e.template create<boost::python::object>();
+
+        BOOST_CHECK_LT(i, c);
+
+    }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
