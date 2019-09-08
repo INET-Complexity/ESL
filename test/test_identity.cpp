@@ -53,7 +53,8 @@ struct dummy_derived_direct
 : dummy_base
 , esl::identifiable_as<dummy_derived_direct>
 {
-    dummy_derived_direct(esl::identity<dummy_derived_direct> i) : dummy_base(i)
+    dummy_derived_direct(const esl::identity<dummy_derived_direct> &i)
+    : dummy_base(i)
     {}
 };
 
@@ -145,6 +146,8 @@ BOOST_AUTO_TEST_CASE(identity_equality_different_types)
     esl::identity<dummy_base> i           = {1, 2, 3};
     esl::identity<dummy_derived_direct> j = {1, 2, 3};
     BOOST_CHECK_EQUAL(i, j);
+    BOOST_CHECK(!(i < j));
+    BOOST_CHECK(!(i > j));
 }
 
 

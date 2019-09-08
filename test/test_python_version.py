@@ -1,6 +1,5 @@
-import pytest
-
 import esl.version
+import pytest
 
 
 def test_version_built():

@@ -158,7 +158,9 @@ namespace esl {
         /// \return `true` if all digits match the other identity's digits,
         /// `false` otherwise.
         ///
-        inline bool operator==(const identity<identifiable_type_> &rhs) const
+        template<typename identifiable_other_type_>
+        inline bool
+        operator==(const identity<identifiable_other_type_> &rhs) const
         {
             return equal(digits.begin(),
                          digits.end(),
@@ -169,7 +171,9 @@ namespace esl {
         ///
         /// \param rhs
         /// \return
-        inline bool operator!=(const identity<identifiable_type_> &rhs) const
+        template<typename identifiable_other_type_>
+        inline bool
+        operator!=(const identity<identifiable_other_type_> &rhs) const
         {
             return !(*this == rhs);
         }
@@ -195,7 +199,9 @@ namespace esl {
         ///
         /// \param rhs
         /// \return
-        inline bool operator<=(const identity<identifiable_type_> &rhs) const
+        template<typename identifiable_other_type_>
+        inline bool
+        operator<=(const identity<identifiable_other_type_> &rhs) const
         {
             return (*this < rhs) || (*this == rhs);
         }
@@ -205,7 +211,9 @@ namespace esl {
         /// \return `true` if the left-hand side strictly succeeds
         /// (lexicographically) the right-hand side identifier,
         ///         `false` otherwise.
-        inline bool operator>(const identity<identifiable_type_> &rhs) const
+        template<typename identifiable_other_type_>
+        inline bool
+        operator>(const identity<identifiable_other_type_> &rhs) const
         {
             return lexicographical_compare(rhs.digits.begin(),
                                            rhs.digits.end(),
@@ -217,7 +225,9 @@ namespace esl {
         /// TODO: C++20 use lexicographical_compare_3way
         /// \param rhs
         /// \return
-        inline bool operator>=(const identity<identifiable_type_> &rhs) const
+        template<typename identifiable_other_type_>
+        inline bool
+        operator>=(const identity<identifiable_other_type_> &rhs) const
         {
             return (*this > rhs) || (*this == rhs);
         }

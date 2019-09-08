@@ -174,7 +174,9 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 
 ################################################################################
 
-FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
+FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
+#LIST(FILTER TEST_SRCS INCLUDE REGEX "^test/")
+
 FOREACH(test_src ${TEST_SRCS})
     MESSAGE("TEST " ${test_src})
     GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
@@ -192,20 +194,29 @@ ENDFOREACH(test_src)
 ################################################################################
 
 IF(WITH_PYTHON)
-    PYTHON_ADD_MODULE(version esl/version.cpp)
 
-    ADD_CUSTOM_COMMAND(TARGET version POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:version>
-        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:version>)
+    # create a python module for all .ccp files
+    # TODO: make this a separate set, as some unwanted .cpp files may be swept
+    #       up in this
+    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**.cpp)
+    FOREACH (source ${ESL_PYTHON_SOURCE})
+        GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
+        MESSAGE("PYTHON MODULE " ${module_name} "\t" ${source})
+        PYTHON_ADD_MODULE(${module_name} ${source})
 
-    FILE(COPY test/test_version.py DESTINATION ${CMAKE_BINARY_DIR}/test/)
+        ADD_CUSTOM_COMMAND(TARGET ${module_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:${module_name}>
+                ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${module_name}>)
+    ENDFOREACH ()
+
 
     FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
     FOREACH(test_src ${TEST_SRCS})
         GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
         SET(pytest_name "${pytest_name}_python")
         MESSAGE("PYTEST " ${pytest_name})
+        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/test/)
     ENDFOREACH(test_src)
 
     ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")

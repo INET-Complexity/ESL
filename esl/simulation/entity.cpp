@@ -23,3 +23,14 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/simulation/entity.hpp>
+
+
+#ifdef WITH_PYTHON
+#include <boost/python.hpp>
+namespace esl {
+    using namespace boost::python;
+    BOOST_PYTHON_MODULE(entity)
+    {}
+
+}  // namespace esl
+#endif

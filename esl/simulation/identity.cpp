@@ -27,11 +27,47 @@
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
-namespace esl {
-    using namespace boost::python;
-    BOOST_PYTHON_MODULE(identity)
-    {
 
+#include <vector>
+using std::vector;
+
+typedef esl::identity<boost::python::object> python_identity;
+
+boost::shared_ptr<python_identity>
+convert_digit_list(const boost::python::list &list)
+{
+    vector<uint64_t> result_;
+    for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
+        result_.push_back(boost::python::extract<double>(list[i]));
     }
-}  // namespace esl
+    return boost::make_shared<python_identity>(result_);
+}
+
+using namespace boost::python;
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(python_identity_representation_overload,
+                                       python_identity::representation, 0, 1);
+
+BOOST_PYTHON_MODULE(identity)
+{
+    class_<python_identity, boost::noncopyable,
+           boost::shared_ptr<python_identity>>("identity", no_init)
+        .def("__init__", make_constructor(convert_digit_list))
+
+        .def_readonly("digits", &python_identity::digits)
+
+        .def("__str__", &python_identity::representation,
+             python_identity_representation_overload(args("width"), ""))
+        .def("__repr__", &python_identity::representation,
+             python_identity_representation_overload(args("width"), ""))
+
+        // clang-format off
+        .def("__eq__", &python_identity::operator== <object>)
+        .def("__ne__", &python_identity::operator!= <object>)
+        .def("__lt__", &python_identity::operator<  <object>)
+        .def("__le__", &python_identity::operator<= <object>)
+        .def("__gt__", &python_identity::operator>  <object>)
+        .def("__ge__", &python_identity::operator>= <object>);
+    // clang-format on
+}
 #endif
