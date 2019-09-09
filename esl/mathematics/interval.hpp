@@ -47,6 +47,29 @@ namespace esl::mathematics {
         number_t_ upper;
 
         ///
+        /// \brief  default interval constructor sets the lower and upper bound
+        ///         to time_point(0)
+        ///
+        constexpr interval()
+        : lower(0)
+        , upper(0)
+        {
+
+        }
+
+        ///
+        /// \brief  constructs an interval from `lower` to `upper`
+        ///
+        /// \param lower    lower bound
+        /// \param upper    upper bound
+        constexpr interval(number_t_ lower, number_t_ upper)
+        : lower(lower)
+        , upper(upper)
+        {
+
+        }
+
+        ///
         /// \return true iff the interval contains no elements
         ///
         [[nodiscard]] constexpr bool empty() const
@@ -105,16 +128,21 @@ namespace esl::mathematics {
         }
 
         ///
-        /// \param self
+        /// \brief  renders the interval to a string as detailed in the class's
+        ///         ostream operator implementation
+        ///
         /// \return
-        [[nodiscard]] std::string representation(
-            const interval<number_t_, left_closed_, right_closed_> &self) const
+        [[nodiscard]] std::string representation() const
         {
             std::stringstream stream_;
-            stream_ << self;
+            stream_ << *this;
             return stream_.str();
         }
 
+        ///
+        /// \brief  renders the interval using '[' and ']' to denote open lower
+        ///         and upper bounds respectively, and '(' and ')' for closed
+        ///         lower and upper bounds.
         ///
         /// \param stream
         /// \param self
