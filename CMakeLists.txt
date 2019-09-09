@@ -155,7 +155,10 @@ SET(SOURCE_FILES
         esl/simulation/identifiable_as.hpp
         esl/simulation/entity.hpp
         esl/simulation/entity.cpp
-    )
+
+        esl/mathematics/interval.cpp
+        esl/mathematics/interval.hpp
+        )
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
