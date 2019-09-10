@@ -27,33 +27,13 @@
 #define ESL_SIMULATION_IDENTITY_HPP
 
 #include <cstdint>
-using std::size_t;
-
 #include <iostream>
-using std::ostream;
-
 #include <string>
-using std::string;
-
 #include <iomanip>
-using std::setfill;
-using std::setw;
-
 #include <sstream>
-using std::ostringstream;
-using std::stringstream;
-
 #include <vector>
-using std::vector;
-
 #include <type_traits>
-using std::is_base_of;
-
-#include <algorithm>
-using std::equal;
-using std::lexicographical_compare;
-// TODO: use this when C++20 support is widespread
-// using std::lexicographical_compare_3way;
+#include <algorithm> // TODO: use this when C++20 support is widespread // using std::lexicographical_compare_3way;
 
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/export.hpp>
@@ -86,19 +66,19 @@ namespace esl {
         /// integer. This means that an entity can have
         ///         2^64 children.
         ///
-        typedef uint64_t digit_t;
+        typedef std::uint64_t digit_t;
 
         ///
         /// \brief  The digits, elements in sequence, that make up the
         /// identifier code.
         ///
-        vector<digit_t> digits;
+        std::vector<digit_t> digits;
 
         ///
         /// \param digits   vector of digits for the identifier, from most
         /// significant to least significant
         ///
-        constexpr explicit identity(vector<digit_t> &&digits = {}) noexcept
+        constexpr explicit identity(std::vector<digit_t> &&digits = {}) noexcept
         : digits(move(digits))
         {}
 
@@ -106,8 +86,8 @@ namespace esl {
         /// \param digits   vector of digits for the identifier, from most
         /// significant to least significant
         ///
-        explicit identity(const vector<digit_t> &digits)
-        : identity(vector<digit_t>(digits))
+        explicit identity(const std::vector<digit_t> &digits)
+        : identity(std::vector<digit_t>(digits))
         {}
 
         ///
@@ -131,7 +111,7 @@ namespace esl {
         /// \param i    Other identity
         ///
         identity(identity<identifiable_type_> &&i) noexcept
-        : digits(move(i.digits))
+        : digits(std::move(i.digits))
         {}
 
         ///
@@ -240,7 +220,7 @@ namespace esl {
         /// \param i        The identity to render.
         ///
         /// \return     The (modified) output stream.
-        friend ostream &operator<<(ostream &stream,
+        friend std::ostream &operator<<(std::ostream &stream,
                                    const identity<identifiable_type_> &i)
         {
             if(i.digits.empty()) {
@@ -248,12 +228,12 @@ namespace esl {
             }
 
             auto iterator_ = i.digits.begin();
-            auto width_    = setw(stream.width());
-            stream << setfill('0') << width_ << *iterator_;
+            auto width_    = std::setw(stream.width());
+            stream << std::setfill('0') << width_ << *iterator_;
             ++iterator_;
             for(; iterator_ != i.digits.end(); ++iterator_) {
                 stream << '-';
-                stream << setfill('0') << width_ << *iterator_;
+                stream << std::setfill('0') << width_ << *iterator_;
             }
 
             return stream;
@@ -264,11 +244,11 @@ namespace esl {
         ///
         /// \param width
         /// \return
-        [[nodiscard]] string representation(std::streamsize width = 0) const
+        [[nodiscard]] std::string representation(std::streamsize width = 0) const
         {
             assert(0 <= width && width <= 20);
 
-            stringstream stream_;
+            std::stringstream stream_;
             stream_ << std::setw(width) << *this;
             return stream_.str();
         }
@@ -281,7 +261,7 @@ namespace esl {
         template<typename child_entity_type_, typename parent_type_>
         identity<child_entity_type_> create(parent_type_ &parent) const
         {
-            auto prefix_ = vector<digit_t>(this->digits);
+            auto prefix_ = std::vector<digit_t>(this->digits);
             prefix_.push_back(parent.children_);
             ++parent.children_;
             prefix_.shrink_to_fit();
@@ -310,7 +290,7 @@ namespace esl {
         template<typename base_type_>
         operator identity<base_type_>() const
         {
-            static_assert(is_base_of<base_type_, identifiable_type_>::value,
+            static_assert(std::is_base_of<base_type_, identifiable_type_>::value,
                           "can not cast identifier, please verify that this "
                           "conversion is allowed");
             return identity<base_type_>(this->digits);
@@ -354,7 +334,7 @@ namespace esl {
              typename pointer_t_>
     struct identity_ptr_hash
     {
-        size_t operator()(pointer_t_<identifiable_type_> k) const
+        std::size_t operator()(pointer_t_<identifiable_type_> k) const
         {
             return std::hash<identity<identifiable_type_>>()(*k);
         }
@@ -393,14 +373,14 @@ namespace std {
         ///
         /// \param identifier
         /// \return
-        constexpr size_t
+        constexpr std::size_t
         operator()(const esl::identity<entity_type_> &identifier) const
         {
             if(identifier.digits.empty()) {
                 return 0;
             }
 
-            size_t seed_ = identifier.digits.back();
+            std::size_t seed_ = identifier.digits.back();
             for(auto i = identifier.digits.rbegin() + 1;
                 i != identifier.digits.rend();
                 ++i) {
