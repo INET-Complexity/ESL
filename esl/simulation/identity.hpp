@@ -140,7 +140,7 @@ namespace esl {
         /// `false` otherwise.
         ///
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator==(const identity<identifiable_other_type_> &rhs) const
         {
             return equal(digits.begin(),
@@ -153,7 +153,7 @@ namespace esl {
         /// \param rhs
         /// \return
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator!=(const identity<identifiable_other_type_> &rhs) const
         {
             return !(*this == rhs);
@@ -166,7 +166,7 @@ namespace esl {
         /// (lexicographically) the right-hand side identifier,
         ///         `false` otherwise.
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator<(const identity<identifiable_other_type_> &rhs) const
         {
             return lexicographical_compare(digits.begin(),
@@ -181,7 +181,7 @@ namespace esl {
         /// \param rhs
         /// \return
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator<=(const identity<identifiable_other_type_> &rhs) const
         {
             return (*this < rhs) || (*this == rhs);
@@ -193,7 +193,7 @@ namespace esl {
         /// (lexicographically) the right-hand side identifier,
         ///         `false` otherwise.
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator>(const identity<identifiable_other_type_> &rhs) const
         {
             return lexicographical_compare(rhs.digits.begin(),
@@ -207,7 +207,7 @@ namespace esl {
         /// \param rhs
         /// \return
         template<typename identifiable_other_type_>
-        inline bool
+        [[nodiscard]] constexpr inline bool
         operator>=(const identity<identifiable_other_type_> &rhs) const
         {
             return (*this > rhs) || (*this == rhs);
@@ -259,7 +259,7 @@ namespace esl {
         /// \param parent
         /// \return
         template<typename child_entity_type_, typename parent_type_>
-        identity<child_entity_type_> create(parent_type_ &parent) const
+        [[nodiscard]] identity<child_entity_type_> create(parent_type_ &parent) const
         {
             auto prefix_ = std::vector<digit_t>(this->digits);
             prefix_.push_back(parent.children_);
@@ -288,7 +288,7 @@ namespace esl {
         /// @return
         ///
         template<typename base_type_>
-        operator identity<base_type_>() const
+        [[nodiscard]] operator identity<base_type_>() const
         {
             static_assert(std::is_base_of<base_type_, identifiable_type_>::value,
                           "can not cast identifier, please verify that this "
@@ -304,7 +304,7 @@ namespace esl {
     /// @return                 The identity cast to the derived type
     ///
     template<typename derived_type_, typename base_type_>
-    identity<derived_type_> dynamic_identity_cast(const identity<base_type_> &b)
+    [[nodiscard]] identity<derived_type_> dynamic_identity_cast(const identity<base_type_> &b)
     {
         return identity<derived_type_>(b.digits);
     }
@@ -318,7 +318,7 @@ namespace esl {
     /// \param base Identity of the base class instance
     /// \return
     template<typename derived_type_, typename base_type_>
-    identity<derived_type_>
+    [[nodiscard]] identity<derived_type_>
     reinterpret_identity_cast(const identity<base_type_> &base)
     {
         return identity<derived_type_>(base.digits);
@@ -334,7 +334,7 @@ namespace esl {
              typename pointer_t_>
     struct identity_ptr_hash
     {
-        std::size_t operator()(pointer_t_<identifiable_type_> k) const
+        [[nodiscard]] std::size_t operator()(pointer_t_<identifiable_type_> k) const
         {
             return std::hash<identity<identifiable_type_>>()(*k);
         }
@@ -350,7 +350,7 @@ namespace esl {
              typename pointer_t_>
     struct identity_ptr_equality
     {
-        constexpr bool
+        [[nodiscard]] constexpr bool
         operator()(const pointer_t_<identifiable_type_> &lhs,
                    const pointer_t_<identifiable_type_> &rhs) const
         {
@@ -373,7 +373,7 @@ namespace std {
         ///
         /// \param identifier
         /// \return
-        constexpr std::size_t
+        [[nodiscard]] constexpr std::size_t
         operator()(const esl::identity<entity_type_> &identifier) const
         {
             if(identifier.digits.empty()) {
@@ -403,7 +403,8 @@ namespace boost::mpi {
     ///
     /// \tparam identifiable_type_
     template<typename identifiable_type_>
-    struct is_mpi_datatype<esl::identity<identifiable_type_>> : mpl::true_
+    struct is_mpi_datatype<esl::identity<identifiable_type_>>
+    : mpl::true_
     {};
 }  // namespace boost::mpi
 
