@@ -150,14 +150,31 @@ LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 SET(SOURCE_FILES
         esl/version.hpp
         esl/version.cpp
+
         esl/simulation/identity.hpp
         esl/simulation/identity.cpp
         esl/simulation/identifiable_as.hpp
+
         esl/simulation/entity.hpp
         esl/simulation/entity.cpp
 
         esl/mathematics/interval.cpp
         esl/mathematics/interval.hpp
+
+        esl/agent.cpp
+        esl/agent.hpp
+
+        esl/interaction/communicator.cpp
+        esl/interaction/communicator.hpp
+
+        esl/interaction/header.cpp
+        esl/interaction/header.hpp
+
+        esl/interaction/message.cpp
+        esl/interaction/message.hpp
+
+        esl/computation/type_code.hpp
+        esl/computation/type_marker.hpp
         )
 
 
