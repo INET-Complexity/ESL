@@ -23,7 +23,7 @@
 ///             requirements in CITATION.cff
 ///
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE version
+#define BOOST_TEST_MODULE interval
 
 #include <boost/test/included/unit_test.hpp>
 

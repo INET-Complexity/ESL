@@ -1,6 +1,6 @@
 /// \file   test_identity.cpp
 ///
-/// \brief  This tests the semantic version string function.
+/// \brief
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2019-08-15
@@ -23,7 +23,7 @@
 ///             requirements in CITATION.cff
 ///
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE version
+#define BOOST_TEST_MODULE identity
 
 #include <boost/test/included/unit_test.hpp>
 
