@@ -30,15 +30,6 @@
 namespace esl::interaction {
     using namespace boost::python;
 
-    /*class python_message
-    : public message<python_message, library_message_code<0x1u>()>
-    {
-    public:
-        // this helps the linker resolve the code
-        constexpr const static message_code python_code = code;
-    };*/
-
-
     BOOST_PYTHON_MODULE(message)
     {
         class_<python_message, bases<header>>("message")

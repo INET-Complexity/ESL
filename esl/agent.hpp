@@ -87,7 +87,6 @@ namespace esl {
                 "entity⟨agent⟩",
                 boost::serialization::base_object<entity<agent>>(*this));
             archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(communicator);
-            // archive.template register_type<agent>();
         }
     };
 
@@ -108,67 +107,6 @@ namespace std {
         }
     };
 }  // namespace std
-
-/*
-#ifdef WITH_PYTHON
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// PYTHON
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include <boost/python.hpp>
-using boost::python::wrapper;
-
-
-namespace eslpy {
-    struct agent_python
-    : agent
-    , boost::python::wrapper<agent>
-    {
-        boost::python::object data_;
-
-        ///
-        ///
-        ///
-        /// \param i
-        explicit agent_python(identity<agent> i);
-
-        ///
-        ///
-        /// \param o
-        explicit agent_python(boost::python::object o);
-
-        ///
-        /// \param interval
-        /// \return
-        virtual time_point act(time_interval interval);
-
-        ///
-        /// \brief Base for potentially overloaded  <code>.act(time_interval
-        /// interval)</code> \param interval \return
-        virtual time_point act_base(time_interval interval);
-    };
-
-    // void export_agent();
-}  // namespace eslpy
-
-
-#ifdef WITH_MPI
-#include <boost/mpi/python/serialize.hpp>
-
-namespace boost { namespace serialization {
-    template<class archive_t>
-    void serialize(archive_t &archive, eslpy::agent_python &a,
-                   const unsigned int version)
-    {
-        (void)version;
-        archive &boost::serialization::base_object<agent>(a);
-        boost::mpi::python::register_serialized<agent>(a,
-                                                       a.data_.ptr()->ob_type);
-        archive &a.data_;
-    }
-}}      // namespace boost::serialization
-#endif  // WITH_MPI
-#endif  // WITH_PYTHON
-*/
 
 
 #endif  // ESL_AGENT_HPP

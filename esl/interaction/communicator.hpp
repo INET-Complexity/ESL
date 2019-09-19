@@ -5,7 +5,7 @@
 /// \authors    Maarten P. Scholl
 /// \date       2018-04-13
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
-/// Oxford Martin School, University of Oxford
+///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
 ///             you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ namespace esl::interaction {
     class communicator
     {
     public:
-
         ///
         /// \brief  A messsage is any class deriving from `header`, which
         ///         contains the minimum amount of information for delivery.
@@ -60,7 +59,9 @@ namespace esl::interaction {
         /// \brief  A function is any function taking a message and returning
         ///         the time at which the next event is expected.
         ///
-        typedef std::function<simulation::time_point(message_t, simulation::time_step)> callback_t;
+        typedef std::function<simulation::time_point(message_t,
+                                                     simulation::time_step)>
+            callback_t;
 
         ///
         /// \brief  The inbox stores messages by delivery time.
@@ -90,8 +91,7 @@ namespace esl::interaction {
         ///
         bool locked_;
 
-        std::map<message_code,
-            std::multimap<priority_t, callback_t>>
+        std::map<message_code, std::multimap<priority_t, callback_t>>
             callbacks_;
 
     public:
@@ -155,11 +155,11 @@ namespace esl::interaction {
         /// \param callback
         /// \param priority
         template<typename derived_message_t_>
-        void register_callback(std::function<simulation::time_point(
-                                   std::shared_ptr<derived_message_t_>
-                                       , simulation::time_step)>
-                                   callback,
-                               priority_t priority = 0)
+        void register_callback(
+            std::function<simulation::time_point(
+                std::shared_ptr<derived_message_t_>, simulation::time_step)>
+                callback,
+            priority_t priority = 0)
         {
             /// the specified message must inherit `header`
             static_assert(std::is_base_of<header, derived_message_t_>::value);
@@ -177,7 +177,8 @@ namespace esl::interaction {
                 iterator_ = callbacks_.find(type_code_);
             }
 
-            auto function_ = [callback](message_t m, simulation::time_step step) {
+            auto function_ = [callback](message_t m,
+                                        simulation::time_step step) {
                 auto converted_ =
                     std::dynamic_pointer_cast<derived_message_t_>(m);
 
@@ -213,8 +214,9 @@ namespace esl::interaction {
         ///         Applies the communicator::scheduling method.
         ///
         /// \param start
-        simulation::time_point process_messages(const simulation::time_step &step,
-                                                std::seed_seq &seed);
+        simulation::time_point
+        process_messages(const simulation::time_step &step,
+                         std::seed_seq &seed);
 
         ///
         /// \tparam archive_t
@@ -240,8 +242,7 @@ namespace boost { namespace mpi {
     /// \brief serialization is non-trivial
     ///
     template<>
-    struct is_mpi_datatype<esl::interaction::communicator>
-    : public mpl::false_
+    struct is_mpi_datatype<esl::interaction::communicator> : public mpl::false_
     {};
 }}      // namespace boost::mpi
 #endif  // WITH_MPI

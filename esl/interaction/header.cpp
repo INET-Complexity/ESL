@@ -30,15 +30,16 @@ namespace esl {
     constexpr interaction::message_code
     python_library_message_code(interaction::message_code offset_)
     {
-        // static_assert(message_mask >= offset_, "maximum code offset
-        // exceeded");
+        // maximum code offset exceeded
+        assert(interaction::message_mask >= offset_);
         return interaction::message_mask | offset_;
     }
 
     constexpr interaction::message_code
     python_library_message_offset(interaction::message_code code_)
     {
-        // static_assert(message_mask & code_, "not a library message code");
+        // maximum code offset exceeded
+        assert(interaction::message_mask & code_);
         return (~interaction::message_mask) & code_;
     }
 

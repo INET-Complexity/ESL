@@ -41,11 +41,12 @@ namespace esl::interaction {
         auto first_event_ = step.upper;
 
         auto callback_ = callbacks_.find(message->type);
-        if(callbacks_.end() == callback_){
+        if(callbacks_.end() == callback_) {
             return first_event_;
         }
 
-        for(auto i = callback_->second.rbegin(); i != callback_->second.rend(); ++i){
+        for(auto i = callback_->second.rbegin(); i != callback_->second.rend();
+            ++i) {
             auto next_event_ = std::get<1>(*i)(message, step);
             assert(step.lower <= next_event_ && next_event_ <= step.upper);
             first_event_ = std::min(first_event_, next_event_);
@@ -76,7 +77,8 @@ namespace esl::interaction {
             }
 
             auto highest_priority = std::numeric_limits<priority_t>::min();
-            for(const auto &[p, cf] : callback_->second){
+            for(const auto &[p, cf] : callback_->second) {
+                (void) cf;
                 highest_priority = std::max(highest_priority, p);
             }
 
@@ -111,9 +113,9 @@ namespace esl::interaction {
 
 
 #ifdef WITH_PYTHON
-#include <esl/interaction/message.hpp>
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp>
+#include <esl/interaction/message.hpp>
 
 namespace esl::interaction {
     using namespace boost::python;
@@ -136,13 +138,15 @@ namespace esl::interaction {
     void python_register_callback(communicator &self, object callback,
                                   communicator::priority_t priority = 0)
     {
-        communicator::callback_t callback_ = [&callback](std::shared_ptr<header> p, simulation::time_step s) {
-            auto result_ = callback.attr("__call__")(p);
-            if(result_.is_none()){
-                return s.upper;
-            }
-            return (simulation::time_point)extract<simulation::time_point>(result_);
-        };
+        communicator::callback_t callback_ =
+            [&callback](std::shared_ptr<header> p, simulation::time_step s) {
+                auto result_ = callback.attr("__call__")(p);
+                if(result_.is_none()) {
+                    return s.upper;
+                }
+                return (simulation::time_point)extract<simulation::time_point>(
+                    result_);
+            };
 
         self.register_callback<python_message>(callback_, priority);
     }
@@ -157,8 +161,7 @@ namespace esl::interaction {
         class_<communicator>("communicator")
             .def_readwrite("inbox", &communicator::inbox)
             .def_readwrite("outbox", &communicator::outbox)
-            .def("register_callback", python_register_callback)
-            ;
+            .def("register_callback", python_register_callback);
     }
 
 }  // namespace esl::interaction

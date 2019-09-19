@@ -25,9 +25,6 @@
 #ifndef ESL_MESSAGE_HPP
 #define ESL_MESSAGE_HPP
 
-
-#include <boost/type_index/ctti_type_index.hpp>
-
 #include <esl/computation/type_code.hpp>
 #include <esl/computation/type_marker.hpp>
 #include <esl/interaction/header.hpp>
@@ -42,14 +39,13 @@ namespace esl::interaction {
     , public type_marker<message_type_>
     {
     public:
-        explicit message(identity<agent> sender = identity<agent>(),
-                identity<agent> recipient       = identity<agent>(),
-                simulation::time_point sent     = simulation::time_point(),
-                simulation::time_point received = simulation::time_point())
+        explicit message(
+            identity<agent> sender          = identity<agent>(),
+            identity<agent> recipient       = identity<agent>(),
+            simulation::time_point sent     = simulation::time_point(),
+            simulation::time_point received = simulation::time_point())
         : header(type_code_, sender, recipient, sent, received)
-        {
-
-        }
+        {}
 
         virtual ~message() = default;
 
@@ -60,8 +56,7 @@ namespace esl::interaction {
         ///             code
         /// @return
         ///
-        friend esl::type_marker<message_type_>
-            code(esl::type_code<type_code_>)
+        friend esl::type_marker<message_type_> code(esl::type_code<type_code_>)
         {
             return esl::type_marker<message_type_>();
         }
@@ -86,7 +81,6 @@ namespace esl::interaction {
 
 
 #ifdef WITH_PYTHON
-
     class python_message
     : public message<python_message, library_message_code<0x1u>()>
     {
@@ -94,7 +88,6 @@ namespace esl::interaction {
         // this helps the linker resolve the message code
         constexpr const static message_code python_code = code;
     };
-
 #endif  // WITH_PYTHON
 
 }  // namespace esl::interaction

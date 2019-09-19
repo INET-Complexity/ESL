@@ -28,47 +28,36 @@
 
 namespace esl {
 
-    agent::agent()
-        : agent(identity<agent>())
-    {
-
-    }
+    agent::agent() : agent(identity<agent>())
+    {}
 
     agent::agent(identity<agent> i)
-    : entity<agent>(std::move(i))
-    , communicator()
-    {
+    : entity<agent>(std::move(i)), communicator()
+    {}
 
-    }
-
-    agent::agent(const agent &o)
-        : agent(o.identifier)
-    {
-
-    }
+    agent::agent(const agent &o) : agent(o.identifier)
+    {}
 
     simulation::time_point agent::act(simulation::time_step step)
     {
         return step.upper;
     }
-}
-
+}  // namespace esl
 
 
 #ifdef WITH_PYTHON
-#include <esl/interaction/message.hpp>
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp>
+#include <esl/interaction/message.hpp>
 
 namespace esl {
     using namespace boost::python;
 
     BOOST_PYTHON_MODULE(agent)
     {
-        class_<agent, bases<entity<agent>, interaction::communicator>>("agent",
-                                                                       init<identity<agent>>()
-                                                                       );
+        class_<agent, bases<entity<agent>, interaction::communicator>>(
+            "agent", init<identity<agent>>());
     }
-}
+}  // namespace esl
 
-#endif WITH_PYTHON
+#endif  // WITH_PYTHON

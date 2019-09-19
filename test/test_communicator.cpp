@@ -2,7 +2,7 @@
 ///
 /// \brief
 ///
-/// \authors    maarten
+/// \authors    Maarten P. Scholl
 /// \date       2019-09-18
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
@@ -42,22 +42,17 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
 struct dummy_message
 : public esl::interaction::message<dummy_message, (0x1ul << 62u) | 0>
-{
-
-};
+{};
 
 struct dummy_message_2
 : public esl::interaction::message<dummy_message_2, (0x1ul << 62u) | 1>
-{
-
-};
+{};
 
 ///
 /// \brief  This testing class defines some callbacks and tracks the order in
 ///         which they are called
 ///
-struct initializes_callbacks
-: public esl::interaction::communicator
+struct initializes_callbacks : public esl::interaction::communicator
 {
     std::vector<int> execution_sequence;
 
@@ -92,16 +87,18 @@ struct initializes_callbacks
     }
 
     initializes_callbacks()
-    : esl::interaction::communicator
-    (esl::interaction::communicator::scheduling::in_order)
+    : esl::interaction::communicator(
+        esl::interaction::communicator::scheduling::in_order)
     {
         this->register_callback<dummy_message>(
             [=](auto m, esl::simulation::time_step s) {
+                (void) s;
                 return callback_test_function(m);
             });
 
         this->register_callback<dummy_message>(
             [=](auto m, esl::simulation::time_step s) {
+                (void) s;
                 return callback_test_function_high_priority(m);
             },
             10);
@@ -109,6 +106,7 @@ struct initializes_callbacks
 
         this->register_callback<dummy_message_2>(
             [=](auto m, esl::simulation::time_step s) {
+                (void) s;
                 return callback_test_function_other(m);
             },
             0);
@@ -155,17 +153,17 @@ BOOST_AUTO_TEST_CASE(communicator_process_queue)
         ic.inbox.insert({esl::simulation::time_point(i), dm2});
     }
 
-    std::seed_seq sequence_{1};
+    std::seed_seq sequence_ {1};
 
     ic.process_messages(step_, sequence_);
 
     std::vector<int> expected_ = {789, 456, 789, 456, 789, 456, 234, 234, 234};
 
-    auto result_ = std::equal(ic.execution_sequence.begin(), ic.execution_sequence.end(),
-               expected_.begin(), expected_.end());
+    auto result_ =
+        std::equal(ic.execution_sequence.begin(), ic.execution_sequence.end(),
+                   expected_.begin(), expected_.end());
 
     BOOST_CHECK(result_);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
