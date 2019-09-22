@@ -1,0 +1,127 @@
+/// \file   model.hpp
+///
+/// \brief
+///
+/// \authors    Maarten P. Scholl
+/// \date       2017-12-06
+/// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
+///             Oxford Martin School, University of Oxford
+///
+///             Licensed under the Apache License, Version 2.0 (the "License");
+///             you may not use this file except in compliance with the License.
+///             You may obtain a copy of the License at
+///
+///                 http://www.apache.org/licenses/LICENSE-2.0
+///
+///             Unless required by applicable law or agreed to in writing,
+///             software distributed under the License is distributed on an "AS
+///             IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+///             express or implied. See the License for the specific language
+///             governing permissions and limitations under the License.
+///
+///             You may obtain instructions to fulfill the attribution
+///             requirements in CITATION.cff
+///
+#ifndef ESL_SIMULATION_MODEL_HPP
+#define ESL_SIMULATION_MODEL_HPP
+
+#include <memory>
+#include <unordered_set>
+
+#include <esl/simulation/time.hpp>
+#include <esl/simulation/world.hpp>
+#include <esl/simulation/agent_collection.hpp>
+
+
+namespace esl::computation {
+    class environment;
+}
+
+namespace esl::simulation {
+
+    class model
+    {
+    public:
+        ///
+        /// \brief The fixed starting point in time of the model
+        ///
+        const time_point start;
+
+        ///
+        /// \brief  When the simulation time reaches this point, the model
+        ///         terminates.
+        ///
+        time_point end;
+
+        ///
+        /// \brief  The current time of the model during computation
+        ///
+        time_point time;
+
+        ///
+        /// \brief  Simulation world, root entity.
+        ///
+        simulation::world world;
+
+        ///
+        /// \brief  The agents in the model.
+        ///
+        agent_collection agents;
+
+        ///
+        /// \brief
+        ///
+        /// \details    The model needs a reference to the computational
+        ///             environment during construction, as the environment
+        ///             needs to manage the collection of agents.
+        ///
+        /// \param e
+        /// \param start
+        /// \param end
+        model(esl::computation::environment &e, time_point start, time_point end);
+
+        virtual ~model() = default;
+
+        ///
+        /// \brief  All tasks that need to be done before running the model.
+        ///
+        virtual void initialize();
+
+
+        template<typename agent_derived_t_, typename entity_type_>
+        std::shared_ptr<agent_derived_t_> create(entity_type_ &parent)
+        {
+            return agents.template create<agent_derived_t_, entity_type_>(parent);
+        }
+
+        template<typename agent_derived_t_>
+        std::shared_ptr<agent_derived_t_> create()
+        {
+            return agents.template create<agent_derived_t_, simulation::world>(world);
+        }
+
+        ///
+        /// \brief  Updates the model time to the next `event`.
+        ///
+        /// \param event    The next event or time point to simulate up to and
+        ///                 including.
+        /// \return         The time of the next event. Modelers are allowed to
+        ///                 set result >= event.
+        ///
+        virtual time_point step(time_step step);
+
+        ///
+        /// \return
+        inline time_point step()
+        {
+            return step({time, end});
+        }
+
+        ///
+        /// \brief  Run statistical analyses for the model.
+        ///
+        virtual void terminate();
+    };
+}  // namespace esl::simulation
+
+#endif  // ESL_SIMULATION_MODEL_HPP
