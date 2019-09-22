@@ -184,6 +184,9 @@ SET(SOURCE_FILES
 
         esl/simulation/model.cpp
         esl/simulation/model.hpp
+
+        esl/computation/environment.cpp
+        esl/computation/environment.hpp
         )
 
 
