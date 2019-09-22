@@ -35,6 +35,9 @@
 
 #include <esl/interaction/header.hpp>
 
+namespace esl::simulation {
+    class agent_collection;
+}
 
 namespace esl::interaction {
 
@@ -82,6 +85,9 @@ namespace esl::interaction {
 
     protected:
         friend class boost::serialization::access;
+
+        friend class ::esl::simulation::agent_collection;
+
         ///
         /// \brief  when true, modifying the callbacks data structure results
         ///         in an std::logic_error being throw.
@@ -109,7 +115,7 @@ namespace esl::interaction {
         /// \brief  By default, the communicator is unlocked meaning callbacks
         /// can be locked and unlocked
         ///
-        communicator(scheduling schedule = random);
+        explicit communicator(scheduling schedule = random);
 
         virtual ~communicator() = default;
 
@@ -142,7 +148,7 @@ namespace esl::interaction {
             result_->recipient = recipient;
             result_->received  = delivery;
 
-            this->outbox().push_back(result_);
+            this->outbox.push_back(result_);
 
             return result_;
         }
@@ -188,14 +194,6 @@ namespace esl::interaction {
             iterator_->second.insert(std::make_pair(priority, function_));
         }
 
-        ///
-        /// \brief  Used to lock the callbacks data structure
-        ///
-        inline void lock_callbacks()
-        {
-            locked_ = true;
-        }
-
         [[nodiscard]] inline const decltype(callbacks_) &callbacks() const
         {
             return callbacks_;
@@ -229,6 +227,7 @@ namespace esl::interaction {
             archive &BOOST_SERIALIZATION_NVP(inbox);
             archive &BOOST_SERIALIZATION_NVP(outbox);
             archive &BOOST_SERIALIZATION_NVP(locked_);
+            archive &BOOST_SERIALIZATION_NVP(schedule_);
         }
     };
 }  // namespace esl::interaction
@@ -242,7 +241,8 @@ namespace boost { namespace mpi {
     /// \brief serialization is non-trivial
     ///
     template<>
-    struct is_mpi_datatype<esl::interaction::communicator> : public mpl::false_
+    struct is_mpi_datatype<esl::interaction::communicator>
+    : public mpl::false_
     {};
 }}      // namespace boost::mpi
 #endif  // WITH_MPI

@@ -1,9 +1,9 @@
-/// \file   agent.cpp
+/// \file   world.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2017-11-24
+/// \date       2019-09-22
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,42 +22,26 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <esl/simulation/world.hpp>
 
-#include <esl/agent.hpp>
+namespace esl::simulation{
 
-
-namespace esl {
-
-    agent::agent() : agent(identity<agent>())
-    {}
-
-    agent::agent(identity<agent> i)
-    : entity<agent>(std::move(i)), communicator()
-    {}
-
-    agent::agent(const agent &o) : agent(o.identifier)
-    {}
-
-    simulation::time_point agent::act(simulation::time_step step, std::seed_seq &seed)
+    world::world()
+    : entity<world>(identity<world>{} )
     {
-        return step.upper;
-    }
-}  // namespace esl
 
+    }
+}
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
-#include <boost/python/enum.hpp>
-#include <esl/interaction/message.hpp>
+using namespace boost::python;
 
-namespace esl {
-    using namespace boost::python;
+using namespace esl::simulation;
 
-    BOOST_PYTHON_MODULE(agent)
-    {
-        class_<agent, bases<entity<agent>, interaction::communicator>>(
-            "agent", init<identity<agent>>());
-    }
-}  // namespace esl
+BOOST_PYTHON_MODULE(world)
+{
+    class_<world>("world");
+}
 
-#endif  // WITH_PYTHON
+#endif
