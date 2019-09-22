@@ -23,41 +23,9 @@
 ///             requirements in CITATION.cff
 ///
 
-
-#include <utility>
-using std::move;
-#include <iostream>
-using std::cout;
-using std::endl;
-#include <set>
-using std::set;
-#include <memory>
-using std::make_shared;
-using std::shared_ptr;
-using std::unique_ptr;
-#include <tuple>
-using std::tuple;
-#include <numeric>
-using std::accumulate;
-#include <functional>
-
-
-#ifdef WITH_MPI
-#include <boost/mpi/collectives.hpp>
-#include <boost/serialization/vector.hpp>
-using boost::mpi::all_gather;
-using boost::mpi::all_to_all;
-using boost::mpi::broadcast;
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#endif
-
-
+#include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/simulation/model.hpp>
-#include <esl/agent.hpp>
 
 
 namespace esl::computation {
@@ -103,13 +71,11 @@ namespace esl::computation {
                     simulation->agents.local_agents_.find(m->recipient);
                 if(simulation->agents.local_agents_.end() == iterator_) {
                     // not in distributed mode, and no local agent matching
-                    throw std::logic_error("agent not found " + m->recipient.representation());
+                    throw std::logic_error("agent not found "
+                                           + m->recipient.representation());
                 }
 
                 iterator_->second->inbox.insert({m->received, m});
-
-                // simulation->agents.actual_agents_[std::hash<identity<agent>>{}(m->recipient)]->inbox().insert({m->received,
-                // m});
             }
             a->outbox.clear();
         }
@@ -129,11 +95,9 @@ namespace esl::computation {
     /// \param a
     void environment::deactivate_agent(const identity<agent> &a)
     {
-        //agent_action_time_.erase(a);
+        // agent_action_time_.erase(a);
         deactivated_.push_back(a);
     }
-
-
 
 
     ///
@@ -141,7 +105,7 @@ namespace esl::computation {
     void environment::step(simulation::model &simulation)
     {
         simulation::time_step step_ = {simulation.time, simulation.end};
-        if(simulation.time < simulation.end){
+        if(simulation.time < simulation.end) {
             simulation.step(step_);
         }
 
@@ -155,12 +119,9 @@ namespace esl::computation {
     void environment::run(std::shared_ptr<simulation::model> simulation)
     {
         simulation->initialize();
-        //auto next_timestep_minimum_ = simulation->time;
+        // auto next_timestep_minimum_ = simulation->time;
         simulation::time_step step_ = {simulation->start, simulation->end};
-        //auto timestep_              = simulation->step(step_);
-
         do {
-
             size_t changes_ = 0;
             changes_ += activate();
             changes_ += deactivate();
@@ -170,7 +131,7 @@ namespace esl::computation {
 
         simulation->terminate();
     }
-}
+}  // namespace esl::computation
 
 
 #ifdef WITH_PYTHON
@@ -185,10 +146,8 @@ namespace esl::computation {
     {
         class_<environment>("environment")
             .def("step", &environment::step)
-            .def("run", &environment::run)
-            ;
-
+            .def("run", &environment::run);
     }
 
-}  // namespace esl::interaction
+}  // namespace esl::computation
 #endif
