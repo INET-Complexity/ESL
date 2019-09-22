@@ -180,7 +180,8 @@ SET(SOURCE_FILES
         esl/simulation/world.cpp
         esl/simulation/world.hpp
 
-
+        esl/simulation/agent_collection.cpp
+        esl/simulation/agent_collection.hpp
         )
 
 
