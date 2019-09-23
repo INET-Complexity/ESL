@@ -41,6 +41,9 @@ namespace esl::simulation {
 
     class model
     {
+    protected:
+        computation::environment &environment_;
+
     public:
         ///
         /// \brief The fixed starting point in time of the model
@@ -87,13 +90,23 @@ namespace esl::simulation {
         ///
         virtual void initialize();
 
-
+        ///
+        ///
+        /// \tparam agent_derived_t_
+        /// \tparam entity_type_
+        /// \param parent
+        /// \return
         template<typename agent_derived_t_, typename entity_type_>
         std::shared_ptr<agent_derived_t_> create(entity_type_ &parent)
         {
             return agents.template create<agent_derived_t_, entity_type_>(parent);
         }
 
+        ///
+        /// \brief  Create an agent globally
+        ///
+        /// \tparam agent_derived_t_
+        /// \return
         template<typename agent_derived_t_>
         std::shared_ptr<agent_derived_t_> create()
         {

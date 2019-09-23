@@ -29,11 +29,15 @@
 
 namespace esl::simulation {
     model::model(computation::environment &e, time_point start, time_point end)
-    : start(start), end(end), time(start), agents(e)
-    {}
+    : environment_(e), start(start), end(end), time(start), agents(e)
+    {
+
+    }
 
     void model::initialize()
-    {}
+    {
+
+    }
 
     time_point model::step(time_step step)
     {
@@ -80,6 +84,7 @@ namespace esl::simulation {
                 a->inbox.clear();
                 // agent_action_time_[a->identifier].stop();
             }
+            environment_.send_messages(*this);
         } while(step.upper > first_event_);
 
         return first_event_;

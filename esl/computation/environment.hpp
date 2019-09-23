@@ -66,8 +66,14 @@ namespace esl {
             std::vector<identity<agent>> deactivated_;
 
         public:
+            ///
+            ///
+            ///
             environment();
 
+            ///
+            ///
+            ///
             virtual ~environment() = default;
 
             ///
@@ -87,7 +93,12 @@ namespace esl {
             virtual void run(std::shared_ptr<simulation::model>);
 
         protected:
+            // allows the model to call send_messages
+            friend class esl::simulation::model;
+
+            // allows the agent collection to activate/deactive agents
             friend class esl::simulation::agent_collection;
+
             ///
             /// \brief  Activates all queued agents.
             ///
@@ -111,7 +122,7 @@ namespace esl {
             /// \param simulation
             /// \return
             virtual size_t
-            send_messages(std::shared_ptr<simulation::model> simulation);
+            send_messages(simulation::model &simulation);
         };
     }  // namespace computation
 }  // namespace esl

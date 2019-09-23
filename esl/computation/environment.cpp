@@ -63,13 +63,13 @@ namespace esl::computation {
     ///
     /// Send and receive messages, to all nodes all at the same time
     ///
-    size_t environment::send_messages(shared_ptr<simulation::model> simulation)
+    size_t environment::send_messages(simulation::model &simulation)
     {
-        for(auto &[i, a] : simulation->agents.local_agents_) {
+        for(auto &[i, a] : simulation.agents.local_agents_) {
             for(auto m : a->outbox) {
                 auto iterator_ =
-                    simulation->agents.local_agents_.find(m->recipient);
-                if(simulation->agents.local_agents_.end() == iterator_) {
+                    simulation.agents.local_agents_.find(m->recipient);
+                if(simulation.agents.local_agents_.end() == iterator_) {
                     // not in distributed mode, and no local agent matching
                     throw std::logic_error("agent not found "
                                            + m->recipient.representation());
