@@ -61,11 +61,10 @@ namespace esl::simulation {
 
                 // agent_action_time_[a->identifier].start();
                 try {
-                    time_point next0_ = a->process_messages(step, seed_);
+                    first_event_ = std::min(first_event_, a->process_messages(step, seed_));
 
-                    time_point next_ = a->act(step, seed_);
+                    first_event_ = std::min(first_event_, a->act(step, seed_));
 
-                    first_event_ = std::min(first_event_, next_);
                 } catch(const std::runtime_error &e) {
                     // log() << "in agent[" << a->identifier <<  "].act: " <<
                     // e.what() << endl;
