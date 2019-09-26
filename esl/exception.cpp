@@ -50,14 +50,14 @@ namespace esl {
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
-    ///
-    /// \brief
-    ///
-    /// \param e
-    void translate_exception(const esl::exception &e)
-    {
-        PyErr_SetString(PyExc_UserWarning, e.what());
-    }
+///
+/// \brief
+///
+/// \param e
+void translate_exception(const esl::exception &e)
+{
+PyErr_SetString(PyExc_UserWarning, e.what());
+}
 
 
     using namespace boost::python;

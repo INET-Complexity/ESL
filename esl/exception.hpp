@@ -47,10 +47,6 @@ namespace esl {
         const char *what() const noexcept override;
 
     };
-
-    // translate exception to Python, allowing access to the message and
-    // diagnostic information retained in the exception
-    void translate_exception(const exception &e);
 }
 
 
