@@ -29,8 +29,8 @@ import pytest
 
 
 def test_time_built():
-    if not hasattr(esl.time, "time_step"):
-        pytest.fail("module missing: esl.time.time_step")
+    if not hasattr(esl.time, "time_interval"):
+        pytest.fail("module missing: esl.time.time_interval")
     if not hasattr(esl.time, "time_duration"):
         pytest.fail("module missing: esl.time.time_duration")
     if not hasattr(esl.time, "time_point"):
@@ -48,7 +48,7 @@ def test_time_duration():
 
 
 def test_time_step():
-    step = esl.time.time_step(0, 1)
+    step = esl.time.time_interval(0, 1)
     assert step is not None
     assert not step.empty()
     assert step.singleton()
