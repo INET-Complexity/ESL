@@ -200,6 +200,11 @@ SET(SOURCE_FILES
         esl/data/producer.cpp
         esl/data/producer.hpp
 
+        esl/law/property.cpp
+        esl/law/property.hpp
+
+        esl/law/property_collection.cpp
+        esl/law/property_collection.hpp
         )
 
 
