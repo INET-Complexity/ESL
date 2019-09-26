@@ -22,7 +22,6 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
 #include <esl/geography/country.hpp>
 
 

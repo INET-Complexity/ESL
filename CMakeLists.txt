@@ -208,6 +208,9 @@ SET(SOURCE_FILES
 
         esl/geography/country.cpp
         esl/geography/country.hpp
+
+        esl/geography/countries.cpp
+        esl/geography/countries.hpp
         )
 
 
