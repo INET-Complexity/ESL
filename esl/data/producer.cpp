@@ -22,4 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include "producer.hpp"
+#include <esl/data/producer.hpp>
