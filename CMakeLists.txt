@@ -205,6 +205,9 @@ SET(SOURCE_FILES
 
         esl/law/property_collection.cpp
         esl/law/property_collection.hpp
+
+        esl/geography/country.cpp
+        esl/geography/country.hpp
         )
 
 
