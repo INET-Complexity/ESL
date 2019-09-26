@@ -35,40 +35,39 @@
 
 namespace esl {
     exception::exception(const std::string &message)
-        : message_(message)
+    : message_(message)
     {
 
     }
 
-    const char *exception::what() const override
+    const char *exception::what() const noexcept
     {
-        return message_.str();
+        return message_.c_str();
     }
 }
 
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
-namespace esl {
+
     ///
     /// \brief
     ///
     /// \param e
-    void translate_exception(const exception &e)
+    void translate_exception(const esl::exception &e)
     {
-        PyErr_SetString(PyExc_UserWarning, e.message_);
+        PyErr_SetString(PyExc_UserWarning, e.what());
     }
 
 
     using namespace boost::python;
     BOOST_PYTHON_MODULE(exception)
     {
-        def("exception", exception)
-            def("message", exception::what())
-            ;
+        class_<esl::exception>("exception", init<std::string>())
+        .def("message", &esl::exception::what)
+        ;
 
-        register_exception_translator<exception>(translate_exception);
+        register_exception_translator<esl::exception>(translate_exception);
     }
 
-}  // namespace esl
 #endif

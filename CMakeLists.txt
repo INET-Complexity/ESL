@@ -187,6 +187,9 @@ SET(SOURCE_FILES
 
         esl/computation/environment.cpp
         esl/computation/environment.hpp
+
+        esl/exception.cpp
+        esl/exception.hpp
         )
 
 

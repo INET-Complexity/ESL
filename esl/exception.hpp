@@ -28,7 +28,6 @@
 #include <exception>
 #include <string>
 namespace esl {
-
     ///
     /// \brief  The base exception class for the library.
     ///
@@ -40,16 +39,18 @@ namespace esl {
     : public std::exception
     {
     protected:
-        friend translate_exception;
-
         std::string message_;
 
     public:
         exception(const std::string &message);
 
-        const char *what() const override;
+        const char *what() const noexcept override;
+
     };
 
+    // translate exception to Python, allowing access to the message and
+    // diagnostic information retained in the exception
+    void translate_exception(const exception &e);
 }
 
 
