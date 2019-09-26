@@ -63,7 +63,7 @@ namespace esl::interaction {
         ///         the time at which the next event is expected.
         ///
         typedef std::function<simulation::time_point(message_t,
-                                                     simulation::time_step)>
+                                                     simulation::time_interval)>
             callback_t;
 
         ///
@@ -163,7 +163,7 @@ namespace esl::interaction {
         template<typename derived_message_t_>
         void register_callback(
             std::function<simulation::time_point(
-                std::shared_ptr<derived_message_t_>, simulation::time_step)>
+                std::shared_ptr<derived_message_t_>, simulation::time_interval)>
                 callback,
             priority_t priority = 0)
         {
@@ -184,7 +184,7 @@ namespace esl::interaction {
             }
 
             auto function_ = [callback](message_t m,
-                                        simulation::time_step step) {
+                                        simulation::time_interval step) {
                 auto converted_ =
                     std::dynamic_pointer_cast<derived_message_t_>(m);
 
@@ -205,7 +205,7 @@ namespace esl::interaction {
         /// \param message
         /// \return
         simulation::time_point
-        process_message(message_t message, simulation::time_step step) const;
+        process_message(message_t message, simulation::time_interval step) const;
 
         ///
         /// \brief  Calls all callbacks registered with messages in the inbox.
@@ -213,7 +213,7 @@ namespace esl::interaction {
         ///
         /// \param start
         simulation::time_point
-        process_messages(const simulation::time_step &step,
+        process_messages(const simulation::time_interval &step,
                          std::seed_seq &seed);
 
         ///

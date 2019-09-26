@@ -58,15 +58,15 @@ BOOST_PYTHON_MODULE(time)
 
     def("time_duration", python_time_duration);
 
-    class_<time_step>("time_step", init<time_point, time_point>())
-        .def_readwrite("lower", &time_step::lower)
-        .def_readwrite("upper", &time_step::upper)
-        .def("empty",           &time_step::empty)
-        .def("singleton",       &time_step::singleton)
-        .def("degenerate",      &time_step::degenerate)
-        .def("contains",        &time_step::contains)
-        .def("__repr__",        &time_step::representation)
-        .def("__str__",         &time_step::representation);
+    class_<time_interval>("time_interval", init<time_point, time_point>())
+        .def_readwrite("lower", &time_interval::lower)
+        .def_readwrite("upper", &time_interval::upper)
+        .def("empty",           &time_interval::empty)
+        .def("singleton",       &time_interval::singleton)
+        .def("degenerate",      &time_interval::degenerate)
+        .def("contains",        &time_interval::contains)
+        .def("__repr__",        &time_interval::representation)
+        .def("__str__",         &time_interval::representation);
 }
 
 #endif

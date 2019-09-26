@@ -48,7 +48,7 @@ namespace esl::simulation {
     ///         a limiting upper bound.
     ///
     typedef mathematics::interval<time_point, true, false>
-        time_step;  // a fixed begin and endpoint, but duration need not be
+        time_interval;  // a fixed begin and endpoint, but duration need not be
                         // specified
 
 }  // namespace esl

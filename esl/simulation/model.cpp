@@ -39,7 +39,7 @@ namespace esl::simulation {
 
     }
 
-    time_point model::step(time_step step)
+    time_point model::step(time_interval step)
     {
         // to be set externally
         std::uint64_t sample_ = 0;

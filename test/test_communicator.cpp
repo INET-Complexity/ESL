@@ -91,13 +91,13 @@ struct initializes_callbacks : public esl::interaction::communicator
         esl::interaction::communicator::scheduling::in_order)
     {
         this->register_callback<dummy_message>(
-            [=](auto m, esl::simulation::time_step s) {
+            [=](auto m, esl::simulation::time_interval s) {
                 (void) s;
                 return callback_test_function(m);
             });
 
         this->register_callback<dummy_message>(
-            [=](auto m, esl::simulation::time_step s) {
+            [=](auto m, esl::simulation::time_interval s) {
                 (void) s;
                 return callback_test_function_high_priority(m);
             },
@@ -105,7 +105,7 @@ struct initializes_callbacks : public esl::interaction::communicator
 
 
         this->register_callback<dummy_message_2>(
-            [=](auto m, esl::simulation::time_step s) {
+            [=](auto m, esl::simulation::time_interval s) {
                 (void) s;
                 return callback_test_function_other(m);
             },
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(communicator_constructor)
 BOOST_AUTO_TEST_CASE(communicator_process_single_message)
 {
     initializes_callbacks ic;
-    esl::simulation::time_step step_ = {0, 999};
+    esl::simulation::time_interval step_ = {0, 999};
 
     auto dm = std::make_shared<dummy_message>();
     auto r  = ic.process_message(dm, step_);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(communicator_process_single_message)
 BOOST_AUTO_TEST_CASE(communicator_process_queue)
 {
     initializes_callbacks ic;
-    esl::simulation::time_step step_ = {2, 999};
+    esl::simulation::time_interval step_ = {2, 999};
 
     for(size_t i = 0; i < 3; ++i) {
         auto dm = std::make_shared<dummy_message>();

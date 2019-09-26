@@ -121,7 +121,7 @@ namespace esl::simulation {
         /// \return         The time of the next event. Modelers are allowed to
         ///                 set result >= event.
         ///
-        virtual time_point step(time_step step);
+        virtual time_point step(time_interval step);
 
         ///
         /// \return

@@ -61,7 +61,7 @@ namespace esl {
         ///
         /// \param start
         /// \return
-        virtual simulation::time_point act(simulation::time_step step, std::seed_seq &seed);
+        virtual simulation::time_point act(simulation::time_interval step, std::seed_seq &seed);
 
         ///
         /// \param rhs

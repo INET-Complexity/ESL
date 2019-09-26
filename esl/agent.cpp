@@ -38,7 +38,7 @@ namespace esl {
     agent::agent(const agent &o) : agent(o.identifier)
     {}
 
-    simulation::time_point agent::act(simulation::time_step step, std::seed_seq &seed)
+    simulation::time_point agent::act(simulation::time_interval step, std::seed_seq &seed)
     {
         return step.upper;
     }

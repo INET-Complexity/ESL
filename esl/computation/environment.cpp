@@ -104,7 +104,7 @@ namespace esl::computation {
     /// \param simulation
     void environment::step(simulation::model &simulation)
     {
-        simulation::time_step step_ = {simulation.time, simulation.end};
+        simulation::time_interval step_ = {simulation.time, simulation.end};
         if(simulation.time < simulation.end) {
             simulation.step(step_);
         }
@@ -120,7 +120,7 @@ namespace esl::computation {
     {
         simulation->initialize();
         // auto next_timestep_minimum_ = simulation->time;
-        simulation::time_step step_ = {simulation->start, simulation->end};
+        simulation::time_interval step_ = {simulation->start, simulation->end};
         do {
             size_t changes_ = 0;
             changes_ += activate();

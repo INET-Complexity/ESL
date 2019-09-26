@@ -36,7 +36,7 @@ namespace esl::interaction {
     /// \return
     simulation::time_point
     communicator::process_message(message_t message,
-                                  simulation::time_step step) const
+                                  simulation::time_interval step) const
     {
         auto first_event_ = step.upper;
 
@@ -60,7 +60,7 @@ namespace esl::interaction {
     /// \param seed
     /// \return
     simulation::time_point
-    communicator::process_messages(const simulation::time_step &step,
+    communicator::process_messages(const simulation::time_interval &step,
                                    std::seed_seq &seed)
     {
         // create mapping priority -> message
@@ -139,7 +139,7 @@ namespace esl::interaction {
                                   communicator::priority_t priority = 0)
     {
         communicator::callback_t callback_ =
-            [&callback](std::shared_ptr<header> p, simulation::time_step s) {
+            [&callback](std::shared_ptr<header> p, simulation::time_interval s) {
                 auto result_ = callback.attr("__call__")(p);
                 if(result_.is_none()) {
                     return s.upper;

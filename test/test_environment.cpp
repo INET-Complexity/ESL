@@ -39,7 +39,7 @@ struct test_agent
 {
     using esl::agent::agent;
 
-    esl::simulation::time_point act(esl::simulation::time_step step,
+    esl::simulation::time_point act(esl::simulation::time_interval step,
                                     std::seed_seq &seed) override
     {
         return agent::act(step, seed);
