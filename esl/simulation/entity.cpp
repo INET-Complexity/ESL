@@ -25,7 +25,6 @@
 #include <esl/simulation/entity.hpp>
 
 
-
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -35,10 +34,14 @@ namespace esl {
     using namespace boost::python;
     BOOST_PYTHON_MODULE(entity)
     {
-       class_<esl::entity<object>, boost::noncopyable>("entity", init<identity<object>>())
+        class_<esl::entity<object>, boost::noncopyable>(
+            "entity", init<identity<object>>())
             .def_readonly("identifier", &entity<object>::identifier)
             .def(self_ns::str(self_ns::self))
-           .def_readonly("create", &entity<object>::create<object>);
+            .def("create", &entity<object>::create<object>)
+            .def("__eq__", &entity<object>::operator== <object>)
+            .def("__ne__", &entity<object>::operator!= <object>)
+            ;
     }
 
 }  // namespace esl

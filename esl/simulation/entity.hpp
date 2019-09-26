@@ -138,6 +138,38 @@ namespace esl {
     public:
         virtual ~entity() = default;
 
+
+
+
+        constexpr bool operator == (const entity_type_ &operand) const
+        {
+            return this->identifier == operand.identifier;
+        }
+
+        ///
+        /// \brief  Two entities are equal iff their identities are the same
+        ///
+        /// \tparam other_entity_type_
+        /// \param operand
+        /// \return
+        template<typename other_entity_type_>
+        constexpr bool operator == (const entity<other_entity_type_> &operand) const
+        {
+            return this->identifier == operand.identifier;
+        }
+
+        ///
+        /// \brief
+        ///
+        /// \tparam other_entity_type_
+        /// \param operand
+        /// \return
+        template<typename other_entity_type_>
+        constexpr bool operator != (const entity<other_entity_type_> &operand) const
+        {
+            return this->identifier != operand.identifier;
+        }
+
         ///
         /// \param stream output-stream
         /// \param e entity
