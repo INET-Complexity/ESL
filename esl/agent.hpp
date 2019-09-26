@@ -32,13 +32,14 @@
 
 #include <esl/interaction/communicator.hpp>
 #include <esl/simulation/entity.hpp>
-
+#include <esl/data/producer.hpp>
 
 namespace esl {
 
     class agent
     : public entity<agent>
     , public interaction::communicator
+    , public data::producer
     {
     protected:
     private:
@@ -108,5 +109,18 @@ namespace std {
     };
 }  // namespace std
 
+
+#ifdef WITH_MPI
+
+#include <boost/mpi.hpp>
+namespace boost ::mpi {
+    template<>
+    struct is_mpi_datatype<esl::agent>
+    : public mpl::false_
+    {
+
+    };
+}
+#endif//WITH_MPI
 
 #endif  // ESL_AGENT_HPP

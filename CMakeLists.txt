@@ -190,6 +190,16 @@ SET(SOURCE_FILES
 
         esl/exception.cpp
         esl/exception.hpp
+
+        esl/data/output_base.cpp
+        esl/data/output_base.hpp
+
+        esl/data/output.cpp
+        esl/data/output.hpp
+
+        esl/data/producer.cpp
+        esl/data/producer.hpp
+
         )
 
 
