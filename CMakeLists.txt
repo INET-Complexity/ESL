@@ -211,6 +211,12 @@ SET(SOURCE_FILES
 
         esl/geography/countries.cpp
         esl/geography/countries.hpp
+
+        esl/economics/currency.cpp
+        esl/economics/currency.hpp
+
+        esl/economics/currencies.cpp
+        esl/economics/currencies.hpp
         )
 
 
