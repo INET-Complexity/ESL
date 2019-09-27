@@ -217,6 +217,12 @@ SET(SOURCE_FILES
 
         esl/economics/currencies.cpp
         esl/economics/currencies.hpp
+
+        esl/law/jurisdiction.cpp
+        esl/law/jurisdiction.hpp
+
+        esl/law/jurisdictions.cpp
+        esl/law/jurisdictions.hpp
         )
 
 
