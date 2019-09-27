@@ -35,6 +35,7 @@ namespace esl::economics {
     /// \brief ISO 4217 currencies and codes
     ///
     namespace currencies {
+
         constexpr currency AED = currency({'A', 'E', 'D'});
         constexpr currency AFN = currency({'A', 'F', 'N'});
         constexpr currency ALL = currency({'A', 'L', 'L'});
@@ -49,8 +50,8 @@ namespace esl::economics {
         constexpr currency BBD = currency({'B', 'B', 'D'});
         constexpr currency BDT = currency({'B', 'D', 'T'});
         constexpr currency BGN = currency({'B', 'G', 'N'});
-        constexpr currency BHD = currency({'B', 'H', 'D'});
-        constexpr currency BIF = currency({'B', 'I', 'F'});
+        constexpr currency BHD = currency({'B', 'H', 'D'}, 1000);
+        constexpr currency BIF = currency({'B', 'I', 'F'}, 1);
         constexpr currency BMD = currency({'B', 'M', 'D'});
         constexpr currency BND = currency({'B', 'N', 'D'});
         constexpr currency BOB = currency({'B', 'O', 'B'});
@@ -67,7 +68,7 @@ namespace esl::economics {
         constexpr currency CHF = currency({'C', 'H', 'F'});
         constexpr currency CHW = currency({'C', 'H', 'W'});
         constexpr currency CLF = currency({'C', 'L', 'F'});
-        constexpr currency CLP = currency({'C', 'L', 'P'});
+        constexpr currency CLP = currency({'C', 'L', 'P'}, 1);
         constexpr currency CNY = currency({'C', 'N', 'Y'});
         constexpr currency COP = currency({'C', 'O', 'P'});
         constexpr currency COU = currency({'C', 'O', 'U'});
@@ -76,7 +77,7 @@ namespace esl::economics {
         constexpr currency CUP = currency({'C', 'U', 'P'});
         constexpr currency CVE = currency({'C', 'V', 'E'});
         constexpr currency CZK = currency({'C', 'Z', 'K'});
-        constexpr currency DJF = currency({'D', 'J', 'F'});
+        constexpr currency DJF = currency({'D', 'J', 'F'}, 1);
         constexpr currency DKK = currency({'D', 'K', 'K'});
         constexpr currency DOP = currency({'D', 'O', 'P'});
         constexpr currency DZD = currency({'D', 'Z', 'D'});
@@ -91,7 +92,7 @@ namespace esl::economics {
         constexpr currency GHS = currency({'G', 'H', 'S'});
         constexpr currency GIP = currency({'G', 'I', 'P'});
         constexpr currency GMD = currency({'G', 'M', 'D'});
-        constexpr currency GNF = currency({'G', 'N', 'F'});
+        constexpr currency GNF = currency({'G', 'N', 'F'}, 1);
         constexpr currency GTQ = currency({'G', 'T', 'Q'});
         constexpr currency GYD = currency({'G', 'Y', 'D'});
         constexpr currency HKD = currency({'H', 'K', 'D'});
@@ -102,19 +103,19 @@ namespace esl::economics {
         constexpr currency IDR = currency({'I', 'D', 'R'});
         constexpr currency ILS = currency({'I', 'L', 'S'});
         constexpr currency INR = currency({'I', 'N', 'R'});
-        constexpr currency IQD = currency({'I', 'Q', 'D'});
+        constexpr currency IQD = currency({'I', 'Q', 'D'}, 1000);
         constexpr currency IRR = currency({'I', 'R', 'R'});
-        constexpr currency ISK = currency({'I', 'S', 'K'});
+        constexpr currency ISK = currency({'I', 'S', 'K'}, 1);
         constexpr currency JMD = currency({'J', 'M', 'D'});
-        constexpr currency JOD = currency({'J', 'O', 'D'});
-        constexpr currency JPY = currency({'J', 'P', 'Y'});
+        constexpr currency JOD = currency({'J', 'O', 'D'}, 1000);
+        constexpr currency JPY = currency({'J', 'P', 'Y'}, 1);
         constexpr currency KES = currency({'K', 'E', 'S'});
         constexpr currency KGS = currency({'K', 'G', 'S'});
         constexpr currency KHR = currency({'K', 'H', 'R'});
-        constexpr currency KMF = currency({'K', 'M', 'F'});
+        constexpr currency KMF = currency({'K', 'M', 'F'}, 1);
         constexpr currency KPW = currency({'K', 'P', 'W'});
-        constexpr currency KRW = currency({'K', 'R', 'W'});
-        constexpr currency KWD = currency({'K', 'W', 'D'});
+        constexpr currency KRW = currency({'K', 'R', 'W'}, 1);
+        constexpr currency KWD = currency({'K', 'W', 'D'}, 1000);
         constexpr currency KYD = currency({'K', 'Y', 'D'});
         constexpr currency KZT = currency({'K', 'Z', 'T'});
         constexpr currency LAK = currency({'L', 'A', 'K'});
@@ -122,7 +123,7 @@ namespace esl::economics {
         constexpr currency LKR = currency({'L', 'K', 'R'});
         constexpr currency LRD = currency({'L', 'R', 'D'});
         constexpr currency LSL = currency({'L', 'S', 'L'});
-        constexpr currency LYD = currency({'L', 'Y', 'D'});
+        constexpr currency LYD = currency({'L', 'Y', 'D'}, 1000);
         constexpr currency MAD = currency({'M', 'A', 'D'});
         constexpr currency MDL = currency({'M', 'D', 'L'});
         constexpr currency MGA = currency({'M', 'G', 'A'});
@@ -144,19 +145,19 @@ namespace esl::economics {
         constexpr currency NOK = currency({'N', 'O', 'K'});
         constexpr currency NPR = currency({'N', 'P', 'R'});
         constexpr currency NZD = currency({'N', 'Z', 'D'});
-        constexpr currency OMR = currency({'O', 'M', 'R'});
+        constexpr currency OMR = currency({'O', 'M', 'R'}, 1000);
         constexpr currency PAB = currency({'P', 'A', 'B'});
         constexpr currency PEN = currency({'P', 'E', 'N'});
         constexpr currency PGK = currency({'P', 'G', 'K'});
         constexpr currency PHP = currency({'P', 'H', 'P'});
         constexpr currency PKR = currency({'P', 'K', 'R'});
         constexpr currency PLN = currency({'P', 'L', 'N'});
-        constexpr currency PYG = currency({'P', 'Y', 'G'});
+        constexpr currency PYG = currency({'P', 'Y', 'G'}, 1);
         constexpr currency QAR = currency({'Q', 'A', 'R'});
         constexpr currency RON = currency({'R', 'O', 'N'});
         constexpr currency RSD = currency({'R', 'S', 'D'});
         constexpr currency RUB = currency({'R', 'U', 'B'});
-        constexpr currency RWF = currency({'R', 'W', 'F'});
+        constexpr currency RWF = currency({'R', 'W', 'F'}, 1);
         constexpr currency SAR = currency({'S', 'A', 'R'});
         constexpr currency SBD = currency({'S', 'B', 'D'});
         constexpr currency SCR = currency({'S', 'C', 'R'});
@@ -182,17 +183,17 @@ namespace esl::economics {
         constexpr currency TWD = currency({'T', 'W', 'D'});
         constexpr currency TZS = currency({'T', 'Z', 'S'});
         constexpr currency UAH = currency({'U', 'A', 'H'});
-        constexpr currency UGX = currency({'U', 'G', 'X'});
+        constexpr currency UGX = currency({'U', 'G', 'X'}, 1);
         constexpr currency USD = currency({'U', 'S', 'D'});
         constexpr currency USN = currency({'U', 'S', 'N'});
         constexpr currency UYI = currency({'U', 'Y', 'I'});
         constexpr currency UYU = currency({'U', 'Y', 'U'});
         constexpr currency UZS = currency({'U', 'Z', 'S'});
         constexpr currency VEF = currency({'V', 'E', 'F'});
-        constexpr currency VND = currency({'V', 'N', 'D'});
-        constexpr currency VUV = currency({'V', 'U', 'V'});
+        constexpr currency VND = currency({'V', 'N', 'D'}, 1);
+        constexpr currency VUV = currency({'V', 'U', 'V'}, 1);
         constexpr currency WST = currency({'W', 'S', 'T'});
-        constexpr currency XAF = currency({'X', 'A', 'F'});
+        constexpr currency XAF = currency({'X', 'A', 'F'}, 1);
         constexpr currency XAG = currency({'X', 'A', 'G'});
         constexpr currency XAU = currency({'X', 'A', 'U'});
         constexpr currency XBA = currency({'X', 'B', 'A'});
@@ -201,9 +202,9 @@ namespace esl::economics {
         constexpr currency XBD = currency({'X', 'B', 'D'});
         constexpr currency XCD = currency({'X', 'C', 'D'});
         constexpr currency XDR = currency({'X', 'D', 'R'});
-        constexpr currency XOF = currency({'X', 'O', 'F'});
+        constexpr currency XOF = currency({'X', 'O', 'F'}, 1);
         constexpr currency XPD = currency({'X', 'P', 'D'});
-        constexpr currency XPF = currency({'X', 'P', 'F'});
+        constexpr currency XPF = currency({'X', 'P', 'F'}, 1);
         constexpr currency XPT = currency({'X', 'P', 'T'});
         constexpr currency XSU = currency({'X', 'S', 'U'});
         // constexpr currency XTS = currency({'X', 'T', 'S'});
