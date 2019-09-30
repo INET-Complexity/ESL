@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         std::array<char, 1> b = {1};
         std::array<char, 2> c = {2, 3};
 
-        std::array<char, 3> expected_abc_ = {2, 3, 4};
+        std::array<char, 3> expected_abc_ = {1, 2, 3};
 
         auto aa = esl::array_concatenate(a,a);
         BOOST_CHECK(aa == a);
