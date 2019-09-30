@@ -76,7 +76,7 @@ namespace esl::economics::finance {
         /// \param code     The code part describing a security as a string with
         ///                 the code symbols in positions 0-8
         isin(geography::country issuer, const std::string &code = "000000000")
-        : isin(issuer, esl::to_array<0, 9>(code))
+        : isin(issuer, esl::to_array<0, 9, char>(code))
         {
 
         }
@@ -86,7 +86,7 @@ namespace esl::economics::finance {
         ///
         /// \param code     The code part describing a security
         isin(const std::string &code = "AA000000000")
-        : isin(esl::to_array<0, 11>(code))
+        : isin(esl::to_array<0, 11, char>(code))
         {
 
         }

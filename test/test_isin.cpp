@@ -60,10 +60,6 @@ BOOST_AUTO_TEST_SUITE(ESL)
             isin i(countries::GB, cusip_);
             BOOST_CHECK_EQUAL(i.checksum(), '6');
         }
-
-
-
     }
-
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
