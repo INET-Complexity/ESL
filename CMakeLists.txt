@@ -254,6 +254,11 @@ SET(SOURCE_FILES
         esl/economics/accounting/inventory.cpp
         esl/economics/accounting/inventory.hpp
 
+        esl/law/legal_person.cpp
+        esl/law/legal_person.hpp
+
+        esl/law/legal_entity.cpp
+        esl/law/legal_entity.hpp
         )
 
 
