@@ -257,6 +257,9 @@ SET(SOURCE_FILES
         esl/law/legal_person.cpp
         esl/law/legal_person.hpp
 
+        esl/law/natural_person.cpp
+        esl/law/natural_person.hpp
+
         esl/law/legal_entity.cpp
         esl/law/legal_entity.hpp
         )
