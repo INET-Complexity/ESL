@@ -75,7 +75,7 @@ namespace esl::economics::finance {
         /// \param issuer   The country issuing the code
         /// \param code     The code part describing a security as a string with
         ///                 the code symbols in positions 0-8
-        isin(geography::country issuer, const std::string &code = "000000000")
+        isin(geography::country issuer, const std::string &code)
         : isin(issuer, esl::to_array<0, 9, char>(code))
         {
 
@@ -212,6 +212,12 @@ namespace esl::economics::finance {
             return static_cast<signed char>('0' + decimal_);
         }
 
+        ///
+        /// \brief  outputs isin code including the checksum
+        ///
+        /// \param stream
+        /// \param i
+        /// \return
         friend std::ostream &operator<<(std::ostream &stream, const isin &i)
         {
             stream << i.issuer;
