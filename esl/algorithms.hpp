@@ -25,8 +25,9 @@
 #ifndef ESL_ALGORITHMS_HPP
 #define ESL_ALGORITHMS_HPP
 
-
 #include <array>
+#include <cmath>
+
 
 namespace esl {
 
@@ -106,6 +107,25 @@ namespace esl {
         }
         return result_;
     }
+
+
+
+    namespace rounding {
+
+
+        template<typename floating_t_, typename integer_t_ = int64_t>
+        integer_t_ integer_towards_zero(floating_t_ value)
+        {
+            return integer_t_(std::trunc(value));
+        }
+
+        template<typename floating_t_, typename integer_t_ = int64_t>
+        integer_t_ integer_away_from_zero(floating_t_ value)
+        {
+            return integer_t_(std::trunc(value) + sign(value));
+        }
+
+    }//namespace rounding
 
 }  // namespace esl
 
