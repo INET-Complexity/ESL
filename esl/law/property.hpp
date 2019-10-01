@@ -27,20 +27,27 @@
 
 #include <esl/simulation/entity.hpp>
 
+#include <esl/computation/type_code.hpp>
+#include <esl/computation/type_marker.hpp>
+
 
 namespace esl::law {
-
     ///
     /// \brief  property is anything that can be owned
     ///
-    struct property : public entity<property>
+    struct property
+    : public entity<property>
+    , public type_code<0>
+    , public type_marker<property>
     {
-        // bool transferable;
-
         explicit property(identity<property> i = identity<property>());
 
         ~property() = default;
 
+        ///
+        /// \brief  Names the type of property
+        ///
+        /// \return
         [[nodiscard]] virtual std::string name() const  // C++20 constexpr
         {
             return "property";
@@ -58,19 +65,16 @@ namespace esl::law {
             (void)version;
             archive &boost::serialization::make_nvp(
                 "entity⟨property⟩",
-            boost::serialization::base_object<entity<property>>(
-                *this));
+                boost::serialization::base_object<entity<property>>(*this));
         }
     };
-
-}
+}  // namespace esl::law
 
 #ifdef WITH_MPI
 #include <boost/mpi.hpp>
 namespace boost::mpi {
     template<>
-    struct is_mpi_datatype<esl::law::property>
-    : mpl::false_
+    struct is_mpi_datatype<esl::law::property> : mpl::false_
     {};
 }  // namespace boost::mpi
 
