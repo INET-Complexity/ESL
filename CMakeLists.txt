@@ -223,6 +223,37 @@ SET(SOURCE_FILES
 
         esl/law/jurisdictions.cpp
         esl/law/jurisdictions.hpp
+
+
+
+        esl/economics/asset.cpp
+        esl/economics/asset.hpp
+
+        esl/economics/cash.cpp
+        esl/economics/cash.hpp
+
+        esl/economics/fungibility.hpp
+        esl/economics/tangibility.hpp
+
+        esl/economics/money.hpp
+
+        esl/economics/owner.cpp
+        esl/economics/owner.hpp
+
+        esl/economics/price.cpp
+        esl/economics/price.hpp
+
+
+        esl/geography/location.cpp
+        esl/geography/location.hpp
+
+
+        esl/interaction/transfer.cpp
+        esl/interaction/transfer.hpp
+
+        esl/economics/accounting/inventory.cpp
+        esl/economics/accounting/inventory.hpp
+
         )
 
 
