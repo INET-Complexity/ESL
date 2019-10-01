@@ -38,6 +38,11 @@ namespace esl::economics {
     {
         return "asset";
     }
+
+    price asset::value(const accounting::standard &a) const
+    {
+        return price(0, a.reporting_currency);
+    }
 }
 
 

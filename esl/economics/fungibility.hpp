@@ -24,7 +24,6 @@
 #define ESL_FUNGIBILITY_HPP
 
 #include <esl/law/property.hpp>
-#include <esl/simulation/identity.hpp>
 
 
 namespace esl::economics {
