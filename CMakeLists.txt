@@ -260,6 +260,9 @@ SET(SOURCE_FILES
         esl/law/natural_person.cpp
         esl/law/natural_person.hpp
 
+        esl/law/government.cpp
+        esl/law/government.hpp
+
         esl/law/legal_entity.cpp
         esl/law/legal_entity.hpp
         )
