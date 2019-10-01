@@ -326,7 +326,7 @@ IF(WITH_PYTHON)
     IF(PYTHONINTERP_FOUND)
         MESSAGE(${PYTHON_EXECUTABLE})
         ADD_CUSTOM_TARGET(make_module ALL
-                  COMMAND ${CMAKE_COMMAND} -E touch test/esl/__init__.py)
+                  COMMAND ${CMAKE_COMMAND} -E make_directory test/esl/ && ${CMAKE_COMMAND} -E touch ./test/esl/__init__.py)
 
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
