@@ -35,8 +35,8 @@ BOOST_PYTHON_MODULE(price)
 {
     class_<esl::economics::price>("price",
         init<std::int64_t, esl::economics::currency>())
-        .def("value", &esl::economics::price::value)
-        .def("valuation", &esl::economics::price::valuation)
+        .def_readwrite("value", &esl::economics::price::value)
+        .def_readonly("valuation", &esl::economics::price::valuation)
 
         .def(self == self)
         .def(self != self)
@@ -49,11 +49,6 @@ BOOST_PYTHON_MODULE(price)
         .def(self += self)
         .def(self -  self)
         .def(self -= self)
-
-        .def(self * std::uint64_t)
-        .def(std::uint64_t * self)
-
-
         ;
 }
 
