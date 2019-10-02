@@ -24,7 +24,8 @@
 #define ESL_SHARE_HPP
 
 #include <cstdint>
-#include <boost/container_hash/hash.hpp>
+
+#include <boost/functional/hash.hpp>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>

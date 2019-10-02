@@ -58,7 +58,7 @@ namespace esl::law {
     private:
         friend class boost::serialization::access;
 
-        explicit legal_person()
+        legal_person()
         : legal_person(identity<agent>(),
                        jurisdiction(esl::geography::countries::US,
                                     esl::economics::currencies::USD))

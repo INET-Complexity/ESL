@@ -40,7 +40,7 @@ namespace esl::law {
     {
     private:
         friend class boost::serialization::access;
-        
+
     public:
         organization(const identity<agent> &i,
                      const jurisdiction &primary_jurisdiction)
