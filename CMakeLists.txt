@@ -130,7 +130,7 @@ IF(WITH_PYTHON)
 ENDIF()
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
-list(APPEND ALL_LINKED_LIBRARIES pthread dl util)
+list(APPEND ALL_LINKED_LIBRARIES pthread util Eigen3::Eigen)
 
 IF(WITH_PYTHON)
     list(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
