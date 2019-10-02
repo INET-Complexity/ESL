@@ -265,6 +265,10 @@ SET(SOURCE_FILES
 
         esl/law/legal_entity.cpp
         esl/law/legal_entity.hpp
+
+        esl/economics/finance/security.cpp
+        esl/economics/finance/security.hpp
+
         )
 
 
