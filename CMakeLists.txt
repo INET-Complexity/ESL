@@ -269,6 +269,9 @@ SET(SOURCE_FILES
         esl/economics/finance/security.cpp
         esl/economics/finance/security.hpp
 
+        esl/economics/finance/share.cpp
+        esl/economics/finance/share.hpp
+
         )
 
 
