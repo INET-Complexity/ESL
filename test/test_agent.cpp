@@ -22,7 +22,6 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE agent
 
