@@ -1,9 +1,9 @@
-/// \file   fungibility.hpp
+/// \file   contract.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2018-04-28
+/// \date       2019-10-03
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,27 +22,3 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_FUNGIBILITY_HPP
-#define ESL_FUNGIBILITY_HPP
-
-#include <esl/law/property.hpp>
-
-
-namespace esl::economics {
-
-    ///
-    /// \brief  An object that is fungible is interchangeable for objects of the
-    /// same types.
-    ///
-    /// \example
-    ///
-    struct fungible
-    {};
-
-
-    struct infungible
-    {};
-
-}  // namespace esl::economics
-
-#endif  // ESL_FUNGIBILITY_HPP
