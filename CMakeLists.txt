@@ -272,6 +272,16 @@ SET(SOURCE_FILES
         esl/economics/finance/share.cpp
         esl/economics/finance/share.hpp
 
+        esl/mathematics/rational.cpp
+        esl/mathematics/rational.hpp
+
+        esl/computation/distributed/mpi_environment.cpp
+        esl/computation/distributed/mpi_environment.hpp
+
+        test/shared_property_owner.cpp
+        test/shared_property_owner.hpp
+        test/shared_properties.cpp
+        test/shared_properties.hpp
         )
 
 
@@ -303,9 +313,19 @@ FOREACH(test_src ${TEST_SRCS})
     SET_TARGET_PROPERTIES(${test_name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
-    ADD_TEST(NAME ${test_name}
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-            COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
+    # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
+    IF(${test_name} MATCHES "^(test_mpi_)")
+        IF(WITH_MPI)
+            MESSAGE("\t MPI TEST")
+            ADD_TEST(NAME ${test_name}
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                    COMMAND mpirun ${CMAKE_BINARY_DIR}/test/${test_name})
+        ENDIF()
+    ELSE()
+        ADD_TEST(NAME ${test_name}
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
+    ENDIF()
 ENDFOREACH(test_src)
 
 ################################################################################
