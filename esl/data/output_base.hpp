@@ -65,7 +65,19 @@ namespace esl::data {
             archive & BOOST_SERIALIZATION_NVP(name);
         }
     };
-
 }
+
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::data::output_base>
+    : public mpl::false_
+    {
+
+    };
+}  // namespace boost::mpi
+
+#endif  // WITH_MPI
 
 #endif  // ESL_DATA_OUTPUT_BASE_HPP

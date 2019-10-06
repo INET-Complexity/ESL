@@ -26,6 +26,8 @@
 #ifndef ESL_INVENTORY_HPP
 #define ESL_INVENTORY_HPP
 
+#include <boost/serialization/unordered_map.hpp>
+
 #include <esl/economics/accounting/standard.hpp>
 #include <esl/economics/cash.hpp>
 #include <esl/economics/currencies.hpp>
@@ -37,7 +39,8 @@
 namespace esl::economics::accounting {
 
 
-    struct insufficent_inventory : public std::exception
+    struct insufficent_inventory
+    : public std::exception
     {
     public:
         const quantity before;
@@ -59,7 +62,8 @@ namespace esl::economics::accounting {
     };
 
 
-    struct fractional_infungible : public std::exception
+    struct fractional_infungible
+    : public std::exception
     {
     public:
         const quantity invalid;
@@ -74,7 +78,8 @@ namespace esl::economics::accounting {
     };
 
 
-    struct duplicate_infungible : public std::exception
+    struct duplicate_infungible
+    : public std::exception
     {
     public:
         const quantity invalid;
@@ -204,8 +209,8 @@ namespace esl::economics::accounting {
             }
         }
 
-        friend ostream &
-        operator<<(ostream &o, inventory_by_fungibility<property_t_, true> &i)
+        friend std::ostream &
+        operator<<(std::ostream &o, inventory_by_fungibility<property_t_, true> &i)
         {
             o << "{ ";
             for(auto [p, q] : i.items) {
@@ -213,6 +218,13 @@ namespace esl::economics::accounting {
             }
             o << "}";
             return o;
+        }
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            archive & BOOST_SERIALIZATION_NVP(items);
         }
     };
 
@@ -224,6 +236,8 @@ namespace esl::economics::accounting {
     struct inventory_by_fungibility<property_t_, false>
     {
         law::property_filter_set<property_t_> items;
+
+        int FUNG = 123;
 
         inventory_by_fungibility() = default;
 
@@ -296,8 +310,8 @@ namespace esl::economics::accounting {
             return result_;
         }
 
-        friend ostream &
-        operator<<(ostream &o, inventory_by_fungibility<property_t_, false> &i)
+        friend std::ostream &
+        operator<<(std::ostream &o, inventory_by_fungibility<property_t_, false> &i)
         {
             o << "{ ";
             for(auto p : i.items) {
@@ -306,15 +320,38 @@ namespace esl::economics::accounting {
             o << "}";
             return o;
         }
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            archive & BOOST_SERIALIZATION_NVP(items);
+        }
     };
 
     template<typename property_t_>
     using inventory_filter = inventory_by_fungibility<
         property_t_, std::is_same<esl::law::property, property_t_>::value
-                         || is_base_of<fungible, property_t_>::value>;
+                         || is_base_of<esl::economics::fungible, property_t_>::value>;
 
 
 }  // namespace esl::economics::accounting
+
+
+
+
+
+
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<typename property_t_>
+    struct is_mpi_datatype<esl::economics::accounting::inventory_filter<property_t_>>
+        : public mpl::false_
+    {};
+}  // namespace boost::mpi
+#endif  // WITH_MPI
+
 
 
 #endif  // PROJECT_INVENTORY_HPP

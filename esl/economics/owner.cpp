@@ -23,6 +23,12 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <boost/serialization/export.hpp>
+
 #include <esl/economics/owner.hpp>
 
 
+
+BOOST_CLASS_TRACKING(esl::law::owner<esl::law::property>, boost::serialization::track_always)
+;
+BOOST_CLASS_EXPORT(esl::law::owner<esl::law::property>);

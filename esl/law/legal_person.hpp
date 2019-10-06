@@ -112,18 +112,18 @@ namespace esl::law {
         {
             (void)version;
             size_t index_ = representation.index();
-            archive << make_nvp("variant", index_);
+            archive << boost::serialization::make_nvp("variant", index_);
             switch(index_) {
             case 0:
-                archive << make_nvp("legal_entity",
+                archive << boost::serialization::make_nvp("legal_entity",
                                     get<legal_entity>(representation));
                 break;
             case 1:
-                archive << make_nvp("natural_person",
+                archive << boost::serialization::make_nvp("natural_person",
                                     get<natural_person>(representation));
                 break;
             case 2:
-                archive << make_nvp("government",
+                archive << boost::serialization::make_nvp("government",
                                     get<government>(representation));
                 break;
             }
@@ -134,18 +134,18 @@ namespace esl::law {
         {
             (void)version;
             size_t index_ = 0;
-            archive >> make_nvp("variant", index_);
+            archive >> boost::serialization::make_nvp("variant", index_);
             if(0 == index_) {
                 legal_entity le;
-                archive >> make_nvp("legal_entity", le);
+                archive >> boost::serialization::make_nvp("legal_entity", le);
                 representation.emplace<0>(le);
             } else if(1 == index_) {
                 natural_person np;
-                archive >> make_nvp("natural_person", np);
+                archive >> boost::serialization::make_nvp("natural_person", np);
                 representation.emplace<1>(np);
             } else if(2 == index_) {
                 government g;
-                archive >> make_nvp("government", g);
+                archive >> boost::serialization::make_nvp("government", g);
                 representation.emplace<2>(g);
             }
         }

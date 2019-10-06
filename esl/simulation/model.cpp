@@ -30,17 +30,15 @@
 namespace esl::simulation {
     model::model(computation::environment &e, time_point start, time_point end)
     : environment_(e), start(start), end(end), time(start), agents(e)
-    {
-
-    }
+    {}
 
     void model::initialize()
-    {
-
-    }
+    {}
 
     time_point model::step(time_interval step)
     {
+        environment_.before_step();
+
         // to be set externally
         std::uint64_t sample_ = 0;
 
@@ -51,9 +49,7 @@ namespace esl::simulation {
                 // The seed is deterministic in the following variables.
                 std::seed_seq seed_ {
                     std::uint64_t(std::hash<identity<agent>>()(i)),
-                    std::uint64_t(step.lower),
-                    std::uint64_t(round_)
-                    , sample_};
+                    std::uint64_t(step.lower), std::uint64_t(round_), sample_};
 
                 // if(agent_done_[a]) {
                 //    continue;
@@ -61,7 +57,8 @@ namespace esl::simulation {
 
                 // agent_action_time_[a->identifier].start();
                 try {
-                    first_event_ = std::min(first_event_, a->process_messages(step, seed_));
+                    first_event_ = std::min(first_event_,
+                                            a->process_messages(step, seed_));
 
                     first_event_ = std::min(first_event_, a->act(step, seed_));
 
@@ -86,13 +83,13 @@ namespace esl::simulation {
             environment_.send_messages(*this);
         } while(step.upper > first_event_);
 
+        environment_.after_step(*this);
+
         return first_event_;
     }
 
     void model::terminate()
-    {
-
-    }
+    {}
 
 }  // namespace esl::simulation
 
@@ -105,12 +102,12 @@ using namespace esl::simulation;
 
 BOOST_PYTHON_MODULE(model)
 {
-    class_<model>("model",
+    class_<model>(
+        "model",
         init<esl::computation::environment &, time_point, time_point>())
         .def_readonly("start", &model::start)
         .def_readwrite("end", &model::end)
-        .def_readwrite("time", &model::time)
-        ;
+        .def_readwrite("time", &model::time);
 }
 
 

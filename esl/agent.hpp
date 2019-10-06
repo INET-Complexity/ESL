@@ -29,10 +29,11 @@
 #include <utility>
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
+#include <esl/data/producer.hpp>
 #include <esl/interaction/communicator.hpp>
 #include <esl/simulation/entity.hpp>
-#include <esl/data/producer.hpp>
 
 namespace esl {
 
@@ -45,9 +46,9 @@ namespace esl {
     private:
         friend class boost::serialization::access;
 
+    public:
         agent();
 
-    public:
         explicit agent(identity<agent> i);
 
         ///
@@ -61,7 +62,8 @@ namespace esl {
         ///
         /// \param start
         /// \return
-        virtual simulation::time_point act(simulation::time_interval step, std::seed_seq &seed);
+        virtual simulation::time_point act(simulation::time_interval step,
+                                           std::seed_seq &seed);
 
         ///
         /// \param rhs
@@ -83,11 +85,10 @@ namespace esl {
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-
-            archive &boost::serialization::make_nvp(
-                "entity⟨agent⟩",
-                boost::serialization::base_object<entity<agent>>(*this));
-            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(communicator);
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(entity<agent>);
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(
+                interaction::communicator);
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(data::producer);
         }
     };
 
@@ -115,12 +116,9 @@ namespace std {
 #include <boost/mpi.hpp>
 namespace boost ::mpi {
     template<>
-    struct is_mpi_datatype<esl::agent>
-    : public mpl::false_
-    {
-
-    };
-}
-#endif//WITH_MPI
+    struct is_mpi_datatype<esl::agent> : public mpl::false_
+    {};
+}  // namespace boost::mpi
+#endif  // WITH_MPI
 
 #endif  // ESL_AGENT_HPP

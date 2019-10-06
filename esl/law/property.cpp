@@ -26,11 +26,19 @@
 #include <esl/law/property.hpp>
 
 
+#include <boost/serialization/export.hpp>
+
 namespace esl::law {
-    property::property(esl::identity<property> i)
-    : entity<property>(i)
+    property::property(esl::identity<property> i) : entity<property>(i)
     {}
-}
+}  // namespace esl::law
+
+
+BOOST_CLASS_TRACKING(esl::law::property, boost::serialization::track_always)
+
+BOOST_CLASS_EXPORT(esl::entity<esl::law::property>)
+BOOST_CLASS_EXPORT(esl::law::property)
+
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
@@ -39,13 +47,9 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(property)
 {
-    class_< esl::law::property
-          , bases< esl::entity<esl::law::property>>
-          >
-        ( "property", init<esl::identity<esl::law::property>>())
-        .def("name", &esl::law::property::name)
-        ;
-
+    class_<esl::law::property, bases<esl::entity<esl::law::property>>>(
+        "property", init<esl::identity<esl::law::property>>())
+        .def("name", &esl::law::property::name);
 }
 
 #endif  // WITH_PYTHON

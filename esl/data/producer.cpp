@@ -23,3 +23,7 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/data/producer.hpp>
+
+#include <boost/serialization/export.hpp>
+
+BOOST_CLASS_EXPORT(esl::data::producer)

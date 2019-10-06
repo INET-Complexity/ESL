@@ -27,12 +27,23 @@
 
 #include <memory>
 
+#include <boost/serialization/unordered_map.hpp>
+
 #include <esl/data/output.hpp>
 
 namespace esl::data {
 
- struct producer
+    struct producer
     {
+        ///
+        /// \brief  The observables in (this shard of -) the simulation.
+        ///
+        std::unordered_map<std::string, std::shared_ptr<output_base>> outputs;
+
+        producer() = default;
+
+        virtual ~producer() = default;
+
         template<typename... variable_types_>
         std::shared_ptr<output<variable_types_...>>
         create_output(const std::string &name)
@@ -43,11 +54,28 @@ namespace esl::data {
             return output_;
         }
 
-        ///
-        /// \brief  The observables in (this shard of -) the simulation.
-        ///
-        std::unordered_map<std::string, std::shared_ptr<output_base>> outputs;
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            (void)archive;
+        }
     };
-}
+}  // namespace esl::data
+
+
+
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::data::producer>
+        : public mpl::false_
+    {
+
+    };
+}  // namespace boost::mpi
+#endif  // WITH_MPI
+
 
 #endif  // ESL_DATA_PRODUCER_HPP

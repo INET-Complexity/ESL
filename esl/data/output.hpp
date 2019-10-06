@@ -87,4 +87,20 @@ namespace esl::data {
     };
 }  // namespace esl::data
 
+
+
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<typename... variable_types_>
+    struct is_mpi_datatype<esl::data::output<variable_types_...>>
+        : public mpl::false_
+    {
+
+    };
+}  // namespace boost::mpi
+#endif  // WITH_MPI
+
+
+
 #endif  // ESL_DATA_OUTPUT_HPP

@@ -22,6 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <boost/serialization/export.hpp>
 
 #include <esl/agent.hpp>
 
@@ -38,12 +39,19 @@ namespace esl {
     agent::agent(const agent &o) : agent(o.identifier)
     {}
 
-    simulation::time_point agent::act(simulation::time_interval step, std::seed_seq &seed)
+    simulation::time_point agent::act(simulation::time_interval step,
+                                      std::seed_seq &seed)
     {
+        (void) seed;
         return step.upper;
     }
 }  // namespace esl
 
+BOOST_CLASS_TRACKING(esl::agent, boost::serialization::track_always)
+
+BOOST_CLASS_EXPORT(esl::identity<esl::agent>);
+
+BOOST_CLASS_EXPORT(esl::agent);
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>

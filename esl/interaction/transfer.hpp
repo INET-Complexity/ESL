@@ -8,7 +8,7 @@
 /// \authors    Maarten P. Scholl
 /// \date       2018-06-04
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
-/// Oxford Martin School, University of Oxford
+///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
 ///             you may not use this file except in compliance with the License.
@@ -73,20 +73,39 @@ namespace esl::interaction {
         /// \param transferor
         /// \param transferee
         /// \param transferred
-        transfer(const identity<agent> &sender,
-                 const identity<agent> &recipient,
-                 const identity<law::owner<law::property>> &transferor,
-                 const identity<law::owner<law::property>> &transferee,
-                 const economics::accounting::inventory_filter<law::property> &transferred)
-            : esl::interaction::message<transfer, library_message_code<0x2>()>(sender, recipient)
-            , transferor(transferor)
-            , transferee(transferee)
-            , transferred(transferred)
+        transfer(
+            const identity<agent> &sender    = identity<agent>(),
+            const identity<agent> &recipient = identity<agent>(),
+            const identity<law::owner<law::property>> &transferor =
+                identity<law::owner<law::property>>(),
+            const identity<law::owner<law::property>> &transferee =
+                identity<law::owner<law::property>>(),
+            const economics::accounting::inventory_filter<law::property>
+                &transferred =
+                    economics::accounting::inventory_filter<law::property>())
+        : esl::interaction::message<transfer, library_message_code<0x2>()>(
+            sender,
+            recipient)
+        , transferor(transferor)
+        , transferee(transferee)
+        , transferred(transferred)
         {}
 
         virtual ~transfer() = default;
-    };
 
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            typedef esl::interaction::message<transfer,
+                                              library_message_code<0x2>()>
+                message_0x2;
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(message_0x2);
+            archive &BOOST_SERIALIZATION_NVP(transferor);
+            archive &BOOST_SERIALIZATION_NVP(transferee);
+            archive &BOOST_SERIALIZATION_NVP(transferred);
+        }
+    };
 }  // namespace esl::interaction
 
 #endif  // ESL_TRANSFER_HPP

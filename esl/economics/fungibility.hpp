@@ -37,12 +37,44 @@ namespace esl::economics {
     /// \example
     ///
     struct fungible
-    {};
+    {
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)archive;
+            (void)version;
+        }
+    };
 
 
     struct infungible
-    {};
+    {
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)archive;
+            (void)version;
+        }
+    };
 
 }  // namespace esl::economics
+
+
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::economics::fungible>
+        : public mpl::true_
+    {};
+
+    template<>
+    struct is_mpi_datatype<esl::economics::infungible>
+        : public mpl::true_
+    {};
+}  // namespace boost::mpi
+#endif  // WITH_MPI
+
 
 #endif  // ESL_FUNGIBILITY_HPP

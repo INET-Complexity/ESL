@@ -74,7 +74,8 @@ namespace esl::law {
 #include <boost/mpi.hpp>
 namespace boost::mpi {
     template<>
-    struct is_mpi_datatype<esl::law::property> : mpl::false_
+    struct is_mpi_datatype<esl::law::property>
+    : mpl::true_
     {};
 }  // namespace boost::mpi
 

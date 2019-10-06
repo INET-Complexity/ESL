@@ -31,6 +31,7 @@
 #include <memory>
 #include <random>
 
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>
 
 #include <esl/interaction/header.hpp>
@@ -137,7 +138,8 @@ namespace esl::interaction {
         ///
         /// \return                 shared_ptr to the
         /// message
-        template<typename message_type_, typename recipient_t_,
+        template<typename message_type_,
+                 typename recipient_t_,
                  typename... constructor_arguments_>
         std::shared_ptr<message_type_>
         create_message(const identity<recipient_t_> &recipient,
@@ -161,11 +163,11 @@ namespace esl::interaction {
         /// \param callback
         /// \param priority
         template<typename derived_message_t_>
-        void register_callback(
-            std::function<simulation::time_point(
-                std::shared_ptr<derived_message_t_>, simulation::time_interval)>
-                callback,
-            priority_t priority = 0)
+        void register_callback(std::function<simulation::time_point(
+                                   std::shared_ptr<derived_message_t_>,
+                                   simulation::time_interval)>
+                                   callback,
+                               priority_t priority = 0)
         {
             /// the specified message must inherit `header`
             static_assert(std::is_base_of<header, derived_message_t_>::value);
@@ -205,7 +207,8 @@ namespace esl::interaction {
         /// \param message
         /// \return
         simulation::time_point
-        process_message(message_t message, simulation::time_interval step) const;
+        process_message(message_t message,
+                        simulation::time_interval step) const;
 
         ///
         /// \brief  Calls all callbacks registered with messages in the inbox.
@@ -241,8 +244,7 @@ namespace boost { namespace mpi {
     /// \brief serialization is non-trivial
     ///
     template<>
-    struct is_mpi_datatype<esl::interaction::communicator>
-    : public mpl::false_
+    struct is_mpi_datatype<esl::interaction::communicator> : public mpl::false_
     {};
 }}      // namespace boost::mpi
 #endif  // WITH_MPI

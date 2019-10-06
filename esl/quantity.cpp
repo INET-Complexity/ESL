@@ -23,11 +23,18 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+
+
+#include <boost/serialization/export.hpp>
+
 #include <esl/quantity.hpp>
+
+BOOST_CLASS_EXPORT(esl::quantity)
 
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
+
 
 namespace esl {
     using namespace boost::python;

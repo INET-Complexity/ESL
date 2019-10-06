@@ -5,7 +5,7 @@
 /// \authors    Maarten P. Scholl
 /// \date       2018-01-19
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
-/// Oxford Martin School, University of Oxford
+///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
 ///             you may not use this file except in compliance with the License.
@@ -28,24 +28,17 @@
 #include <iostream>
 #include <type_traits>
 #include <utility>
-using std::move;
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
-using boost::serialization::make_nvp;
 
 #include <boost/serialization/strong_typedef.hpp>
 
 #include <iostream>
-using std::ostream;
 
 #include <vector>
-using std::vector;
 
-
-//#include <esl/simulation/identity.hpp>
 #include <esl/simulation/identifiable_as.hpp>
-//#include <esl/simulation/output.hpp>
 
 
 namespace esl {
@@ -100,8 +93,7 @@ namespace esl {
         ///
         ///
         ///
-        entity()
-        : entity(identity<entity_type_>())
+        entity() : entity(identity<entity_type_>())
         {}
 
     public:
@@ -109,15 +101,13 @@ namespace esl {
         ///
         /// \param identifier
         explicit entity(identity<entity_type_> identifier)
-        : identifier(move(identifier)), children_(0)
-        {
-
-        }
+        : identifier(std::move(identifier)), children_(0)
+        {}
 
         template<typename child_t_>
         identity<child_t_> create()
         {
-            auto prefix_ = vector<uint64_t>(this->identifier.digits);
+            auto prefix_ = std::vector<std::uint64_t>(this->identifier.digits);
             prefix_.push_back(children_);
             ++children_;
             prefix_.shrink_to_fit();
@@ -138,10 +128,7 @@ namespace esl {
     public:
         virtual ~entity() = default;
 
-
-
-
-        constexpr bool operator == (const entity_type_ &operand) const
+        constexpr bool operator==(const entity_type_ &operand) const
         {
             return this->identifier == operand.identifier;
         }
@@ -153,7 +140,8 @@ namespace esl {
         /// \param operand
         /// \return
         template<typename other_entity_type_>
-        constexpr bool operator == (const entity<other_entity_type_> &operand) const
+        constexpr bool
+        operator==(const entity<other_entity_type_> &operand) const
         {
             return this->identifier == operand.identifier;
         }
@@ -165,7 +153,8 @@ namespace esl {
         /// \param operand
         /// \return
         template<typename other_entity_type_>
-        constexpr bool operator != (const entity<other_entity_type_> &operand) const
+        constexpr bool
+        operator!=(const entity<other_entity_type_> &operand) const
         {
             return this->identifier != operand.identifier;
         }
@@ -174,8 +163,8 @@ namespace esl {
         /// \param stream output-stream
         /// \param e entity
         /// \return reference to the now modified output-stream
-        friend ostream &operator<<(ostream &stream,
-                                   const entity<entity_type_> &e)
+        friend std::ostream &operator<<(std::ostream &stream,
+                                        const entity<entity_type_> &e)
         {
             return stream << e.identifier;
         }
@@ -188,7 +177,7 @@ namespace esl {
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-            archive &make_nvp("identifier",
+            archive &boost::serialization::make_nvp("identifier",
                               const_cast<identity<entity_type_> &>(identifier));
             archive &BOOST_SERIALIZATION_NVP(children_);
         }
@@ -218,7 +207,8 @@ namespace boost::mpi {
     /// \brief Empty object, therefore trivially an mpi datatype
     ///
     template<>
-    struct is_mpi_datatype<esl::entity<void>> : public mpl::true_
+    struct is_mpi_datatype<esl::entity<void>>
+    : public mpl::true_
     {};
 
     ///
@@ -226,16 +216,10 @@ namespace boost::mpi {
     /// (which is not an mpi dataype).
     /// \tparam entity_type_
     template<typename entity_type_>
-    struct is_mpi_datatype<esl::entity<entity_type_>> : public mpl::false_
-    {};
-
-    ///
-    /// \brief Empty object, therefore trivially an mpi dataype
-    /// \tparam derived_type_
-    template<typename derived_type_>
-    struct is_mpi_datatype<esl::identifiable_as<derived_type_>>
+    struct is_mpi_datatype<esl::entity<entity_type_>>
     : public mpl::true_
     {};
+
 }  // namespace boost::mpi
 #endif  // WITH_MPI
 

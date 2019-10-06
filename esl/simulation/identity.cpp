@@ -24,7 +24,6 @@
 ///
 #include <esl/simulation/identity.hpp>
 
-
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 

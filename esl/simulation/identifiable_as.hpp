@@ -87,4 +87,22 @@ namespace esl {
         }
     };
 }  // namespace esl
+
+
+
+
+#ifdef WITH_MPI
+
+#include <boost/mpi.hpp>
+namespace boost ::mpi {
+    ///
+    /// \brief Empty object, therefore trivially an mpi dataype
+    /// \tparam derived_type_
+    template<typename derived_type_>
+    struct is_mpi_datatype<esl::identifiable_as<derived_type_>>
+        : public mpl::true_
+    {};
+}
+#endif//WITH_MPI
+
 #endif  // ESL_SIMULATION_IDENTIFIABLE_AS_HPP

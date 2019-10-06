@@ -28,6 +28,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/unordered_set.hpp>
+
 #include <esl/law/property.hpp>
 
 
@@ -39,6 +42,13 @@ namespace esl::law {
         size_t operator()(const std::shared_ptr<property_t_> &k) const
         {
             return std::hash<esl::identity<property>>()(*k);
+        }
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)archive;
+            (void)version;
         }
     };
 

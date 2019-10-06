@@ -76,6 +76,15 @@ namespace esl::law {
                     return simulation::time_point(ti.upper);
                 });
         }
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(agent);
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(identifiable_as<owner<esl::law::property>>);
+            archive &BOOST_SERIALIZATION_NVP(inventory);
+        }
     };
 
     namespace detail {
@@ -147,8 +156,10 @@ namespace esl::law {
         using owner<esl::law::property>::owner;
 
         explicit owner(const identity<owner<esl::law::property>> &i =
-                           identity<owner<esl::law::property>>())
-        : agent(i), identifiable_as<owner<property_t_>>(), properties()
+                       identity<owner<esl::law::property>>())
+        : owner<esl::law::property>(i)
+        , identifiable_as<owner<property_t_>>()
+        , properties()
         {
             this->template register_callback<esl::interaction::transfer>(
                 [this](auto msg, simulation::time_interval ti) {
@@ -189,7 +200,9 @@ namespace esl::law {
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-            archive &boost::serialization::base_object<agent>(*this);
+            archive &boost::serialization::base_object<owner<esl::law::property>>(*this);
+
+            //archive & BOOST_SERIALIZATION_NVP(properties);
         }
     };
 }  // namespace esl::law

@@ -26,17 +26,17 @@
 #ifndef ESL_SIMULATION_IDENTITY_HPP
 #define ESL_SIMULATION_IDENTITY_HPP
 
+#include <algorithm>  // TODO: use this when C++20 support is widespread
 #include <cstdint>
-#include <iostream>
-#include <string>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
-#include <vector>
+#include <string>
 #include <type_traits>
-#include <algorithm> // TODO: use this when C++20 support is widespread // using std::lexicographical_compare_3way;
+#include <vector>
+// using std::lexicographical_compare_3way;
 
 #include <boost/functional/hash.hpp>
-#include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
 
 
@@ -60,7 +60,7 @@ namespace esl {
     template<typename identifiable_type_>
     struct identity
     {
-      public:
+    public:
         ///
         /// \brief  An element of the identifier code is an unsigned 64 bits
         /// integer. This means that an entity can have
@@ -103,8 +103,7 @@ namespace esl {
         ///
         /// \param i    Other identity
         ///
-        identity(const identity<identifiable_type_> &i)
-        : digits(i.digits)
+        identity(const identity<identifiable_type_> &i) : digits(i.digits)
         {}
 
         ///
@@ -118,7 +117,7 @@ namespace esl {
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator = (const identity<identifiable_type_> &rhs)
+        operator=(const identity<identifiable_type_> &rhs)
         {
             digits = rhs.digits;
             return *this;
@@ -128,7 +127,7 @@ namespace esl {
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator = (identity<identifiable_type_> &&rhs) noexcept
+        operator=(identity<identifiable_type_> &&rhs) noexcept
         {
             digits = move(rhs.digits);
             return *this;
@@ -221,7 +220,7 @@ namespace esl {
         ///
         /// \return     The (modified) output stream.
         friend std::ostream &operator<<(std::ostream &stream,
-                                   const identity<identifiable_type_> &i)
+                                        const identity<identifiable_type_> &i)
         {
             if(i.digits.empty()) {
                 return stream;
@@ -244,7 +243,8 @@ namespace esl {
         ///
         /// \param width
         /// \return
-        [[nodiscard]] std::string representation(std::streamsize width = 0) const
+        [[nodiscard]] std::string
+        representation(std::streamsize width = 0) const
         {
             assert(0 <= width && width <= 20);
 
@@ -259,7 +259,8 @@ namespace esl {
         /// \param parent
         /// \return
         template<typename child_entity_type_, typename parent_type_>
-        [[nodiscard]] identity<child_entity_type_> create(parent_type_ &parent) const
+        [[nodiscard]] identity<child_entity_type_>
+        create(parent_type_ &parent) const
         {
             auto prefix_ = std::vector<digit_t>(this->digits);
             prefix_.push_back(parent.children_);
@@ -290,9 +291,10 @@ namespace esl {
         template<typename base_type_>
         [[nodiscard]] operator identity<base_type_>() const
         {
-            static_assert(std::is_base_of<base_type_, identifiable_type_>::value,
-                          "can not cast identifier, please verify that this "
-                          "conversion is allowed");
+            static_assert(
+                std::is_base_of<base_type_, identifiable_type_>::value,
+                "can not cast identifier, please verify that this "
+                "conversion is allowed");
             return identity<base_type_>(this->digits);
         }
     };
@@ -304,7 +306,8 @@ namespace esl {
     /// @return                 The identity cast to the derived type
     ///
     template<typename derived_type_, typename base_type_>
-    [[nodiscard]] identity<derived_type_> dynamic_identity_cast(const identity<base_type_> &b)
+    [[nodiscard]] identity<derived_type_>
+    dynamic_identity_cast(const identity<base_type_> &b)
     {
         return identity<derived_type_>(b.digits);
     }
@@ -334,7 +337,8 @@ namespace esl {
              typename pointer_t_>
     struct identity_ptr_hash
     {
-        [[nodiscard]] std::size_t operator()(pointer_t_<identifiable_type_> k) const
+        [[nodiscard]] std::size_t
+        operator()(pointer_t_<identifiable_type_> k) const
         {
             return std::hash<identity<identifiable_type_>>()(*k);
         }
@@ -403,8 +407,7 @@ namespace boost::mpi {
     ///
     /// \tparam identifiable_type_
     template<typename identifiable_type_>
-    struct is_mpi_datatype<esl::identity<identifiable_type_>>
-    : mpl::true_
+    struct is_mpi_datatype<esl::identity<identifiable_type_>> : mpl::true_
     {};
 }  // namespace boost::mpi
 

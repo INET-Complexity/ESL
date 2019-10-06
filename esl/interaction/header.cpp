@@ -22,6 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <boost/serialization/export.hpp>
+
 #include <esl/interaction/header.hpp>
 
 
@@ -45,6 +47,9 @@ namespace esl {
 
 
 }  // namespace esl
+
+BOOST_CLASS_EXPORT(esl::interaction::header)
+
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>

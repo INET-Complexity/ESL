@@ -22,5 +22,14 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/unordered_set.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 #include <esl/economics/accounting/inventory.hpp>
+
+typedef esl::economics::accounting::inventory_by_fungibility<esl::law::property, true> inventory_by_fungibility_p;
+BOOST_CLASS_EXPORT(inventory_by_fungibility_p);
+
+//BOOST_CLASS_EXPORT(esl::economics::accounting::inventory_filter<esl::law::property>)

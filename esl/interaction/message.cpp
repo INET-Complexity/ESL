@@ -24,9 +24,13 @@
 ///
 #include <esl/interaction/message.hpp>
 
+#include <boost/serialization/export.hpp>
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
+
+BOOST_CLASS_EXPORT(esl::interaction::python_message)
+
 namespace esl::interaction {
     using namespace boost::python;
 

@@ -66,7 +66,8 @@ namespace esl::interaction {
         {
             (void)version;
 
-            BOOST_SERIALIZATION_BASE_OBJECT_NVP(message);
+            BOOST_SERIALIZATION_BASE_OBJECT_NVP(header);
+
             archive &boost::serialization::make_nvp(
                 "type_code_t⟨type_code_⟩",
                 boost::serialization::base_object<type_code<type_code_>>(
@@ -81,12 +82,30 @@ namespace esl::interaction {
 
 
 #ifdef WITH_PYTHON
+    ///
+    /// \brief  Since the main class is a template, we must expose a
+    ///         non-template to python.
+    ///
     class python_message
     : public message<python_message, library_message_code<0x1u>()>
     {
     public:
         // this helps the linker resolve the message code
         constexpr const static message_code python_code = code;
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+
+            //BOOST_SERIALIZATION_BASE_OBJECT_NVP(message);
+
+            archive &boost::serialization::make_nvp(
+                "message",
+                boost::serialization::base_object<message<python_message, library_message_code<0x1u>()>>(
+                    *this));
+
+        }
     };
 #endif  // WITH_PYTHON
 
