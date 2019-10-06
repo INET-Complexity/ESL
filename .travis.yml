@@ -14,6 +14,10 @@ addons:
       - g++-7
       - cmake
 
+before_install:
+  - test -n $CC && unset CC
+
+
 install:
     - sudo apt install openmpi-bin libopenmpi-dev
     - sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
@@ -34,5 +38,5 @@ script:
     - export CC=/usr/bin/gcc-7
     - export CXX=/usr/bin/g++-7
     - mkdir build && cd build && cmake ../ 
-    - make
-    - make test
+    - make -j2
+    - env CTEST_OUTPUT_ON_FAILURE=1 make check
