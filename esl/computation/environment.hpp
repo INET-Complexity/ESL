@@ -110,6 +110,18 @@ namespace esl {
             virtual size_t deactivate();
 
             ///
+            /// \brief  tasks that are to be executed before simulation::step
+            ///
+            virtual void before_step();
+
+
+            ///
+            /// \brief  tasks that are to be executed after each
+            ///         simulation::step
+            ///
+            virtual void after_step(simulation::model &simulation);
+
+            ///
             /// \param a
             virtual void activate_agent(const identity<agent> &a);
 
@@ -121,8 +133,7 @@ namespace esl {
             ///
             /// \param simulation
             /// \return
-            virtual size_t
-            send_messages(simulation::model &simulation);
+            virtual size_t send_messages(simulation::model &simulation);
         };
     }  // namespace computation
 }  // namespace esl

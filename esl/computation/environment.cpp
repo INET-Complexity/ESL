@@ -52,12 +52,22 @@ namespace esl::computation {
     ///
     size_t environment::deactivate()
     {
-        size_t result_;
+        size_t result_ = 0;
         for(auto a : deactivated_) {
             deactivate_agent(a);
             ++result_;
         }
         return result_;
+    }
+
+    void environment::before_step()
+    {
+
+    }
+
+    void environment::after_step(simulation::model &simulation)
+    {
+        (void) simulation;
     }
 
     ///
@@ -66,6 +76,7 @@ namespace esl::computation {
     size_t environment::send_messages(simulation::model &simulation)
     {
         for(auto &[i, a] : simulation.agents.local_agents_) {
+            (void) i;
             for(auto m : a->outbox) {
                 auto iterator_ =
                     simulation.agents.local_agents_.find(m->recipient);
