@@ -8,6 +8,11 @@ env:
   - BLAS=OpenBLAS
   - CTEST_OUTPUT_ON_FAILURE=1
 
+cache:
+  - ccache
+  - pip
+
+
 addons:
   apt:
     sources:
@@ -18,7 +23,6 @@ addons:
 
 before_install:
   - test -n $CC && unset CC
-
 
 install:
     - sudo apt install openmpi-bin libopenmpi-dev
