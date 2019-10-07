@@ -319,7 +319,7 @@ FOREACH(test_src ${TEST_SRCS})
             MESSAGE("\t MPI TEST")
             ADD_TEST(NAME ${test_name}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                    COMMAND mpirun ${CMAKE_BINARY_DIR}/test/${test_name})
+                    COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
         ENDIF()
     ELSE()
         ADD_TEST(NAME ${test_name}

@@ -4,7 +4,9 @@ language: cpp
 
 dist: bionic
 
-env: BLAS=OpenBLAS
+env:
+  - BLAS=OpenBLAS
+  - CTEST_OUTPUT_ON_FAILURE=1
 
 addons:
   apt:
@@ -39,4 +41,5 @@ script:
     - export CXX=/usr/bin/g++-7
     - mkdir build && cd build && cmake ../ 
     - make -j2
-    - env CTEST_OUTPUT_ON_FAILURE=1 make check
+    - make test
+
