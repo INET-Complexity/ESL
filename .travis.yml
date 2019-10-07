@@ -35,6 +35,11 @@ install:
     - sudo make install
     - cd ../..
     - rm -rf eigen-eigen-323c052e1731
+    - wget https://github.com/LLNL/sundials/releases/download/v4.1.0/sundials-4.1.0.tar.gz && tar -xzf sundials-4.1.0.tar.gz && cd sundials-4.1.0/ && mkdir build && cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+    - sudo make install
+    - cd ../..
+    - rm -rf sundials-4.1.0
 
 script:
     - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
