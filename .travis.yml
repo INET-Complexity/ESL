@@ -5,8 +5,7 @@ language: cpp
 dist: bionic
 
 env:
-  - BLAS=OpenBLAS
-  - CTEST_OUTPUT_ON_FAILURE=1
+  - BLAS=OpenBLAS CTEST_OUTPUT_ON_FAILURE=1
 
 cache:
   - ccache
