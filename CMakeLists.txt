@@ -128,7 +128,7 @@ ENDIF()
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
-INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
+INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES} "/home/travis/build/INET-Complexity/ESL/math-2.17.1/")
 ################################################################################
 list(APPEND ALL_LINKED_LIBRARIES pthread util Eigen3::Eigen)
 
@@ -278,8 +278,12 @@ SET(SOURCE_FILES
         esl/computation/distributed/mpi_environment.cpp
         esl/computation/distributed/mpi_environment.hpp
 
+        esl/mathematics/variable.cpp
+        esl/mathematics/variable.hpp
+
         test/shared_property_owner.cpp
         test/shared_property_owner.hpp
+
         test/shared_properties.cpp
         test/shared_properties.hpp
         )
