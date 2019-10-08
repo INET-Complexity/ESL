@@ -128,7 +128,7 @@ ENDIF()
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
-INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES} "/home/travis/build/INET-Complexity/ESL/math-2.17.1/")
+INCLUDE_DIRECTORIES(/usr/local/include ${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 list(APPEND ALL_LINKED_LIBRARIES pthread util Eigen3::Eigen)
 
