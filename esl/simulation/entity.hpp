@@ -26,17 +26,14 @@
 #define ESL_SIMULATION_ENTITY_HPP
 
 #include <iostream>
+#include <vector>
 #include <type_traits>
 #include <utility>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
-
 #include <boost/serialization/strong_typedef.hpp>
 
-#include <iostream>
-
-#include <vector>
 
 #include <esl/simulation/identifiable_as.hpp>
 
