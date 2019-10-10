@@ -128,6 +128,7 @@ namespace esl::economics {
         template<typename integer_t_>
         [[nodiscard]] constexpr price operator*(const integer_t_ &scalar) const
         {
+            static_assert(std::is_integral<integer_t_>::value);
             return price(value * scalar, valuation);
         }
 
