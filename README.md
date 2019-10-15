@@ -42,6 +42,24 @@ For release 0.0.2, we aim to provide the following market mechanisms.
 
 * Common types of auctions
 
+## Installation
+
+As of version 0.0.1, we provide instructions for Ubuntu 18.04 LTS. Builds can be automated using the provided travis script.
+
+Build with `N` processes:
+
+```shell
+mkdir build
+cd build
+cmake ../
+make -jN
+make test
+```
+
+
+
+
+
 ## Examples
 
 In the following minimal example, we create an empty model and populate it with two agents. We give the first agent `a` some cash, which it then transfers to agent `b` in the next timestep.
