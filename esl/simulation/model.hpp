@@ -90,6 +90,19 @@ namespace esl::simulation {
         ///
         virtual void initialize();
 
+        template<typename agent_derived_t_, typename entity_type_>
+        esl::identity<agent_derived_t_> create_identifier(entity_type_ &parent)
+        {
+            return agents.template create_identifier<agent_derived_t_>(parent);
+        }
+
+
+        template<typename agent_derived_t_>
+        esl::identity<agent_derived_t_> create_identifier()
+        {
+            return agents.template create_identifier<agent_derived_t_>(world);
+        }
+
         ///
         ///
         /// \tparam agent_derived_t_

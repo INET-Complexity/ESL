@@ -1,9 +1,9 @@
-/// \file   contract.cpp
+/// \file   indication.hpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-10-03
+/// \date       2019-10-08
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,21 +22,37 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/law/contract.hpp>
+#ifndef ESL_INDICATION_HPP
+#define ESL_INDICATION_HPP
+
+#include <cstdint>
 
 
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
+namespace esl::economics::markets {
+    ///
+    /// \brief  Denotes whether or not a quote that is sent is binding for
+    ///         the sender, meaning that the sender must deliver at the quote
+    ///         if the recipient accepts the offer.
+    ///
+    enum indication : std::uint8_t
+    {
+        firm,
+        indicative
+    };
 
-using namespace boost::python;
+}  // namespace esl::economics::markets
 
-BOOST_PYTHON_MODULE(contract)
-{
-    class_<esl::law::contract>
-        ( "contract", init<std::vector<esl::identity<agent>>>())
-        .def_readwrite("parties", &esl::law::contract::parties)
-        ;
+#ifdef WITH_MPI
+#include <boost/mpi/datatype.hpp>
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::economics::markets::indication>
+    : public mpl::true_
+    {
 
-}
+    };
+}  // namespace boost::mpi
+#endif  // WITH_MPI
 
-#endif  // WITH_PYTHON
+
+#endif  // ESL_INDICATION_HPP

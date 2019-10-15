@@ -332,7 +332,7 @@ namespace esl::economics::accounting {
     template<typename property_t_>
     using inventory_filter = inventory_by_fungibility<
         property_t_, std::is_same<esl::law::property, property_t_>::value
-                         || is_base_of<esl::economics::fungible, property_t_>::value>;
+                         || std::is_base_of<esl::economics::fungible, property_t_>::value>;
 
 
 }  // namespace esl::economics::accounting

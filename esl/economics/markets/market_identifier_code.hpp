@@ -1,9 +1,10 @@
-/// \file   contract.hpp
+/// \file   security_market_identifier_code.hpp
 ///
-/// \brief  A contract generates obligations
+/// \brief  The MIC (ISO 10383) uniquely identifies a market; specifically, identify securities trading exchanges, not
+///         general markets
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2018-04-02
+/// \date       2019-04-10
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking, Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,40 +21,19 @@
 ///
 ///             You may obtain instructions to fulfill the attribution requirements in CITATION.cff
 ///
-#ifndef ESL_CONTRACT_HPP
-#define ESL_CONTRACT_HPP
+#ifndef ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP
+#define ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP
 
-#include <utility>
-#include <vector>
-
-#include <esl/economics/fungibility.hpp>
-#include <esl/economics/tangibility.hpp>
-#include <esl/law/property.hpp>
+#include <array>
+using std::array;
 
 
-class agent;
+///
+/// \brief  Defines an ISO 10383 market identifier codes
+///
+struct market_identifier_code
+{
+    const array<char, 4> code;
+};
 
-namespace esl::law {
-
-    struct contract
-    : public property
-    , public economics::infungible
-    , public economics::intangible
-    {
-        std::vector<identity<agent>> parties;
-
-        explicit contract(std::vector<identity<agent>> parties)
-        : property()
-        , infungible()
-        , intangible()
-        , parties(std::move(parties))
-        {
-
-        }
-
-        ~contract() override = default;
-    };
-
-}
-
-#endif //ESL_CONTRACT_HPP
+#endif//ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP

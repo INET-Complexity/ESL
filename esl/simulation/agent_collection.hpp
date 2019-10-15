@@ -64,6 +64,14 @@ namespace esl::simulation {
         explicit agent_collection(computation::environment &environment_);
 
         template<typename agent_derived_t_, typename entity_type_>
+        esl::identity<agent_derived_t_> create_identifier(entity_type_ &parent)
+        {
+            auto identifier_ =
+                parent.identifier.template create<agent_derived_t_>(parent);
+            return identifier_;
+        }
+
+        template<typename agent_derived_t_, typename entity_type_>
         std::shared_ptr<agent_derived_t_> create(entity_type_ &parent)
         {
             auto identifier_ =

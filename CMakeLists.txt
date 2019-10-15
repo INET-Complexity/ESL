@@ -286,7 +286,35 @@ SET(SOURCE_FILES
 
         test/shared_properties.cpp
         test/shared_properties.hpp
-        )
+
+
+        esl/economics/markets/indication.cpp
+        esl/economics/markets/indication.hpp
+
+        esl/economics/finance/company.cpp
+        esl/economics/finance/company.hpp
+
+        esl/economics/markets/market.cpp
+        esl/economics/markets/market.hpp
+
+
+        esl/economics/markets/walras/price_setter.cpp
+        esl/economics/markets/walras/price_setter.hpp
+
+        esl/economics/markets/walras/differentiable_order_message.cpp
+        esl/economics/markets/walras/differentiable_order_message.hpp
+
+        esl/economics/markets/walras/tatonnement.cpp
+        esl/economics/markets/walras/tatonnement.hpp
+
+        esl/economics/finance/shareholder.cpp
+        esl/economics/finance/shareholder.hpp
+
+        esl/economics/finance/stock.cpp
+        esl/economics/finance/stock.hpp
+
+
+        esl/economics/finance/dividend.cpp)
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})

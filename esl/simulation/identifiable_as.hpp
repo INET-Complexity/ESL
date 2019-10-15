@@ -27,10 +27,7 @@
 
 
 #include <type_traits>
-using std::is_base_of;
-
 #include <esl/simulation/identity.hpp>
-
 
 namespace esl {
 
@@ -69,8 +66,8 @@ namespace esl {
         /// exception due to the use of dynamic_cast.
         constexpr operator identity<derived_type_>() const
         {
-            static_assert(is_base_of<entity<void>, derived_type_>::value,
-                          "derived_type_ must inherit entity for this cast");
+            //static_assert(std::is_base_of<entity<void>, derived_type_>::value,
+            //              "derived_type_ must inherit entity for this cast");
             return identity<derived_type_>(
                 (dynamic_cast<const derived_type_ *>(this))->identifier.digits);
         }

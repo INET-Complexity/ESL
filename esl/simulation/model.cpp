@@ -42,9 +42,11 @@ namespace esl::simulation {
         // to be set externally
         std::uint64_t sample_ = 0;
 
+
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
         do {
+            first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
                 // The seed is deterministic in the following variables.
                 std::seed_seq seed_ {

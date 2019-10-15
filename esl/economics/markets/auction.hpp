@@ -1,9 +1,9 @@
-/// \file   contract.cpp
+/// \file   auction.hpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-10-03
+/// \date       2019-10-09
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,21 +22,12 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/law/contract.hpp>
+#ifndef ESL_AUCTION_HPP
+#define ESL_AUCTION_HPP
 
 
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
+class auction
+{};
 
-using namespace boost::python;
 
-BOOST_PYTHON_MODULE(contract)
-{
-    class_<esl::law::contract>
-        ( "contract", init<std::vector<esl::identity<agent>>>())
-        .def_readwrite("parties", &esl::law::contract::parties)
-        ;
-
-}
-
-#endif  // WITH_PYTHON
+#endif  // ESL_AUCTION_HPP
