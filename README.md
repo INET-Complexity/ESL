@@ -82,7 +82,7 @@ a.create_message(transfer_cash(cash_amount), b)
 
 m.step()
 
-assert(b.cash_properties[esl.currencies.USD] == transfer_amount)
+assert(b.cash_properties[esl.currencies.USD] == cash_amount)
 
 ```
 
