@@ -91,4 +91,12 @@ assert(b.cash_properties[esl.currencies.USD] == cash_amount)
 
 The library uses unit testing on both the native library (Boost.Test) and the Python bindings (pytest and Hypothesis).
 
-[![Build Status](https://travis-ci.org/INET-Complexity/ESL.svg?branch=master)](https://travis-ci.org/INET-Complexity/ESL)
+
+
+
+## Acknowledgements
+
+Work on this open-source project is in part funded by the J.P. Morgan AI Faculty Awards.
+
+
+
