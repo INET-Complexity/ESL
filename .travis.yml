@@ -47,7 +47,7 @@ install:
     - rm v2.17.1.tar.gz
     - wget https://github.com/stan-dev/stan/archive/v2.17.1.tar.gz && tar -xzf v2.17.1.tar.gz
     - cd stan-2.17.1/src/  && sudo cp stan/ /usr/local/include/ -r
-    - cd ..
+    - cd ../..
     - rm v2.17.1.tar.gz
 
     # with stan-math unpacked, we rely on the CMakeLists.txt to include it as an include directory
