@@ -28,6 +28,7 @@
 #include <esl/economics/finance/share.hpp>
 #include <esl/simulation/identity.hpp>
 #include <esl/economics/finance/company.hpp>
+#include <esl/economics/markets/walras/quote_message.hpp>
 
 #include <algorithm>
 using std::min;
@@ -51,6 +52,18 @@ namespace esl::economics::finance {
                      dynamic_identity_cast<company>(m->sender)});
 
                 return submit_dividend_record(step);
+            });
+
+        this->template register_callback<esl::economics::walras::quote_message>(
+            [this](std::shared_ptr<esl::economics::walras::quote_message> m,
+                   simulation::time_interval step) {
+
+                for(auto &[k, v] : m->proposed){
+                    assert(std::holds_alternative<price>(v.type));
+                    this->prices.insert({k, std::get<price>(v.type)});
+                }
+
+                return step.upper;
             });
     }
 

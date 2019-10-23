@@ -30,7 +30,7 @@
 #include <boost/serialization/base_object.hpp>
 
 #include <esl/economics/markets/order_message.hpp>
-#include <esl/economics/markets/demand_supply_function.hpp>
+#include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 
 
 namespace esl::economics::markets::walras {

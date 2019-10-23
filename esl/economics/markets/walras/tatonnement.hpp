@@ -44,7 +44,7 @@
 #include <stan/callbacks/logger.hpp>
 #include <stan/callbacks/writer.hpp>
 
-#include <esl/economics/markets/demand_supply_function.hpp>
+#include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 #include <esl/economics/markets/quote.hpp>
 
 namespace tatonnement {

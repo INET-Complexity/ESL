@@ -314,7 +314,7 @@ SET(SOURCE_FILES
         esl/economics/finance/stock.hpp
 
 
-        esl/economics/finance/dividend.cpp)
+        esl/economics/finance/dividend.cpp esl/economics/markets/differentiable_demand_supply_function.cpp esl/economics/markets/differentiable_demand_supply_function.hpp)
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})

@@ -67,9 +67,9 @@ namespace esl::economics::finance {
             stocks;
 
         ///
-        /// \brief  The valuation of
+        /// \brief  The valuation of the stocks
         ///
-        std::map<identity<law::property>, price> prices;
+        esl::law::property_map<price> prices;
 
 
         ///
