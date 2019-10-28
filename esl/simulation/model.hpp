@@ -31,7 +31,7 @@
 #include <esl/simulation/time.hpp>
 #include <esl/simulation/world.hpp>
 #include <esl/simulation/agent_collection.hpp>
-
+#include <esl/simulation/parameter/parametrization.hpp>
 
 namespace esl::computation {
     class environment;
@@ -45,6 +45,11 @@ namespace esl::simulation {
         computation::environment &environment_;
 
     public:
+        ///
+        /// \brief
+        ///
+        parameter::parametrization parameters;
+
         ///
         /// \brief The fixed starting point in time of the model
         ///
@@ -60,6 +65,12 @@ namespace esl::simulation {
         /// \brief  The current time of the model during computation
         ///
         time_point time;
+
+        ///
+        /// \brief  Acts as the seed when using random number generators in the
+        ///         model.
+        ///
+        const std::uint64_t sample;
 
         ///
         /// \brief  Simulation world, root entity.
@@ -81,7 +92,8 @@ namespace esl::simulation {
         /// \param e
         /// \param start
         /// \param end
-        model(esl::computation::environment &e, time_point start, time_point end);
+        model( esl::computation::environment &e
+             , const parameter::parametrization &parameters);
 
         virtual ~model() = default;
 

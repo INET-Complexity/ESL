@@ -98,8 +98,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
     struct test_model
     : public esl::simulation::model
     {
-        test_model(esl::computation::environment &e, simulation::time_point start, simulation::time_point end)
-        : esl::simulation::model(e, start, end)
+        test_model(esl::computation::environment &e, esl::simulation::parameter::parametrization parameters)
+        : esl::simulation::model(e, parameters)
         {
 
         }
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
     {
         computation::environment e;
 
-        test_model tm(e, 0, 10);
+        test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 10));
         auto o_1 = tm.template create<owner_test>();
         auto o_2 = tm.template create<owner_test>();
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
     BOOST_AUTO_TEST_CASE(owner_property_message_callbacks_funbigility)
     {
         computation::environment e;
-        test_model tm(e, 0, 10);
+        test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 10));
         auto o_1 = tm.template create<owner_test_derived_properties>();
         auto o_2 = tm.template create<owner_test_derived_properties>();
         auto a0=(*tm.agents.local_agents_.begin()).first;

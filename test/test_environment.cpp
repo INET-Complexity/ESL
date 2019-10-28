@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
     {
         esl::computation::environment e;
 
-        test_model tm(e, 1, 100);
+        test_model tm(e, esl::simulation::parameter::parametrization(0, 1, 100));
 
         BOOST_CHECK_EQUAL(tm.start, 1);
         BOOST_CHECK_EQUAL(tm.time, 1);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
     {
         esl::computation::environment e;
 
-        test_model tm(e, 0, 100);
+        test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 100));
 
         auto next_ = tm.step( {0, 3});
 

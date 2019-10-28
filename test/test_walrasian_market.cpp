@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 BOOST_AUTO_TEST_CASE(walras_market_quote)
 {
     esl::computation::environment e;
-    esl::simulation::model model_(e, 0, 1);
+    esl::simulation::model model_(e, esl::simulation::parameter::parametrization(0, 0, 1));
 
 
     std::vector<std::tuple<std::shared_ptr<esl::economics::company>,

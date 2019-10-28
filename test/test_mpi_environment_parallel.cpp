@@ -75,9 +75,9 @@ using namespace esl::computation::distributed;
 struct test_model
 : public esl::simulation::model
 {
-    test_model(esl::computation::environment &e, simulation::time_point start,
-               simulation::time_point end)
-    : esl::simulation::model(e, start, end)
+    test_model( esl::computation::environment &e
+              , esl::simulation::parameter::parametrization parameters)
+    : esl::simulation::model(e, parameters)
     {}
     void initialize() override
     {}
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     (void)argv;
     modified_mpi_environment e;
     assert(e.communicator_.size() >= 2);
-    test_model tm(e, 0, 10);
+    test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 10));
     if(e.communicator_.rank() == 0) {
         auto o_1    = tm.template create<owner_test_derived_properties>();
         auto o_2    = tm.template create<owner_test_derived_properties>();

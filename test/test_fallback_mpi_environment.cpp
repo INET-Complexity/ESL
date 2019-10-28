@@ -52,9 +52,8 @@ using namespace esl::computation::distributed;
 struct test_model
 : public esl::simulation::model
 {
-    test_model(esl::computation::environment &e, simulation::time_point start,
-               simulation::time_point end)
-    : esl::simulation::model(e, start, end)
+    test_model(esl::computation::environment &e, esl::simulation::parameter::parametrization parameters)
+    : esl::simulation::model(e, parameters)
     {}
 
     void initialize() override
@@ -83,7 +82,7 @@ BOOST_AUTO_TEST_CASE(initialization)
 {
     mpi_environment e;
 
-    test_model tm(e, 0, 10);
+    test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 10));
     auto o_1 = tm.template create<owner_test_derived_properties>();
     auto o_2 = tm.template create<owner_test_derived_properties>();
     auto a0  = (*tm.agents.local_agents_.begin()).first;

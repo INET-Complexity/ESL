@@ -28,12 +28,23 @@
 #include <esl/computation/environment.hpp>
 
 namespace esl::simulation {
-    model::model(computation::environment &e, time_point start, time_point end)
-    : environment_(e), start(start), end(end), time(start), agents(e)
-    {}
+    model::model( computation::environment &e
+                , const parameter::parametrization &parameters)
+    : environment_(e)
+    , parameters(parameters)
+    , start(parameters.get<time_point>("start"))
+    , end(parameters.get<time_point>("end"))
+    , time(parameters.get<time_point>("start"))
+    , sample(parameters.get<std::uint64_t>("sample"))
+    , agents(e)
+    {
+
+    }
 
     void model::initialize()
-    {}
+    {
+
+    }
 
     time_point model::step(time_interval step)
     {
@@ -41,7 +52,6 @@ namespace esl::simulation {
 
         // to be set externally
         std::uint64_t sample_ = 0;
-
 
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
@@ -106,10 +116,12 @@ BOOST_PYTHON_MODULE(model)
 {
     class_<model>(
         "model",
-        init<esl::computation::environment &, time_point, time_point>())
+        init< esl::computation::environment &
+                , parameter::parametrization>())
         .def_readonly("start", &model::start)
         .def_readwrite("end", &model::end)
-        .def_readwrite("time", &model::time);
+        .def_readwrite("time", &model::time)
+        ;
 }
 
 
