@@ -62,14 +62,14 @@ make test
 
 ## Examples
 
-In the following minimal example, we create an empty model and populate it with two agents. We give the first agent `a` some cash, which it then transfers to agent `b` in the next timestep.
+In the following minimal example, we create an empty model and populate it with two agents. We give the first agent `a` some cash, which it then transfers to agent `b` in the next time step.
  
 ```python
 import esl.agent
-import esl.model
+import esl.simulation.model
 from esl.economics import cash, currencies
 
-m = esl.model()
+m = esl.simulation.model()
 
 a = m.create(esl.agent)
 b = m.create(esl.agent)
@@ -95,7 +95,7 @@ The library uses unit testing on both the native library (Boost.Test) and the Py
 
 
 ## Acknowledgements
-
+This open-source project is organized by the Institute for New Economic Thinking at the Oxford Martin School.
 Work on this open-source project is in part funded by the J.P. Morgan AI Faculty Awards.
 
 

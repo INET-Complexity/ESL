@@ -224,8 +224,6 @@ SET(SOURCE_FILES
         esl/law/jurisdictions.cpp
         esl/law/jurisdictions.hpp
 
-
-
         esl/economics/asset.cpp
         esl/economics/asset.hpp
 
@@ -338,7 +336,6 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 ################################################################################
 
 FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
-#LIST(FILTER TEST_SRCS INCLUDE REGEX "^test/")
 
 FOREACH(test_src ${TEST_SRCS})
     MESSAGE("TEST " ${test_src})
@@ -367,6 +364,9 @@ ENDFOREACH(test_src)
 ################################################################################
 
 IF(WITH_PYTHON)
+    # copies the script to bundle the python package
+    CONFIGURE_FILE(python/setup.py setup.py COPYONLY)
+
 
     # create a python module for all .ccp files
     # TODO: make this a separate set, as some unwanted .cpp files may be swept
@@ -374,7 +374,9 @@ IF(WITH_PYTHON)
     FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**.cpp)
     FOREACH (source ${ESL_PYTHON_SOURCE})
         GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
-        MESSAGE("PYTHON MODULE " ${module_name} "\t" ${source})
+        GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
+
+        MESSAGE("PYTHON MODULE " ${module_path}/${module_name} "\t" ${source})
         PYTHON_ADD_MODULE(${module_name} ${source})
 
         ADD_CUSTOM_COMMAND(TARGET ${module_name} POST_BUILD
@@ -400,7 +402,7 @@ IF(WITH_PYTHON)
     IF(PYTHONINTERP_FOUND)
         MESSAGE(${PYTHON_EXECUTABLE})
         ADD_CUSTOM_TARGET(make_module ALL
-                  COMMAND ${CMAKE_COMMAND} -E make_directory test/esl/ && ${CMAKE_COMMAND} -E touch ./test/esl/__init__.py)
+              COMMAND ${CMAKE_COMMAND} -E make_directory test/esl/ && ${CMAKE_COMMAND} -E touch ./test/esl/__init__.py)
 
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
@@ -415,13 +417,9 @@ ENDIF()
 
 MESSAGE(${CMAKE_BINARY_DIR})
 
-
 INSTALL(TARGETS  ${ESL_TARGET_NAME} DESTINATION ${CMAKE_BINARY_DIR})
 
-
-
 ################################################################################
-
 
 OPTION(BUILD_DOCUMENTATION "Generate documentation" OFF)
 
