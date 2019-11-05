@@ -316,6 +316,10 @@ SET(SOURCE_FILES
 
         esl/simulation/parameter/parametrization.cpp
         esl/simulation/parameter/parametrization.hpp
+
+        esl/economics/finance/loan.cpp
+        esl/economics/finance/loan.hpp
+
         )
 
 
