@@ -24,6 +24,7 @@
 #define ESL_PRICE_HPP
 
 #include <iomanip>
+#include <cmath>
 
 #include <esl/economics/currency.hpp>
 

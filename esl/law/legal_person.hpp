@@ -32,8 +32,8 @@
 #include <esl/agent.hpp>
 #include <esl/economics/owner.hpp>
 
-#include <esl/law/jurisdiction.hpp>
 #include <esl/geography/countries.hpp>
+#include <esl/law/jurisdiction.hpp>
 
 #include <esl/law/government.hpp>
 #include <esl/law/legal_entity.hpp>
@@ -70,9 +70,7 @@ namespace esl::law {
         : agent(i)
         , representation(legal_entity::create(i))
         , primary_jurisdiction(primary_jurisdiction)
-        {
-
-        }
+        {}
 
         legal_person(const identity<agent> &i,
                      const legal_entity &le,
@@ -80,9 +78,7 @@ namespace esl::law {
         : agent(i)
         , representation(le)
         , primary_jurisdiction(primary_jurisdiction)
-        {
-
-        }
+        {}
 
         legal_person(const identity<agent> &i,
                      const natural_person &np,
@@ -90,9 +86,7 @@ namespace esl::law {
         : agent(i)
         , representation(np)
         , primary_jurisdiction(primary_jurisdiction)
-        {
-
-        }
+        {}
 
         legal_person(const identity<agent> &i,
                      const government &g,
@@ -100,9 +94,7 @@ namespace esl::law {
         : agent(i)
         , representation(g)
         , primary_jurisdiction(primary_jurisdiction)
-        {
-
-        }
+        {}
 
         ~legal_person() = default;
 
@@ -115,16 +107,16 @@ namespace esl::law {
             archive << boost::serialization::make_nvp("variant", index_);
             switch(index_) {
             case 0:
-                archive << boost::serialization::make_nvp("legal_entity",
-                                    get<legal_entity>(representation));
+                archive << boost::serialization::make_nvp(
+                    "legal_entity", std::get<legal_entity>(representation));
                 break;
             case 1:
-                archive << boost::serialization::make_nvp("natural_person",
-                                    get<natural_person>(representation));
+                archive << boost::serialization::make_nvp(
+                    "natural_person", std::get<natural_person>(representation));
                 break;
             case 2:
-                archive << boost::serialization::make_nvp("government",
-                                    get<government>(representation));
+                archive << boost::serialization::make_nvp(
+                    "government", std::get<government>(representation));
                 break;
             }
         }
@@ -165,8 +157,7 @@ namespace esl::law {
 #include <boost/mpi.hpp>
 namespace boost::mpi {
     template<>
-    struct is_mpi_datatype<esl::law::legal_person>
-    : mpl::false_
+    struct is_mpi_datatype<esl::law::legal_person> : mpl::false_
     {};
 }  // namespace boost::mpi
 #endif  // WITH_MPI

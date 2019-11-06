@@ -74,6 +74,7 @@ IF(WITH_QL)
     ADD_COMPILE_DEFINITIONS(WITH_QL)
 ENDIF()
 
+ADD_DEFINITIONS(-D_REENTRANT)
 
 ################################################################################
 
@@ -319,6 +320,7 @@ SET(SOURCE_FILES
 
         esl/economics/finance/loan.cpp
         esl/economics/finance/loan.hpp
+
 
         )
 
