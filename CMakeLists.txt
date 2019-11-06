@@ -74,6 +74,7 @@ IF(WITH_QL)
     ADD_COMPILE_DEFINITIONS(WITH_QL)
 ENDIF()
 
+# Used in stan-math
 ADD_DEFINITIONS(-D_REENTRANT)
 
 ################################################################################

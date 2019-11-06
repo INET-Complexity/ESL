@@ -49,8 +49,8 @@ namespace esl::economics::finance {
         price total_ = price(0, dividend_currency);
         for(const auto &[s, dividend_distribution] : dividend_per_share) {
             (void)s;
-            total_ += (get<0>(dividend_distribution)
-                       * get<1>(dividend_distribution));
+            total_ += (std::get<0>(dividend_distribution)
+                       * std::get<1>(dividend_distribution));
         }
         return total_;
     }
