@@ -33,6 +33,9 @@
 
 // firstly, include other headers, so they are unaffected
 
+
+#ifdef WITH_MPI
+
 #include <boost/mpi/communicator.hpp>
 #include <boost/mpi/environment.hpp>
 
@@ -61,31 +64,15 @@ using namespace esl::computation::distributed;
 #include <boost/serialization/shared_ptr.hpp>
 
 
-
-
-
-
-
-
-
-
-
-
-
-struct test_model
-: public esl::simulation::model
+struct test_model : public esl::simulation::model
 {
-    test_model( esl::computation::environment &e
-              , esl::simulation::parameter::parametrization parameters)
+    test_model(esl::computation::environment &e,
+               esl::simulation::parameter::parametrization parameters)
     : esl::simulation::model(e, parameters)
-    {
-
-    }
+    {}
 
     void initialize() override
-    {
-
-    }
+    {}
 
     ///
     esl::simulation::time_point
@@ -143,12 +130,11 @@ int main(int argc, char *argv[])
         auto o_2    = tm.template create<owner_test_derived_properties>();
         migration m = {0, 1, o_2->identifier};
 
-        auto c = boost::dynamic_pointer_cast<esl::agent>(boost::make_shared<owner_test_derived_properties>(
-            identity<owner_test_derived_properties>({1, 2, 3})));
+        auto c = boost::dynamic_pointer_cast<esl::agent>(
+            boost::make_shared<owner_test_derived_properties>(
+                identity<owner_test_derived_properties>({1, 2, 3})));
         e.communicator_.send(1, 0, c);
         e.migrate_.push_back(m);
-
-
 
 
         esl::economics::accounting::inventory_filter<esl::law::property> ivf_;
@@ -162,13 +148,13 @@ int main(int argc, char *argv[])
         ivi_.insert(pi, quantity(1, 1));
 
 
-        auto test_message_f =
-            std::make_shared<interaction::transfer>(*o_1, *o_2, *o_1, *o_2, ivf_);
+        auto test_message_f = std::make_shared<interaction::transfer>(
+            *o_1, *o_2, *o_1, *o_2, ivf_);
 
         test_message_f->received = 4;
 
-        auto test_message_i =
-            std::make_shared<interaction::transfer>(*o_1, *o_2, *o_1, *o_2, ivi_);
+        auto test_message_i = std::make_shared<interaction::transfer>(
+            *o_1, *o_2, *o_1, *o_2, ivi_);
 
         test_message_i->received = 4;
 
@@ -194,10 +180,14 @@ int main(int argc, char *argv[])
 
     tm.step({0, 10});
     if(e.communicator_.rank() == 1) {
-
-        std::cout << "rank 1 now has " << tm.agents.local_agents_.size() << std::endl;
-        auto ptr = std::dynamic_pointer_cast<owner_test_derived_properties>((*tm.agents.local_agents_.begin()).second);
+        std::cout << "rank 1 now has " << tm.agents.local_agents_.size()
+                  << std::endl;
+        auto ptr = std::dynamic_pointer_cast<owner_test_derived_properties>(
+            (*tm.agents.local_agents_.begin()).second);
         std::cout << ptr->inventory.size() << std::endl;
     }
     return 0;
 }
+
+
+#endif
