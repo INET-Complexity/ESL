@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
 
         for(auto &share : shares_) {
             std::get<0>(share)->shareholders[*p] = {
-                {get<1>(share), 100'000'000}};
+                {std::get<1>(share), 100'000'000}};
         }
     }
 

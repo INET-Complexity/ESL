@@ -78,11 +78,11 @@ namespace esl::economics {
             switch(index_) {
             case 0:
                 archive << boost::serialization::make_nvp("exchange_rate",
-                get<exchange_rate>(type));
+                std::get<exchange_rate>(type));
                 break;
             case 1:
                 archive << boost::serialization::make_nvp("price",
-                                                          get<price>(type));
+                                                          std::get<price>(type));
                 break;
             }
         }
