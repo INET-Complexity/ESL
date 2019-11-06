@@ -78,9 +78,15 @@ struct test_model
     test_model( esl::computation::environment &e
               , esl::simulation::parameter::parametrization parameters)
     : esl::simulation::model(e, parameters)
-    {}
+    {
+
+    }
+
     void initialize() override
-    {}
+    {
+
+    }
+
     ///
     esl::simulation::time_point
     step(esl::simulation::time_interval step) override
@@ -96,7 +102,7 @@ struct test_model
 ///         communication
 ///
 class modified_mpi_environment
-: public mpi_environment
+: public esl::computation::distributed::mpi_environment
 {
 public:
     using mpi_environment::mpi_environment;
