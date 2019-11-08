@@ -1,19 +1,14 @@
 import setuptools
+try:
+    from setuptools import setup
+    from setuptools import Extension
+except ImportError:
+    from distutils.core import setup
+    from distutils.extension import Extension
 
 
 def parse_version():
-    version = [0,0,0]
-    with open("../esl/version.hpp") as version_header:
-        for l in version_header.readlines():
-            if 'ESL_VERSION_' in l:
-                number = int(l.split('=')[1].split(';')[0].strip())
-                if 'ESL_VERSION_MAJOR' in l:
-                    version[0] = number
-                elif 'ESL_VERSION_MINOR' in l:
-                    version[1] = number
-                elif 'ESL_VERSION_REVISION' in l:
-                    version[2] = number
-
+    version = [0, 0, 0]
     version_representation = '.'.join(version)
     return version, version_representation
 
@@ -43,8 +38,13 @@ classifiers = [
 ]
 
 
-with open("../README.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
+
+
+ext_modules = [
+    Extension("esl.trade", ["esl/trade.pyx"]),
+]
 
 
 setuptools.setup(
@@ -59,4 +59,6 @@ setuptools.setup(
     packages                        = setuptools.find_packages(),
     classifiers                     = classifiers,
     python_requires                 = '>=3.6',
+    setup_requires=['setuptools>=18.0', 'cython'],
+    ext_modules=ext_modules,
 )
