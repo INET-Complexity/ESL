@@ -371,10 +371,6 @@ ENDFOREACH(test_src)
 ################################################################################
 
 IF(WITH_PYTHON)
-    # copies the script to bundle the python package
-    CONFIGURE_FILE(python/setup.py setup.py COPYONLY)
-
-
     # create a python module for all .ccp files
     # TODO: make this a separate set, as some unwanted .cpp files may be swept
     #       up in this
