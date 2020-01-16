@@ -1,9 +1,9 @@
-/// \file   currency.hpp
+/// \file   location.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-12-13
+/// \date       2018-04-28
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,16 +22,3 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_CURRENCY_HPP
-#define ESL_CURRENCY_HPP
-
-
-namespace esl::economics {
-
-    class currency {
-
-    };
-
-}
-
-#endif //ESL_CURRENCY_HPP

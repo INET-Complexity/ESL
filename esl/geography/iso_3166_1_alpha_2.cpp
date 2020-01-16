@@ -1,9 +1,9 @@
-/// \file   currency.hpp
+/// \file   country.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-12-13
+/// \date       2018-04-27
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,16 +22,25 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_CURRENCY_HPP
-#define ESL_CURRENCY_HPP
+#include <esl/geography/iso_3166_1_alpha_2.hpp>
 
 
-namespace esl::economics {
+#ifdef WITH_PYTHON
+#include <boost/python.hpp>
 
-    class currency {
+#include <string>
 
-    };
-
+std::string python_country_code(const esl::geography::iso_3166_1_alpha_2 &c)
+{
+    return (std::string() + c.code[0]) + c.code[1];
 }
 
-#endif //ESL_CURRENCY_HPP
+
+using namespace boost::python;
+BOOST_PYTHON_MODULE(country)
+{
+    class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2")
+        .add_property("code", python_country_code)
+        ;
+}
+#endif

@@ -26,7 +26,7 @@
 #define ESL_ISIN_HPP
 
 
-#include <esl/geography/country.hpp>
+#include <esl/geography/iso_3166_1_alpha_2.hpp>
 #include <esl/algorithms.hpp>
 
 
@@ -40,7 +40,7 @@ namespace esl::economics::finance {
         ///
         /// \brief
         ///
-        const geography::country issuer;
+        const geography::iso_3166_1_alpha_2 issuer;
 
         ///
         /// \brief  The National Securities Identifying Number
@@ -53,7 +53,7 @@ namespace esl::economics::finance {
         ///
         /// \param issuer   The country issuing the code
         /// \param code     The code part describing a security
-        constexpr isin(geography::country issuer,
+        constexpr isin(geography::iso_3166_1_alpha_2 issuer,
                        const std::array<char, 9> &code = {'0'})
         : issuer(issuer), code(code)
         {
@@ -65,7 +65,7 @@ namespace esl::economics::finance {
         ///
         /// \param code     The code part describing a security
         constexpr isin(const std::array<char, 11> &code = {'0'})
-        : issuer(geography::country({code[0], code[1]}))
+        : issuer(geography::iso_3166_1_alpha_2({code[0], code[1]}))
         , code(esl::array_slice<0, 9>(code))
         {}
 
@@ -75,7 +75,7 @@ namespace esl::economics::finance {
         /// \param issuer   The country issuing the code
         /// \param code     The code part describing a security as a string with
         ///                 the code symbols in positions 0-8
-        isin(geography::country issuer, const std::string &code)
+        isin(geography::iso_3166_1_alpha_2 issuer, const std::string &code)
         : isin(issuer, esl::to_array<0, 9, char>(code))
         {
 

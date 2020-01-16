@@ -3,7 +3,7 @@
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2018-02-04
+/// \date       2019-12-13
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,25 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/economics/currency.hpp>
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-#include <string>
-
-std::string python_currency_code(const esl::economics::currency &c)
-{
-    return ((std::string() + c.code[0]) + c.code[1]) + c.code[1];
-}
-
-
-using namespace boost::python;
-BOOST_PYTHON_MODULE(currency)
-{
-    class_<esl::economics::currency>("currency")
-        .add_property("code", python_currency_code)
-        ;
-}
-#endif
+#include "currency.hpp"

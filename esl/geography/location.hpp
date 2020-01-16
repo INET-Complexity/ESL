@@ -1,9 +1,9 @@
-/// \file   currency.hpp
+/// \file   location.hpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-12-13
+/// \date       2018-04-28
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,16 +22,15 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_CURRENCY_HPP
-#define ESL_CURRENCY_HPP
+#ifndef ESL_LOCATION_HPP
+#define ESL_LOCATION_HPP
 
-
-namespace esl::economics {
-
-    class currency {
+namespace esl::geography {
+    struct location
+    {
 
     };
+}  // namespace esl::geography
 
-}
 
-#endif //ESL_CURRENCY_HPP
+#endif  // ESL_LOCATION_HPP

@@ -60,7 +60,7 @@ namespace esl::economics::finance {
         simulation::time_point payable_date;
 
         /// \brief  Payment currency
-        currency dividend_currency;
+        iso_4217 dividend_currency;
 
         // total dividends
         // per share type, shares outstanding, dividend per share
@@ -73,7 +73,7 @@ namespace esl::economics::finance {
             const simulation::time_interval &dividend_period =
                 {simulation::time_point(0), simulation::time_point(0)},
             simulation::time_point payable_date = simulation::time_point(0),
-            const currency &dividend_currency   = currencies::USD,
+            const iso_4217 &dividend_currency   = currencies::USD,
             const std::map<share, std::tuple<std::uint64_t, price>>
                 &dividend_per_share = {});
 

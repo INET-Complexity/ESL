@@ -39,9 +39,9 @@ namespace esl::economics {
     : public asset
     , public fungible
     {
-        currency denomination;
+        iso_4217 denomination;
 
-        explicit money(currency denomination)
+        explicit money(iso_4217 denomination)
         : asset(), fungible(), denomination(denomination)
         {}
 

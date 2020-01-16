@@ -27,7 +27,7 @@
 
 #include <iostream>
 
-#include <esl/geography/country.hpp>
+#include <esl/geography/iso_3166_1_alpha_2.hpp>
 
 namespace esl::law {
 
@@ -36,9 +36,9 @@ namespace esl::law {
         ///
         /// \brief  primary nationality
         ///
-        geography::country nationality;
+        geography::iso_3166_1_alpha_2 nationality;
 
-        natural_person(geography::country nationality = geography::country())
+        natural_person(geography::iso_3166_1_alpha_2 nationality = geography::iso_3166_1_alpha_2())
         : nationality(nationality)
         {}
 

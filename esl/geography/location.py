@@ -21,6 +21,7 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+from abc import ABC
 
-class Location:
+class Location(ABC):
     pass

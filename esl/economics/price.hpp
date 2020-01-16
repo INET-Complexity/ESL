@@ -26,14 +26,14 @@
 #include <iomanip>
 #include <cmath>
 
-#include <esl/economics/currency.hpp>
+#include <esl/economics/iso_4217.hpp>
 
 
 namespace esl::economics {
 
     namespace detail {
-        constexpr void assert_equal_currencies(const currency &first,
-                                               const currency &second)
+        constexpr void assert_equal_currencies(const iso_4217 &first,
+                                               const iso_4217 &second)
         {
             if(first != second) {
                 throw std::invalid_argument("comparing price of with currencies");
@@ -47,10 +47,10 @@ namespace esl::economics {
     struct price
     {
         std::int64_t value;
-        currency valuation;
+        iso_4217 valuation;
 
         explicit constexpr price(std::int64_t value,
-                                 currency valuation)  // = default_currency)
+                                 iso_4217 valuation)  // = default_currency)
         : value(value), valuation(valuation)
         {
 
@@ -174,7 +174,7 @@ namespace esl::economics {
             (void)version;
             archive &BOOST_SERIALIZATION_NVP(value);
             archive &boost::serialization::make_nvp(
-                "valuation", const_cast<currency &>(valuation));
+                "valuation", const_cast<iso_4217 &>(valuation));
         }
     };
 }

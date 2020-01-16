@@ -26,7 +26,7 @@
 #define ESL_CASH_HPP
 
 #include <esl/algorithms.hpp>
-#include <esl/economics/currency.hpp>
+#include <esl/economics/iso_4217.hpp>
 #include <esl/economics/money.hpp>
 #include <esl/economics/tangibility.hpp>
 #include <esl/quantity.hpp>
@@ -41,7 +41,7 @@ namespace esl::economics {
     : public money
     , public intangible
     {
-        explicit cash(currency denomination) : money(denomination)
+        explicit cash(iso_4217 denomination) : money(denomination)
         {}
 
         virtual ~cash() = default;
@@ -94,7 +94,7 @@ namespace std {
     {
         std::size_t operator()(const esl::economics::cash &c) const
         {
-            return std::hash<esl::economics::currency>()(
+            return std::hash<esl::economics::iso_4217>()(
                 c.denomination);
         }
     };

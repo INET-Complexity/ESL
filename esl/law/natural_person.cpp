@@ -24,7 +24,7 @@
 ///
 #include <esl/law/natural_person.hpp>
 using namespace esl::law;
-#include <esl/geography/country.hpp>
+#include <esl/geography/iso_3166_1_alpha_2.hpp>
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
@@ -34,7 +34,7 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE(natural_person)
 {
     class_<natural_person>
-        ( "natural_person", init<esl::geography::country>())
+        ( "natural_person", init<esl::geography::iso_3166_1_alpha_2>())
         .def_readonly("nationality", &natural_person::nationality)
         ;
 }

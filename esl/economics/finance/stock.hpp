@@ -54,7 +54,7 @@ namespace esl::economics::finance {
         ///
         /// \brief  Creates a fictional ISIN code for the company
         ///
-        stock(const identity<property> &pi, geography::country c,
+        stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
               const identity<company> &i, const share &s);
 
         ///

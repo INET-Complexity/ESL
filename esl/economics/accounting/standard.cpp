@@ -27,7 +27,7 @@
 
 namespace esl::economics::accounting {
 
-    standard::standard(currency reporting_currency)
+    standard::standard(iso_4217 reporting_currency)
     : reporting_currency(reporting_currency)
     {
 

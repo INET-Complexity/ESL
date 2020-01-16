@@ -34,7 +34,7 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE(price)
 {
     class_<esl::economics::price>("price",
-        init<std::int64_t, esl::economics::currency>())
+        init<std::int64_t, esl::economics::iso_4217>())
         .def_readwrite("value", &esl::economics::price::value)
         .def_readonly("valuation", &esl::economics::price::valuation)
 

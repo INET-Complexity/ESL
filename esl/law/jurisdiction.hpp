@@ -28,8 +28,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
 
-#include <esl/geography/country.hpp>
-#include <esl/economics/currency.hpp>
+#include <esl/geography/iso_3166_1_alpha_2.hpp>
+#include <esl/economics/iso_4217.hpp>
 
 namespace esl::law {
 
@@ -43,12 +43,12 @@ namespace esl::law {
     ///
     struct jurisdiction
     {
-        const geography::country sovereign;
+        const geography::iso_3166_1_alpha_2 sovereign;
 
-        const economics::currency tender;
+        const economics::iso_4217 tender;
 
-        constexpr jurisdiction(geography::country sovereign,
-                               economics::currency tender)
+        constexpr jurisdiction(geography::iso_3166_1_alpha_2 sovereign,
+                               economics::iso_4217 tender)
         : sovereign(sovereign)
         , tender(tender)
         {
@@ -62,9 +62,9 @@ namespace esl::law {
         {
             (void)version;
             archive &boost::serialization::make_nvp(
-                "sovereign", const_cast<geography::country &>(sovereign));
+                "sovereign", const_cast<geography::iso_3166_1_alpha_2 &>(sovereign));
             archive &boost::serialization::make_nvp(
-                "tender", const_cast<economics::currency &>(tender));
+                "tender", const_cast<economics::iso_4217 &>(tender));
         }
     };
 
@@ -76,7 +76,7 @@ namespace std {
     {
         constexpr size_t operator()(const esl::law::jurisdiction &j) const
         {
-            return hash<esl::geography::country>()(j.sovereign);
+            return hash<esl::geography::iso_3166_1_alpha_2>()(j.sovereign);
         }
     };
 }  // namespace std

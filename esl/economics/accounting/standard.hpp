@@ -25,7 +25,7 @@
 #ifndef ESL_STANDARD_HPP
 #define ESL_STANDARD_HPP
 
-#include <esl/economics/currency.hpp>
+#include <esl/economics/iso_4217.hpp>
 
 
 namespace esl::economics::accounting {
@@ -38,9 +38,9 @@ namespace esl::economics::accounting {
     ///
     struct standard
     {
-        const currency reporting_currency;
+        const iso_4217 reporting_currency;
 
-        explicit standard(currency reporting_currency);
+        explicit standard(iso_4217 reporting_currency);
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

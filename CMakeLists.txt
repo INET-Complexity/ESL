@@ -208,14 +208,14 @@ SET(SOURCE_FILES
         esl/law/property_collection.cpp
         esl/law/property_collection.hpp
 
-        esl/geography/country.cpp
-        esl/geography/country.hpp
+        esl/geography/iso_3166_1_alpha_2.cpp
+        esl/geography/iso_3166_1_alpha_2.hpp
 
         esl/geography/countries.cpp
         esl/geography/countries.hpp
 
-        esl/economics/currency.cpp
-        esl/economics/currency.hpp
+        esl/economics/iso_4217.cpp
+        esl/economics/iso_4217.hpp
 
         esl/economics/currencies.cpp
         esl/economics/currencies.hpp
@@ -322,8 +322,7 @@ SET(SOURCE_FILES
         esl/economics/finance/loan.cpp
         esl/economics/finance/loan.hpp
 
-
-        )
+        esl/geography/country.cpp esl/geography/country.hpp esl/economics/currency.cpp esl/economics/currency.hpp)
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})

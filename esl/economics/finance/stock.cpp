@@ -31,7 +31,7 @@ namespace esl::economics::finance {
     /// \return     A fictional code from company details (any matches to the real world are coincidental).
     ///             There can be collisions in the space of 9^12 possible ISIN codes per country.
     // constexpr
-    isin create_isin(geography::country issuer, const identity<company> &c,
+    isin create_isin(geography::iso_3166_1_alpha_2 issuer, const identity<company> &c,
                      share s)
     {
         constexpr std::array<char, 36> table_ = {
@@ -85,7 +85,7 @@ namespace esl::economics::finance {
 
     }
 
-    stock::stock(const identity<property> &pi, geography::country c,
+    stock::stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
                  const identity<company> &i, const share &s)
     : stock(pi, i, s, create_isin(c, i, s))
     {
@@ -114,7 +114,7 @@ BOOST_PYTHON_MODULE(stock)
     class_<esl::economics::finance::stock>
         ( "stock", init<>())
         .def(init<esl::economics::company&, const esl::economics::finance::share &>())
-        .def(init<esl::identity<esl::law::property>, esl::geography::country, esl::identity<esl::economics::company>, esl::economics::finance::share>())
+        .def(init<esl::identity<esl::law::property>, esl::geography::iso_3166_1_alpha_2, esl::identity<esl::economics::company>, esl::economics::finance::share>())
         .def(init<esl::identity<esl::law::property>, esl::identity<esl::economics::company>, esl::economics::finance::share, esl::economics::finance::isin>())
         .def("name", &esl::economics::finance::stock::name)
         .def(self < self)

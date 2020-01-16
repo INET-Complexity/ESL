@@ -3,7 +3,7 @@
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2018-04-27
+/// \date       2019-12-13
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -25,84 +25,17 @@
 #ifndef ESL_COUNTRY_HPP
 #define ESL_COUNTRY_HPP
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// INSTANCE ISO 3166-1 alpha-2 Country Code
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <array>
-#include <iostream>
-
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/nvp.hpp>
-
+#include <string>
 
 namespace esl::geography {
 
-    struct country
+    class country
     {
-        ///
-        /// \brief  ISO_3166-1_alpha-2
-        ///
-        const std::array<char, 2> code;
+        std::string name;
 
-        ///
-        /// \param code
-        ///
-        explicit constexpr country(std::array<char, 2> code = {'X',
-                                                               'X'}) noexcept
-        : code(code)
-        {
-
-        }
-
-        ~country() = default;
-
-        ///
-        ///
-        ///
-        friend std::ostream &operator<<(std::ostream &o, const country &c)
-        {
-            o.write(c.code.data(), c.code.size());
-            return o;
-        }
-
-        ///
-        /// \tparam archive_t
-        /// \param archive
-        /// \param version
-        template<class archive_t>
-        void serialize(archive_t &archive, const unsigned int version)
-        {
-            (void)version;
-            archive &boost::serialization::make_nvp(
-                "code", const_cast<std::array<char, 2> &>(code));
-        }
+        country(const std::string &name);
     };
-}  // namespace esl::geography
 
+}
 
-namespace std {
-    template<>
-    struct hash<esl::geography::country>
-    {
-        constexpr size_t operator()(const esl::geography::country &c) const
-        {
-            return size_t(c.code[0] - 'A') + 26 * size_t(c.code[1] - 'A');
-        }
-    };
-}  // namespace std
-
-
-#ifdef WITH_MPI
-#include <boost/mpi.hpp>
-
-namespace boost::mpi {
-    template<>
-    struct is_mpi_datatype<esl::geography::country>
-    : public mpl::true_
-    {};
-}  // namespace boost::mpi
-#endif  // WITH_MPI
-
-
-#endif  // ESL_COUNTRY_HPP
+#endif //ESL_COUNTRY_HPP

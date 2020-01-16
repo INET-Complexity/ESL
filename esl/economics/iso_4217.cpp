@@ -1,9 +1,9 @@
-/// \file   currency.hpp
+/// \file   currency.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-12-13
+/// \date       2018-02-04
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,16 +22,25 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_CURRENCY_HPP
-#define ESL_CURRENCY_HPP
+#include <esl/economics/iso_4217.hpp>
 
 
-namespace esl::economics {
+#ifdef WITH_PYTHON
+#include <boost/python.hpp>
 
-    class currency {
+#include <string>
 
-    };
-
+std::string python_currency_code(const esl::economics::iso_4217 &c)
+{
+    return ((std::string() + c.code[0]) + c.code[1]) + c.code[1];
 }
 
-#endif //ESL_CURRENCY_HPP
+
+using namespace boost::python;
+BOOST_PYTHON_MODULE(currency)
+{
+    class_<esl::economics::iso_4217>("iso_4217")
+        .add_property("code", python_currency_code)
+        ;
+}
+#endif
