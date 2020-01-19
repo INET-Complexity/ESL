@@ -165,6 +165,8 @@ namespace esl::economics::finance {
             case 'Y':
             case 'Z':
                 return static_cast<std::uint8_t>(c - 'A') + 10;
+            default:
+                return 0;
             }
         }
 

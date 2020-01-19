@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   standard.hpp
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2018-04-01
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,14 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from esl.economics.iso4217 import ISO4217
 
 
-class Location(object):
-    pass
+class Standard(object):
+    reporting_currency: ISO4217
+
+    def __init__(self, reporting_currency: ISO4217):
+        self.reporting_currency = reporting_currency
+
+

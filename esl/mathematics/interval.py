@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   interval.hpp
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2018-01-31
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,21 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from typing import List, TypeVar, Generic
+
+N = TypeVar('N')
 
 
-class Location(object):
-    pass
+class Interval():  #Generic[N]):
+    __slots__ = ["lower", "upper", "left_closed_", "right_closed_"]
+    #lower: N
+    #upper: N
+    left_closed_: bool
+    right_closed_: bool
+
+    def __init__(self, lower, upper, left_closed_=True, right_closed_=True):
+        self.lower = lower
+        self.upper = upper
+        self.left_closed_ = left_closed_
+        self.right_closed_ = right_closed_

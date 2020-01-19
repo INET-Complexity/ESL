@@ -38,9 +38,9 @@ namespace esl::simulation::parameter {
 
     struct parametrization
     {
-        struct value_base
+        struct parameter_base
         {
-            virtual ~value_base() = default;
+            virtual ~parameter_base() = default;
 
 
             template<class archive_t>
@@ -52,12 +52,12 @@ namespace esl::simulation::parameter {
         };
 
         template<typename parameter_t_>
-        struct value
-        : public value_base
+        struct constant
+        : public parameter_base
         {
             parameter_t_ choice;
 
-            value(parameter_t_ choice)
+            constant(parameter_t_ choice)
             : choice(choice)
             {
 
@@ -67,12 +67,12 @@ namespace esl::simulation::parameter {
             void serialize(archive_t & archive, const unsigned int version)
             {
                 (void)version;
-                archive & BOOST_SERIALIZATION_BASE_OBJECT_NVP(value_base);
+                archive & BOOST_SERIALIZATION_BASE_OBJECT_NVP(parameter_base);
                 archive & BOOST_SERIALIZATION_NVP(choice);
             }
         };
 
-        std::map<std::string, std::shared_ptr<value_base>> values;
+        std::map<std::string, std::shared_ptr<parameter_base>> values;
 
         ///
         /// \brief Constructs a model parametrization with the minimum number of
@@ -85,9 +85,9 @@ namespace esl::simulation::parameter {
                        , time_point start       = time_point()
                        , time_point end         = time_point() + 1)
         {
-            values["sample"] = std::make_shared<value<std::uint64_t>>(sample);
-            values["start"]  = std::make_shared<value<time_point>>(start);
-            values["end"]    = std::make_shared<value<time_point>>(end);
+            values["sample"] = std::make_shared<constant<std::uint64_t>>(sample);
+            values["start"]  = std::make_shared<constant<time_point>>(start);
+            values["end"]    = std::make_shared<constant<time_point>>(end);
         }
 
 
@@ -100,7 +100,7 @@ namespace esl::simulation::parameter {
             }
 
             auto value_ =
-                std::dynamic_pointer_cast<value<parameter_t_>>(iterator_->second);
+                std::dynamic_pointer_cast<constant<parameter_t_>>(iterator_->second);
 
             if(!value_) {
                 throw std::exception();

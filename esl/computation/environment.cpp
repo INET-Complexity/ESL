@@ -75,6 +75,7 @@ namespace esl::computation {
     ///
     size_t environment::send_messages(simulation::model &simulation)
     {
+        size_t messages_ = 0;
         for(auto &[i, a] : simulation.agents.local_agents_) {
             (void) i;
             for(auto m : a->outbox) {
@@ -87,11 +88,12 @@ namespace esl::computation {
                 }
 
                 iterator_->second->inbox.insert({m->received, m});
+                ++messages_;
             }
             a->outbox.clear();
         }
 
-        return 0;
+        return messages_;
     }
 
 
@@ -130,7 +132,7 @@ namespace esl::computation {
     void environment::run(std::shared_ptr<simulation::model> simulation)
     {
         simulation->initialize();
-        // auto next_timestep_minimum_ = simulation->time;
+
         simulation::time_interval step_ = {simulation->start, simulation->end};
         do {
             size_t changes_ = 0;

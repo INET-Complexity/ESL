@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   protocol.py
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2018-09-05
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,36 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from esl.agent import Agent
+from esl.simulation.identity import Identity
 
 
-class Location(object):
-    pass
+class Activation(object):
+    __slots__ = ['location', 'activated']
+    location: int
+    activated: Identity[Agent]
+
+    def __init__(self, location: int, activated: Identity[Agent]):
+        self.location = location
+        self.activated = activated
+
+
+class Deactivation(object):
+    __slots__ = ['deactivated']
+    deactivated: Identity[Agent]
+
+    def __init__(self, deactivated: Identity[Agent]):
+        self.deactivated = deactivated
+
+
+class Migration(object):
+    __slots__ = ['source', 'target', 'migrant']
+    source: int
+    target: int
+    migrant: Identity[Agent]
+
+    def __init__(self, source: int, target: int, migrant: Identity[Agent]):
+        self.source = source
+        self.target = target
+        self.migrant = migrant

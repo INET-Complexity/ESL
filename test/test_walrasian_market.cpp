@@ -175,6 +175,7 @@ struct test_constant_demand_trader
     esl::simulation::time_point act(esl::simulation::time_interval step,
                                     std::seed_seq &seed) override
     {
+        (void) seed;
         esl::economics::accounting::standard a(esl::economics::currencies::USD);
         auto wealth1_ =
             esl::law::owner<esl::economics::cash>::properties.value(a);
@@ -184,6 +185,7 @@ struct test_constant_demand_trader
 
         auto working_capital_ = wealth1_ + wealth2_;
 
+        (void) working_capital_;
 
         for(auto [k, message_] : inbox) {
             switch(message_->type) {
@@ -198,7 +200,6 @@ struct test_constant_demand_trader
                 std::vector<double> valuation =
                     std::vector<double>(assets, 100.0);
                 std::vector<double> signal;
-
 
                 for(size_t a = 0; a < assets; ++a) {
                     signal.push_back(abs(4 /*distribution_(generator_)*/));

@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   country.py
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2019-12-13
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,12 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
 
 
-class Location(object):
-    pass
+class Country(object):
+    name: str
+
+    def __int__(self, name: str):
+        assert name is not None
+        self.name = name

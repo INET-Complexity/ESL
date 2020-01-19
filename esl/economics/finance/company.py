@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   company.py
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2018-04-27
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,24 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from typing import Dict
+
+from esl.simulation.identity import Identity
+from esl.law.organization import Organization
+from esl.economics.finance.share import Share
+from esl.economics.finance.shareholder import Shareholder
 
 
-class Location(object):
-    pass
+class Company(Organization, Shareholder):  # , IdentifiableA[Company]):
+    shares_outstanding: Dict[Share, int]
+    shareholders: Dict[Identity[Shareholder], Dict[Share, int]]
+
+    def __init__(self, shares_outstanding=None, shareholders=None):
+        super().__init__()
+        if shares_outstanding is None:
+            shares_outstanding = dict()
+        if shareholders is None:
+            shareholders = dict()
+        self.shares_outstanding = shares_outstanding
+        self.shareholders = shareholders

@@ -95,7 +95,6 @@ namespace esl::computation::distributed {
             archive & BOOST_SERIALIZATION_NVP(deactivated);
         }
     };
-
 }
 
 #ifdef WITH_MPI

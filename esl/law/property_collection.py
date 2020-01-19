@@ -1,9 +1,9 @@
-# \file   location.py
+# \file   property_collection.py
 #
 # \brief
 #
 # \authors    Maarten P. Scholl
-# \date       2018-04-28
+# \date       2019-09-26
 # \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 #             Oxford Martin School, University of Oxford
 #
@@ -21,7 +21,11 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from typing import Dict
+
+from esl.law.property import Property
+from esl.quantity import Quantity
 
 
-class Location(object):
-    pass
+PropertyCollection = Dict[Property, Quantity]

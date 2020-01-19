@@ -1,4 +1,4 @@
-# \file   location.py
+# \file   fungibility.py
 #
 # \brief
 #
@@ -21,7 +21,13 @@
 #
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
+#
+from abc import ABC
 
 
-class Location(object):
+class Fungible(ABC):
+    pass
+
+
+class Infungible(ABC):
     pass

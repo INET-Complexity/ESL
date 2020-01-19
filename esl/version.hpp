@@ -25,16 +25,12 @@
 #ifndef ESL_VERSION_HPP
 #define ESL_VERSION_HPP
 
-constexpr unsigned int ESL_VERSION_MAJOR    = 0;
-constexpr unsigned int ESL_VERSION_MINOR    = 0;
-constexpr unsigned int ESL_VERSION_REVISION = 0;
+#include <esl/version>
 
 #include <string>
 
 namespace esl {
-    using std::string;
-
-    string version();
+    std::string version();
 }  // namespace esl
 
 #endif  // ESL_VERSION_HPP
