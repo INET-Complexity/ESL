@@ -1,3 +1,4 @@
+setuptools
+pytest
 numpy
 mpi4py
-pytest
