@@ -27,9 +27,8 @@
 #include <sstream>
 using std::stringstream;
 
-
 namespace esl {
-    string version()
+    std::string version()
     {
         stringstream stream_;
         stream_ << ESL_VERSION_MAJOR << '.';

@@ -22,23 +22,32 @@
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
 #
+from typing import NewType
+
+
 from esl.agent import Agent
 from esl.simulation.identity import Identity
 
 
+NodeIdentifier = NewType('Digit', int)
+
+
 class Activation(object):
     __slots__ = ['location', 'activated']
-    location: int
-    activated: Identity[Agent]
+    location: NodeIdentifier
+    activated: Identity  # Identity[Agent]
 
-    def __init__(self, location: int, activated: Identity[Agent]):
+    def __init__(self
+                 , location: int
+                 , activated: Identity  # Identity[Agent]
+                 ):
         self.location = location
         self.activated = activated
 
 
 class Deactivation(object):
     __slots__ = ['deactivated']
-    deactivated: Identity[Agent]
+    deactivated: Identity  # Identity[Agent]
 
     def __init__(self, deactivated: Identity[Agent]):
         self.deactivated = deactivated
@@ -46,11 +55,15 @@ class Deactivation(object):
 
 class Migration(object):
     __slots__ = ['source', 'target', 'migrant']
-    source: int
-    target: int
-    migrant: Identity[Agent]
+    source: NodeIdentifier
+    target: NodeIdentifier
+    migrant: Identity  # Identity[Agent]
 
-    def __init__(self, source: int, target: int, migrant: Identity[Agent]):
+    def __init__(self
+                 , source: NodeIdentifier
+                 , target: NodeIdentifier
+                 , migrant: Identity  # Identity[Agent]
+                 ):
         self.source = source
         self.target = target
         self.migrant = migrant

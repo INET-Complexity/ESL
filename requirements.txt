@@ -1,1 +1,3 @@
+numpy
+mpi4py
 pytest

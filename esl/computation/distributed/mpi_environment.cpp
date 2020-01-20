@@ -34,47 +34,25 @@
 #include <esl/interaction/header.hpp>
 #include <esl/simulation/model.hpp>
 
-
-namespace {
-    template<class SharedPointer>
-    struct Holder
-    {
-        SharedPointer p;
-
-        Holder(const SharedPointer &p) : p(p)
-        {}
-        Holder(const Holder &other) : p(other.p)
-        {}
-        Holder(Holder &&other) : p(std::move(other.p))
-        {}
-
-        void operator()(...)
-        {
-            p.reset();
-        }
-    };
-}  // namespace
-
-template<class T>
-std::shared_ptr<T> to_std_ptr(const boost::shared_ptr<T> &p)
+///
+/// \brief https://stackoverflow.com/questions/12314967/cohabitation-of-boostshared-ptr-and-stdshared-ptr
+///
+/// \tparam T
+/// \param ptr
+/// \return
+template<typename T>
+boost::shared_ptr<T> to_boost_ptr(std::shared_ptr<T>& ptr)
 {
-    typedef Holder<std::shared_ptr<T>> H;
-    if(H *h = boost::get_deleter<H>(p)) {
-        return h->p;
-    } else {
-        return std::shared_ptr<T>(p.get(), Holder<boost::shared_ptr<T>>(p));
-    }
+    return boost::shared_ptr<T>(ptr.get(), [ptr](T*) mutable {ptr.reset();});
 }
 
-template<class T>
-boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p)
+///
+/// \brief https://stackoverflow.com/questions/12314967/cohabitation-of-boostshared-ptr-and-stdshared-ptr
+///
+template<typename T>
+std::shared_ptr<T> to_std_ptr(boost::shared_ptr<T>& ptr)
 {
-    typedef Holder<boost::shared_ptr<T>> H;
-    if(H *h = std::get_deleter<H>(p)) {
-        return h->p;
-    } else {
-        return boost::shared_ptr<T>(p.get(), Holder<std::shared_ptr<T>>(p));
-    }
+    return std::shared_ptr<T>(ptr.get(), [ptr](T*) mutable {ptr.reset();});
 }
 
 
@@ -119,15 +97,13 @@ namespace esl::computation::distributed {
         boost::mpi::all_to_all(communicator_, activated_locally_,
                                activations_stacked_);
 
+        size_t result_ = 0;
         std::vector<activation> activations_;
         for(auto s : activations_stacked_) {
-            activations_.insert(activations_.begin(), s.begin(), s.end());
-        }
-
-        size_t result_ = 0;
-        for(auto a : activations_) {
-            activate_agent(a.activated, a.location);
-            ++result_;
+            for(auto a : s) {
+                activate_agent(a.activated, a.location);
+                ++result_;
+            }
         }
 
         if(result_) {
@@ -307,7 +283,8 @@ namespace esl::computation::distributed {
                 // TODO: inefficient
                 for(const auto &a : simulation.agents.local_agents_) {
                     if(a.first == m.migrant) {
-                        boost::shared_ptr<agent> a2 = to_boost_ptr(a.second);
+                        std::shared_ptr<agent> astd = a.second;
+                        boost::shared_ptr<agent> a2 = to_boost_ptr<esl::agent>(astd);
                         communicator_.send(m.target, 0, a2);
                         simulation.agents.local_agents_.erase(a.first);
                         break;

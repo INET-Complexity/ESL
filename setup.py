@@ -9,7 +9,10 @@ except ImportError:
 
 
 def parse_version():
-    version = [0, 0, 0]
+    version = []
+    with open('version') as f:
+        for l in f.readlines():
+            version.append(l.split()[-1])
     version_representation = ".".join(map(str,version))
     return version, version_representation
 
@@ -53,7 +56,9 @@ modules = [ Extension("esl.quantity",                   ["esl/quantity.py"])
 
             #   distributed
             , Extension("esl.computation.distributed.mpi_environment", ["esl/computation/distributed/mpi_environment.py"])
-            , Extension("esl.computation.distributed.protocol",        ["esl/computation/distributed/protocol.py"])
+            , Extension("esl.computation.distributed.protocol",        ["esl/computation/distributed/protocol.py"
+                                                                       ,"esl/computation/distributed/protocol.pxd"
+                                                                       ])
 
             ########################################################################################################
             # data
@@ -140,12 +145,9 @@ modules = [ Extension("esl.quantity",                   ["esl/quantity.py"])
 for module in modules:
     module.cython_directives = {'language_level': "3"}
 
-
-version, version_representation = parse_version()
-
 setuptools.setup(
     name                            = "esl",
-    version                         = f"{version_representation}-dev3",
+    version                         = f"parse_version()[1]}-python",
     author                          = "The Institute for New Economic Thinking at the Oxford Martin School",
     author_email                    = "maarten.scholl@cs.ox.ac.uk",
     description                     = "The Economic Simulation Library",

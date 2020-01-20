@@ -22,9 +22,11 @@
 #             You may obtain instructions to fulfill the attribution
 #             requirements in CITATION.cff
 #
-from typing import List
+from typing import List, Dict
 
-import mpi4py
+from mpi4py import MPI
+import numpy
+
 
 from esl.computation.environment import Environment
 from esl.computation.timing import AgentTiming
@@ -32,15 +34,19 @@ from esl.simulation.model import Model
 from esl.computation.distributed.protocol import Migration
 from esl.simulation.identity import Identity
 from esl.agent import Agent
+from esl.computation.distributed.protocol import Activation, NodeIdentifier
 
 
 class MpiEnvironment(Environment):
 
+    agent_locations_: Dict[Identifier, NodeIdentifier] # Identifier[Agent]
+
     def __init__(self):
         super().__init__()
+        self.communicator = MPI.COMM_WORLD
 
     def is_coordinator(self) -> bool:
-        pass
+        return 0 == self.communicator.Get_rank()
 
     def migrate(self, simulation: Model, timing: AgentTiming) -> None:
         pass
@@ -49,10 +55,22 @@ class MpiEnvironment(Environment):
         pass
 
     def migrate_agents(self) -> List[Migration]:
-        pass
+        return []
 
     def activate(self) -> int:
-        pass
+        activated_locally_ = numpy.empty(self.communicator.Get_size(), dtype=list)
+        for i in range(self.communicator.Get_size()):
+            activated_locally_[i] = [Activation(self.rank, j) for j in self.activated_]
+        activations_stacked_ = numpy.empty(self.communicator.Get_size(), dtype=list)
+        self.communicator.Alltoall(activated_locally_, activations_stacked_)
+
+        activations_: List[Activation] = []
+        result_ = 0
+        for s in activations_stacked_:
+            for activation in s:
+                agent_locations_[activation.activated.identifier] = activation.location
+                result_ += 1
+        return result_
 
     def deactivate(self) -> int:
         pass
