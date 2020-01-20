@@ -1,6 +1,6 @@
 ################################################################################
 
-FILE(READ "esl/version.hpp" version_header)
+FILE(READ "esl/version" version_header)
 
 STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
@@ -322,7 +322,12 @@ SET(SOURCE_FILES
         esl/economics/finance/loan.cpp
         esl/economics/finance/loan.hpp
 
-        esl/geography/country.cpp esl/geography/country.hpp esl/economics/currency.cpp esl/economics/currency.hpp)
+        esl/geography/country.cpp
+        esl/geography/country.hpp
+
+        esl/economics/currency.cpp
+        esl/economics/currency.hpp
+        )
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
