@@ -10,7 +10,7 @@ except ImportError:
 
 def parse_version():
     version = []
-    with open('version') as f:
+    with open('esl/version') as f:
         for l in f.readlines():
             version.append(l.split()[-1])
     version_representation = ".".join(map(str,version))
@@ -147,7 +147,7 @@ for module in modules:
 
 setuptools.setup(
     name                            = "esl",
-    version                         = f"parse_version()[1]}-python",
+    version                         = f"{parse_version()[1]}-python",
     author                          = "The Institute for New Economic Thinking at the Oxford Martin School",
     author_email                    = "maarten.scholl@cs.ox.ac.uk",
     description                     = "The Economic Simulation Library",

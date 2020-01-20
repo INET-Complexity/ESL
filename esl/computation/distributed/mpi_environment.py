@@ -38,11 +38,11 @@ from esl.computation.distributed.protocol import Activation, NodeIdentifier
 
 
 class MpiEnvironment(Environment):
-
     agent_locations_: Dict[Identifier, NodeIdentifier] # Identifier[Agent]
 
     def __init__(self):
         super().__init__()
+        self.agent_locations_ = dict()
         self.communicator = MPI.COMM_WORLD
 
     def is_coordinator(self) -> bool:
@@ -68,24 +68,24 @@ class MpiEnvironment(Environment):
         result_ = 0
         for s in activations_stacked_:
             for activation in s:
-                agent_locations_[activation.activated.identifier] = activation.location
+                self.agent_locations_[activation.activated.identifier] = activation.location
                 result_ += 1
         return result_
 
     def deactivate(self) -> int:
-        pass
+        ...
 
     def before_step(self) -> None:
-        pass
+        ...
 
     def after_step(self, simulation: Model) -> None:
-        pass
+        ...
 
     def activate_agent(self, a: Identity[Agent]) -> None:
-        pass
+        ...
 
     def deactivate_agent(self, a: Identity[Agent]) -> None:
-        pass
+        ...
 
     def send_messages(self, simulation: Model) -> int:
-        pass
+        ...
