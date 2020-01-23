@@ -121,10 +121,10 @@ namespace esl::simulation {
         /// \tparam entity_type_
         /// \param parent
         /// \return
-        template<typename agent_derived_t_, typename entity_type_>
-        std::shared_ptr<agent_derived_t_> create(entity_type_ &parent)
+        template<typename agent_derived_t_, typename entity_type_, typename ... arguments_>
+        std::shared_ptr<agent_derived_t_> create(entity_type_ &parent, arguments_ ... arguments)
         {
-            return agents.template create<agent_derived_t_, entity_type_>(parent);
+            return agents.template create<agent_derived_t_, entity_type_>(parent, arguments ...);
         }
 
         ///
@@ -132,10 +132,10 @@ namespace esl::simulation {
         ///
         /// \tparam agent_derived_t_
         /// \return
-        template<typename agent_derived_t_>
-        std::shared_ptr<agent_derived_t_> create()
+        template<typename agent_derived_t_, typename ... arguments_>
+        std::shared_ptr<agent_derived_t_> create(arguments_ ... arguments)
         {
-            return agents.template create<agent_derived_t_, simulation::world>(world);
+            return agents.template create<agent_derived_t_, simulation::world>(world, arguments ...);
         }
 
         ///

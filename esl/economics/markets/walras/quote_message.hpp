@@ -33,7 +33,7 @@
 #include <esl/economics/markets/quote_message.hpp>
 
 
-namespace esl::economics::walras {
+namespace esl::economics::markets::walras {
     struct quote_message
     : public markets::quote_message<
           quote_message, esl::interaction::library_message_code<0x00A0U>()>
@@ -71,7 +71,7 @@ namespace esl::economics::walras {
 namespace boost::mpi {
 
     template<>
-    struct is_mpi_datatype<esl::economics::walras::quote_message>
+    struct is_mpi_datatype<esl::economics::markets::walras::quote_message>
     : public mpl::false_
     {
 

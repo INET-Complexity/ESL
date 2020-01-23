@@ -162,7 +162,7 @@ namespace esl::economics::markets::walras {
 
         for(const auto &p : participants) {
             auto m = this->template create_message<
-                esl::economics::walras::quote_message>(
+                esl::economics::markets::walras::quote_message>(
                 p, step.lower, this->identifier, p, quote_map_);
         }
         state = clearing_market;
@@ -180,7 +180,6 @@ namespace esl::economics::markets::walras {
     {
         excess_demand_model_context context(
             std::vector<double>(traded_properties.size(), 1.0));
-
 
         std::vector<quote> quotes_;
         for(const auto &[k, v] : traded_properties) {

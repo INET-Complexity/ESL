@@ -71,13 +71,13 @@ namespace esl::simulation {
             return identifier_;
         }
 
-        template<typename agent_derived_t_, typename entity_type_>
-        std::shared_ptr<agent_derived_t_> create(entity_type_ &parent)
+        template<typename agent_derived_t_, typename entity_type_, typename ... arguments_>
+        std::shared_ptr<agent_derived_t_> create(entity_type_ &parent, arguments_ ... arguments)
         {
             auto identifier_ =
                 parent.identifier.template create<agent_derived_t_>(parent);
             std::shared_ptr<agent_derived_t_> result_ =
-                std::make_shared<agent_derived_t_>((identifier_));
+                std::make_shared<agent_derived_t_>((identifier_), arguments ...);
             // The agent is now constructed, so we can lock its callback
             // data structure.
             result_->locked_ = true;

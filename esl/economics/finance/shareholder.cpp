@@ -54,8 +54,8 @@ namespace esl::economics::finance {
                 return submit_dividend_record(step);
             });
 
-        this->template register_callback<esl::economics::walras::quote_message>(
-            [this](std::shared_ptr<esl::economics::walras::quote_message> m,
+        this->template register_callback<esl::economics::markets::walras::quote_message>(
+            [this](std::shared_ptr<esl::economics::markets::walras::quote_message> m,
                    simulation::time_interval step) {
 
                 for(auto &[k, v] : m->proposed){

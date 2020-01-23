@@ -88,7 +88,7 @@ namespace esl::economics {
         std::map<finance::share, std::tuple<std::uint64_t, price>>
         compute_dividend_per_share(const price &unappropriated_profit);
 
-    private:
+    protected:
         simulation::time_point last_announced_;
 
         simulation::time_point last_payment_;
