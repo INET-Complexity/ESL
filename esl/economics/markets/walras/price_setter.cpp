@@ -120,7 +120,6 @@ namespace esl::economics::markets::walras {
                 quotes_.push_back(v);
             }
         }else{
-            std::cout << " clearing " << std::endl;
             std::unordered_map<
                 identity<agent>,
                 std::shared_ptr<walras::differentiable_order_message>>
