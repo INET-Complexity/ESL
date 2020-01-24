@@ -51,11 +51,13 @@ namespace esl::simulation {
         environment_.before_step();
 
         // to be set externally
-        std::uint64_t sample_ = 0;
+        std::uint64_t sample_ = this->parameters.get<std::uint64_t>("sample");
 
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
         do {
+            std::cout << "________________________________________" << std::endl;
+            std::cout << "        time step " << step << " round " << round_ << std::endl;
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
                 // The seed is deterministic in the following variables.
@@ -71,9 +73,7 @@ namespace esl::simulation {
                 try {
                     first_event_ = std::min(first_event_,
                                             a->process_messages(step, seed_));
-
                     first_event_ = std::min(first_event_, a->act(step, seed_));
-
                 } catch(const std::runtime_error &e) {
                     // log() << "in agent[" << a->identifier <<  "].act: " <<
                     // e.what() << endl;
@@ -93,8 +93,7 @@ namespace esl::simulation {
                 // agent_action_time_[a->identifier].stop();
             }
             environment_.send_messages(*this);
-        } while(step.upper > first_event_);
-
+        } while(step.lower >= first_event_);
         environment_.after_step(*this);
 
         return first_event_;

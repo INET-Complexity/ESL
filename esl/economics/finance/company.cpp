@@ -65,11 +65,9 @@ namespace esl::economics {
             return {};
         }
 
-
         std::map<finance::share, std::tuple<std::uint64_t, price>> result_;
 
         double fraction_ = double(unappropriated_profit) / total_shares();
-
 
         for(const auto &[s, q] : shares_outstanding) {
             if(s.dividend) {

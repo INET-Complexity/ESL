@@ -36,7 +36,7 @@ struct differentiable_demand_supply_function
 
     virtual std::vector<esl::variable>
     excess_demand(const std::vector<esl::economics::quote> &quotes,
-                  std::vector<esl::variable> &variables) const = 0;
+                  std::vector<esl::variable> &multipliers) const = 0;
 
     ///
     /// \brief  Shim to convert from auto-differentiated variables to double

@@ -97,6 +97,12 @@ namespace esl::economics::markets::walras {
     {
         output_clearing_prices_ =
             create_output<std::vector<price>>("clearing_prices");
+
+        this->register_callback<esl::economics::markets::walras::differentiable_order_message>(
+                [this](auto msg, esl::simulation::time_interval ti) {
+                    std::cout << "received order" << std::endl;
+                    return ti.upper;
+                });
     }
 
 
@@ -104,7 +110,6 @@ namespace esl::economics::markets::walras {
     price_setter::act(esl::simulation::time_interval step, std::seed_seq &seed)
     {
         (void) seed; // TODO
-
         esl::simulation::time_point next_ = step.upper;
         std::vector<quote> quotes_;
 
@@ -114,7 +119,8 @@ namespace esl::economics::markets::walras {
                 (void)k;
                 quotes_.push_back(v);
             }
-        } else {
+        }else{
+            std::cout << " clearing " << std::endl;
             std::unordered_map<
                 identity<agent>,
                 std::shared_ptr<walras::differentiable_order_message>>

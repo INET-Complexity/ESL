@@ -151,7 +151,6 @@ namespace esl::interaction {
             result_->received  = delivery;
 
             this->outbox.push_back(result_);
-
             return result_;
         }
 
