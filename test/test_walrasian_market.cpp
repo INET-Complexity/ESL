@@ -75,8 +75,8 @@ struct test_trader_order
         std::map<esl::identity<esl::law::property>, esl::economics::price>
             valuations = {}  // vector<double> valuation = {}
         ,
-        const esl::economics::walras::quote_message &q =
-            esl::economics::walras::quote_message())
+        const esl::economics::markets::walras::quote_message &q =
+            esl::economics::markets::walras::quote_message())
 
     : esl::economics::markets::walras::differentiable_order_message(q.sender, q.recipient)
     , capital(capital)
