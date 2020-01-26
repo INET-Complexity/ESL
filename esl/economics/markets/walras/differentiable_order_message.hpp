@@ -39,8 +39,8 @@ namespace esl::economics::markets::walras {
     /// demand function.
     ///
     struct differentiable_order_message
-    : virtual differentiable_demand_supply_function
-    , public virtual markets::order_message<
+    : differentiable_demand_supply_function
+    , public  markets::order_message<
           differentiable_order_message,
           esl::interaction::library_message_code<0x00A2U>()>
     {
@@ -48,10 +48,10 @@ namespace esl::economics::markets::walras {
             differentiable_order_message,
             esl::interaction::library_message_code<0x00A2U>()>::order_message;
 
-        differentiable_order_message(
-            identity<agent> sender, identity<agent> recipient,
-            simulation::time_point sent     = simulation::time_point(),
-            simulation::time_point received = simulation::time_point());
+        //differentiable_order_message(
+         //   const identity<agent> &sender, const identity<agent> &recipient,
+          //  simulation::time_point sent     = simulation::time_point(),
+           // simulation::time_point received = simulation::time_point());
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

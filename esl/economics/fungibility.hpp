@@ -38,6 +38,11 @@ namespace esl::economics {
     ///
     struct fungible
     {
+        constexpr bool is_fungible() const
+        {
+            return true;
+        }
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
@@ -49,6 +54,11 @@ namespace esl::economics {
 
     struct infungible
     {
+
+        constexpr bool is_fungible() const
+        {
+            return false;
+        }
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

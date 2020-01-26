@@ -23,16 +23,3 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
-
-namespace esl::economics::markets::walras {
-    differentiable_order_message::differentiable_order_message(
-        identity<agent> sender, identity<agent> recipient,
-        simulation::time_point sent,
-        simulation::time_point received)
-    : order_message<differentiable_order_message,
-                    esl::interaction::library_message_code<0x00A2U>()>(
-        std::move(sender), std::move(recipient), sent, received)
-    {
-
-    }
-}

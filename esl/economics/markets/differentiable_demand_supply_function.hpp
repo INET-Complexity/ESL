@@ -29,7 +29,7 @@
 #include <esl/mathematics/variable.hpp>
 
 struct differentiable_demand_supply_function
-    : public virtual demand_supply_function
+    : public demand_supply_function
 {
     virtual ~differentiable_demand_supply_function() = default;
 

@@ -64,7 +64,8 @@ namespace esl::law {
         : agent(i), identifiable_as<owner<esl::law::property>>(), inventory()
         {
             this->register_callback<interaction::transfer>(
-                [this](auto msg, simulation::time_interval ti) {
+                [this](auto msg, simulation::time_interval ti, std::seed_seq &seed) {
+                    (void) seed;
                     if(this->identifier == msg->transferor) {
                         msg->transferred.erase_from(inventory);
                     } else if(this->identifier == msg->transferee) {
@@ -162,7 +163,7 @@ namespace esl::law {
         , properties()
         {
             this->template register_callback<esl::interaction::transfer>(
-                [this](auto msg, simulation::time_interval ti) {
+                [this](auto msg, simulation::time_interval ti, std::seed_seq &seed) {
                     if((*this).identifier == msg->transferor) {
                         // this process is duplicated several times for every
                         // inherited owner<p>, as we are reliant on dynamic type

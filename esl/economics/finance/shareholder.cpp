@@ -46,7 +46,7 @@ namespace esl::economics::finance {
 
         this->template register_callback<dividend_announcement_message>(
             [this](std::shared_ptr<dividend_announcement_message> m,
-                   simulation::time_interval step) {
+                   simulation::time_interval step, std::seed_seq &seed) {
                 ex_dividend_dates.insert(
                     {m->policy.ex_dividend_date,
                      dynamic_identity_cast<company>(m->sender)});
@@ -56,7 +56,7 @@ namespace esl::economics::finance {
 
         this->template register_callback<esl::economics::markets::walras::quote_message>(
             [this](std::shared_ptr<esl::economics::markets::walras::quote_message> m,
-                   simulation::time_interval step) {
+                   simulation::time_interval step, std::seed_seq &seed) {
 
                 for(auto &[k, v] : m->proposed){
                     assert(std::holds_alternative<price>(v.type));

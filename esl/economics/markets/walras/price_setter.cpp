@@ -99,7 +99,7 @@ namespace esl::economics::markets::walras {
             create_output<std::vector<price>>("clearing_prices");
 
         this->register_callback<esl::economics::markets::walras::differentiable_order_message>(
-                [this](auto msg, esl::simulation::time_interval ti) {
+                [this](auto msg, esl::simulation::time_interval ti, std::seed_seq &seed) {
                     std::cout << "received order" << std::endl;
                     return ti.upper;
                 });
@@ -131,12 +131,13 @@ namespace esl::economics::markets::walras {
                    == message_->type) {
                     auto quote_ = std::dynamic_pointer_cast<
                         walras::differentiable_order_message>(message_);
+                    std::cout << "quote_->sender " << quote_->sender << std::endl;
                     orders_.insert({quote_->sender, quote_});
                 }
             }
 
             if(!orders_.empty()) {
-                auto scalars_ = clear_market(orders_);
+                auto scalars_ = clear_market(orders_, step);
                 std::vector<price> prices_;
                 size_t i = 0;
                 for(const auto &[k, v] : traded_properties) {
@@ -179,9 +180,10 @@ namespace esl::economics::markets::walras {
     /// \brief  a
     ///
     std::vector<double> price_setter::clear_market(
-        const std::unordered_map<
-            identity<agent>,
-            std::shared_ptr<walras::differentiable_order_message>> &o)
+        const std::unordered_map < identity<agent>
+                                 , std::shared_ptr<walras::differentiable_order_message>
+                                 > &o
+            , const esl::simulation::time_interval &step)
     {
         excess_demand_model_context context(
             std::vector<double>(traded_properties.size(), 1.0));
@@ -231,7 +233,7 @@ namespace esl::economics::markets::walras {
 
 
         auto clearing_error_ = parameter.states.back()[0];
-        // cout << "error "<< parameter.states.back()[0] << endl;
+        std::cout << "error "<< clearing_error_ << std::endl;
 
 
         std::vector<double> prices_;
@@ -246,17 +248,9 @@ namespace esl::economics::markets::walras {
             model.excess_demand_functions_.push_back(function_);
         }
 
-
-        std::vector<std::vector<size_t>> assignments_(o.size());
         for(const auto &[k, v] : o) {
-            (void)k;
-            auto demand_ = v->excess_demand(quotes_, prices_);
-            for(size_t i = 0; i < demand_.size(); ++i) {
-                //                assignments_[i].push_back(demand_[i]);
-            }
-        }
+            std::cout << "market participant " << k << std::endl;
 
-        for(const auto &[k, v] : o) {
             auto demand_ = v->excess_demand(quotes_, prices_);
 
 
@@ -284,7 +278,7 @@ namespace esl::economics::markets::walras {
                                                   agent>(*this);
                     auto m =
                         this->template create_message<interaction::transfer>(
-                            k, 0 /*step.lower*/, this->identifier, k,
+                            k, step.lower, this->identifier, k,
                             transferor_, transferee_, transfers_);
                 } else if(ed > minimum_transfer_) {
                     auto transferor_ =
@@ -294,12 +288,11 @@ namespace esl::economics::markets::walras {
                         dynamic_identity_cast<law::owner<law::property>>(k);
                     auto m =
                         this->template create_message<interaction::transfer>(
-                            k, 0 /*step.lower*/, this->identifier, k,
+                            k, step.lower, this->identifier, k,
                             transferor_, transferee_, transfers_);
                 }
             }
         }
-        //  auto demand_per_property_ = f->excess_demand(quotes_, scalars_)
         return prices_;
     }
 

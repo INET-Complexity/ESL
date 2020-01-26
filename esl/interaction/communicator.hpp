@@ -64,7 +64,7 @@ namespace esl::interaction {
         ///         the time at which the next event is expected.
         ///
         typedef std::function<simulation::time_point(message_t,
-                                                     simulation::time_interval)>
+                                                     simulation::time_interval, std::seed_seq &)>
             callback_t;
 
         ///
@@ -147,6 +147,7 @@ namespace esl::interaction {
                        constructor_arguments_... arguments)
         {
             auto result_       = std::make_shared<message_type_>(arguments...);
+            assert(0 < recipient.digits.size());
             result_->recipient = recipient;
             result_->received  = delivery;
 
@@ -164,7 +165,8 @@ namespace esl::interaction {
         template<typename derived_message_t_>
         void register_callback(std::function<simulation::time_point(
                                    std::shared_ptr<derived_message_t_>,
-                                   simulation::time_interval)>
+                                   simulation::time_interval,
+                                   std::seed_seq &)>
                                    callback,
                                priority_t priority = 0)
         {
@@ -173,7 +175,7 @@ namespace esl::interaction {
 
             if(locked_) {
                 throw std::logic_error("communicator callback can only be "
-                                       "added at initialisation");
+                                       "added from constructor");
             }
 
             constexpr auto type_code_ = derived_message_t_::code;
@@ -185,11 +187,12 @@ namespace esl::interaction {
             }
 
             auto function_ = [callback](message_t m,
-                                        simulation::time_interval step) {
+                                        simulation::time_interval step, std::seed_seq &seed) {
+                // dynamically cast message to derived type that was asked for
                 auto converted_ =
                     std::dynamic_pointer_cast<derived_message_t_>(m);
 
-                return callback(converted_, step);
+                return callback(converted_, step, seed);
             };
 
             iterator_->second.insert(std::make_pair(priority, function_));
@@ -207,7 +210,7 @@ namespace esl::interaction {
         /// \return
         simulation::time_point
         process_message(message_t message,
-                        simulation::time_interval step) const;
+                        simulation::time_interval step, std::seed_seq &seed) const;
 
         ///
         /// \brief  Calls all callbacks registered with messages in the inbox.

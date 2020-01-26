@@ -83,7 +83,8 @@ namespace esl::economics::markets::walras {
         /// \brief
         ///
         std::vector<double> clear_market( const std::unordered_map<identity<agent>
-                                   , std::shared_ptr<walras::differentiable_order_message>> &o);
+                                   , std::shared_ptr<walras::differentiable_order_message>> &o
+                                   , const esl::simulation::time_interval &step);
 
 
         template<class archive_t>

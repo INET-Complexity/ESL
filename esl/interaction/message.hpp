@@ -40,8 +40,8 @@ namespace esl::interaction {
     {
     public:
         explicit message(
-            identity<agent> sender          = identity<agent>(),
-            identity<agent> recipient       = identity<agent>(),
+                const identity<agent> &sender          = identity<agent>(),
+                const identity<agent> &recipient       = identity<agent>(),
             simulation::time_point sent     = simulation::time_point(),
             simulation::time_point received = simulation::time_point())
         : header(type_code_, sender, recipient, sent, received)

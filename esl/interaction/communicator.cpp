@@ -36,7 +36,7 @@ namespace esl::interaction {
     /// \return
     simulation::time_point
     communicator::process_message(message_t message,
-                                  simulation::time_interval step) const
+                                  simulation::time_interval step, std::seed_seq &seed) const
     {
         auto first_event_ = step.upper;
 
@@ -47,7 +47,7 @@ namespace esl::interaction {
 
         for(auto i = callback_->second.rbegin(); i != callback_->second.rend();
             ++i) {
-            auto next_event_ = std::get<1>(*i)(message, step);
+            auto next_event_ = std::get<1>(*i)(message, step, seed);
             assert(step.lower <= next_event_ && next_event_ <= step.upper);
             first_event_ = std::min(first_event_, next_event_);
         }
@@ -103,7 +103,7 @@ namespace esl::interaction {
             }
 
             for(const auto &m : equal_) {
-                auto next_event_ = process_message(m, step);
+                auto next_event_ = process_message(m, step, seed);
                 first_event_     = std::min(first_event_, next_event_);
             }
         }
@@ -139,7 +139,7 @@ namespace esl::interaction {
                                   communicator::priority_t priority = 0)
     {
         communicator::callback_t callback_ =
-            [&callback](std::shared_ptr<header> p, simulation::time_interval s) {
+            [&callback](std::shared_ptr<header> p, simulation::time_interval s, std::seed_seq &seed) {
                 auto result_ = callback.attr("__call__")(p);
                 if(result_.is_none()) {
                     return s.upper;

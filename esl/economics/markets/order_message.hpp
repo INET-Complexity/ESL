@@ -42,8 +42,8 @@ struct order_message
     : public interaction::message<message_type_, type_code_>
 {
     order_message(
-        identity<agent> sender          = identity<agent>(),
-        identity<agent> recipient       = identity<agent>(),
+        const identity<agent> &sender          = identity<agent>(),
+        const identity<agent> recipient       = identity<agent>(),
         simulation::time_point sent     = simulation::time_point(),
         simulation::time_point received = simulation::time_point())
         : interaction::message<message_type_, type_code_>(sender, recipient,

@@ -79,7 +79,7 @@ namespace esl {
         /// significant to least significant
         ///
         constexpr explicit identity(std::vector<digit_t> &&digits = {}) noexcept
-        : digits(move(digits))
+        : digits(digits)
         {}
 
         ///
@@ -110,7 +110,7 @@ namespace esl {
         /// \param i    Other identity
         ///
         identity(identity<identifiable_type_> &&i) noexcept
-        : digits(std::move(i.digits))
+        : digits(i.digits)
         {}
 
         ///
@@ -129,7 +129,7 @@ namespace esl {
         inline identity<identifiable_type_> &
         operator=(identity<identifiable_type_> &&rhs) noexcept
         {
-            digits = move(rhs.digits);
+            digits = (rhs.digits);
             return *this;
         }
 
@@ -266,7 +266,7 @@ namespace esl {
             prefix_.push_back(parent.children_);
             ++parent.children_;
             prefix_.shrink_to_fit();
-            return identity<child_entity_type_>(move(prefix_));
+            return identity<child_entity_type_>((prefix_));
         }
 
         ///
