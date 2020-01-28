@@ -327,7 +327,7 @@ SET(SOURCE_FILES
 
         esl/economics/currency.cpp
         esl/economics/currency.hpp
-        )
+        esl/economics/accounting/balance_sheet.cpp esl/economics/accounting/balance_sheet.hpp esl/economics/accounting/cash_flow_statement.cpp esl/economics/accounting/cash_flow_statement.hpp)
 
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})

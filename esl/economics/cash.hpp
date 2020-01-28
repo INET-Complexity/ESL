@@ -32,6 +32,11 @@
 #include <esl/quantity.hpp>
 
 namespace esl::economics {
+    namespace detail {
+
+    }
+
+
     ///
     /// \brief  (Financial) cash, that for example can be exchanged
     /// electronically. For tangible (physical) money, such as notes and coins,
@@ -41,7 +46,9 @@ namespace esl::economics {
     : public money
     , public intangible
     {
-        explicit cash(iso_4217 denomination) : money(denomination)
+        explicit cash(iso_4217 denomination)
+        : law::property(esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
+        , money(denomination, esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
         {}
 
         virtual ~cash() = default;
@@ -53,7 +60,7 @@ namespace esl::economics {
             return stream_.str();
         }
 
-        constexpr bool operator==(const cash &c) const
+        constexpr bool operator == (const cash &c) const
         {
             return this->denomination == c.denomination;
         }

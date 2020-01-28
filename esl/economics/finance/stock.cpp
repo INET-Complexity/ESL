@@ -72,7 +72,8 @@ namespace esl::economics::finance {
         return identity<law::property>(result_);
     }
 
-    stock::stock() : security()
+    stock::stock()
+    : security()
     {
 
     }
@@ -92,7 +93,6 @@ namespace esl::economics::finance {
 
     }
 
-
     stock::stock(const identity<property> &pi,
                  const identity<company> &company_identifier,
                  const share &details, const isin &code)
@@ -100,7 +100,9 @@ namespace esl::economics::finance {
     , security(pi, code)
     , company_identifier(company_identifier)
     , details(details)
-    {}
+    {
+
+    }
 }
 
 

@@ -52,7 +52,8 @@ namespace tatonnement {
     ///
     ///
     ///
-    class excess_demand_model : public stan::model::prob_grad
+    class excess_demand_model
+    : public stan::model::prob_grad
     {
     private:
         std::vector<esl::economics::quote> quotes_;
@@ -302,7 +303,8 @@ struct excess_demand_model_context : public stan::io::var_context
 };
 
 
-struct interrupt_callback : public stan::callbacks::interrupt
+struct interrupt_callback
+: public stan::callbacks::interrupt
 {
     interrupt_callback() = default;
 
@@ -318,7 +320,8 @@ struct interrupt_callback : public stan::callbacks::interrupt
 ///         anything but the last values (states) in release mode as the
 ///         intermediate values are of no use to the simulation output.
 ///
-class state_writer : public stan::callbacks::writer
+class state_writer
+: public stan::callbacks::writer
 {
 public:
     ///

@@ -57,7 +57,7 @@ namespace esl::economics {
         ///
         /// \brief
         ///
-        asset(const esl::identity<law::property> &i = esl::identity<law::property>());
+        asset(esl::identity<law::property> i = esl::identity<law::property>());
 
         ~asset() = default;
 

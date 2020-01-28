@@ -65,34 +65,24 @@ namespace esl::simulation {
                     std::uint64_t(std::hash<identity<agent>>()(i)),
                     std::uint64_t(step.lower), std::uint64_t(round_), sample_};
 
-                // if(agent_done_[a]) {
-                //    continue;
-                //}
-
-                // agent_action_time_[a->identifier].start();
-                try {
+                //try {
                     first_event_ = std::min(first_event_,
                                             a->process_messages(step, seed_));
                     first_event_ = std::min(first_event_, a->act(step, seed_));
-                } catch(const std::runtime_error &e) {
-                    // log() << "in agent[" << a->identifier <<  "].act: " <<
-                    // e.what() << endl;
+                /*} catch(const std::runtime_error &e) {
+
+                    std::cout <<  e.what() << std::endl;
                     throw e;
                 } catch(const std::exception &e) {
-                    // log() << "in agent[" << a->identifier <<  "].act: " <<
-                    // e.what() << endl;
+                    std::cout <<  e.what() << std::endl;
                     throw e;
                 } catch(...) {
-                    // log() << "unhandled exception in agent[" << a->identifier
-                    // <<
-                    // "].act" << endl;
                     throw;
-                }
-                // agent_done_[a] = true;
+                }*/
                 a->inbox.clear();
-                // agent_action_time_[a->identifier].stop();
             }
             environment_.send_messages(*this);
+            ++round_;
         } while(step.lower >= first_event_);
         environment_.after_step(*this);
 

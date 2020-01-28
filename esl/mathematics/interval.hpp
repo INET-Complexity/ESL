@@ -39,12 +39,31 @@ namespace esl::mathematics {
              bool right_closed_ = true>
     struct interval
     {
+        ///
+        /// \brief Specifies whether the interval includes the lower value
+        ///
+        /// \return
+        constexpr static bool left_closed()
+        {
+            return left_closed_;
+        }
+
+        ///
+        /// \brief Specifies whether the interval includes the upper value
+        ///
+        /// \return
+        constexpr static bool right_closed()
+        {
+            return right_closed_;
+        }
+
         static_assert(std::is_floating_point<number_t_>::value
                       // TODO: || esl::is_rational<number_t_>::value
                       || std::is_integral<number_t_>::value);
 
         number_t_ lower;
         number_t_ upper;
+
 
         ///
         /// \brief  default interval constructor sets the lower and upper bound

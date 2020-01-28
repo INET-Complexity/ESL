@@ -95,6 +95,7 @@ namespace esl::economics {
     , owner<finance::stock>(i)
     , shareholder(i)
     , identifiable_as<company>()
+    , balance_sheet(i)
     , last_announced_(0)
     , last_payment_(0)
     {}

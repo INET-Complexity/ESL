@@ -44,10 +44,11 @@
 #include <esl/economics/finance/dividend.hpp>
 #include <esl/economics/finance/shareholder.hpp>
 #include <esl/law/organization.hpp>
+#include <esl/economics/accounting/balance_sheet.hpp>
+#include <esl/economics/accounting/cash_flow_statement.hpp>
 
 
 namespace esl::economics {
-
     ///
     /// \brief
     ///
@@ -57,6 +58,8 @@ namespace esl::economics {
     , public identifiable_as<company>
     {
     public:
+        esl::economics::accounting::balance_sheet balance_sheet;
+
         ///
         /// \brief  The number of shares outstanding for each share class
         ///

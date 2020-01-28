@@ -54,7 +54,7 @@ namespace esl::economics::accounting {
         ///
         /// \return a human-readable message that describes the missing item and
         /// quantity
-        const char *what() const throw()
+        [[nodiscard]] const char *what() const noexcept override
         {
             std::stringstream stream_;
             return stream_.str().c_str();
@@ -198,8 +198,10 @@ namespace esl::economics::accounting {
             for(auto [k, v] : items) {
                 auto i = m.find(k);
                 if(m.end() == i) {
+                    std::cout << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
                     throw insufficent_inventory(quantity(0), quantity(1));
                 } else if(i->second < v) {
+                    std::cout << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
                     throw insufficent_inventory(i->second, v);
                 } else if(i->second == v) {
                     m.erase(k);

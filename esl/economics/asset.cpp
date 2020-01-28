@@ -28,7 +28,7 @@
 
 namespace esl::economics {
 
-    asset::asset(const identity<property> &i)
+    asset::asset(identity<property> i)
     : property(i)
     {
 

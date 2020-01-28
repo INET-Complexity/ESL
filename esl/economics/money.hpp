@@ -38,11 +38,15 @@ namespace esl::economics {
     struct money
     : public asset
     , public fungible
+
     {
         iso_4217 denomination;
 
-        explicit money(iso_4217 denomination)
-        : asset(), fungible(), denomination(denomination)
+        explicit money(iso_4217 denomination, identity<property> i = identity<property>())
+        : law::property(i)
+        , asset(i)
+        , fungible()
+        , denomination(denomination)
         {}
 
         virtual ~money() = default;

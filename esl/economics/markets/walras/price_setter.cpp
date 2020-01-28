@@ -75,10 +75,13 @@ std::vector<int> c(const std::vector<double> &fractions, int sum)
 }
 
 
-namespace esl::economics::markets::walras {
 
-    price_setter::price_setter() : price_setter(identity<price_setter>())
-    {}
+namespace esl::economics::markets::walras {
+    price_setter::price_setter()
+    : price_setter(identity<price_setter>())
+    {
+
+    }
 
     ///
     /// \brief
@@ -88,8 +91,8 @@ namespace esl::economics::markets::walras {
     ///             solver starts at 1.0 times the initial quote
     /// \param i
     /// \param traded_assets
-    price_setter::price_setter(const identity<price_setter> &i,
-                               law::property_map<quote> traded_properties)
+    price_setter::price_setter( const identity<price_setter> &i
+                              , law::property_map<quote> traded_properties)
 
     : agent(i)
     , market(i, (traded_properties))
@@ -100,7 +103,6 @@ namespace esl::economics::markets::walras {
 
         this->register_callback<esl::economics::markets::walras::differentiable_order_message>(
                 [this](auto msg, esl::simulation::time_interval ti, std::seed_seq &seed) {
-                    std::cout << "received order" << std::endl;
                     return ti.upper;
                 });
     }
@@ -131,7 +133,6 @@ namespace esl::economics::markets::walras {
                    == message_->type) {
                     auto quote_ = std::dynamic_pointer_cast<
                         walras::differentiable_order_message>(message_);
-                    std::cout << "quote_->sender " << quote_->sender << std::endl;
                     orders_.insert({quote_->sender, quote_});
                 }
             }
@@ -249,11 +250,7 @@ namespace esl::economics::markets::walras {
         }
 
         for(const auto &[k, v] : o) {
-            std::cout << "market participant " << k << std::endl;
-
             auto demand_ = v->excess_demand(quotes_, prices_);
-
-
             auto minimum_transfer_ =
                 0.0001;  // TODO: this must be deduced from the property...
             // if(fungible){
@@ -265,6 +262,7 @@ namespace esl::economics::markets::walras {
             auto property_ = traded_properties.begin();
 
             for(auto ed : demand_) {
+
                 accounting::inventory_filter<law::property> transfers_;
                 auto exact_quantity_ = quantity(int(10'000 * abs(ed)), 1);
                 transfers_.insert(property_->first, exact_quantity_);
