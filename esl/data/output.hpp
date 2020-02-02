@@ -59,6 +59,7 @@ namespace esl::data {
         output(const std::string &name =
                    ("observable_" + std::to_string(sizeof...(variable_types_))))
         : output_base(name)
+        , values()
         {
 
         }
@@ -78,6 +79,9 @@ namespace esl::data {
         {
             (void)version;
             archive.template register_type<output<variable_types_...>>();
+            archive.template register_type<std::tuple<simulation::time_point, variable_types_...>>();
+
+
             archive &boost::serialization::make_nvp(
                 "output_base",
                 boost::serialization::base_object<output_base>(*this));

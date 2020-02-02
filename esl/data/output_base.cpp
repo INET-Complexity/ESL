@@ -34,9 +34,6 @@ namespace esl::data {
 
 }
 
-
-
-
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -50,3 +47,10 @@ BOOST_PYTHON_MODULE(output_base)
 }
 
 #endif  // WITH_PYTHON
+
+
+
+
+#include <boost/serialization/export.hpp>
+
+BOOST_CLASS_EXPORT(esl::data::output_base)

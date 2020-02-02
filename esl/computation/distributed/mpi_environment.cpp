@@ -404,7 +404,9 @@ namespace esl::computation::distributed {
 
 
     void mpi_environment::before_step()
-    {}
+    {
+
+    }
 
     void mpi_environment::after_step(simulation::model &simulation)
     {
@@ -422,11 +424,11 @@ namespace esl::computation::distributed {
 
     ///
     /// \param simulation
-    void mpi_environment::run(std::shared_ptr<simulation::model> simulation)
+    void mpi_environment::run(simulation::model &simulation)
     {
         // timer<mean> timer_initialisation_;
         // timer_initialisation_.start();
-        simulation->initialize();
+        simulation.initialize();
         // timer_initialisation_.stop();
         // log() << "initialisation " << timer_initialisation_.value() /
         // std::chrono::high_resolution_clock::period::den << "s" << endl;
@@ -434,13 +436,13 @@ namespace esl::computation::distributed {
         // timer<mean> timer_run_;
         // timer_run_.start();
         // timer<mean> communication_pre_;
-        simulation::time_point next_timestep_minimum_ = simulation->time;
+        simulation::time_point next_timestep_minimum_ = simulation.time;
 
         simulation::time_interval timestep_ = {next_timestep_minimum_,
-                                               simulation->end};
+                                               simulation.end};
 
-        while(timestep_.lower < simulation->end) {
-            timestep_.lower = simulation->step(timestep_);
+        while(timestep_.lower < simulation.end) {
+            timestep_.lower = simulation.step(timestep_);
             // we need a temporary value so that the input and output memory
             // addresses don't overlap
             {
@@ -458,7 +460,7 @@ namespace esl::computation::distributed {
                 timestep_.upper = upper_;
             };
 
-            if(timestep_.lower >= simulation->end) {
+            if(timestep_.lower >= simulation.end) {
                 break;
             }
 
@@ -468,7 +470,7 @@ namespace esl::computation::distributed {
             }
 
             next_timestep_minimum_ =
-                simulation->time;  // by default, we progress to the end of the
+                simulation.time;  // by default, we progress to the end of the
                                    // current interval
 
             // communication_pre_.start();
@@ -478,7 +480,7 @@ namespace esl::computation::distributed {
             changes_ += activate();
             changes_ += deactivate();
             if(changes_) {
-                // log() << "now has " << simulation->agents.agents_.size() << "
+                // log() << "now has " << simulation.agents.agents_.size() << "
                 // agents " << std::endl;
             }
 
@@ -489,7 +491,7 @@ namespace esl::computation::distributed {
             {
                 std::vector<uint64_t> agent_counts_;
                 boost::mpi::all_gather(communicator_,
-                                       simulation->agents.local_agents_.size(),
+                                       simulation.agents.local_agents_.size(),
                                        agent_counts_);
                 for(const auto &c : agent_counts_) {
                     agents_ += c;
@@ -497,11 +499,11 @@ namespace esl::computation::distributed {
             }
             ////////////////////////////////////////////////////////////////////
             std::unordered_map<std::shared_ptr<agent>, bool> agent_done_;
-            for(auto a : simulation->agents.local_agents_) {
+            for(auto a : simulation.agents.local_agents_) {
                 // agent_done_[a] = false;
             }
 
-            simulation->step(timestep_);
+            simulation.step(timestep_);
         }
 
         // timer_run_.stop();

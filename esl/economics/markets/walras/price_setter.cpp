@@ -107,7 +107,6 @@ namespace esl::economics::markets::walras {
                 });
     }
 
-
     esl::simulation::time_point
     price_setter::act(esl::simulation::time_interval step, std::seed_seq &seed)
     {
@@ -153,7 +152,7 @@ namespace esl::economics::markets::walras {
             } else {
                 for(const auto &[k, v] : traded_properties) {
                     (void)k;
-                    quotes_.push_back(v);  // restore default prices
+                    quotes_.push_back(v);  // restore default prices1
                 }
             }
         }
@@ -205,12 +204,12 @@ namespace esl::economics::markets::walras {
         double init_radius   = 0;
         int history_size     = 10;             // 5
         double init_alpha    = 0.000'001;      // 0.001
-        double tol_obj       = 1e-15;          // 1e-12
+        double tol_obj       = 1e-8;          // 1e-12
         double tol_rel_obj   = 1'000'000;      // 10000
-        double tol_grad      = 1e-12;          // 1e-8
+        double tol_grad      = 1e-6;          // 1e-8
         double tol_rel_grad  = 1'000'000'000;  // 10000000
-        double tol_param     = 1e-12;          // 1e-8
-        int num_iterations   = 100'000;        // 2000
+        double tol_param     = 1e-6;          // 1e-8
+        int num_iterations   = 1'000;        // 2000
         bool save_iterations = false;
         int refresh          = 0;
 
@@ -264,7 +263,7 @@ namespace esl::economics::markets::walras {
             for(auto ed : demand_) {
 
                 accounting::inventory_filter<law::property> transfers_;
-                auto exact_quantity_ = quantity(int(10'000 * abs(ed)), 1);
+                auto exact_quantity_ = quantity(int(abs(ed)), 1);
                 transfers_.insert(property_->first, exact_quantity_);
                 property_++;
 
@@ -296,3 +295,16 @@ namespace esl::economics::markets::walras {
 
 
 }  // namespace esl::economics::markets::walras
+
+
+#include <boost/serialization/export.hpp>
+
+#include <esl/data/serialization.hpp>
+
+
+BOOST_CLASS_EXPORT(std::vector<esl::economics::price>);
+typedef std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>> tuple_time_point_price_vector;
+BOOST_CLASS_EXPORT(tuple_time_point_price_vector);
+typedef std::vector<std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>> time_series_price_vector;
+BOOST_CLASS_EXPORT(time_series_price_vector);
+BOOST_CLASS_EXPORT(esl::data::output<std::vector<esl::economics::price>>);

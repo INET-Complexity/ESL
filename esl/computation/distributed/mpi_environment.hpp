@@ -75,7 +75,7 @@ namespace esl::computation::distributed {
         ~mpi_environment() override = default;
 
 
-        void run(std::shared_ptr<simulation::model> simulation) override;
+        void run(simulation::model &simulation) override;
 
     protected:
         ///

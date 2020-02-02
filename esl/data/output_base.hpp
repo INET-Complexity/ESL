@@ -57,7 +57,6 @@ namespace esl::data {
         ///
         virtual ~output_base() = default;
 
-
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
@@ -74,10 +73,8 @@ namespace boost::mpi {
     struct is_mpi_datatype<esl::data::output_base>
     : public mpl::false_
     {
-
     };
 }  // namespace boost::mpi
-
 #endif  // WITH_MPI
 
 #endif  // ESL_DATA_OUTPUT_BASE_HPP

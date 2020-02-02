@@ -90,7 +90,7 @@ namespace esl {
             ///         simulation time reaches the specified end or an exit
             ///         condition is met.
             ///
-            virtual void run(std::shared_ptr<simulation::model>);
+            virtual void run(simulation::model &simulation);
 
         protected:
             // allows the model to call send_messages
@@ -120,6 +120,9 @@ namespace esl {
             ///         simulation::step
             ///
             virtual void after_step(simulation::model &simulation);
+
+
+            virtual void after_run(simulation::model &simulation);
 
             ///
             /// \param a

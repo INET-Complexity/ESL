@@ -42,7 +42,7 @@ namespace esl::economics::finance {
     shareholder::shareholder(const identity<shareholder> &i)
         : agent(i), owner<cash>(i), owner<stock>(i), stocks()
     {
-        create_output<share_holdings>("holdings");
+        //create_output<share_holdings>("holdings");
 
         this->template register_callback<dividend_announcement_message>(
             [this](std::shared_ptr<dividend_announcement_message> m,

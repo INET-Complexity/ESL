@@ -31,6 +31,7 @@
 
 #include <esl/data/output.hpp>
 
+
 namespace esl::data {
 
     struct producer
@@ -54,15 +55,46 @@ namespace esl::data {
             return output_;
         }
 
+
+
+
+
+        template<typename archive_t>
+        void save(archive_t &archive, const unsigned int version) const
+        {
+            size_t size_ = outputs.size();
+            archive &BOOST_SERIALIZATION_NVP(size_);
+
+            for(auto [k,v] : outputs){
+
+                std::string key_ = k;
+                output_base &value_ = *v;
+                archive << boost::serialization::make_nvp<output_base>(key_.c_str(), value_);
+            }
+        }
+
+        template<typename archive_t>
+        void load(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+
+
+        }
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-            (void)archive;
+
+            //archive &boost::serialization::make_nvp("outputs", outputs);
+
+            //size_t size_ = outputs.size();
+            //archive &BOOST_SERIALIZATION_NVP(size_);
+
+            boost::serialization::split_member(archive, *this, version);
         }
     };
 }  // namespace esl::data
-
 
 
 #ifdef WITH_MPI

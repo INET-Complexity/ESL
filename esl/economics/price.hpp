@@ -30,7 +30,6 @@
 
 
 namespace esl::economics {
-
     namespace detail {
         constexpr void assert_equal_currencies(const iso_4217 &first,
                                                const iso_4217 &second)
@@ -47,10 +46,11 @@ namespace esl::economics {
     struct price
     {
         std::int64_t value;
+
         iso_4217 valuation;
 
-        explicit constexpr price(std::int64_t value,
-                                 iso_4217 valuation)  // = default_currency)
+        explicit constexpr price(std::int64_t value = 0,
+                                 iso_4217 valuation = iso_4217())  // = default_currency)
         : value(value), valuation(valuation)
         {
 
@@ -62,11 +62,11 @@ namespace esl::economics {
 
         }
 
-        //price &operator = (const price &p)
-        //{
-            //value = p.value;
-            //valuation = p.valuation;
-        //}
+        /*price &operator = (const price &p)
+        {
+            value = p.value;
+            valuation = p.valuation;
+        }*/
 
         [[nodiscard]] constexpr bool operator==(const price &operand) const
         {
@@ -178,6 +178,42 @@ namespace esl::economics {
         }
     };
 }
+
+
+
+
+
+namespace boost::serialization {
+        template<class Archive>
+        inline void save_construct_data( Archive & ar, const esl::economics::price * t
+                                       , const unsigned int file_version){
+            (void) file_version;
+            std::cout << "call save_construct_data " << std::endl;
+
+            ar << boost::serialization::make_nvp("value", t->value);
+            ar << boost::serialization::make_nvp("valuation", t->valuation);
+        }
+
+        template<class Archive>
+        inline void load_construct_data(
+                Archive & ar, esl::economics::price * t, const unsigned int file_version
+        ){
+
+            std::cout<<"call load_construct_data "<<std::endl;
+            std::int64_t value_;
+            ar >> value_;
+            esl::economics::iso_4217 code_;
+            ar >> code_;
+            ::new(t)esl::economics::price(value_, code_);
+        }
+} // namespace boost::serialization
+
+
+
+
+
+
+
 
 #ifdef WITH_MPI
 namespace boost {

@@ -22,10 +22,18 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <sstream>
+#include <fstream>
+
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/unordered_map.hpp>
 
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/simulation/model.hpp>
+#include <esl/economics/price.hpp>
+#include <esl/data/serialization.hpp>
 
 
 namespace esl::computation {
@@ -68,6 +76,36 @@ namespace esl::computation {
     void environment::after_step(simulation::model &simulation)
     {
         (void) simulation;
+    }
+
+    void environment::after_run(simulation::model &simulation)
+    {
+        for(auto &[i, a] : simulation.agents.local_agents_) {
+            for(auto o: a->outputs){
+                std::stringstream filename_;
+                filename_ << i << '_' << o.first << ".xml";
+                std::cout << filename_.str() << std::endl;
+                std::ofstream ofs(filename_.str());
+                assert(ofs.good());
+                boost::archive::xml_oarchive oa(ofs);
+
+                //oa.template register_type<esl::simulation::time_point>();
+                oa.template register_type<esl::economics::price>();
+                oa.template register_type<std::vector<esl::economics::price>>();
+                typedef std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>> tuple_time_point_price_vector;
+                oa.template register_type<tuple_time_point_price_vector>();
+                typedef std::vector<std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>> time_series_price_vector;
+                oa.template register_type<time_series_price_vector>();
+
+                oa.template register_type<esl::data::output<std::vector<esl::economics::price>>>();
+
+
+
+                esl::data::output_base *ptr = o.second.get();
+                oa << boost::serialization::make_nvp("ptr", ptr);
+            }
+        }
+
     }
 
     ///
@@ -129,22 +167,24 @@ namespace esl::computation {
 
     ///
     /// \param simulation
-    void environment::run(std::shared_ptr<simulation::model> simulation)
+    void environment::run(simulation::model &simulation)
     {
-        simulation->initialize();
+        simulation.initialize();
 
-        simulation::time_interval step_ = {simulation->start, simulation->end};
+        simulation::time_interval step_ = {simulation.start, simulation.end};
         do {
             size_t changes_ = 0;
             changes_ += activate();
             changes_ += deactivate();
 
-            step_.lower = simulation->step(step_);
-        } while(step_.lower < simulation->end);
+            step_.lower = simulation.step(step_);
+        } while(step_.lower < simulation.end);
 
-        simulation->terminate();
+        simulation.terminate();
+
+        after_run(simulation);
     }
-}  // namespace esl::computation
+}// namespace esl::computation
 
 
 #ifdef WITH_PYTHON
@@ -152,15 +192,14 @@ namespace esl::computation {
 #include <boost/python/enum.hpp>
 #include <esl/interaction/message.hpp>
 
+
 namespace esl::computation {
     using namespace boost::python;
-
     BOOST_PYTHON_MODULE(environment)
     {
         class_<environment>("environment")
             .def("step", &environment::step)
             .def("run", &environment::run);
     }
-
 }  // namespace esl::computation
 #endif
