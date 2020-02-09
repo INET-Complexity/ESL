@@ -38,9 +38,10 @@ namespace boost::serialization {
         template<typename archive_t, typename... arguments_>
         static void serialize(archive_t &archive, std::tuple<arguments_...> &t, const unsigned int version)
         {
+            serializer<element_-1>::serialize(archive, t, version);
+            // typeid(typename type_list<arguments_ ...>::template type<element_ - 1>).name()
             archive & boost::serialization::make_nvp( ("element_" + std::to_string(element_-1)).c_str()
                                                     , std::get<element_-1>(t));
-            serializer<element_-1>::serialize(archive, t, version);
         }
     };
 
@@ -62,8 +63,5 @@ namespace boost::serialization {
         serializer<sizeof...(arguments_)>::serialize(archive, t, version);
     }
 }
-
-
-
 
 #endif //ME_SERIALIZATION_HPP

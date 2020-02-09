@@ -5,7 +5,7 @@
 /// \authors    Maarten P. Scholl
 /// \date       2019-10-10
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
-///             Oxford Martin School, University of Oxford
+///             Oxford Martin School, University of Oxford2
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
 ///             you may not use this file except in compliance with the License.

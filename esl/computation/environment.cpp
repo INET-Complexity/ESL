@@ -88,24 +88,17 @@ namespace esl::computation {
                 std::ofstream ofs(filename_.str());
                 assert(ofs.good());
                 boost::archive::xml_oarchive oa(ofs);
-
-                //oa.template register_type<esl::simulation::time_point>();
                 oa.template register_type<esl::economics::price>();
                 oa.template register_type<std::vector<esl::economics::price>>();
                 typedef std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>> tuple_time_point_price_vector;
                 oa.template register_type<tuple_time_point_price_vector>();
                 typedef std::vector<std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>> time_series_price_vector;
                 oa.template register_type<time_series_price_vector>();
-
                 oa.template register_type<esl::data::output<std::vector<esl::economics::price>>>();
-
-
-
                 esl::data::output_base *ptr = o.second.get();
-                oa << boost::serialization::make_nvp("ptr", ptr);
+                oa << boost::serialization::make_nvp("output", ptr);
             }
         }
-
     }
 
     ///

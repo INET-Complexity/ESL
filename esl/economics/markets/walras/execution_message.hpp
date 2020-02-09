@@ -25,10 +25,20 @@
 #ifndef ME_EXECUTION_MESSAGE_HPP
 #define ME_EXECUTION_MESSAGE_HPP
 
+#include <esl/economics/markets/walras/execution_message.hpp>
 
-class execution_message {
+namespace esl::economics::markets::walras {
+    ///
+    /// \brief  Used to inform market participants on the clearing prices, and absolute quantity of properties
+    ///         traded
+    ///
+    struct execution_message
+    : public esl::economics::markets::execution_message
+    {
 
-};
+    };
+
+}
 
 
 #endif //ME_EXECUTION_MESSAGE_HPP

@@ -168,61 +168,63 @@ namespace esl::economics {
         //    return i;
         //}
 
+
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-            archive &BOOST_SERIALIZATION_NVP(value);
-            archive &boost::serialization::make_nvp(
-                "valuation", const_cast<iso_4217 &>(valuation));
+            //archive &BOOST_SERIALIZATION_NVP(value);
+            //archive &boost::serialization::make_nvp(
+            //    "valuation", const_cast<iso_4217 &>(valuation));
+
+
+            std::stringstream stream_;
+            stream_ << valuation.code[0];
+            stream_ << valuation.code[1];
+            stream_ << valuation.code[2];
+            stream_ << ' ' << value << '/' << valuation.denominator;
+
+            std::string res_ = stream_.str();
+
+            archive & boost::serialization::make_nvp("price", res_);
         }
     };
 }
 
 
-
-
-
 namespace boost::serialization {
-        template<class Archive>
-        inline void save_construct_data( Archive & ar, const esl::economics::price * t
-                                       , const unsigned int file_version){
+        /*template<typename archive_t>
+        inline void save_construct_data( archive_t &archive, const esl::economics::price * t
+                                       , const unsigned int file_version)
+       {
             (void) file_version;
-            std::cout << "call save_construct_data " << std::endl;
+           (void) archive;
+            //archive << boost::serialization::make_nvp("value", t->value);
+            //archive << boost::serialization::make_nvp("valuation", t->valuation);
 
-            ar << boost::serialization::make_nvp("value", t->value);
-            ar << boost::serialization::make_nvp("valuation", t->valuation);
-        }
+        }*/
 
-        template<class Archive>
+        template<typename archive_t>
         inline void load_construct_data(
-                Archive & ar, esl::economics::price * t, const unsigned int file_version
+                archive_t &archive, esl::economics::price * t, const unsigned int file_version
         ){
-
-            std::cout<<"call load_construct_data "<<std::endl;
-            std::int64_t value_;
-            ar >> value_;
+            (void) file_version;
+            std::int64_t value_ = 0;
+            archive >> value_;
             esl::economics::iso_4217 code_;
-            ar >> code_;
+            archive >> code_;
             ::new(t)esl::economics::price(value_, code_);
         }
 } // namespace boost::serialization
 
 
-
-
-
-
-
-
 #ifdef WITH_MPI
-namespace boost {
-    namespace mpi {
-        template<>
-        struct is_mpi_datatype<esl::economics::price>
-        : public mpl::true_
-        {};
-    }
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::economics::price>
+    : public mpl::true_
+    {};
 }
 #endif//WITH_MPI
 

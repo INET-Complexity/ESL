@@ -90,9 +90,9 @@ namespace esl::economics {
 
     company::company(const identity<company> &i, const law::jurisdiction &j)
     : agent(i)
-    , organization(i, j)
     , owner<cash>(i)
     , owner<finance::stock>(i)
+    , organization(i, j)
     , shareholder(i)
     , identifiable_as<company>()
     , balance_sheet(i)

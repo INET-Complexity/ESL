@@ -185,8 +185,8 @@ namespace esl::economics::accounting {
             for(auto [k, v] : items) {
                 auto i = m.find(k);
                 if(m.end() == i) {
-                    m.insert({k, v});
-                } else {
+                    m.insert(std::make_pair(k, v));
+                }else{
                     i->second += v;
                 }
             }

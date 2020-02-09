@@ -143,7 +143,7 @@ namespace esl::economics::markets::walras {
                 for(const auto &[k, v] : traded_properties) {
                     (void)v;
                     auto price_ = cash(currencies::USD).value(scalars_[i]);
-                    traded_properties.insert({k, quote(price_)});  // overwrite
+                    traded_properties.insert(std::make_pair(k, quote(price_)));  // overwrite
                     prices_.emplace_back(price_);
                     quotes_.emplace_back(quote(price_));
                     ++i;
@@ -202,14 +202,14 @@ namespace esl::economics::markets::walras {
         unsigned int chain = 0;  // seed
 
         double init_radius   = 0;
-        int history_size     = 10;             // 5
-        double init_alpha    = 0.000'001;      // 0.001
-        double tol_obj       = 1e-8;          // 1e-12
-        double tol_rel_obj   = 1'000'000;      // 10000
-        double tol_grad      = 1e-6;          // 1e-8
-        double tol_rel_grad  = 1'000'000'000;  // 10000000
-        double tol_param     = 1e-6;          // 1e-8
-        int num_iterations   = 1'000;        // 2000
+        int history_size     = 5;             // 5
+        double init_alpha    = 0.001;      // 0.001
+        double tol_obj       = 1e-13;          // 1e-12
+        double tol_rel_obj   = 1'000;      // 10000
+        double tol_grad      = 1e-9;          // 1e-8
+        double tol_rel_grad  = 1'000;  // 10000000
+        double tol_param     = 1e-9;          // 1e-8
+        int num_iterations   = 10'000;        // 2000
         bool save_iterations = false;
         int refresh          = 0;
 

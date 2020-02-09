@@ -25,10 +25,39 @@
 #ifndef ME_BOND_HPP
 #define ME_BOND_HPP
 
+#include <variant>
 
-class bond {
+#include <esl/economics/interest_rate.hpp>
+#include <esl/economics/finance/security.hpp>
 
-};
 
+namespace esl::economics::finance {
+    struct bond
+    : public virtual security
+    , public identifiable_as<bond>
+    {
+        std::variant<nominal_interest_rate/*, indexed_interest_rate*/> coupon;
+
+        esl::simulation::time_point maturity;
+
+        /*
+        bond( esl::identity<bond> i
+                , esl::simulation::time_point maturity
+            , nominal_interest_rate coupon = nominal_interest_rate(0, esl::simulation::time_duration(252) ))
+        : property(i)
+        , security(i, )
+        , coupon(coupon)
+        , maturity(maturity)
+        {
+
+        }*/
+    };
+
+    struct convertible_bond
+    : public bond
+    {
+
+    };
+}
 
 #endif //ME_BOND_HPP

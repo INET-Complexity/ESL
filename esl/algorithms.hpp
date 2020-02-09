@@ -27,7 +27,7 @@
 
 #include <array>
 #include <cmath>
-
+#include <iterator>
 
 namespace esl {
 
@@ -126,6 +126,26 @@ namespace esl {
         }
 
     }//namespace rounding
+
+
+    template<typename iterator_t_>
+    auto geometric_mean(iterator_t_ begin, iterator_t_ end) -> decltype( typename std::iterator_traits<iterator_t_>::value_type() + 0 )
+    {
+        assert(begin != end);
+        auto result_log_ = typename std::iterator_traits<iterator_t_>::value_type(0);
+        size_t elements_ = 0;
+        for(begin; begin != end; ++begin, ++elements_){
+            result_log_ += std::log(*begin);
+        }
+        return std::exp(result_log_ / elements_);
+    }
+
+    template<typename container_t_>
+    auto geometric_mean(const container_t_ &c)
+    {
+        return geometric_mean(std::cbegin(c), std::cend(c));
+    }
+
 
 }  // namespace esl
 

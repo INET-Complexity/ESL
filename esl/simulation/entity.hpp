@@ -37,7 +37,6 @@
 
 #include <esl/simulation/identifiable_as.hpp>
 
-
 namespace esl {
     template<typename entity_type_>
     struct entity;
@@ -50,9 +49,6 @@ namespace esl {
     template<>
     struct entity<void>
     {
-    protected:
-        entity()          = default;
-        virtual ~entity() = default;
     };
 
     ///
@@ -123,7 +119,6 @@ namespace esl {
         {}
 
     public:
-        virtual ~entity() = default;
 
         constexpr bool operator==(const entity_type_ &operand) const
         {

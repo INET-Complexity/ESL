@@ -57,8 +57,6 @@ namespace esl {
         /// \param o
         agent(const agent &o);
 
-        virtual ~agent() = default;
-
         ///
         /// \param start
         /// \return

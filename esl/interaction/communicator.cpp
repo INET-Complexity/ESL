@@ -140,7 +140,7 @@ namespace esl::interaction {
     {
         communicator::callback_t callback_ =
             [&callback](std::shared_ptr<header> p, simulation::time_interval s, std::seed_seq &seed) {
-                auto result_ = callback.attr("__call__")(p);
+                auto result_ = callback.attr("__call__")(p,s,seed);
                 if(result_.is_none()) {
                     return s.upper;
                 }

@@ -55,20 +55,16 @@ namespace esl::data {
             return output_;
         }
 
-
-
-
-
         template<typename archive_t>
         void save(archive_t &archive, const unsigned int version) const
         {
+            (void) version;
             size_t size_ = outputs.size();
-            archive &BOOST_SERIALIZATION_NVP(size_);
+            archive <<BOOST_SERIALIZATION_NVP(size_);
 
-            for(auto [k,v] : outputs){
-
-                std::string key_ = k;
+            for(auto [key_,v] : outputs){
                 output_base &value_ = *v;
+                archive << boost::serialization::make_nvp("name", key_);
                 archive << boost::serialization::make_nvp<output_base>(key_.c_str(), value_);
             }
         }
@@ -78,6 +74,16 @@ namespace esl::data {
         {
             (void)version;
 
+            size_t size_ = 0;
+            archive >> BOOST_SERIALIZATION_NVP(size_);
+
+            for(size_t i = 0; i < size_; ++i){
+                std::string  key_;
+                archive >> boost::serialization::make_nvp("name", key_);
+                output_base *value_ = nullptr;
+                archive >> boost::serialization::make_nvp(key_.c_str(), value_);
+                assert(value_);
+            }
 
         }
 

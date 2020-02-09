@@ -55,4 +55,9 @@ BOOST_PYTHON_MODULE(price)
 #endif  // WITH_PYTHON
 
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/export.hpp>
+
+BOOST_CLASS_EXPORT(esl::economics::price);
+
 

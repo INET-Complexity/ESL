@@ -28,10 +28,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/unordered_set.hpp>
+#include <map>
 
 #include <esl/law/property.hpp>
+
+
 
 
 namespace esl::law {
@@ -67,12 +68,13 @@ namespace esl::law {
                                property_collection_equality<property>>;
 
     template<typename value_t_>
-    using property_map =
+    using property_map = std::map<std::shared_ptr<property>, value_t_>;
+            /*
         std::unordered_map<std::shared_ptr<property>,
                            value_t_,
                            property_collection_hash<property>,
                            property_collection_equality<property>>;
-
+            */
 
     template<typename property_t_>
     using property_filter_set =

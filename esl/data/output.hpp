@@ -78,6 +78,8 @@ namespace esl::data {
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
+            //archive.template register_type<simulation::time_point>();
+            archive.template register_type<variable_types_...>();
             archive.template register_type<output<variable_types_...>>();
             archive.template register_type<std::tuple<simulation::time_point, variable_types_...>>();
 
@@ -85,6 +87,8 @@ namespace esl::data {
             archive &boost::serialization::make_nvp(
                 "output_base",
                 boost::serialization::base_object<output_base>(*this));
+
+
 
             archive &BOOST_SERIALIZATION_NVP(values);
         }

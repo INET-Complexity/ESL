@@ -26,6 +26,7 @@
 #define ESL_INTEREST_RATE_HPP
 
 #include <esl/economics/rate.hpp>
+#include <esl/mathematics/rational.hpp>
 
 namespace esl::economics {
     ///
@@ -39,9 +40,16 @@ namespace esl::economics {
         ///
         /// \param rate_over_duration
         /// \param duration
-        constexpr interest_rate(rational rate_over_duration,
+        constexpr interest_rate(rational rate_over_duration = 0,
+                                esl::simulation::time_duration duration = esl::simulation::time_duration(1))
+        : rate<>(rate_over_duration), duration(duration)
+        {
+
+        }
+
+        constexpr interest_rate(rate<> rate_over_duration,
                                 esl::simulation::time_duration duration)
-            : rate<>(rate_over_duration), duration(duration)
+                : rate<>(rate_over_duration), duration(duration)
         {
 
         }
@@ -62,6 +70,28 @@ namespace esl::economics {
         }
     };
 
+    struct inflation_rate
+    : public interest_rate
+    {
+        using interest_rate::interest_rate;
+
+        static inflation_rate from_consumer_prices(price begin, price end, esl::simulation::time_duration d)
+        {
+            return inflation_rate(rate<>((end - begin).value, begin.value), d );
+        }
+    };
+
+    struct nominal_interest_rate
+    : public interest_rate
+    {
+        using interest_rate::interest_rate;
+    };
+
+    struct real_interest_rate
+    : public interest_rate
+    {
+        using interest_rate::interest_rate;
+    };
 }
 
 #ifdef WITH_MPI

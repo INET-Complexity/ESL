@@ -59,7 +59,7 @@ namespace esl::law {
     public:
         law::property_map<quantity> inventory;
 
-        owner(const identity<owner<esl::law::property>> &i =
+        explicit owner(const identity<owner<esl::law::property>> &i =
                   identity<owner<esl::law::property>>())
         : agent(i), identifiable_as<owner<esl::law::property>>(), inventory()
         {
@@ -164,6 +164,7 @@ namespace esl::law {
         {
             this->template register_callback<esl::interaction::transfer>(
                 [this](auto msg, simulation::time_interval ti, std::seed_seq &seed) {
+                    (void) seed;
                     if((*this).identifier == msg->transferor) {
                         // this process is duplicated several times for every
                         // inherited owner<p>, as we are reliant on dynamic type

@@ -31,7 +31,7 @@
 
 namespace esl {
 
-    // forward declaration, see entity.hpp
+    // forward declaration, see simulation/entity.hpp
     template<typename entity_type_>
     struct entity;
 
@@ -54,9 +54,7 @@ namespace esl {
     template<typename derived_type_>
     struct identifiable_as
     {
-        identifiable_as() = default;
-
-        virtual ~identifiable_as() = default;
+        virtual ~identifiable_as(){};
 
         ///
         /// \brief  Uses dynamic type information to cast to identifiers of a
@@ -69,7 +67,9 @@ namespace esl {
             //static_assert(std::is_base_of<entity<void>, derived_type_>::value,
             //              "derived_type_ must inherit entity for this cast");
             return identity<derived_type_>(
-                (dynamic_cast<const derived_type_ *>(this))->identifier.digits);
+                    //(dynamic_cast<const derived_type_ *>(this))->identifier.digits
+                (dynamic_cast<const derived_type_ *>(this))->identifier.digits
+                );
         }
 
         ///

@@ -103,11 +103,6 @@ namespace esl::economics {
     public:
         explicit company(const identity<company> &i, const law::jurisdiction &j);
 
-        virtual ~company()
-        {
-
-        };
-
         ///
         /// \brief  Returns the next dividend payment date, or none if no
         ///         dividend payment is scheduled

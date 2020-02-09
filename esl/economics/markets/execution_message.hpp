@@ -26,9 +26,23 @@
 #define ME_EXECUTION_MESSAGE_HPP
 
 
-class execution_message {
+#include <esl/interaction/message.hpp>
+#include <esl/law/property_collection.hpp>
+#include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/indication.hpp>
 
-};
 
+namespace esl::economics::markets {
+
+    template<typename message_type_, uint64_t type_code_>
+    struct execution_message
+    : public interaction::message<message_type_, type_code_>
+    {
+        typedef std::pair<price, quantity> execution_t;
+
+        law::property_map<execution_t> executed;
+    };
+
+}
 
 #endif //ME_EXECUTION_MESSAGE_HPP

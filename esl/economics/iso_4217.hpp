@@ -103,14 +103,46 @@ namespace esl::economics {
                    + std::to_string(denominator);
         }
 
-        template<class archive_t>
-        void serialize(archive_t &archive, const unsigned int version)
+        template<typename archive_t>
+        void save(archive_t &archive, const unsigned int version) const
         {
-            (void)version;
-            archive &boost::serialization::make_nvp(
-                "code", const_cast<std::array<char, 3> &>(code));
-            archive &boost::serialization::make_nvp(
-                "denominator", const_cast<std::uint64_t &>(denominator));
+            std::string code_;
+            code_.push_back(code[0]);
+            code_.push_back(code[1]);
+            code_.push_back(code[2]);
+
+            archive << boost::serialization::make_nvp(
+                    "code", code_);
+
+
+            archive << boost::serialization::make_nvp(
+                    "denominator", const_cast<std::uint64_t &>(denominator));
+        }
+
+        template<typename archive_t>
+        void load(archive_t &archive, const unsigned int version) const
+        {
+            (void) version;
+            std::string code_;
+
+            archive >> boost::serialization::make_nvp(
+                    "code", code_);
+            assert(3 == code_.length());
+
+            const_cast<char &>(code[0]) = code_[0];
+            const_cast<char &>(code[1]) = code_[1];
+            const_cast<char &>(code[2]) = code_[2];
+
+            archive >> boost::serialization::make_nvp(
+                    "denominator", const_cast<std::uint64_t &>(denominator));
+        }
+
+        template<class archive_t>
+        void serialize(
+                archive_t &archive,
+                const unsigned int file_version
+        ){
+            boost::serialization::split_member(archive, *this, file_version);
         }
 
         inline friend std::ostream &operator<<(std::ostream &o,

@@ -49,8 +49,6 @@ namespace esl::law {
 
         }
 
-        ~organization() = default;
-
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

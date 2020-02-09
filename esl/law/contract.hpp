@@ -50,8 +50,6 @@ namespace esl::law {
         {
 
         }
-
-        ~contract() override = default;
     };
 
 }
