@@ -189,9 +189,10 @@ struct test_constant_demand_trader
 
         for(auto [k, message_] : inbox) {
             switch(message_->type) {
-            case esl::economics::walras::quote_message::code:
+            case esl::economics::markets::walras::quote_message::code
+                :
                 auto quote_ = std::dynamic_pointer_cast<
-                    esl::economics::walras::quote_message>(message_);
+                    esl::economics::markets::walras::quote_message>(message_);
 
                 size_t assets = quote_->proposed.size();
 

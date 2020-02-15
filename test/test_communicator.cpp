@@ -91,22 +91,26 @@ struct initializes_callbacks : public esl::interaction::communicator
         esl::interaction::communicator::scheduling::in_order)
     {
         this->register_callback<dummy_message>(
-            [=](auto m, esl::simulation::time_interval s) {
+            [=](auto m, esl::simulation::time_interval s, std::seed_seq &seed) {
                 (void) s;
+                (void)seed;
                 return callback_test_function(m);
             });
 
         this->register_callback<dummy_message>(
-            [=](auto m, esl::simulation::time_interval s) {
+            [=](auto m, esl::simulation::time_interval s, std::seed_seq &seed) {
                 (void) s;
+
+                (void)seed;
                 return callback_test_function_high_priority(m);
             },
             10);
 
 
         this->register_callback<dummy_message_2>(
-            [=](auto m, esl::simulation::time_interval s) {
+            [=](auto m, esl::simulation::time_interval s, std::seed_seq &seed) {
                 (void) s;
+                (void)seed;
                 return callback_test_function_other(m);
             },
             0);
@@ -128,14 +132,14 @@ BOOST_AUTO_TEST_CASE(communicator_process_single_message)
 {
     initializes_callbacks ic;
     esl::simulation::time_interval step_ = {0, 999};
-
+    std::seed_seq seed_;
     auto dm = std::make_shared<dummy_message>();
-    auto r  = ic.process_message(dm, step_);
+    auto r  = ic.process_message(dm, step_, seed_);
 
     BOOST_CHECK_EQUAL(r, 456);
 
     auto dm2 = std::make_shared<dummy_message_2>();
-    auto r2  = ic.process_message(dm2, step_);
+    auto r2  = ic.process_message(dm2, step_, seed_);
 
     BOOST_CHECK_EQUAL(r2, 234);
 }
