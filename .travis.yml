@@ -27,6 +27,7 @@ install:
     - sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
     - sudo apt install libopenblas-dev
     - sudo apt install python3 python-dev python3-pip
+    - sudo apt install python3-setuptools
     - sudo pip3 install -r requirements.txt
     - wget https://bitbucket.org/eigen/eigen/get/3.3.7.tar.bz2 --user-agent=Safari && tar xjf 3.3.7.tar.bz2 && rm 3.3.7.tar.bz2 && cd eigen-eigen-323c052e1731 && mkdir build && cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
