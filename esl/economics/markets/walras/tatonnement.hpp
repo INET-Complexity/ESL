@@ -56,14 +56,14 @@ namespace tatonnement {
     : public stan::model::prob_grad
     {
     private:
-        std::vector<esl::economics::quote> quotes_;
+        std::map<esl::identity<esl::law::property>, esl::economics::quote> quotes_;
 
     public:
         std::vector<std::shared_ptr<differentiable_demand_supply_function>>
             excess_demand_functions_;
 
         explicit excess_demand_model(
-            std::vector<esl::economics::quote> initial_quotes);
+            std::map<esl::identity<esl::law::property>, esl::economics::quote> initial_quotes);
 
         virtual ~excess_demand_model();
 
@@ -86,24 +86,39 @@ namespace tatonnement {
             stan::math::accumulator<scalar_model_> target_;
             stan::io::reader<scalar_model_> reader_(reals, integers);
             scalar_model_ next_scalar_(0.0);
+
+            std::map< esl::identity<esl::law::property>
+                                  , std::tuple<esl::economics::quote, scalar_model_>
+                                  > qv_ed_;
+
             std::vector<scalar_model_> scalars_;
             scalars_.reserve(quotes_.size());
-            for(auto q : quotes_) {
-                (void)q;
+            for(auto [k,v] : quotes_) {
+
                 if(jacobian_) {
-                    scalars_.push_back(reader_.scalar_constrain(next_scalar_));
+                    auto n = reader_.scalar_constrain(next_scalar_);
+                    scalars_.push_back(n);
+                    qv_ed_.insert({k, std::make_tuple(v, n)});
                 } else {
-                    scalars_.push_back(reader_.scalar_constrain());
+                    auto n = reader_.scalar_constrain();
+                    scalars_.push_back(n);
+                    qv_ed_.insert({k, std::make_tuple(v, n)});
                 }
             }
 
-            std::vector<scalar_model_> terms_;
-            for(size_t i = 0; i < quotes_.size(); ++i) {
-                terms_.emplace_back(scalar_model_(0));
+            //std::vector<scalar_model_> terms_;
+            std::map< esl::identity<esl::law::property>, scalar_model_> terms_map;
+            //for(size_t i = 0; i < quotes_.size(); ++i) {
+            //    terms_.emplace_back(scalar_model_(0));
+            //}
+
+            for(auto [k,v]: quotes_) {
+                (void) v;
+                terms_map.insert({k, scalar_model_(0)});
             }
 
             for(const auto &f : excess_demand_functions_) {
-                auto demand_per_property_ = f->excess_demand(quotes_, scalars_);
+                auto demand_per_property_ = f->excess_demand_m(qv_ed_);
                 if(demand_per_property_.size() != quotes_.size()) {
 #if DEBUG
                     // TODO: warning, silently ignoring agents demand
@@ -115,12 +130,16 @@ namespace tatonnement {
 #endif
                 }
 
-                for(size_t i = 0; i < quotes_.size(); ++i) {
-                    terms_[i] += demand_per_property_[i];
+                for(auto [k,v]: demand_per_property_) {
+                    terms_map[k] += v;
                 }
+
+                //for(size_t i = 0; i < quotes_.size(); ++i) {
+                //    terms_[i] += demand_per_property_[i];
+                //}
             }
 
-            for(auto t : terms_) {
+            for(auto [_,t] : terms_map) {
                 target_.add(-pow(t, 2));
             }
 
@@ -316,7 +335,7 @@ struct interrupt_callback
 
 ///
 /// \brief  Stores the states of the variables during the computation. For
-/// performance, we may want to consider dropping
+///         performance, we may want to consider dropping
 ///         anything but the last values (states) in release mode as the
 ///         intermediate values are of no use to the simulation output.
 ///
@@ -333,11 +352,22 @@ public:
     ///             end, since in release mode intermediate
     ///             values are ignored.
     ///
-    std::vector<std::vector<double>> states;
+    std::vector<std::map<esl::identity<esl::law::property>, double>> states;
+
+    std::vector<double> errors;
+    ///
+    /// \brief  Translates vector indices back to property indices, as the library used for optimisation uses vectors only
+    ///
+    std::vector<esl::identity<esl::law::property>> translation;
 
     void operator()(const std::vector<double> &state) override
     {
-        states.push_back(state);
+        errors.push_back(state[0]);
+        std::map<esl::identity<esl::law::property>, double> state_;
+        for(size_t i = 1; i < state.size(); ++i) {
+            state_.insert({translation[i-1], state[i]});
+        }
+        states.push_back(state_);
     }
 };
 

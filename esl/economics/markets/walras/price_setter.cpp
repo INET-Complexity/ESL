@@ -95,7 +95,7 @@ namespace esl::economics::markets::walras {
                               , law::property_map<quote> traded_properties)
 
     : agent(i)
-    , market(i, (traded_properties))
+    , market(i, traded_properties)
     , state(sending_quotes)
     {
         output_clearing_prices_ =
@@ -139,15 +139,15 @@ namespace esl::economics::markets::walras {
             if(!orders_.empty()) {
                 auto scalars_ = clear_market(orders_, step);
                 std::vector<price> prices_;
-                size_t i = 0;
+              
                 for(const auto &[k, v] : traded_properties) {
                     (void)v;
-                    auto price_ = cash(currencies::USD).value(scalars_[i]);
+                    auto price_ = cash(currencies::USD).value(scalars_[k->identifier]);
                     traded_properties.insert(std::make_pair(k, quote(price_)));  // overwrite
                     prices_.emplace_back(price_);
-                    quotes_.emplace_back(quote(price_));
-                    ++i;
+                    quotes_.emplace_back(quote(price_));    
                 }
+
                 output_clearing_prices_->put(step.lower, prices_);
             } else {
                 for(const auto &[k, v] : traded_properties) {
@@ -177,9 +177,10 @@ namespace esl::economics::markets::walras {
     }
 
     ///
-    /// \brief  a
+    /// \brief  Clear market using tatonnement. It is assumed the price_setter has received at least one excess demand function from agents.
+    ///         
     ///
-    std::vector<double> price_setter::clear_market(
+    std::map<esl::identity<esl::law::property>, double> price_setter::clear_market(
         const std::unordered_map < identity<agent>
                                  , std::shared_ptr<walras::differentiable_order_message>
                                  > &o
@@ -188,33 +189,39 @@ namespace esl::economics::markets::walras {
         excess_demand_model_context context(
             std::vector<double>(traded_properties.size(), 1.0));
 
-        std::vector<quote> quotes_;
+        std::map<esl::identity<esl::law::property>,  quote> quotes_;
         for(const auto &[k, v] : traded_properties) {
             (void)k;
-            quotes_.push_back(v);
+            quotes_.insert({k->identifier, v});
         }
-        //= values(traded_properties);
+
         tatonnement::excess_demand_model model(quotes_);
         interrupt_callback callback_;
         stan::callbacks::logger logger;
 
-        unsigned int seed  = 0;  // seed
-        unsigned int chain = 0;  // seed
+        constexpr unsigned int seed  = 0;  // seed
+        constexpr unsigned int chain = 0;  // seed
 
-        double init_radius   = 0;
-        int history_size     = 5;             // 5
-        double init_alpha    = 0.001;      // 0.001
-        double tol_obj       = 1e-13;          // 1e-12
-        double tol_rel_obj   = 1'000;      // 10000
-        double tol_grad      = 1e-9;          // 1e-8
-        double tol_rel_grad  = 1'000;  // 10000000
-        double tol_param     = 1e-9;          // 1e-8
-        int num_iterations   = 10'000;        // 2000
-        bool save_iterations = false;
-        int refresh          = 0;
+        constexpr double init_radius   = 0;
+        constexpr int history_size     = 5;             // 5
+        constexpr double init_alpha    = 0.001;      // 0.001
+        constexpr double tol_obj       = 1e-13;          // 1e-12
+        constexpr double tol_rel_obj   = 1'000;      // 10000
+        constexpr double tol_grad      = 1e-9;          // 1e-8
+        constexpr double tol_rel_grad  = 1'000;  // 10000000
+        constexpr double tol_param     = 1e-9;          // 1e-8
+        constexpr int num_iterations   = 10'000;        // 2000
+        constexpr bool save_iterations = false;
+        constexpr int refresh          = 0;
 
         state_writer init;
         state_writer parameter;
+        init.translation.clear();
+        parameter.translation.clear();
+        for(auto [k, v]:this->traded_properties) {
+            init.translation.push_back(k->identifier);
+            parameter.translation.push_back(k->identifier);
+        }
 
         model.excess_demand_functions_.clear();
 
@@ -232,15 +239,15 @@ namespace esl::economics::markets::walras {
         (void)return_code;  // TODO: check return code
 
 
-        auto clearing_error_ = parameter.states.back()[0];
+        auto clearing_error_ = parameter.errors.back();
         std::cout << "error "<< clearing_error_ << std::endl;
 
 
-        std::vector<double> prices_;
-        for(size_t i = 1; i < parameter.states.back().size(); ++i) {
-            prices_.push_back(parameter.states.back()[i]);
-            std::cout << "prices[" << (i - 1) << "] " << prices_.back()
-                      << std::endl;
+        std::map<esl::identity<esl::law::property>, double> prices_;
+        for(auto [k,v]: parameter.states.back()) {
+             prices_.insert({k,v});
+            
+            std::cout << "prices[" << k << "] " << v << std::endl;
         }
 
         for(auto [key, function_] : o) {
@@ -248,8 +255,14 @@ namespace esl::economics::markets::walras {
             model.excess_demand_functions_.push_back(function_);
         }
 
+
+        std::map<esl::identity<esl::law::property>,
+                 std::tuple<esl::economics::quote, double>>
+            args;
+
+
         for(const auto &[k, v] : o) {
-            auto demand_ = v->excess_demand(quotes_, prices_);
+            auto demand_ = v->excess_demand_m(args);
             auto minimum_transfer_ =
                 0.0001;  // TODO: this must be deduced from the property...
             // if(fungible){
@@ -260,7 +273,7 @@ namespace esl::economics::markets::walras {
 
             auto property_ = traded_properties.begin();
 
-            for(auto ed : demand_) {
+            for(auto [k2,ed] : demand_) {
 
                 accounting::inventory_filter<law::property> transfers_;
                 auto exact_quantity_ = quantity(int(abs(ed)), 1);
@@ -273,10 +286,16 @@ namespace esl::economics::markets::walras {
                     auto transferee_ =
                         reinterpret_identity_cast<law::owner<law::property>,
                                                   agent>(*this);
+
+
+
+
                     auto m =
                         this->template create_message<interaction::transfer>(
-                            k, step.lower, this->identifier, k,
+                            k, step.lower, (*this), k,
                             transferor_, transferee_, transfers_);
+
+
                 } else if(ed > minimum_transfer_) {
                     auto transferor_ =
                         reinterpret_identity_cast<law::owner<law::property>,
@@ -285,7 +304,7 @@ namespace esl::economics::markets::walras {
                         dynamic_identity_cast<law::owner<law::property>>(k);
                     auto m =
                         this->template create_message<interaction::transfer>(
-                            k, step.lower, this->identifier, k,
+                            k, step.lower, (*this), k,
                             transferor_, transferee_, transfers_);
                 }
             }

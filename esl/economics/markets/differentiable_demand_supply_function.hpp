@@ -28,10 +28,49 @@
 #include <esl/economics/markets/demand_supply_function.hpp>
 #include <esl/mathematics/variable.hpp>
 
+
+
 struct differentiable_demand_supply_function
     : public demand_supply_function
 {
     virtual ~differentiable_demand_supply_function() = default;
+
+
+    
+    virtual std::map<esl::identity<esl::law::property>, esl::variable>
+    excess_demand_m(const std::map< esl::identity<esl::law::property>
+                                  , std::tuple<esl::economics::quote, esl::variable>
+                                  > &quotes) const = 0;
+
+    ///
+    /// \brief  Shim to convert from auto-differentiated variables to double
+    ///
+    virtual std::map<esl::identity<esl::law::property>, double> excess_demand_m(
+        const std::map<esl::identity<esl::law::property>,
+                       std::tuple<esl::economics::quote, double>> &quotes)
+        const override
+    {
+
+        std::map<esl::identity<esl::law::property>,
+                 std::tuple<esl::economics::quote, esl::variable>> quotes_;
+        for(auto [k, v]: quotes) {
+            quotes_.insert({ k
+                           , std::make_tuple( std::get<0>(v)
+                                            , esl::variable(std::get<1>(v)))
+                           });
+        }
+
+        std::map<esl::identity<esl::law::property>, esl::variable> intermediate_ = excess_demand_m(quotes_);
+
+        std::map<esl::identity<esl::law::property>, double> result_;
+        for(auto [k,v]: intermediate_) {
+            result_.insert({k, v.val()});
+        }
+        return result_;
+    }
+
+
+
 
 
     virtual std::vector<esl::variable>

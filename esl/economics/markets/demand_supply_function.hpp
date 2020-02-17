@@ -35,6 +35,21 @@
 // multiple dimensions, because we can have dependent demand (packages,
 // constraints)
 
+/*
+namespace esl {
+
+    template<typename identifiable_t_>
+    struct identity;
+
+    namespace law {
+        struct property;
+    }  // namespace law
+}  // namespace esl
+*/
+#include <esl/simulation/identity.hpp>
+#include <esl/law/property.hpp>
+
+
 
 ///
 /// \brief                  excess demand (demand-supply) function dynamic in
@@ -48,9 +63,19 @@ struct demand_supply_function
     /// \param quotes
     /// \param variables
     /// \return
+    virtual std::map < esl::identity<esl::law::property>, double> excess_demand_m(
+        const std::map< esl::identity<esl::law::property>
+                      , std::tuple<esl::economics::quote, double>
+                      > &quotes) const = 0;
+
+    ///
+    /// \param quotes
+    /// \param variables
+    /// \return
     virtual std::vector<double>
     excess_demand(const std::vector<esl::economics::quote> &quotes,
                   const std::vector<double> &variables) const = 0;
+
 
     ///
     /// \tparam archive_t

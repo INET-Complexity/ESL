@@ -39,7 +39,8 @@
 
 namespace tatonnement {
     excess_demand_model::excess_demand_model(
-        std::vector<esl::economics::quote> initial_quotes)
+        std::map<esl::identity<esl::law::property>, esl::economics::quote>
+            initial_quotes)
     : prob_grad(initial_quotes.size()), quotes_(std::move(initial_quotes))
     {
         param_ranges_i__.clear();  /// no restricted integer ranges
