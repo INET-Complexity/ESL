@@ -3,6 +3,8 @@ from typing import List, TypeVar, Generic, NewType
 identifiable_type_ = TypeVar('identifiable_type_')
 
 
+# TODO reenable Generic once https://github.com/cython/cython/issues/2753 has
+# been solved.
 class Identity():  # Generic[identifiable_type_]):
     __slots__ = ['digits']
 
