@@ -19,6 +19,7 @@ class Model(object):
                 , parameters: Parametrization = Parametrization()
                 , agents: AgentCollection = AgentCollection()
                 ):
+        self.environment = environment
         self.parameters = parameters
         self.start = parameters['start']
         self.end = parameters['end']
