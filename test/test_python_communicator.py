@@ -1,12 +1,12 @@
-import esl.identity
-import esl.communicator
+import esl.simulation.identity
+import esl.interaction.communicator
 
 
 def test_communicator():
-    sender = esl.identity.identity([1, 2, 3])
+    sender = esl.simulation.identity.Identity([1, 2, 3])
 
-    recipient = esl.identity.identity([1, 2, 2])
+    recipient = esl.simulation.identity.Identity([1, 2, 2])
 
-    communicator_instance = esl.communicator.communicator()
+    communicator_instance = esl.interaction.communicator.Communicator()
 
     assert 3 == 3
