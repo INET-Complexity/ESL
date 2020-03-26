@@ -61,21 +61,11 @@ struct demand_supply_function
 
     ///
     /// \param quotes
-    /// \param variables
     /// \return
     virtual std::map < esl::identity<esl::law::property>, double> excess_demand_m(
         const std::map< esl::identity<esl::law::property>
                       , std::tuple<esl::economics::quote, double>
                       > &quotes) const = 0;
-
-    ///
-    /// \param quotes
-    /// \param variables
-    /// \return
-    virtual std::vector<double>
-    excess_demand(const std::vector<esl::economics::quote> &quotes,
-                  const std::vector<double> &variables) const = 0;
-
 
     ///
     /// \tparam archive_t
@@ -89,44 +79,15 @@ struct demand_supply_function
     }
 };
 
-
-
-///
-/// \brief                  excess demand (demand-supply) function at the type
-/// level.
-///
-/// \tparam property_ts_    the different properties that are covered by this
-/// function (separate dimensions)
-// template<typename ... property_ts_>
-// struct demand_supply_function_t
-//{
-//    template<typename scalar_model_ = quantity>
-//    array<scalar_model_, sizeof ... (property_ts_)> at(const array<quote,
-//    sizeof ... (property_ts_)> &quotes) = 0;
-//};
-
-
 #ifdef WITH_MPI
-namespace boost { namespace mpi {
-
+namespace boost::mpi {
     template<>
-    struct is_mpi_datatype<demand_supply_function> : public mpl::true_
-    {};
-
-}}      // namespace boost::mpi
+    struct is_mpi_datatype<demand_supply_function>
+    : public mpl::true_
+    {
+        
+    };
+}      // namespace boost::mpi
 #endif  // WITH_MPI
-
-
-///
-/// \brief Concept definition of the demand function
-///
-/// \tparam T
-
-// template<typename type_>
-// concept demand_function = requires(type_ a)
-//{
-//    {  excess_demand<type_>{}(a) } -> quantity;
-//};
-
 
 #endif  // ESL_SUPPLY_DEMAND_FUNCTION_HPP

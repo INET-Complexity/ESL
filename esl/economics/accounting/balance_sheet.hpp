@@ -42,9 +42,10 @@ namespace esl::economics::accounting {
 
         price assets(const esl::economics::accounting::standard &s) const
         {
-            price result_ = price(0, s.reporting_currency);
+            price result_ = price(int64_t(0), s.reporting_currency);
             for(const auto &[property_, q]:  esl::law::owner<esl::law::property>::inventory){
                 /// TODO: perhaps use compile time type information to filter assets
+                (void) q;
                 std::shared_ptr<asset> asset_ = std::dynamic_pointer_cast<asset>(property_);
                 if(asset_){
                     result_ += asset_->value(s);

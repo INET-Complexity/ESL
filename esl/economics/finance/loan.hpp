@@ -84,7 +84,7 @@ namespace std {
     {
         std::size_t operator()(const esl::economics::finance::loan &c) const
         {
-            return 123;//std::hash<esl::identity<esl::law::contract>>()(c.identifier);
+            return std::hash<esl::entity<esl::law::property>>()(c);
         }
     };
 }  // namespace std

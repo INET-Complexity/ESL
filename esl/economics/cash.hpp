@@ -47,8 +47,8 @@ namespace esl::economics {
     , public intangible
     {
         explicit cash(iso_4217 denomination)
-        : law::property(esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
-        , money(denomination, esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
+        : /* law::property(esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
+        , */ money(denomination, esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
         {}
 
         virtual ~cash() = default;
@@ -72,7 +72,7 @@ namespace esl::economics {
         price value(const accounting::standard &a) const override
         {
             (void)a;
-            return price(denomination.denominator, denomination);
+            return price(static_cast<int64_t>(denomination.denominator), denomination);
         }
 
         ///

@@ -47,6 +47,7 @@ namespace esl::economics {
     {
         std::uint64_t result_ = 0;
         for(const auto &[s, c] : shares_outstanding) {
+            (void) s;
             result_ += c;
         }
         return result_;

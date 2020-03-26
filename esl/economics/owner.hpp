@@ -189,7 +189,6 @@ namespace esl::law {
                                 std::is_base_of<economics::fungible, property_t_>::value,
                                 property_t_>().insert(properties, d, q);
                         }
-
                     } else {
                         throw std::logic_error(
                             "message recipient is not a party to the transfer");
@@ -197,6 +196,14 @@ namespace esl::law {
                     return ti.upper;
                 });
         }
+
+
+        void take(std::shared_ptr<property_t_> property, quantity amount) 
+        {
+           this->properties.insert( property, amount);
+            esl::law::owner<esl::law::property>::inventory.insert(std::make_pair(property ,amount));
+        }
+
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

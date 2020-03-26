@@ -1,4 +1,4 @@
-/// \file   auctioneer.cpp
+/// \file   price_setter.cpp
 ///
 /// \brief
 ///
@@ -25,8 +25,9 @@
 
 #include <esl/economics/markets/walras/price_setter.hpp>
 
+/*
 #include <stan/services/optimize/lbfgs.hpp>
-
+*/
 
 #include <algorithm>
 #include <numeric>
@@ -103,6 +104,8 @@ namespace esl::economics::markets::walras {
 
         this->register_callback<esl::economics::markets::walras::differentiable_order_message>(
                 [this](auto msg, esl::simulation::time_interval ti, std::seed_seq &seed) {
+                    (void) msg;
+                    (void) seed;
                     return ti.upper;
                 });
     }
@@ -139,7 +142,7 @@ namespace esl::economics::markets::walras {
             if(!orders_.empty()) {
                 auto scalars_ = clear_market(orders_, step);
                 std::vector<price> prices_;
-              
+
                 for(const auto &[k, v] : traded_properties) {
                     (void)v;
                     auto price_ = cash(currencies::USD).value(scalars_[k->identifier]);
@@ -152,7 +155,7 @@ namespace esl::economics::markets::walras {
             } else {
                 for(const auto &[k, v] : traded_properties) {
                     (void)k;
-                    quotes_.push_back(v);  // restore default prices1
+                    quotes_.push_back(v);  // restore default prices
                 }
             }
         }
@@ -177,89 +180,35 @@ namespace esl::economics::markets::walras {
     }
 
     ///
-    /// \brief  Clear market using tatonnement. It is assumed the price_setter has received at least one excess demand function from agents.
+    /// \brief  Clear market using tatonnement. It is assumed the price_setter has received at least one excess demand
+    ///         function for each property from market participants, otherwise it will return the previous price for the
+    ///         property with no excess demand curve.
     ///         
     ///
-    std::map<esl::identity<esl::law::property>, double> price_setter::clear_market(
-        const std::unordered_map < identity<agent>
-                                 , std::shared_ptr<walras::differentiable_order_message>
-                                 > &o
+    std::map<identity<law::property>, double> price_setter::clear_market
+            ( const std::unordered_map<identity<agent>, std::shared_ptr<walras::differentiable_order_message>> &o
             , const esl::simulation::time_interval &step)
     {
-        excess_demand_model_context context(
-            std::vector<double>(traded_properties.size(), 1.0));
-
-        std::map<esl::identity<esl::law::property>,  quote> quotes_;
-        for(const auto &[k, v] : traded_properties) {
+        std::map<esl::identity<esl::law::property>, quote> quotes_;
+        for(const auto &[k, v]: traded_properties) {
             (void)k;
             quotes_.insert({k->identifier, v});
         }
 
-        tatonnement::excess_demand_model model(quotes_);
-        interrupt_callback callback_;
-        stan::callbacks::logger logger;
+        tatonnement::excess_demand_model model_(quotes_);
 
-        constexpr unsigned int seed  = 0;  // seed
-        constexpr unsigned int chain = 0;  // seed
-
-        constexpr double init_radius   = 0;
-        constexpr int history_size     = 5;             // 5
-        constexpr double init_alpha    = 0.001;      // 0.001
-        constexpr double tol_obj       = 1e-13;          // 1e-12
-        constexpr double tol_rel_obj   = 1'000;      // 10000
-        constexpr double tol_grad      = 1e-9;          // 1e-8
-        constexpr double tol_rel_grad  = 1'000;  // 10000000
-        constexpr double tol_param     = 1e-9;          // 1e-8
-        constexpr int num_iterations   = 10'000;        // 2000
-        constexpr bool save_iterations = false;
-        constexpr int refresh          = 0;
-
-        state_writer init;
-        state_writer parameter;
-        init.translation.clear();
-        parameter.translation.clear();
-        for(auto [k, v]:this->traded_properties) {
-            init.translation.push_back(k->identifier);
-            parameter.translation.push_back(k->identifier);
-        }
-
-        model.excess_demand_functions_.clear();
-
-        for(auto [key, function_] : o) {
+        model_.excess_demand_functions_.clear();
+        for(auto [key, function_]: o) {
             (void)key;
-            model.excess_demand_functions_.push_back(function_);
+            model_.excess_demand_functions_.push_back(function_);
         }
 
-        int return_code = stan::services::optimize::lbfgs(
-            model, context, seed, chain, init_radius, history_size, init_alpha,
-            tol_obj, tol_rel_obj, tol_grad, tol_rel_grad, tol_param,
-            num_iterations, save_iterations, refresh, callback_, logger, init,
-            parameter);
-
-        (void)return_code;  // TODO: check return code
-
-
-        auto clearing_error_ = parameter.errors.back();
-        std::cout << "error "<< clearing_error_ << std::endl;
-
-
-        std::map<esl::identity<esl::law::property>, double> prices_;
-        for(auto [k,v]: parameter.states.back()) {
-             prices_.insert({k,v});
-            
-            std::cout << "prices[" << k << "] " << v << std::endl;
+        auto result_ = model_.do_compute();
+        if(!result_.has_value()){
+            return {};
         }
 
-        for(auto [key, function_] : o) {
-            (void)key;
-            model.excess_demand_functions_.push_back(function_);
-        }
-
-
-        std::map<esl::identity<esl::law::property>,
-                 std::tuple<esl::economics::quote, double>>
-            args;
-
+        std::map<identity<law::property>, std::tuple<quote, double>> args;
 
         for(const auto &[k, v] : o) {
             auto demand_ = v->excess_demand_m(args);
@@ -272,44 +221,27 @@ namespace esl::economics::markets::walras {
             //}
 
             auto property_ = traded_properties.begin();
-
             for(auto [k2,ed] : demand_) {
-
                 accounting::inventory_filter<law::property> transfers_;
                 auto exact_quantity_ = quantity(int(abs(ed)), 1);
                 transfers_.insert(property_->first, exact_quantity_);
                 property_++;
-
                 if(ed < -minimum_transfer_) {
-                    auto transferor_ =
-                        dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto transferee_ =
-                        reinterpret_identity_cast<law::owner<law::property>,
-                                                  agent>(*this);
-
-
-
-
-                    auto m =
-                        this->template create_message<interaction::transfer>(
+                    auto transferor_ = dynamic_identity_cast<law::owner<law::property>>(k);
+                    auto transferee_ = reinterpret_identity_cast<law::owner<law::property>, agent>(*this);
+                    auto m = this->template create_message<interaction::transfer>(
                             k, step.lower, (*this), k,
                             transferor_, transferee_, transfers_);
-
-
                 } else if(ed > minimum_transfer_) {
-                    auto transferor_ =
-                        reinterpret_identity_cast<law::owner<law::property>,
-                                                  agent>(*this);
-                    auto transferee_ =
-                        dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto m =
-                        this->template create_message<interaction::transfer>(
+                    auto transferor_ = reinterpret_identity_cast<law::owner<law::property>, agent>(*this);
+                    auto transferee_ = dynamic_identity_cast<law::owner<law::property>>(k);
+                    auto m = this->template create_message<interaction::transfer>(
                             k, step.lower, (*this), k,
                             transferor_, transferee_, transfers_);
                 }
             }
         }
-        return prices_;
+        return result_.value() ;
     }
 
 

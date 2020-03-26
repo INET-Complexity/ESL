@@ -64,43 +64,10 @@ struct differentiable_demand_supply_function
 
         std::map<esl::identity<esl::law::property>, double> result_;
         for(auto [k,v]: intermediate_) {
-            result_.insert({k, v.val()});
+            result_.insert({k, v.value()}); //v.val()});
         }
         return result_;
     }
-
-
-
-
-
-    virtual std::vector<esl::variable>
-    excess_demand(const std::vector<esl::economics::quote> &quotes,
-                  std::vector<esl::variable> &multipliers) const = 0;
-
-    ///
-    /// \brief  Shim to convert from auto-differentiated variables to double
-    ///
-    virtual std::vector<double>
-    excess_demand(const std::vector<esl::economics::quote> &quotes,
-                  const std::vector<double> &variables) const override
-    {
-        std::vector<esl::variable> variables_;
-        variables_.reserve(variables.size());
-        for(auto v : variables) {
-            variables_.emplace_back(esl::variable(v));
-        }
-
-        std::vector<esl::variable> intermediate_ =
-            excess_demand(quotes, variables_);
-
-        std::vector<double> result_;
-        result_.reserve(intermediate_.size());
-        for(auto d : intermediate_) {
-            result_.emplace_back(d.val());
-        }
-        return result_;
-    }
-
 
     template<class archive_t>
     void serialize(archive_t &archive, const unsigned int version)

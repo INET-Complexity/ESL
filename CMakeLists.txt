@@ -14,14 +14,14 @@ STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
 SET(version_revision ${CMAKE_MATCH_1})
 
-CMAKE_POLICY(SET CMP0048 NEW)
+#CMAKE_POLICY(SET CMP0048 NEW)
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library" 
         LANGUAGES CXX)
 
 MESSAGE("ESL Version ${PROJECT_VERSION}")
-MESSAGE("installing into ${CMAKE_BINARY_DIR}")
+MESSAGE("building binary in ${CMAKE_BINARY_DIR}")
 
 ################################################################################
 # cmake configuration
@@ -56,29 +56,25 @@ ENDIF(CCACHE_FOUND)
 # Library optional add-ons
 ################################################################################
 
-OPTION(WITH_MPI "Enable MPI using Boost.MPI" ON)
+OPTION(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
     MESSAGE("Enabling MPI")
     FIND_PACKAGE(MPI REQUIRED)
-
-    #ADD_COMPILE_DEFINITIONS(WITH_MPI)
-    add_definitions(-DWITH_MPI)
+    ADD_DEFINITIONS(-DWITH_MPI)
 ENDIF()
 
-OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
+OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" OFF)
 IF(WITH_PYTHON)
-    #ADD_COMPILE_DEFINITIONS(WITH_PYTHON)
-    add_definitions(-DWITH_PYTHON)
+    ADD_DEFINITIONS(-DWITH_PYTHON)
 ENDIF()
 
-OPTION(WITH_QL  "Enables quantlib" OFF)
+OPTION(WITH_QL  "Enables QuantLib" OFF)
 IF(WITH_QL)
-    #ADD_COMPILE_DEFINITIONS(WITH_QL)
-    add_definitions(-DWITH_QL)
+    ADD_DEFINITIONS(-DWITH_QL)
 ENDIF()
 
 # Used in stan-math
-ADD_DEFINITIONS(-D_REENTRANT)
+#ADD_DEFINITIONS(-D_REENTRANT)
 
 ################################################################################
 
@@ -109,7 +105,13 @@ ENDIF()
 
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 
-FIND_PACKAGE(Eigen3 3.3 REQUIRED NO_MODULE)
+# optional accelerators for scientific computing
+#SET(BLA_STATIC ON)
+FIND_PACKAGE(BLAS)
+FIND_PACKAGE(LAPACK)
+# GSL is required for optimisation routines
+FIND_PACKAGE(GSL REQUIRED)
+
 ################################################################################
 MESSAGE("----------------------------------------")
 MESSAGE("profile  " ${CMAKE_BUILD_TYPE})
@@ -118,8 +120,8 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ftime-report")
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ftime-report")
+SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
 
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -133,23 +135,44 @@ ENDIF()
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
-INCLUDE_DIRECTORIES(/usr/local/include ${ALL_INCLUDE_DIRECTORIES})
+
+IF(WIN32) # for now, assume all builds on windows are done using MSYS2 64 bit
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/msys64/usr/include")
+ENDIF()
+
+INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
-list(APPEND ALL_LINKED_LIBRARIES pthread util Eigen3::Eigen)
+
+LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
+
+IF(WIN32)
+    #LIST(APPEND ALL_LINKED_LIBRARIES )
+ELSE()
+    LIST(APPEND ALL_LINKED_LIBRARIES dl util)
+ENDIF()
 
 IF(WITH_PYTHON)
-    list(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
 ENDIF()
 
 IF(WITH_MPI)
-    list(APPEND ALL_LINKED_LIBRARIES ${MPI_CXX_LIBRARIES} )
+    LIST(APPEND ALL_LINKED_LIBRARIES ${MPI_CXX_LIBRARIES} )
 ENDIF()
 
 IF(WITH_QL)
-    list(APPEND ALL_LINKED_LIBRARIES ${QuantLib_LIBRARIES})
+    LIST(APPEND ALL_LINKED_LIBRARIES QuantLib ${QuantLib_LIBRARIES})
 ENDIF()
 
-LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
+
+IF(BLAS_FOUND)
+    LIST(APPEND ALL_LINKED_LIBRARIES ${BLAS_LIBRARIES} GSL::gslcblas)
+    IF(LAPACK_FOUND)
+        LIST(APPEND ALL_LINKED_LIBRARIES ${LAPACK_LIBRARIES})
+    ENDIF()
+ENDIF()
+
+LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
+
 ################################################################################
 
 SET(SOURCE_FILES
@@ -220,6 +243,9 @@ SET(SOURCE_FILES
         esl/economics/iso_4217.cpp
         esl/economics/iso_4217.hpp
 
+        esl/economics/accounting/standard.cpp
+        esl/economics/accounting/standard.hpp
+
         esl/economics/currencies.cpp
         esl/economics/currencies.hpp
 
@@ -246,10 +272,8 @@ SET(SOURCE_FILES
         esl/economics/price.cpp
         esl/economics/price.hpp
 
-
         esl/geography/location.cpp
         esl/geography/location.hpp
-
 
         esl/interaction/transfer.cpp
         esl/interaction/transfer.hpp
@@ -290,7 +314,6 @@ SET(SOURCE_FILES
         test/shared_properties.cpp
         test/shared_properties.hpp
 
-
         esl/economics/markets/indication.cpp
         esl/economics/markets/indication.hpp
 
@@ -299,7 +322,6 @@ SET(SOURCE_FILES
 
         esl/economics/markets/market.cpp
         esl/economics/markets/market.hpp
-
 
         esl/economics/markets/walras/price_setter.cpp
         esl/economics/markets/walras/price_setter.hpp
@@ -330,15 +352,33 @@ SET(SOURCE_FILES
 
         esl/economics/currency.cpp
         esl/economics/currency.hpp
-        esl/economics/accounting/balance_sheet.cpp esl/economics/accounting/balance_sheet.hpp esl/economics/accounting/cash_flow_statement.cpp esl/economics/accounting/cash_flow_statement.hpp esl/data/format/delimiter_separated_values.cpp esl/data/format/delimiter_separated_values.hpp esl/data/serialization.hpp)
+        esl/economics/accounting/balance_sheet.cpp 
+        esl/economics/accounting/balance_sheet.hpp 
+        
+        esl/economics/accounting/cash_flow_statement.cpp 
+        esl/economics/accounting/cash_flow_statement.hpp 
+        
+        esl/data/format/delimiter_separated_values.cpp 
+        esl/data/format/delimiter_separated_values.hpp 
+        
+        esl/data/serialization.hpp
 
+        esl/economics/finance/bondholder.cpp
+        esl/economics/finance/bondholder.hpp
+        )
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
-SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "")
+SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
-TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 
-LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+
+IF(WIN32)
+    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+ELSE()
+    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+ENDIF()
 
 ################################################################################
 # Copy library into testing folder, so it can be linked against by Python tests

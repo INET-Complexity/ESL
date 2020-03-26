@@ -25,12 +25,24 @@
 
 #include <esl/law/property.hpp>
 
+#include <sstream>
 
 #include <boost/serialization/export.hpp>
 
+
 namespace esl::law {
-    property::property(esl::identity<property> i) : entity<property>(i)
-    {}
+    property::property(esl::identity<property> i) 
+    : entity<property>(i)
+    {
+    
+    }
+
+    std::string property::name() const
+    {
+        std::stringstream stream_;
+        stream_ << "property" << ' ' << identifier;
+        return stream_.str();
+    }
 }  // namespace esl::law
 
 

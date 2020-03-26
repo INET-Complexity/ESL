@@ -26,10 +26,11 @@
 #ifndef ESL_RATE_HPP
 #define ESL_RATE_HPP
 
-
 #include <esl/economics/price.hpp>
 #include <esl/mathematics/rational.hpp>
 #include <esl/simulation/time.hpp>
+
+#include <type_traits>
 
 
 namespace esl::economics {
@@ -58,7 +59,21 @@ namespace esl::economics {
 
         }
 
+        ///
+        /// \brief Rate from double, truncates to zero.
+        /// 
+        /// \param  value_untruncated   The rate as a floating point number.
+        /// \param  precision   The number of sub-units of the rate, in essence the 
+        ///                     denominator in the fractional number.
+        ///
+        constexpr rate( double value_untruncated
+                      , typename std::make_unsigned<integer_type_>::type precision = 10'000)
+        : rate( static_cast<integer_type_>(value_untruncated*precision)
+              , static_cast<integer_type_>(precision))
+        {
 
+        }
+        
         rate<integer_type_> &operator=(const rate<integer_type_> &o)
         {
             boost::rational<integer_type_>::operator=(o);
@@ -66,7 +81,7 @@ namespace esl::economics {
         }
 
         template<typename floating_point_t_>
-        explicit operator floating_point_t_() const
+        [[nodiscard]] explicit operator floating_point_t_() const
         {
             return boost::rational_cast<floating_point_t_>(*this);
         }

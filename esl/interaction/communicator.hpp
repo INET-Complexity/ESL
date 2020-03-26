@@ -104,8 +104,8 @@ namespace esl::interaction {
     public:
         enum scheduling
         {
-            in_order,
-            random
+            in_order = 0,
+            random   = 1
         };
 
     protected:

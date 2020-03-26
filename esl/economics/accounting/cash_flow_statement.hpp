@@ -73,7 +73,7 @@ namespace esl::economics::accounting {
                     break;
                 }
             }
-            auto result_ = price(0, s.reporting_currency);
+            auto result_ = price(0ll, s.reporting_currency);
             for (const auto &v: values_) {
                 result_ += v;
             }

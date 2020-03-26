@@ -87,12 +87,12 @@ struct test_trader_order
 
     }
 
-    virtual std::vector<esl::variable>
-    excess_demand(
-        const std::vector<esl::economics::quote> &quotes,
-        std::vector<esl::variable> &variables) const
+    std::map<esl::identity<esl::law::property>, esl::variable> excess_demand_m(
+    const std::map<esl::identity<esl::law::property>,
+                   std::tuple<esl::economics::quote, esl::variable>> &quotes)
+    const  override
     {
-        std::vector<esl::variable> signals_;
+        std::map<esl::identity<esl::law::property>, esl::variable> signals_;
         if(valuations.empty()) {
             return signals_;
         }
@@ -101,16 +101,15 @@ struct test_trader_order
         /// account.
         esl::variable position_        = 0;
         esl::variable abs_sensitivity_ = 0;
-        size_t q                  = 0;
         for(const auto &[k, v] : valuations) {
+            
             auto subjective_  = double(v);
-            auto quote_price_ = static_cast<double>(quotes[q]);
-            auto proposed_    = quote_price_ * variables[q];
+            auto quote_price_ = static_cast<double>(std::get<0>(quotes.find(k)->second));
+            auto proposed_    = quote_price_ * std::get<1>(quotes.find(k)->second);
             auto signal_      = (subjective_ - proposed_);
-            signals_.emplace_back(signal_);
+            signals_.insert({k, signal_});
             position_ += signal_;
             abs_sensitivity_ += abs(signal_);
-            ++q;
         }
         /// The mean position represents the working capital employed, examples:
         ///    -1.0 the short position is equal to working capital, securities =
@@ -120,20 +119,18 @@ struct test_trader_order
         ///     =  1.0, cash = 0.0, margin = 0.0
         //    auto risk_limit_ = 1.; // make-shift risk limit
         // variable scale_ = risk_limit_ / (abs_sensitivity_ / q);
-        std::vector<esl::variable> excess_demand_;
-        q = 0;
-        for(const auto &[k, v] : valuations) {
-            auto quote_price_ = static_cast<double>(quotes[q]);
-            auto proposed_    = quote_price_ * variables[q];
+        std::map<esl::identity<esl::law::property>, esl::variable> excess_demand_;
+        for(const auto &[k, v] : signals_) {
+            auto quote_price_ = static_cast<double>(std::get<0>(quotes.find(k)->second));
+            auto proposed_    = quote_price_ * std::get<1>(quotes.find(k)->second);
 
             double supply_ = 0;
             auto iterator_ = supply.find(k);
             if(supply.end() != iterator_) {
                 supply_ = double(iterator_->second);
             }  // we allow not setting the supply, in case there are no holdings
-            auto excess_ = (signals_[q] * capital) / proposed_ - supply_;
-            excess_demand_.emplace_back(excess_);
-            ++q;
+            auto excess_ = (v * capital) / proposed_ - supply_;
+            excess_demand_.insert({k, excess_});
         }
         return excess_demand_;
     }
@@ -188,7 +185,7 @@ struct test_constant_demand_trader
         (void) working_capital_;
 
         for(auto [k, message_] : inbox) {
-            switch(message_->type) {
+            switch(k) {
             case esl::economics::markets::walras::quote_message::code
                 :
                 auto quote_ = std::dynamic_pointer_cast<
@@ -255,6 +252,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
         company_->shares_outstanding[main_issue_] = 1'000'000;
 
         for(const auto &[share_, quantity] : company_->shares_outstanding) {
+            (void) quantity;
             auto stock_ = std::make_shared<esl::economics::finance::stock>(
                 *company_, share_);
             traded_assets_.insert(
@@ -289,6 +287,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
         }
 
         for(const auto &[k, v] : traded_assets_) {
+            (void)v;
             (*p).esl::economics::finance::shareholder::
                 owner<esl::economics::finance::stock>::properties.insert(
                     std::dynamic_pointer_cast<esl::economics::finance::stock>(

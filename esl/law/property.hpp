@@ -46,12 +46,10 @@ namespace esl::law {
 
         ///
         /// \brief  Names the type of property
+        /// // C++20 constexpr
         ///
-        /// \return
-        [[nodiscard]] virtual std::string name() const  // C++20 constexpr
-        {
-            return "property";
-        }
+        /// \return 
+        [[nodiscard]] virtual std::string name() const;
 
         using esl::entity<property>::operator==;
 

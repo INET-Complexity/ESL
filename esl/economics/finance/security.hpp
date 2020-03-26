@@ -32,6 +32,9 @@
 
 #include <esl/geography/countries.hpp>
 
+#include <esl/law/contract.hpp>
+
+
 namespace esl::economics::finance {
 
     ///
@@ -42,20 +45,26 @@ namespace esl::economics::finance {
     struct security
     : public asset
     , public fungible
+    , public law::contract
     {
         isin code;
 
-        explicit security(identity<property> i = identity<property>(),
-                          isin code            = isin(geography::countries::US))
-        : asset(i), code(code)
-        {}
+        explicit security( identity<property> i = identity<property>()
+                         , isin code            = isin(geography::countries::US)
+                         , std::vector<identity<agent>> parties = {})
+        : asset(i)
+        , contract(parties)
+        , code(code)
+        {
+            
+        }
 
         virtual ~security() = default;
 
-        virtual std::string name() const  // C++20 constexpr
+        std::string name() const override
         {
             std::stringstream stream_;
-            stream_ << code;
+            stream_ << "security" << ' ' << code;
             return stream_.str();
         }
 

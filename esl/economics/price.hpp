@@ -49,9 +49,24 @@ namespace esl::economics {
 
         iso_4217 valuation;
 
-        explicit constexpr price(std::int64_t value = 0,
-                                 iso_4217 valuation = iso_4217())  // = default_currency)
+        explicit constexpr price(int64_t value = 0,
+                                 iso_4217 valuation = iso_4217())
         : value(value), valuation(valuation)
+        {
+
+        }
+
+        explicit constexpr price(float value_untruncated = 0.f,
+                                 iso_4217 valuation = iso_4217())
+                : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
+        {
+
+        }
+
+
+        explicit constexpr price(double value_untruncated = 0.,
+                                 iso_4217 valuation = iso_4217())
+                : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
         {
 
         }
@@ -135,7 +150,7 @@ namespace esl::economics {
 
         [[nodiscard]] constexpr friend price operator*(const price &p, const uint64_t &operand)
         {
-            return price(p.value * operand, p.valuation);
+            return price(static_cast<int64_t>(p.value * operand), p.valuation);
         }
 
         [[nodiscard]] constexpr friend price operator*(const uint64_t &operand, const price &p)

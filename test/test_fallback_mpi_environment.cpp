@@ -26,7 +26,11 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE mpi_environment_fallback
 
+
+
 #include <boost/test/included/unit_test.hpp>
+
+#ifdef WITH_MPI
 
 // intrude into the class for testing purposes
 #define protected public
@@ -124,3 +128,6 @@ BOOST_AUTO_TEST_CASE(initialization)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
+
+
+#endif WITH_MPI

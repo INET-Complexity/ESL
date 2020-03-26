@@ -43,6 +43,7 @@
 #include <esl/economics/cash.hpp>
 #include <esl/economics/finance/dividend.hpp>
 #include <esl/economics/finance/shareholder.hpp>
+#include <esl/economics/finance/bondholder.hpp>
 #include <esl/law/organization.hpp>
 #include <esl/economics/accounting/balance_sheet.hpp>
 #include <esl/economics/accounting/cash_flow_statement.hpp>
@@ -55,6 +56,7 @@ namespace esl::economics {
     struct company
     : public law::organization
     , public finance::shareholder
+    , public finance::bondholder
     , public identifiable_as<company>
     {
     public:

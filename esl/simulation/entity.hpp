@@ -160,6 +160,13 @@ namespace esl {
         {
             return stream << e.identifier;
         }
+        
+        virtual /*C++20 constexpr*/ std::string name() const
+        {
+            std::stringstream stream_;
+            stream_ << "entity" << ' ' << this->identifier;
+            return stream_.str();
+        }
 
         ///
         /// \tparam archive_t

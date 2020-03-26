@@ -41,7 +41,7 @@ namespace esl::economics {
 
     price asset::value(const accounting::standard &a) const
     {
-        return price(0, a.reporting_currency);
+        return price(0ll, a.reporting_currency);
     }
 }
 

@@ -36,13 +36,13 @@ class agent;
 namespace esl::law {
 
     struct contract
-    : public property
+    : public virtual property
     , public economics::infungible
     , public economics::intangible
     {
         std::vector<identity<agent>> parties;
 
-        explicit contract(std::vector<identity<agent>> parties)
+        explicit contract(std::vector<identity<agent>> parties = {})
         : property()
         , infungible()
         , intangible()

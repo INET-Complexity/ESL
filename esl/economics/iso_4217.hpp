@@ -30,6 +30,7 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
 
 namespace esl::economics {
 

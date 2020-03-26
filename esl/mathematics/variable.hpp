@@ -25,11 +25,13 @@
 #ifndef ESL_MATHEMATICS_VARIABLE_HPP
 #define ESL_MATHEMATICS_VARIABLE_HPP
 
-#include <stan/math.hpp>
+//#include <stan/math.hpp>
+
+#include <adept.h>
 
 namespace esl {
 
-    typedef stan::math::var variable;
+    typedef /*stan::math::var*/ adept::adouble variable;
 
     template<typename t>
     inline double value(t value)
@@ -40,7 +42,7 @@ namespace esl {
     template<>
     inline double value(variable value)
     {
-        return value.val();
+        return value.value(); //.val();
     }
 
 }  // namespace esl

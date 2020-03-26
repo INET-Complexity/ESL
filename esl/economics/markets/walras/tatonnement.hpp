@@ -38,26 +38,23 @@
 #include <string>
 #include <vector>
 
-#include <stan/model/model_header.hpp>
+#include <adept.h>
 
-#include <stan/callbacks/interrupt.hpp>
-#include <stan/callbacks/logger.hpp>
-#include <stan/callbacks/writer.hpp>
+#include <gsl/gsl_vector.h>
 
 #include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 #include <esl/economics/markets/quote.hpp>
 
+
+
+
 namespace tatonnement {
 
     ///
-    ///
+    /// \brief
     ///
     class excess_demand_model
-    : public stan::model::prob_grad
     {
-    private:
-        std::map<esl::identity<esl::law::property>, esl::economics::quote> quotes_;
-
     public:
         std::vector<std::shared_ptr<differentiable_demand_supply_function>>
             excess_demand_functions_;
@@ -67,16 +64,39 @@ namespace tatonnement {
 
         virtual ~excess_demand_model();
 
-        void transform_inits(const stan::io::var_context &context,
-                             std::vector<int> &integers,
-                             std::vector<double> &reals,
-                             std::ostream *stream) const;
 
-        void transform_inits(const stan::io::var_context &context,
-                             Eigen::Matrix<double, Eigen::Dynamic, 1> &reals,
-                             std::ostream *stream) const;
+    protected:
+        std::map<esl::identity<esl::law::property>, esl::economics::quote> quotes_;
+
+        adept::Stack stack_;                    // Adept stack object
+        std::vector<adept::adouble> active_x_;  // Active state variables
 
 
+        adept::adouble calc_function_value(const adept::adouble *x);
+        double         calc_function_value(const double *x);
+
+        double calc_function_value_and_gradient(const double *x, double *dJ_dx) ;
+
+        static double my_function_value(const gsl_vector *variables, void *params);
+        static void my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
+        static void my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
+
+
+
+
+    public:
+
+        std::optional<std::map<esl::identity<esl::law::property>, double>> do_compute();
+
+
+
+
+
+
+
+
+
+/*
         template<bool proportional_, bool jacobian_, typename scalar_model_>
         scalar_model_ log_prob(std::vector<scalar_model_> &reals,
                                std::vector<int> &integers,
@@ -120,14 +140,14 @@ namespace tatonnement {
             for(const auto &f : excess_demand_functions_) {
                 auto demand_per_property_ = f->excess_demand_m(qv_ed_);
                 if(demand_per_property_.size() != quotes_.size()) {
-#if DEBUG
+//#if DEBUG
                     // TODO: warning, silently ignoring agents demand
                     continue;
-#else
-                    throw std::invalid_argument(
-                        "agent's excess demand vector does not match the code "
-                        "of quoted properties");
-#endif
+//#else
+//                    throw std::invalid_argument(
+//                        "agent's excess demand vector does not match the code "
+//                        "of quoted properties");
+//#endif
                 }
 
                 for(auto [k,v]: demand_per_property_) {
@@ -139,7 +159,8 @@ namespace tatonnement {
                 //}
             }
 
-            for(auto [_,t] : terms_map) {
+            for(auto [p,t] : terms_map) {
+                (void) p;
                 target_.add(-pow(t, 2));
             }
 
@@ -227,148 +248,11 @@ namespace tatonnement {
         void unconstrained_param_names(std::vector<std::string> &names,
                                        bool transformed_parameters = true,
                                        bool generated_quantities = true) const;
+
+                                       */
+
+
     };  // model
 }  // namespace tatonnement
-
-
-struct excess_demand_model_context : public stan::io::var_context
-{
-    ///
-    std::vector<double> quotes;
-
-    ///
-    /// \param prices
-    explicit excess_demand_model_context(std::vector<double> initial_quotes)
-    : stan::io::var_context(), quotes(std::move(initial_quotes))
-    {}
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] bool contains_r(const std::string &name) const override
-    {
-        return "prices" == name;
-    }
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] std::vector<double>
-    vals_r(const std::string &name) const override
-    {
-        if("prices" == name) {
-            return quotes;
-        }
-        return {};
-    }
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] std::vector<size_t>
-    dims_r(const std::string &name) const override
-    {
-        if("prices" == name) {
-            return {quotes.size()};
-        }
-        return {};
-    }
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] bool contains_i(const std::string &name) const override
-    {
-        return "assets" == name;
-    }
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] std::vector<int>
-    vals_i(const std::string &name) const override
-    {
-        if("assets" == name) {
-            return {static_cast<int>(quotes.size())};
-        }
-        return std::vector<int>();
-    }
-
-    ///
-    /// \param name
-    /// \return
-    [[nodiscard]] std::vector<size_t>
-    dims_i(const std::string &name) const override
-    {
-        if("assets" == name) {
-            return {1};
-        }
-        return {};
-    }
-
-    ///
-    /// \param names[out]   Real number parameter names
-    void names_r(std::vector<std::string> &names) const override
-    {
-        names = {"prices"};
-    }
-
-    ///
-    /// \param names[out]   Integer parameter names
-    void names_i(std::vector<std::string> &names) const override
-    {
-        names = {"assets"};
-    }
-};
-
-
-struct interrupt_callback
-: public stan::callbacks::interrupt
-{
-    interrupt_callback() = default;
-
-    ///
-    /// \brief  Ignore interruptions of the optimisation process
-    void operator()() override
-    {}
-};
-
-///
-/// \brief  Stores the states of the variables during the computation. For
-///         performance, we may want to consider dropping
-///         anything but the last values (states) in release mode as the
-///         intermediate values are of no use to the simulation output.
-///
-class state_writer
-: public stan::callbacks::writer
-{
-public:
-    ///
-    /// \brief  Captures the states of the parameters during the computation
-    ///         process. In debug mode, stores the entire
-    ///         history, in release mode only captures the latest values.
-    ///
-    ///  \warning   Computational processes must emit the optimum values at the
-    ///             end, since in release mode intermediate
-    ///             values are ignored.
-    ///
-    std::vector<std::map<esl::identity<esl::law::property>, double>> states;
-
-    std::vector<double> errors;
-    ///
-    /// \brief  Translates vector indices back to property indices, as the library used for optimisation uses vectors only
-    ///
-    std::vector<esl::identity<esl::law::property>> translation;
-
-    void operator()(const std::vector<double> &state) override
-    {
-        errors.push_back(state[0]);
-        std::map<esl::identity<esl::law::property>, double> state_;
-        for(size_t i = 1; i < state.size(); ++i) {
-            state_.insert({translation[i-1], state[i]});
-        }
-        states.push_back(state_);
-    }
-};
 
 #endif  // PROJECT_TATONNEMENT_HPP

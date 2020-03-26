@@ -62,7 +62,7 @@ namespace esl::economics {
         price operator*(const price &p) const
         {
             // TODO: add rounding rules
-            return price((p.value * numerator()) / denominator(), p.valuation);
+            return price(static_cast<int64_t>((p.value * numerator()) / denominator()), p.valuation);
         }
 
         ///

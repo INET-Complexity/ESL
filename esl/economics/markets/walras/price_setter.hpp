@@ -1,4 +1,4 @@
-/// \file   auctioneer.hpp
+/// \file   price_setter.hpp
 ///
 /// \brief
 ///
@@ -31,7 +31,9 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/base_object.hpp>
 
+/*
 #include <stan/services/optimize/lbfgs.hpp>
+*/
 
 #include <esl/economics/markets/market.hpp>
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
@@ -39,7 +41,7 @@
 namespace esl::economics::markets::walras {
 
     ///
-    /// \brief  "auctioneer" is the market mechanism that implements demand and supply matching via numerical method
+    /// \brief  "price setter" is the market mechanism that implements demand and supply matching via numerical method
     ///
     struct price_setter
     : market
@@ -92,11 +94,8 @@ namespace esl::economics::markets::walras {
         {
             (void)version;
             archive & BOOST_SERIALIZATION_BASE_OBJECT_NVP(market);
-
-
             archive & BOOST_SERIALIZATION_NVP(traded_properties);
             archive & BOOST_SERIALIZATION_NVP(output_clearing_prices_);
-
             archive & BOOST_SERIALIZATION_NVP(state);
         }
     };

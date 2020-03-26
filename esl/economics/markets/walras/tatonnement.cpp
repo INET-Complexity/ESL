@@ -31,92 +31,192 @@
 
 #include <esl/economics/markets/walras/tatonnement.hpp>
 
+/*
 #include <stan/callbacks/logger.hpp>
 #include <stan/io/var_context.hpp>
 #include <stan/services/optimize/lbfgs.hpp>
+*/
+
 
 #include <esl/economics/markets/quote.hpp>
 
+// for L-BFGS with Adept
+
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_multimin.h>
+
+#include <adept_source.h>
+
 namespace tatonnement {
-    excess_demand_model::excess_demand_model(
-        std::map<esl::identity<esl::law::property>, esl::economics::quote>
-            initial_quotes)
-    : prob_grad(initial_quotes.size()), quotes_(std::move(initial_quotes))
+
+    extern "C"
+    double excess_demand_model::my_function_value(const gsl_vector *variables, void *params)
     {
-        param_ranges_i__.clear();  /// no restricted integer ranges
+        auto *model_ = reinterpret_cast<tatonnement::excess_demand_model *>(params);
+
+        return model_->calc_function_value(variables->data);
+    }
+// Return gradient of function with respect to each state variable x
+    extern "C"
+    void excess_demand_model::my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ)
+    {
+        auto *state = reinterpret_cast<tatonnement::excess_demand_model *>(params);
+
+        state->calc_function_value_and_gradient(x->data, gradJ->data);
+    }
+// Return both function and its gradient
+    extern "C"
+    void excess_demand_model::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ) {
+        auto *state = reinterpret_cast<tatonnement::excess_demand_model *>(params);
+
+        *J = state->calc_function_value_and_gradient(x->data, gradJ->data);
+    }
+
+}//namespace tatonnement
+
+
+
+
+
+
+
+
+
+namespace tatonnement {
+    excess_demand_model::excess_demand_model( std::map<esl::identity<esl::law::property>
+                                            , esl::economics::quote> initial_quotes)
+    : quotes_(initial_quotes)
+    {
+
     }
 
     excess_demand_model::~excess_demand_model() = default;
 
-    void excess_demand_model::transform_inits(
-        const stan::io::var_context &context, std::vector<int> &integers,
-        std::vector<double> &reals, std::ostream *stream) const
+    ///
+    /// \brief the optimisation problem
+    ///
+    /// \param x
+    /// \return
+    adept::adouble excess_demand_model::calc_function_value(const adept::adouble *x)
     {
-        (void)stream;
-        stan::io::writer<double> writer_(reals, integers);
 
-        std::vector<double> prices_ = context.vals_r("prices");
-        for(auto &p : prices_) {
-            writer_.scalar_unconstrain(p);
+        std::map< esl::identity<esl::law::property>
+                , std::tuple<esl::economics::quote, adept::adouble>
+        > quote_scalars_;
+
+        std::vector<adept::adouble> scalars_;
+        scalars_.reserve(quotes_.size());
+        size_t n = 0;
+        for(auto [k,v]: quotes_){
+            quote_scalars_.insert({k, std::make_tuple(v, x[n])});
+            scalars_.push_back(x[n]);
+            ++n;
         }
 
-        reals    = writer_.data_r();
-        integers = writer_.data_i();
-    }
-
-    void excess_demand_model::transform_inits(
-        const stan::io::var_context &context,
-        Eigen::Matrix<double, Eigen::Dynamic, 1> &reals,
-        std::ostream *stream) const
-    {
-        std::vector<int> params_i_vec;
-        std::vector<double> params_r_vec;
-        transform_inits(context, params_i_vec, params_r_vec, stream);
-
-        reals = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>>(
-            params_r_vec.data(), params_r_vec.size(), 1);
-    }
-
-    /// \param names[out]   Is set to the names of the parameters to the model
-    void
-    excess_demand_model::get_param_names(std::vector<std::string> &names) const
-    {
-        names = {"prices"};
-    }
-
-    /// \param dimensions[out]  The dimensions of each parameter.
-    void excess_demand_model::get_dims(
-        std::vector<std::vector<size_t>> &dimensions) const
-    {
-        dimensions = {{quotes_.size()}};
-    }
-
-
-    void excess_demand_model::constrained_param_names(
-        std::vector<std::string> &names, bool transformed_parameters,
-        bool generated_quantities) const
-    {
-        (void)transformed_parameters;
-        (void)generated_quantities;
-
-        names.clear();
-        names.reserve(quotes_.size());
-        for(size_t i = 0; i < quotes_.size(); ++i) {
-            names.emplace_back("prices." + std::to_string(1 + i));
+        std::map< esl::identity<esl::law::property>, adept::adouble> terms_map;
+        for(auto [k,v]: quotes_) {
+            terms_map.insert({k, adept::adouble(0)});
         }
-    }
 
-    void excess_demand_model::unconstrained_param_names(
-        std::vector<std::string> &names, bool transformed_parameters,
-        bool generated_quantities) const
-    {
-        (void)transformed_parameters;
-        (void)generated_quantities;
-
-        names.clear();
-        names.reserve(quotes_.size());
-        for(size_t i = 0; i < quotes_.size(); ++i) {
-            names.emplace_back("prices." + std::to_string(1 + i));
+        for(const auto &f: excess_demand_functions_) {
+            auto demand_per_property_ = f->excess_demand_m(quote_scalars_);
+            for(auto [k,v]: demand_per_property_) {
+                terms_map[k] += v;
+            }
         }
+
+        adept::adouble target_ = 0.0;
+        for(auto [p,t]: terms_map) {
+            (void) p;
+            target_ += (pow(t, 2));
+        }
+
+        return target_;
     }
+
+    ///
+    /// compute the function value without differentiation
+    /// \param x
+    /// \return
+    double excess_demand_model::calc_function_value(const double* x)
+    {
+        stack_.pause_recording();
+        for (unsigned int i = 0; i < active_x_.size(); ++i) {
+            active_x_[i] = x[i];
+        }
+        double result = value(calc_function_value(&active_x_[0]));
+        stack_.continue_recording();
+        return result;
+    }
+
+    double excess_demand_model::calc_function_value_and_gradient(const double* x, double* dJ_dx) {
+        for (unsigned int i = 0; i < active_x_.size(); ++i){
+            active_x_[i] = x[i];
+        }
+        stack_.new_recording();
+        adept::adouble J = calc_function_value(&active_x_[0]);
+        J.set_gradient(1.0);
+        stack_.compute_adjoint();
+        adept::get_gradients(&active_x_[0], active_x_.size(), dJ_dx);
+        return adept::value(J);
+    }
+
+    std::optional<std::map<esl::identity<esl::law::property>, double>> excess_demand_model::do_compute()
+    {
+        const double initial_step_size = 0.01;
+        const double line_search_tolerance = 1.0e-4;
+        const double converged_gradient_norm = 1.0e-3;
+        const auto *minimizer_type = gsl_multimin_fdfminimizer_vector_bfgs2;// l-bfgs
+
+        active_x_.clear();
+        std::vector<esl::identity<esl::law::property>> mapping_index_;
+        mapping_index_.reserve(quotes_.size());
+        {
+            for (auto [k, v]: quotes_) {
+                (void)v;
+                mapping_index_.emplace_back(k);
+                active_x_.emplace_back(1.0);
+            }
+        }
+
+        gsl_multimin_function_fdf my_function;
+        my_function.n = active_x_.size();
+        my_function.f = my_function_value;
+        my_function.df = my_function_gradient;
+        my_function.fdf = my_function_value_and_gradient;
+        my_function.params = reinterpret_cast<void *>(this);
+
+        auto *x = gsl_vector_alloc(active_x_.size());
+        for (size_t i = 0; i < active_x_.size(); ++i){
+            gsl_vector_set(x, i, 1.0);  // initial solution is 1.0 * previous quote
+        }
+
+        auto *minimizer = gsl_multimin_fdfminimizer_alloc(minimizer_type, active_x_.size());
+        gsl_multimin_fdfminimizer_set(minimizer, &my_function, x, initial_step_size, line_search_tolerance);
+
+        size_t iter = 0;
+        int status;
+        do {
+            ++iter;
+            status = gsl_multimin_fdfminimizer_iterate(minimizer);
+            if (status != GSL_SUCCESS) break;
+            status = gsl_multimin_test_gradient(minimizer->gradient, converged_gradient_norm);
+        }
+        while (status == GSL_CONTINUE && iter < 1000);
+
+        gsl_multimin_fdfminimizer_free(minimizer);
+        gsl_vector_free(x);
+
+        if (status == GSL_SUCCESS) {
+            std::map<esl::identity<esl::law::property>, double> result_;
+            for(size_t i = 0; i < active_x_.size(); ++i){
+                result_.insert({mapping_index_[i], active_x_[i].value()});
+            }
+            return result_;
+        }
+
+        std::cout << "Minimizer failed after " << iter << " iterations: " << gsl_strerror(status) << "\n";
+        return std::nullopt;
+    }
+
 }  // namespace tatonnement

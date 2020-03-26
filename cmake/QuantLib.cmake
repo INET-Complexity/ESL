@@ -10,7 +10,7 @@ find_path(QuantLib_INCLUDES
   ${INCLUDE_INSTALL_DIR}
 )
 
-find_library(QuantLib_LIBRARIES QuantLib PATHS $ENV{QuantLibDIR} ${QuantLib_ROOT}/lib ${LIB_INSTALL_DIR})
+find_library(QuantLib_LIBRARIES PATHS $ENV{QuantLibDIR} ${QuantLib_ROOT}/lib ${LIB_INSTALL_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(QuantLib DEFAULT_MSG

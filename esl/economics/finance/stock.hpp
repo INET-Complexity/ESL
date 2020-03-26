@@ -65,12 +65,6 @@ namespace esl::economics::finance {
               const share &details,
               const isin &code);
 
-        virtual std::string name() const  // C++20 constexpr
-        {
-            return security::name();
-        }
-
-
         inline bool operator<(const stock &operand) const
         {
             if(company_identifier < operand.company_identifier) {
@@ -82,6 +76,14 @@ namespace esl::economics::finance {
             }
 
             return details < operand.details;
+        }
+
+        
+        /*C++20 constexpr*/ std::string name() const override
+        {
+            std::stringstream stream_;
+            stream_ << "stock" << ' ' << this->identifier;
+            return stream_.str();
         }
 
         template<class archive_t>

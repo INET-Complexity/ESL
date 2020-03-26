@@ -38,7 +38,10 @@
 
 namespace esl::computation {
 
-    environment::environment() = default;
+    environment::environment()
+    {
+
+    }
 
     ///
     /// agents are activated when they are newly created or when they migrate
