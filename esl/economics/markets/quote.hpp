@@ -29,8 +29,8 @@
 
 #include <type_traits>
 
-#include <esl/economics/price.hpp>
 #include <esl/economics/exchange_rate.hpp>
+#include <esl/economics/price.hpp>
 
 
 namespace esl::economics {
@@ -47,25 +47,42 @@ namespace esl::economics {
     {
         std::variant<exchange_rate, price> type;
 
-        explicit quote(const exchange_rate &er = exchange_rate())
+        uint64_t lot;
+
+        explicit quote(const exchange_rate &er = exchange_rate(),
+                       uint64_t lot            = 1)
         : type(er)
-        {}
-
-        explicit quote(const price &p)
-        : type(p)
-        {}
-
-        quote(const quote &q)
-        : type(q.type)
+        , lot(lot)
         {
-
+            assert(lot > 0);
         }
 
+        explicit quote(const price &p, uint64_t lot = 1)
+        : type(p)
+        , lot(lot)
+        {
+            assert(lot > 0);
+        }
+
+        quote(const quote &q, uint64_t lot = 1)
+        : type(q.type)
+        , lot(lot)
+        {
+            assert(lot > 0);
+        }
+
+        ///
+        /// \brief  When converting to floating point, we divide by the lot size
+        ///         so that we get the quote per unit of goods.
+        ///
+        /// \tparam floating_point_t_
+        /// \return
         template<typename floating_point_t_>
         explicit operator floating_point_t_() const
         {
-            return std::visit([](auto &&arg) { return floating_point_t_(arg); },
-                              type);
+            return std::visit(
+                [this](auto &&arg) { return floating_point_t_(arg) / lot; },
+                type);
         }
 
         template<class archive_t>
@@ -73,32 +90,33 @@ namespace esl::economics {
         {
             (void)version;
 
+            archive << BOOST_SERIALIZATION_NVP(lot);
             size_t index_ = type.index();
             archive &BOOST_SERIALIZATION_NVP(index_);
             switch(index_) {
             case 0:
-                archive << boost::serialization::make_nvp("exchange_rate",
-                std::get<exchange_rate>(type));
+                archive << boost::serialization::make_nvp(
+                    "exchange_rate", std::get<exchange_rate>(type));
                 break;
             case 1:
-                archive << boost::serialization::make_nvp("price",
-                                                          std::get<price>(type));
+                archive << boost::serialization::make_nvp(
+                    "price", std::get<price>(type));
                 break;
             }
         }
-
 
         template<class archive_t>
         void load(archive_t &archive, const unsigned int version)
         {
             (void)version;
 
+            archive >> BOOST_SERIALIZATION_NVP(lot);
+
             size_t index_ = 0;
             archive >> BOOST_SERIALIZATION_NVP(index_);
             if(0 == index_) {
                 exchange_rate re;
-                archive >> boost::serialization::make_nvp("exchange_rate",
-                re);
+                archive >> boost::serialization::make_nvp("exchange_rate", re);
                 type.emplace<0>(re);
             } else if(1 == index_) {
                 price p;
@@ -113,6 +131,29 @@ namespace esl::economics {
         {
             boost::serialization::split_member(archive, *this, version);
         }
+
+
+        std::ostream &operator << (std::ostream &stream) const
+        {
+            stream << lot << '@';
+            std::visit([&](const auto &elem)
+                       {
+                           stream << elem;
+                       },
+                       type);
+            return stream;
+        }
+
+        friend std::ostream &operator << (std::ostream &stream, const quote &q)
+        {
+            stream << q.lot << '@';
+            std::visit([&](const auto &elem)
+                       {
+                           stream << elem;
+                       },
+                       q.type);
+            return stream;
+        }
     };
 
 }  // namespace esl::economics
@@ -122,8 +163,9 @@ namespace esl::economics {
 #include <boost/mpi.hpp>
 namespace boost { namespace mpi {
     template<>
-    struct is_mpi_datatype<esl::economics::quote> : public mpl::false_
-    {};
+    struct is_mpi_datatype<esl::economics::quote>
+    : public is_mpi_datatype<std::variant<exchange_rate, price>>::value
+    { };
 }}      // namespace boost::mpi
 #endif  // WITH_MPI
 

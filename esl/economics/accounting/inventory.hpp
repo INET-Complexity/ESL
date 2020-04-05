@@ -132,7 +132,7 @@ namespace esl::economics::accounting {
             auto result_ = economics::cash(a.reporting_currency).value(0);
             for(auto [k, v] : items) {
                 auto unit_     = k->value(a);
-                auto multiple_ = (unit_.value * v.amount) / v.basis;
+                auto multiple_ = static_cast<int64_t>((unit_.value * v.amount) / v.basis);
                 // auto q  = quantity(multiple_, unit_.valuation.denominator);
                 auto p = price(multiple_, unit_.valuation);
                 result_ += p;
@@ -239,8 +239,6 @@ namespace esl::economics::accounting {
     {
         law::property_filter_set<property_t_> items;
 
-        int FUNG = 123;
-
         inventory_by_fungibility() = default;
 
         void insert(std::shared_ptr<property_t_> value)
@@ -295,7 +293,6 @@ namespace esl::economics::accounting {
                 }
             }
         }
-
 
         ///
         /// \return

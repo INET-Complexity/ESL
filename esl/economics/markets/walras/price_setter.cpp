@@ -22,59 +22,13 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
 #include <esl/economics/markets/walras/price_setter.hpp>
 
-/*
-#include <stan/services/optimize/lbfgs.hpp>
-*/
-
 #include <algorithm>
-#include <numeric>
+#include <type_traits>
 
-
-#include <esl/economics/cash.hpp>
 #include <esl/economics/markets/walras/quote_message.hpp>
 #include <esl/economics/markets/walras/tatonnement.hpp>
-#include <esl/economics/owner.hpp>
-#include <esl/simulation/time.hpp>
-
-// template<typename floating_t_ = double, typename integer_t_ = size_t>
-std::vector<int> c(const std::vector<double> &fractions, int sum)
-{
-    (void)sum;
-
-    double sum_ = 0;
-    int near_   = 0;
-    std::vector<int> result_;
-    for(const auto &f : fractions) {
-        sum_ += f;
-        near_ += round(f);
-        result_.push_back(round(abs(f)));
-    }
-
-    int target_ = round(sum_);
-
-    if(near_ == target_) {
-        return result_;
-    }
-
-
-    std::vector<size_t> indices_(fractions.size());
-    iota(indices_.begin(), indices_.end(), 0);
-
-    sort(indices_.begin(), indices_.end(), [&fractions](size_t i1, size_t i2) {
-        return (fractions[i1] - std::nearbyint(fractions[i1]))
-               > (fractions[i2] - std::nearbyint(fractions[i2]));
-    });
-
-    for(size_t i = 0; i < (target_ - near_); ++i) {
-        ++result_[indices_[i]];
-    }
-
-    return result_;
-}
-
 
 
 namespace esl::economics::markets::walras {
@@ -88,12 +42,12 @@ namespace esl::economics::markets::walras {
     /// \brief
     ///
     /// \details    Initialises the differentiable variable context to 1.0 times
-    /// the initial quotes. In essence, the
+    ///             the initial quotes. In essence, the
     ///             solver starts at 1.0 times the initial quote
     /// \param i
     /// \param traded_assets
-    price_setter::price_setter( const identity<price_setter> &i
-                              , law::property_map<quote> traded_properties)
+    price_setter::price_setter(const identity<price_setter> &i,
+                               law::property_map<quote> traded_properties)
 
     : agent(i)
     , market(i, traded_properties)
@@ -102,60 +56,62 @@ namespace esl::economics::markets::walras {
         output_clearing_prices_ =
             create_output<std::vector<price>>("clearing_prices");
 
-        this->register_callback<esl::economics::markets::walras::differentiable_order_message>(
-                [this](auto msg, esl::simulation::time_interval ti, std::seed_seq &seed) {
-                    (void) msg;
-                    (void) seed;
-                    return ti.upper;
-                });
+        this->register_callback<walras::differentiable_order_message>(
+            [this](auto msg, simulation::time_interval ti,
+                   std::seed_seq &seed) {
+                (void)msg;
+                (void)seed;
+                return ti.upper;
+            });
     }
 
-    esl::simulation::time_point
-    price_setter::act(esl::simulation::time_interval step, std::seed_seq &seed)
+    simulation::time_point
+    price_setter::act(simulation::time_interval step, std::seed_seq &seed)
     {
-        (void) seed; // TODO
-        esl::simulation::time_point next_ = step.upper;
+        (void)seed;
+        simulation::time_point next_ = step.upper;
         std::vector<quote> quotes_;
 
+
         if(state == sending_quotes) {
+            // send out initial quotes and wait for orders,
+            // scheduled in the same time step
             next_ = step.lower;
             for(const auto &[k, v] : traded_properties) {
                 (void)k;
                 quotes_.push_back(v);
             }
-        }else{
-            std::unordered_map<
-                identity<agent>,
-                std::shared_ptr<walras::differentiable_order_message>>
+        } else {
+            std::unordered_map< identity<agent>,
+                                std::shared_ptr<walras::differentiable_order_message>>
                 orders_;
-
-            for(const auto &[k, message_] : inbox) {
+            for(const auto &[k, message_]: inbox) {
                 (void)k;
-                if(walras::differentiable_order_message::code
-                   == message_->type) {
-                    auto quote_ = std::dynamic_pointer_cast<
+                if(walras::differentiable_order_message::code == message_->type) {
+                    auto order_ = std::dynamic_pointer_cast<
                         walras::differentiable_order_message>(message_);
-                    orders_.insert({quote_->sender, quote_});
+                    orders_.insert({order_->sender, order_});
                 }
             }
 
             if(!orders_.empty()) {
+                // there is at least one order so we clear the market
                 auto scalars_ = clear_market(orders_, step);
                 std::vector<price> prices_;
-
-                for(const auto &[k, v] : traded_properties) {
+                for(auto &[k, v]: traded_properties){
                     (void)v;
-                    auto price_ = cash(currencies::USD).value(scalars_[k->identifier]);
-                    traded_properties.insert(std::make_pair(k, quote(price_)));  // overwrite
-                    prices_.emplace_back(price_);
-                    quotes_.emplace_back(quote(price_));    
+                    //auto price_ =
+                    //    cash(currencies::USD).value(scalars_[k->identifier]);
+                    //traded_properties.insert(
+                    //    std::make_pair(k, quote(price_)));  // overwrite
+                    prices_.emplace_back(std::get<price>(v.type));
+                    quotes_.emplace_back(quote(v));
                 }
-
                 output_clearing_prices_->put(step.lower, prices_);
-            } else {
-                for(const auto &[k, v] : traded_properties) {
+            } else { // restore previous prices
+                for(const auto &[k, v]: traded_properties) {
                     (void)k;
-                    quotes_.push_back(v);  // restore default prices
+                    quotes_.push_back(v);
                 }
             }
         }
@@ -170,8 +126,7 @@ namespace esl::economics::markets::walras {
         }
 
         for(const auto &p : participants) {
-            auto m = this->template create_message<
-                esl::economics::markets::walras::quote_message>(
+            auto m = this->template create_message<walras::quote_message>(
                 p, step.lower, this->identifier, p, quote_map_);
         }
         state = clearing_market;
@@ -180,35 +135,108 @@ namespace esl::economics::markets::walras {
     }
 
     ///
-    /// \brief  Clear market using tatonnement. It is assumed the price_setter has received at least one excess demand
-    ///         function for each property from market participants, otherwise it will return the previous price for the
-    ///         property with no excess demand curve.
-    ///         
+    /// \brief  Clear market using tatonnement. It is assumed the price_setter
+    ///         has received at least one excess demand function for each
+    ///         property from market participants, otherwise
+    ///         it will return the previous price for the property with no
+    ///         excess demand curve.
     ///
-    std::map<identity<law::property>, double> price_setter::clear_market
-            ( const std::unordered_map<identity<agent>, std::shared_ptr<walras::differentiable_order_message>> &o
-            , const esl::simulation::time_interval &step)
+    ///
+    std::map<identity<law::property>, double> price_setter::clear_market(
+        const std::unordered_map< identity<agent>,
+            std::shared_ptr<walras::differentiable_order_message>> &o,
+        const simulation::time_interval &step)
     {
-        std::map<esl::identity<esl::law::property>, quote> quotes_;
-        for(const auto &[k, v]: traded_properties) {
+
+
+
+        std::map<identity<law::property>, quote> quotes_;
+        for(const auto &[k, v] : traded_properties) {
             (void)k;
-            quotes_.insert({k->identifier, v});
+            quotes_.emplace(k->identifier, v);
         }
 
         tatonnement::excess_demand_model model_(quotes_);
 
         model_.excess_demand_functions_.clear();
-        for(auto [key, function_]: o) {
+
+        for(auto [key, function_] : o) {
             (void)key;
             model_.excess_demand_functions_.push_back(function_);
         }
 
-        auto result_ = model_.do_compute();
-        if(!result_.has_value()){
-            return {};
+        bool debug_supply_demand_ = false;
+
+        if(debug_supply_demand_) {
+            for(auto [key, function_] : o) {
+                int N = 100;
+                for(int i = 0; i < N * 2; ++i) {
+                    std::map<esl::identity<esl::law::property>,
+                             std::tuple<esl::economics::quote, double>>
+                        call_;
+                    for(const auto &[k, v] : traded_properties) {
+                        (void)k;
+                        call_.emplace(k->identifier,
+                                      std::make_tuple(v, double(i) / N));
+                    }
+                    auto X = function_->excess_demand_m(call_);
+                    std::cout << call_ << std::endl;
+                    std::cout << X << std::endl;
+                }
+            }
         }
 
+
+
+
+        auto result_ = model_.do_compute();
+
+        // if finding a price failed, return previous price vector
+        if(!result_.has_value()) {
+            std::map<esl::identity<esl::law::property>, double> dummy_;
+            for(const auto &[k, v] : traded_properties) {
+                (void)k;
+                dummy_.insert({k->identifier, 1.0 * double(v)});
+            }
+            return dummy_;
+        }
+
+
         std::map<identity<law::property>, std::tuple<quote, double>> args;
+
+        // round to the nearest valid price
+        for(auto [p, q] : traded_properties) {
+
+            double X = result_.value().find(p->identifier)->second;
+            std::tuple<quote, double> a2 = std::make_tuple(quote(q), X);
+            args.emplace(p->identifier, a2);
+
+            std::visit(
+                [this, result_, p = p](auto &quote) {
+                    using type_ = std::decay_t<decltype(quote)>;
+                    if constexpr(std::is_same_v<type_, price>) {
+                        std::get<price>(this->traded_properties[p].type).value =
+                            int64_t(
+                                quote.value
+                                * result_.value().find(p->identifier)->second);
+
+                    } else if constexpr(std::is_same_v<type_, exchange_rate>) {
+                        double X2 =
+                            quote.numerator()
+                            * result_.value().find(p->identifier)->second;
+                        quote =
+                            exchange_rate(uint64_t(X2), quote.denominator());
+                        this->traded_properties[p].type = quote;
+                    } /*else{
+                         static_assert(std::always_false<T>::value,
+                                       "non-exhaustive handling of quotes");
+                     }*/
+                },
+                q.type);
+        }
+
+
+
 
         for(const auto &[k, v] : o) {
             auto demand_ = v->excess_demand_m(args);
@@ -221,30 +249,36 @@ namespace esl::economics::markets::walras {
             //}
 
             auto property_ = traded_properties.begin();
-            for(auto [k2,ed] : demand_) {
+            for(auto [k2, ed] : demand_) {
                 accounting::inventory_filter<law::property> transfers_;
                 auto exact_quantity_ = quantity(int(abs(ed)), 1);
                 transfers_.insert(property_->first, exact_quantity_);
                 property_++;
                 if(ed < -minimum_transfer_) {
-                    auto transferor_ = dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto transferee_ = reinterpret_identity_cast<law::owner<law::property>, agent>(*this);
-                    auto m = this->template create_message<interaction::transfer>(
-                            k, step.lower, (*this), k,
-                            transferor_, transferee_, transfers_);
+                    auto transferor_ =
+                        dynamic_identity_cast<law::owner<law::property>>(k);
+                    auto transferee_ =
+                        reinterpret_identity_cast<law::owner<law::property>,
+                                                  agent>(*this);
+                    auto m =
+                        this->template create_message<interaction::transfer>(
+                            k, step.lower, (*this), k, transferor_, transferee_,
+                            transfers_);
                 } else if(ed > minimum_transfer_) {
-                    auto transferor_ = reinterpret_identity_cast<law::owner<law::property>, agent>(*this);
-                    auto transferee_ = dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto m = this->template create_message<interaction::transfer>(
-                            k, step.lower, (*this), k,
-                            transferor_, transferee_, transfers_);
+                    auto transferor_ =
+                        reinterpret_identity_cast<law::owner<law::property>,
+                                                  agent>(*this);
+                    auto transferee_ =
+                        dynamic_identity_cast<law::owner<law::property>>(k);
+                    auto m =
+                        this->template create_message<interaction::transfer>(
+                            k, step.lower, (*this), k, transferor_, transferee_,
+                            transfers_);
                 }
             }
         }
-        return result_.value() ;
+        return result_.value();
     }
-
-
 }  // namespace esl::economics::markets::walras
 
 
@@ -254,8 +288,12 @@ namespace esl::economics::markets::walras {
 
 
 BOOST_CLASS_EXPORT(std::vector<esl::economics::price>);
-typedef std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>> tuple_time_point_price_vector;
+typedef std::tuple<esl::simulation::time_point,
+                   std::vector<esl::economics::price>>
+    tuple_time_point_price_vector;
 BOOST_CLASS_EXPORT(tuple_time_point_price_vector);
-typedef std::vector<std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>> time_series_price_vector;
+typedef std::vector<
+    std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>>
+    time_series_price_vector;
 BOOST_CLASS_EXPORT(time_series_price_vector);
 BOOST_CLASS_EXPORT(esl::data::output<std::vector<esl::economics::price>>);

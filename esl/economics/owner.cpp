@@ -26,7 +26,11 @@
 #include <boost/serialization/export.hpp>
 
 #include <esl/economics/owner.hpp>
+#include <esl/data/log.hpp>
 
+namespace esl::law {
+
+}
 
 
 BOOST_CLASS_TRACKING(esl::law::owner<esl::law::property>, boost::serialization::track_always)

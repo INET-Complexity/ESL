@@ -60,7 +60,7 @@ namespace esl::economics {
     , public identifiable_as<company>
     {
     public:
-        esl::economics::accounting::balance_sheet balance_sheet;
+        accounting::balance_sheet balance_sheet;
 
         ///
         /// \brief  The number of shares outstanding for each share class
@@ -107,12 +107,14 @@ namespace esl::economics {
 
         ///
         /// \brief  Returns the next dividend payment date, or none if no
-        ///         dividend payment is scheduled
+        ///         dividend payment is scheduled.
+        ///         The detailed behaviour is to not pay out dividends to
+        ///         shareholders.
         ///
         /// \param interval
         /// \return
         virtual std::optional<finance::dividend_policy>
-        upcoming_dividend(simulation::time_interval interval);
+        upcoming_dividend(simulation::time_interval interval, std::seed_seq &seed);
 
         ///
         /// \brief  the default company.act pays out all unappropriated profits

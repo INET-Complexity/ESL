@@ -39,18 +39,23 @@ namespace esl::economics {
         /// \param base
         constexpr exchange_rate(uint64_t quote = 1, uint64_t base = 1)
         : rate<uint64_t>(quote, base)
-        {}
+        {
+            assert(quote > 0);
+            assert(base > 0);
+        }
 
         ///
         /// \param r
         exchange_rate(const exchange_rate &r)
         : exchange_rate(r.numerator(), r.denominator())
-        {}
+        {
+
+        }
 
         ///
         /// \param o
         /// \return
-        exchange_rate &operator=(const exchange_rate &o)
+        exchange_rate &operator = (const exchange_rate &o)
         {
             rate<uint64_t>::operator=(o);
             return *this;
@@ -59,9 +64,8 @@ namespace esl::economics {
         ///
         /// \param p
         /// \return
-        price operator*(const price &p) const
+        price operator * (const price &p) const
         {
-            // TODO: add rounding rules
             return price(static_cast<int64_t>((p.value * numerator()) / denominator()), p.valuation);
         }
 

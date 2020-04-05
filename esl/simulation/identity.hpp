@@ -43,9 +43,8 @@
 namespace esl {
     ///
     /// \brief  An identifier is a code used internally to distinguish entities.
-    ///         Unlike existing solutions such as UUIDs, it
-    ///         is designed to be deterministic, so that independent runs of the
-    ///         model can be more easily compared, which is done during
+    ///         It is designed to be deterministic, so that independent runs of
+    ///         the model can be more easily compared, which is done during
     ///         debugging. This is achieved by requiring that entities can only
     ///         be created by other entities, hence if external influences (e.g.
     ///         random number generators) are the same, the sequence of creation
@@ -80,7 +79,9 @@ namespace esl {
         ///
         constexpr explicit identity(std::vector<digit_t> &&digits = {}) noexcept
         : digits(digits)
-        {}
+        {
+
+        }
 
         ///
         /// \param digits   vector of digits for the identifier, from most
@@ -88,7 +89,9 @@ namespace esl {
         ///
         explicit identity(const std::vector<digit_t> &digits)
         : identity(std::vector<digit_t>(digits))
-        {}
+        {
+
+        }
 
         ///
         /// \brief  Creates identity from initializer list.
@@ -98,20 +101,27 @@ namespace esl {
         /// \param digits
         identity(std::initializer_list<digit_t> digits) noexcept
         : digits(digits)
-        {}
+        {
+
+        }
 
         ///
         /// \param i    Other identity
         ///
-        identity(const identity<identifiable_type_> &i) : digits(i.digits)
-        {}
+        identity(const identity<identifiable_type_> &i)
+        : digits(i.digits)
+        {
+
+        }
 
         ///
         /// \param i    Other identity
         ///
         identity(identity<identifiable_type_> &&i) noexcept
         : digits(i.digits)
-        {}
+        {
+
+        }
 
         ///
         /// \param rhs
@@ -228,13 +238,14 @@ namespace esl {
 
             auto iterator_ = i.digits.begin();
             auto width_    = std::setw(stream.width());
+            //stream << '"';
             stream << std::setfill('0') << width_ << *iterator_;
             ++iterator_;
             for(; iterator_ != i.digits.end(); ++iterator_) {
                 stream << '-';
                 stream << std::setfill('0') << width_ << *iterator_;
             }
-
+            //stream << '"';
             return stream;
         }
 

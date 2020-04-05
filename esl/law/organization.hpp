@@ -55,6 +55,9 @@ namespace esl::law {
             (void)version;
             archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(legal_person);
         }
+
+
+
     };
 }
 

@@ -36,12 +36,12 @@ namespace esl::simulation {
     /// \note must have a default constructor that defaults to the minimum
     ///       time_point value
     ///
-    typedef std::uint64_t time_point;
+    typedef uint64_t time_point;
 
     ///
     /// \brief a rational measure that denotes a distance from a time_point
     ///
-    typedef std::uint64_t time_duration;
+    typedef uint64_t time_duration;
 
     ///
     /// \brief  An interval that has a specific starting event (time point), and
@@ -51,6 +51,6 @@ namespace esl::simulation {
         time_interval;  // a fixed begin and endpoint, but duration need not be
                         // specified
 
-}  // namespace esl
+}  // namespace esl::simulation
 
 #endif  // ESL_SIMULATION_TIME_HPP

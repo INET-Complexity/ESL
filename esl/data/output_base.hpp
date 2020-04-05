@@ -25,10 +25,18 @@
 #ifndef ESL_DATA_OUTPUT_BASE_HPP
 #define ESL_DATA_OUTPUT_BASE_HPP
 
+
+#include <esl/data/representation.hpp>
+
 #include <string>
+#include <vector>
+#include <sstream>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
+
+#include <esl/data/stream.hpp>
+
 
 namespace esl::data {
     ///
@@ -46,10 +54,29 @@ namespace esl::data {
         std::string name;
 
         ///
+        /// \brief  The output is ultimately saved to one or more ostreams
+        ///
+        std::vector<stream> streams;
+
+        ///
+        /// \param value    The variable to write to the output streams.
+        template<typename output_t_>
+        void write(output_t_ value)
+        {
+            for(auto &s: streams){
+                s << value << std::endl;
+            }
+        }
+
+        ///
         /// \brief
         ///
         /// \param name
-        explicit output_base(const std::string &name = "output_base");
+        explicit output_base( const std::string &name = "output_base"
+                            , stream out = terminal(terminal::out) );
+
+        explicit output_base(const std::string &name, std::vector<stream> streams);
+
 
         ///
         /// \brief  Recovering the output values and storage is handled by the

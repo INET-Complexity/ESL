@@ -27,6 +27,8 @@
 #include <esl/geography/countries.hpp>
 #include <esl/law/jurisdiction.hpp>
 
+
+
 namespace esl::law {
 
     namespace jurisdictions {
@@ -34,7 +36,7 @@ namespace esl::law {
         constexpr jurisdiction AL = {geography::countries::AL, economics::currencies::ALL};
         constexpr jurisdiction DZ = {geography::countries::DZ, economics::currencies::DZD};
         constexpr jurisdiction AS = {geography::countries::AS, economics::currencies::USD};
-        //constexpr jurisdiction AD = {geography::countries::AD, economics::currencies::EUR};
+        constexpr jurisdiction AD = {geography::countries::AD, economics::currencies::EUR};
         constexpr jurisdiction AO = {geography::countries::AO, economics::currencies::AOA};
         constexpr jurisdiction AI = {geography::countries::AI, economics::currencies::XCD};
         constexpr jurisdiction AG = {geography::countries::AG, economics::currencies::XCD};
@@ -166,7 +168,7 @@ namespace esl::law {
         constexpr jurisdiction MT = {geography::countries::MT, economics::currencies::EUR};
         constexpr jurisdiction MH = {geography::countries::MH, economics::currencies::USD};
         constexpr jurisdiction MQ = {geography::countries::MQ, economics::currencies::EUR};
-        //constexpr jurisdiction MR = {geography::countries::MR, economics::currencies::MRO};
+        constexpr jurisdiction MR = {geography::countries::MR, economics::currencies::MRU};
         constexpr jurisdiction MU = {geography::countries::MU, economics::currencies::MUR};
         constexpr jurisdiction YT = {geography::countries::YT, economics::currencies::EUR};
         constexpr jurisdiction MX = {geography::countries::MX, economics::currencies::MXN};
@@ -219,7 +221,7 @@ namespace esl::law {
         constexpr jurisdiction VC = {geography::countries::VC, economics::currencies::XCD};
         constexpr jurisdiction WS = {geography::countries::WS, economics::currencies::WST};
         constexpr jurisdiction SM = {geography::countries::SM, economics::currencies::EUR};
-        //constexpr jurisdiction ST = {geography::countries::ST, economics::currencies::STD};
+        constexpr jurisdiction ST = {geography::countries::ST, economics::currencies::STN};
         constexpr jurisdiction SA = {geography::countries::SA, economics::currencies::SAR};
         constexpr jurisdiction SN = {geography::countries::SN, economics::currencies::XOF};
         constexpr jurisdiction RS = {geography::countries::RS, economics::currencies::RSD};

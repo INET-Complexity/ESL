@@ -23,20 +23,29 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/interaction/communicator.hpp>
+#include <esl/data/log.hpp>
 
 
 namespace esl::interaction {
     communicator::communicator(scheduling schedule)
-    : locked_(false), schedule_(schedule)
-    {}
+    : locked_(false)
+    , schedule_(schedule)
+    {
+
+    }
 
     ///
-    /// \param message
-    /// \param step
-    /// \return
+    /// \brief  Handles a single message, calling all associated callbacks
+    ///
+    /// \param  message
+    /// \param  step
+    /// \param  seed
+    /// \return time_point of the next event as the minimum of all future events
+    ///         returned by the callback functions.
     simulation::time_point
     communicator::process_message(message_t message,
-                                  simulation::time_interval step, std::seed_seq &seed) const
+                                  simulation::time_interval step,
+                                  std::seed_seq &seed) const
     {
         auto first_event_ = step.upper;
 
@@ -47,7 +56,7 @@ namespace esl::interaction {
 
         for(auto i = callback_->second.rbegin(); i != callback_->second.rend();
             ++i) {
-            auto next_event_ = std::get<1>(*i)(message, step, seed);
+            auto next_event_ = std::get<1>(*i).function(message, step, seed);
             assert(step.lower <= next_event_ && next_event_ <= step.upper);
             first_event_ = std::min(first_event_, next_event_);
         }
@@ -87,7 +96,6 @@ namespace esl::interaction {
 
         auto first_event_ = step.upper;
 
-
         for(auto i = priority_.rbegin(); i != priority_.rend(); ++i) {
             std::vector<message_t> equal_;
             for(auto upper_ = i;
@@ -109,6 +117,23 @@ namespace esl::interaction {
         }
         return first_event_;
     }
+
+    void communicator::trace_callbacks() const
+    {
+        for(const auto &[k, callbacks_]: callbacks_){
+            if(callbacks_.empty()){
+                continue;
+            }
+
+            LOG(trace) << callbacks_.begin()->second.message << std::endl;
+            for(const auto &[p, f]: callbacks_){
+                LOG(trace) << "\t[" << int(p) << "] " << f.description << std::endl;
+            }
+        }
+    }
+
+
+
 }  // namespace esl::interaction
 
 

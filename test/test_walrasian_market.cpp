@@ -48,8 +48,6 @@ public:
     {
         auto main_issue_                = esl::economics::finance::share();
         shares_outstanding[main_issue_] = 1'000'000;
-        // auto dividend_payouts =
-        // create_output<esl::economics::price>("dividend");
     }
 };
 
@@ -58,11 +56,8 @@ struct test_trader_order
 : public esl::economics::markets::walras::differentiable_order_message
 {
     double capital;
-
     const std::vector<double> allocation;
-
     std::map<esl::identity<esl::law::property>, esl::quantity> supply;
-
     std::map<esl::identity<esl::law::property>, esl::economics::price>
         valuations;
 
@@ -73,7 +68,7 @@ struct test_trader_order
         double capital = 0.0, std::vector<double> allocation = {},
         std::map<esl::identity<esl::law::property>, esl::quantity> supply = {},
         std::map<esl::identity<esl::law::property>, esl::economics::price>
-            valuations = {}  // vector<double> valuation = {}
+            valuations = {}
         ,
         const esl::economics::markets::walras::quote_message &q =
             esl::economics::markets::walras::quote_message())
@@ -96,9 +91,6 @@ struct test_trader_order
         if(valuations.empty()) {
             return signals_;
         }
-        /// We make the simplifying assumption that the assets of a long
-        /// position can count as collateral towards a short position's margin
-        /// account.
         esl::variable position_        = 0;
         esl::variable abs_sensitivity_ = 0;
         for(const auto &[k, v] : valuations) {
@@ -111,14 +103,7 @@ struct test_trader_order
             position_ += signal_;
             abs_sensitivity_ += abs(signal_);
         }
-        /// The mean position represents the working capital employed, examples:
-        ///    -1.0 the short position is equal to working capital, securities =
-        ///    -1.0, cash = 2.0, margin = 1.0
-        ///     0.0 no trading, or long == short
-        ///     1.0 the long position uses all the working capital, securities
-        ///     =  1.0, cash = 0.0, margin = 0.0
-        //    auto risk_limit_ = 1.; // make-shift risk limit
-        // variable scale_ = risk_limit_ / (abs_sensitivity_ / q);
+
         std::map<esl::identity<esl::law::property>, esl::variable> excess_demand_;
         for(const auto &[k, v] : signals_) {
             auto quote_price_ = static_cast<double>(std::get<0>(quotes.find(k)->second));
@@ -128,7 +113,7 @@ struct test_trader_order
             auto iterator_ = supply.find(k);
             if(supply.end() != iterator_) {
                 supply_ = double(iterator_->second);
-            }  // we allow not setting the supply, in case there are no holdings
+            }
             auto excess_ = (v * capital) / proposed_ - supply_;
             excess_demand_.insert({k, excess_});
         }
@@ -139,21 +124,13 @@ struct test_trader_order
     void serialize(archive_t &archive, const unsigned int version)
     {
         (void)version;
-
-        // archive &
-        // BOOST_SERIALIZATION_BASE_OBJECT_NVP(walras::differentiable_order_message);
-        // // base is abstract
-
         archive &BOOST_SERIALIZATION_NVP(capital);
-
         archive &boost::serialization::make_nvp(
             "allocation",
             const_cast<std::remove_const<decltype(allocation)>::type &>(allocation));
-
         archive &boost::serialization::make_nvp(
             "supply",
             const_cast<std::remove_const<decltype(supply)>::type &>(supply));
-
         archive &boost::serialization::make_nvp(
             "valuations",
             const_cast<std::remove_const<decltype(valuations)>::type &>(valuations));
@@ -225,7 +202,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 BOOST_AUTO_TEST_CASE(walras_market_quote)
 {
     esl::computation::environment e;
-    esl::simulation::model model_(e, esl::simulation::parameter::parametrization(0, 0, 1));
+    esl::simulation::model model_(e, esl::simulation::parameter::parametrization(0, 0, 10));
 
 
     std::vector<std::tuple<std::shared_ptr<esl::economics::company>,
@@ -257,7 +234,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
                 *company_, share_);
             traded_assets_.insert(
                 {stock_, esl::economics::quote(esl::economics::price(
-                             100, esl::economics::currencies::USD))});
+                             1.00, esl::economics::currencies::USD))});
             shares_.emplace_back(make_tuple(company_, share_));
 
             auto key_ = std::make_tuple<esl::identity<esl::economics::company>,

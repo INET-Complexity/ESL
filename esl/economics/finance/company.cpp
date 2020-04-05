@@ -96,16 +96,17 @@ namespace esl::economics {
     , organization(i, j)
     , shareholder(i)
     , identifiable_as<company>()
-    , balance_sheet(i)
+    , balance_sheet(*this)
     , last_announced_(0)
     , last_payment_(0)
     {}
 
 
     std::optional<finance::dividend_policy>
-    company::upcoming_dividend(simulation::time_interval interval)
+    company::upcoming_dividend(simulation::time_interval interval, std::seed_seq &seed)
     {
         (void)interval;
+        (void)seed;
         return {};
     }
 
@@ -115,7 +116,7 @@ namespace esl::economics {
     {
         (void)s;
 
-        auto possible_policy_ = upcoming_dividend(interval);
+        auto possible_policy_ = upcoming_dividend(interval, s);
         auto next_event_      = interval.upper;
 
         if(!possible_policy_.has_value()) {
@@ -143,7 +144,7 @@ namespace esl::economics {
             if(last_payment_ < policy_.announcement_date) {
                 last_payment_ = policy_.announcement_date;
 
-
+                // TODO: make payment
                 /*
                    double dps_ = 0.01;
                    double variance_ = 0.01;

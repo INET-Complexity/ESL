@@ -44,7 +44,7 @@ namespace esl::economics::finance {
     {
         //create_output<share_holdings>("holdings");
 
-        this->template register_callback<dividend_announcement_message>(
+        auto handle_dividend_date_ =
             [this](std::shared_ptr<dividend_announcement_message> m,
                    simulation::time_interval step, std::seed_seq &seed) {
                 (void) seed;
@@ -53,9 +53,11 @@ namespace esl::economics::finance {
                      dynamic_identity_cast<company>(m->sender)});
 
                 return submit_dividend_record(step);
-            });
+            };
 
-        this->template register_callback<esl::economics::markets::walras::quote_message>(
+        ESL_REGISTER_CALLBACK(dividend_announcement_message, 0, handle_dividend_date_, "submit investor record on dividend date");
+
+        auto extract_prices_ =
             [this](std::shared_ptr<esl::economics::markets::walras::quote_message> m,
                    simulation::time_interval step, std::seed_seq &seed) {
                 (void) seed;
@@ -65,7 +67,11 @@ namespace esl::economics::finance {
                     this->prices.insert(std::move(p));
                 }
                 return step.upper;
-            });
+            };
+
+
+        ESL_REGISTER_CALLBACK(markets::walras::quote_message, 0, extract_prices_, "extract stock prices from Walrasian market");
+
     }
 
     simulation::time_point

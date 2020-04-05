@@ -61,21 +61,26 @@ namespace esl::economics::finance {
     : public virtual security
     , public identifiable_as<bond>
     {
-        struct basic_coupon
+        struct coupon_base
         {
 
         };
 
-        struct fixed_coupon: basic_coupon
+        struct fixed_coupon
+        : coupon_base
         {
             nominal_interest_rate rate;
+            fixed_coupon(nominal_interest_rate rate = nominal_interest_rate(0))
+            : rate(rate)
+            {
 
+            }
         };
 
 
         // std::variant<nominal_interest_rate/*, indexed_interest_rate*/>
         // coupon;
-        std::shared_ptr<basic_coupon> coupon;
+        std::shared_ptr<coupon_base> coupon;
 
         esl::simulation::time_point effective;
 
@@ -83,7 +88,7 @@ namespace esl::economics::finance {
 
 
         bond(esl::identity<bond> i, esl::simulation::time_point maturity,
-             std::shared_ptr<basic_coupon> coupon, const law::legal_person &issuer )
+             std::shared_ptr<coupon_base> coupon, const law::legal_person &issuer )
         : property(i), security(i, isin(issuer.primary_jurisdiction.sovereign)), coupon(coupon), maturity(maturity)
         {
 

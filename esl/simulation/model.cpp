@@ -26,6 +26,8 @@
 
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
+#include <esl/data/log.hpp>
+
 
 namespace esl::simulation {
     model::model( computation::environment &e
@@ -48,6 +50,8 @@ namespace esl::simulation {
 
     time_point model::step(time_interval step)
     {
+        assert(!step.empty());
+
         environment_.before_step();
 
         // to be set externally
@@ -55,15 +59,22 @@ namespace esl::simulation {
 
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
+
+        unsigned int print_every = 1;
+
         do {
-            std::cout << "________________________________________" << std::endl;
-            std::cout << "        time step " << step << " round " << round_ << std::endl;
+            if (0==(step.lower%print_every)){
+                LOG(trace) <<" time " << step << " round " << round_ << std::endl;
+            }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
-                // The seed is deterministic in the following variables.
+                // The seed is deterministic in the following variables:
                 std::seed_seq seed_ {
                     std::uint64_t(std::hash<identity<agent>>()(i)),
-                    std::uint64_t(step.lower), std::uint64_t(round_), sample_};
+                    std::uint64_t(step.lower),
+                    std::uint64_t(round_),
+                    sample_
+                };
 
                 //try {
                     first_event_ = std::min(first_event_,
@@ -90,7 +101,9 @@ namespace esl::simulation {
     }
 
     void model::terminate()
-    {}
+    {
+
+    }
 
 }  // namespace esl::simulation
 

@@ -26,11 +26,14 @@
 #define ESL_DATA_OUTPUT_HPP
 
 #include <string>
+#include <iostream>
+#include <vector>
 
 #include <boost/serialization/vector.hpp>
 
 #include <esl/data/output_base.hpp>
 #include <esl/simulation/time.hpp>
+
 
 namespace esl::data {
     ///
@@ -47,19 +50,26 @@ namespace esl::data {
     {
         friend class boost::serialization::access;
 
+    protected:
         ///
         /// \brief The (process-local) observed history of values.
         ///
-        std::vector<std::tuple<simulation::time_point, variable_types_...>>
-            values;
+        std::vector<std::tuple<simulation::time_point, variable_types_...>> values;
+
+    public:
+        ///
+        /// \brief  Whether the output
+        ///
+        bool eager;
 
         ///
         ///
         ///
         output(const std::string &name =
-                   ("observable_" + std::to_string(sizeof...(variable_types_))))
+                   ("observable_" + std::to_string(sizeof...(variable_types_))), bool eager = true)
         : output_base(name)
         , values()
+        , eager(eager)
         {
 
         }
@@ -70,8 +80,10 @@ namespace esl::data {
         void put(simulation::time_point t, variable_types_... v)
         {
             values.emplace_back(
-                std::tuple<simulation::time_point, variable_types_...>(t,
-                                                                       v...));
+                std::tuple<simulation::time_point, variable_types_...>(t, v...));
+            if(eager){
+                (write(v), ...);
+            }
         }
 
         template<class archive_t>
@@ -83,12 +95,9 @@ namespace esl::data {
             archive.template register_type<output<variable_types_...>>();
             archive.template register_type<std::tuple<simulation::time_point, variable_types_...>>();
 
-
             archive &boost::serialization::make_nvp(
                 "output_base",
                 boost::serialization::base_object<output_base>(*this));
-
-
 
             archive &BOOST_SERIALIZATION_NVP(values);
         }

@@ -33,29 +33,7 @@ install:
     - wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
     - tar -xvf adept-2.0.5.tar.gz
     - cd adept-2.0.5/
-    - ./configure && make && make install -j2
-
-  #- wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz --no-clobber && tar -xzf 3.3.7.tar.gz && rm 3.3.7.tar.gz && cd eigen-eigen-323c052e1731 && mkdir build && cd build
-    #- cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-    #- sudo make -j2 install
-    #- cd ../..
-    #- rm -rf eigen-eigen-323c052e1731
-    #- wget https://computing.llnl.gov/projects/sundials/download/sundials-2.7.0.tar.gz && tar -xzf sundials-2.7.0.tar.gz && cd sundials-2.7.0/ && mkdir build && cd build
-    #- cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-    #- sudo make -j2 install
-    #- cd ../..
-    #- rm -rf sundials-2.7.0
-    #- ls /usr/local/
-    #- ls /usr/local/include/
-    #- wget https://github.com/stan-dev/math/archive/v2.17.1.tar.gz && tar -xzf v2.17.1.tar.gz
-    #- cd math-2.17.1/ && sudo cp stan/ /usr/local/include/ -r
-    #- cd ..
-    #- rm v2.17.1.tar.gz
-    #- wget https://github.com/stan-dev/stan/archive/v2.17.1.tar.gz && tar -xzf v2.17.1.tar.gz
-    #- cd stan-2.17.1/src/  && sudo cp stan/ /usr/local/include/ -r
-    #- cd ../..
-    #- rm v2.17.1.tar.gz
-
+    - ./configure && make -j2 && make install
 
 script:
     - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc

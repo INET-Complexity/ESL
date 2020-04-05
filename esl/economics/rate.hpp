@@ -48,7 +48,7 @@ namespace esl::economics {
         }
 
         constexpr rate(integer_type_ numerator, integer_type_ denominator)
-        : boost::rational<integer_type_>(numerator, denominator)
+        : boost::rational<integer_type_>(numerator, (assert(denominator > 0), denominator))
         {
 
         }

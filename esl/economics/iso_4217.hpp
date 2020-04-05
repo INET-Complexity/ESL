@@ -60,8 +60,16 @@ namespace esl::economics {
 
         ~iso_4217() = default;
 
+        //inline iso_4217 &operator = (const iso_4217 &operand)
+        //{
+        //    for(auto i = 0; i < code.size(); ++i) {
+        //        code[i] = operand.code[i];
+        //    }
+        //    return *this;
+        //}
+
         [[nodiscard]] inline constexpr bool
-        operator==(const iso_4217 &operand) const
+        operator == (const iso_4217 &operand) const
         {
             return code[0] == operand.code[0] && code[1] == operand.code[1]
                    && code[2] == operand.code[2]
@@ -69,7 +77,7 @@ namespace esl::economics {
         }
 
         [[nodiscard]] inline constexpr bool
-        operator!=(const iso_4217 &operand) const
+        operator != (const iso_4217 &operand) const
         {
             return code[0] != operand.code[0] || code[1] != operand.code[1]
                    || code[2] != operand.code[2]
@@ -78,9 +86,9 @@ namespace esl::economics {
 
 
         [[nodiscard]] inline constexpr bool
-        operator<(const iso_4217 &operand) const
+        operator < (const iso_4217 &operand) const
         {
-            for(auto i = 0; i < 3; ++i) {
+            for(size_t i = 0; i < code.size(); ++i) {
                 if(code[i] < operand.code[i]) {
                     return true;
                 }
@@ -108,13 +116,12 @@ namespace esl::economics {
         void save(archive_t &archive, const unsigned int version) const
         {
             std::string code_;
-            code_.push_back(code[0]);
-            code_.push_back(code[1]);
-            code_.push_back(code[2]);
+            for(char c : code) {
+                code_.push_back(c);
+            }
 
             archive << boost::serialization::make_nvp(
                     "code", code_);
-
 
             archive << boost::serialization::make_nvp(
                     "denominator", const_cast<std::uint64_t &>(denominator));
@@ -130,23 +137,20 @@ namespace esl::economics {
                     "code", code_);
             assert(3 == code_.length());
 
-            const_cast<char &>(code[0]) = code_[0];
-            const_cast<char &>(code[1]) = code_[1];
-            const_cast<char &>(code[2]) = code_[2];
+            for(size_t i = 0; i < code.size(); ++i){
+                const_cast<char &>(code[i]) = code_[i];
+            }
 
             archive >> boost::serialization::make_nvp(
                     "denominator", const_cast<std::uint64_t &>(denominator));
         }
 
         template<class archive_t>
-        void serialize(
-                archive_t &archive,
-                const unsigned int file_version
-        ){
+        void serialize(archive_t &archive,const unsigned int file_version){
             boost::serialization::split_member(archive, *this, file_version);
         }
 
-        inline friend std::ostream &operator<<(std::ostream &o,
+        inline friend std::ostream &operator << (std::ostream &o,
                                                const iso_4217 &c)
         {
             o.write(c.code.data(), c.code.size());

@@ -27,13 +27,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include <esl/data/representation.hpp>
+
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/base_object.hpp>
-
-/*
-#include <stan/services/optimize/lbfgs.hpp>
-*/
 
 #include <esl/economics/markets/market.hpp>
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
@@ -55,7 +53,7 @@ namespace esl::economics::markets::walras {
     protected:
         friend class boost::serialization::access;
 
-        explicit price_setter();
+        explicit price_setter( );
 
     public:
         enum state_t
@@ -72,6 +70,7 @@ namespace esl::economics::markets::walras {
         /// \param i
         /// \param traded_properties
         explicit price_setter(const identity<price_setter> &i, law::property_map<quote> traded_properties = {});
+
 
         ///
         /// \brief

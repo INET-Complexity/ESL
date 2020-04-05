@@ -26,12 +26,22 @@
 
 namespace esl::data {
 
-    output_base::output_base(const std::string &name)
+    output_base::output_base( const std::string &name
+                            , stream out)
     : name(name)
+    , streams()
     {
-
+        streams.push_back(out);
     }
 
+
+    output_base::output_base( const std::string &name
+        , std::vector<stream> streams)
+        : name(name)
+        , streams(streams)
+    {
+        
+    }
 }
 
 #ifdef WITH_PYTHON

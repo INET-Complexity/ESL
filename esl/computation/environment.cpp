@@ -34,6 +34,7 @@
 #include <esl/simulation/model.hpp>
 #include <esl/economics/price.hpp>
 #include <esl/data/serialization.hpp>
+#include <esl/data/log.hpp>
 
 
 namespace esl::computation {
@@ -89,6 +90,7 @@ namespace esl::computation {
                 filename_ << i << '_' << o.first << ".xml";
                 std::cout << filename_.str() << std::endl;
                 std::ofstream ofs(filename_.str());
+                LOG(trace) << "output " << o.second->name << " to file " << filename_.str() << std::endl;
                 assert(ofs.good());
                 boost::archive::xml_oarchive oa(ofs);
                 oa.template register_type<esl::economics::price>();

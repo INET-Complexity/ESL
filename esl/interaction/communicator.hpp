@@ -64,8 +64,22 @@ namespace esl::interaction {
         ///         the time at which the next event is expected.
         ///
         typedef std::function<simulation::time_point(message_t,
-                                                     simulation::time_interval, std::seed_seq &)>
-            callback_t;
+                                                     simulation::time_interval,
+                                                     std::seed_seq &)>
+            callback_handle;
+
+        struct callback_t
+        {
+            callback_handle     function;
+            const std::string   description;
+#ifndef ESL_BUILD_RELEASE
+            const std::string   message; // the message typename
+            const std::string   file;
+            const size_t        line;
+#endif
+        };
+
+
 
         ///
         /// \brief  The inbox stores messages by delivery time.
@@ -120,7 +134,6 @@ namespace esl::interaction {
 
         virtual ~communicator() = default;
 
-
         ///
         /// \brief  Create a message and queue it for sending.
         ///
@@ -164,11 +177,15 @@ namespace esl::interaction {
         /// \param priority
         template<typename derived_message_t_>
         void register_callback(std::function<simulation::time_point(
-                                   std::shared_ptr<derived_message_t_>,
-                                   simulation::time_interval,
-                                   std::seed_seq &)>
-                                   callback,
-                               priority_t priority = 0)
+            std::shared_ptr<derived_message_t_>,
+            simulation::time_interval,
+            std::seed_seq &)> callback,
+                               priority_t priority = 0,
+                               const std::string &description = "",
+                               const std::string &message = "",
+                               const std::string &file = "",
+                               size_t line = 0
+                               )
         {
             /// the specified message must inherit `header`
             static_assert(std::is_base_of<header, derived_message_t_>::value);
@@ -187,7 +204,8 @@ namespace esl::interaction {
             }
 
             auto function_ = [callback](message_t m,
-                                        simulation::time_interval step, std::seed_seq &seed) {
+                                        simulation::time_interval step,
+                                        std::seed_seq &seed) {
                 // dynamically cast message to derived type that was asked for
                 auto converted_ =
                     std::dynamic_pointer_cast<derived_message_t_>(m);
@@ -195,13 +213,16 @@ namespace esl::interaction {
                 return callback(converted_, step, seed);
             };
 
-            iterator_->second.insert(std::make_pair(priority, function_));
+            callback_t callback_ = {function_, description, message, file, line};
+            iterator_->second.emplace(priority, callback_);
         }
 
         [[nodiscard]] inline const decltype(callbacks_) &callbacks() const
         {
             return callbacks_;
         }
+
+        void trace_callbacks() const;
 
         ///
         /// \brief  Calls all callbacks registered to receive the given message.
@@ -210,7 +231,8 @@ namespace esl::interaction {
         /// \return
         simulation::time_point
         process_message(message_t message,
-                        simulation::time_interval step, std::seed_seq &seed) const;
+                        simulation::time_interval step,
+                        std::seed_seq &seed) const;
 
         ///
         /// \brief  Calls all callbacks registered with messages in the inbox.
@@ -236,6 +258,9 @@ namespace esl::interaction {
         }
     };
 }  // namespace esl::interaction
+
+//  \brief  registers a callback function
+#define ESL_REGISTER_CALLBACK(message_t, priority, callback, description) register_callback<message_t>(callback, priority, description, #message_t, __FILE__, __LINE__);
 
 
 #ifdef WITH_MPI

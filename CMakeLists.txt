@@ -14,7 +14,7 @@ STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
 SET(version_revision ${CMAKE_MATCH_1})
 
-#CMAKE_POLICY(SET CMP0048 NEW)
+CMAKE_POLICY(SET CMP0048 NEW)
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library" 
@@ -22,6 +22,7 @@ PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
 
 MESSAGE("ESL Version ${PROJECT_VERSION}")
 MESSAGE("building binary in ${CMAKE_BINARY_DIR}")
+
 
 ################################################################################
 # cmake configuration
@@ -39,8 +40,12 @@ IF(NOT ESL_TARGET_NAME)
 ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)
+    MESSAGE("Build type (CMAKE_BUILD_TYPE) not set, defaulting to Release build.")
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
+
+ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
+
 
 ################################################################################
 
@@ -73,9 +78,6 @@ IF(WITH_QL)
     ADD_DEFINITIONS(-DWITH_QL)
 ENDIF()
 
-# Used in stan-math
-#ADD_DEFINITIONS(-D_REENTRANT)
-
 ################################################################################
 
 IF(WITH_PYTHON)
@@ -89,6 +91,7 @@ LIST(APPEND Boost_LIBRARIES
             date_time 
             serialization 
             unit_test_framework
+            log
     )
 
 IF(WITH_PYTHON)
@@ -103,7 +106,22 @@ IF(WITH_MPI)
     ENDIF()
 ENDIF()
 
+
+################################################################################
+#SET(Boost_USE_STATIC_LIBS ON)
+LIST(APPEND Boost_LIBRARIES
+        program_options
+        date_time
+        serialization
+        unit_test_framework
+        thread
+        log
+        log_setup
+        )
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+#ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
+################################################################################
 
 # optional accelerators for scientific computing
 #SET(BLA_STATIC ON)
@@ -120,11 +138,27 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Og") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
 
-SET(CMAKE_C_FLAGS_RELEASE "-O3")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
+SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
+
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+if(COMPILER_SUPPORTS_MARCH_NATIVE)
+    # the second flag displays which target flags are actually selected
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+endif()
+
+
+
+
+ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
+
+#ADD_COMPILE_DEFINITIONS(ESL_SOURCE_DIRECTORY="${PROJECT_SOURCE_DIR}")
+
+
 
 ENABLE_TESTING()
 ################################################################################
@@ -140,6 +174,7 @@ IF(WIN32) # for now, assume all builds on windows are done using MSYS2 64 bit
     LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/msys64/usr/include")
 ENDIF()
 
+
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
@@ -147,6 +182,8 @@ LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
 
 IF(WIN32)
     #LIST(APPEND ALL_LINKED_LIBRARIES )
+    #LINK_DIRECTORIES("C:/msys64/usr/lib")
+    LIST(APPEND ALL_LINKED_LIBRARIES)
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES dl util)
 ENDIF()
@@ -365,14 +402,34 @@ SET(SOURCE_FILES
 
         esl/economics/finance/bondholder.cpp
         esl/economics/finance/bondholder.hpp
-        )
 
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES})
+        esl/data/log.cpp
+        esl/data/log.hpp
+
+        esl/economics/markets/order_book/order.cpp
+        esl/economics/markets/order_book/order.hpp
+
+        esl/economics/markets/order_book/matching_engine.cpp
+        esl/economics/markets/order_book/matching_engine.hpp
+
+        esl/data/log.cpp
+        esl/data/log.hpp
+
+        esl/data/stream.cpp
+        esl/data/stream.hpp
+
+        esl/data/severity.cpp
+        esl/data/severity.hpp
+        esl/data/representation.cpp esl/data/representation.hpp esl/economics/finance/debtor.cpp esl/economics/finance/debtor.hpp)
+
+ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
 
 
 IF(WIN32)
+
+    LINK_DIRECTORIES("C:/msys64/usr/lib")
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 ELSE()
@@ -395,7 +452,7 @@ FOREACH(test_src ${TEST_SRCS})
     MESSAGE("TEST " ${test_src})
     GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
 
-    ADD_EXECUTABLE(${test_name} ${test_src})
+    ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
     TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
     SET_TARGET_PROPERTIES(${test_name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)

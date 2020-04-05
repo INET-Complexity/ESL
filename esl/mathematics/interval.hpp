@@ -32,8 +32,15 @@
 
 
 namespace esl::mathematics {
-
-
+    ///
+    /// \brief  A set of numbers lying between a lower and upper endpoint. The
+    ///         endpoints may be included in the set or not, if the lower is
+    ///         included the interval is left_closed_, and if the upper is
+    ///         included  the interval is right_closed_.
+    ///
+    /// \tparam number_t_
+    /// \tparam left_closed_
+    /// \tparam right_closed_
     template<typename number_t_,
              bool left_closed_  = true,
              bool right_closed_ = true>

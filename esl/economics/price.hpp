@@ -49,6 +49,11 @@ namespace esl::economics {
 
         iso_4217 valuation;
 
+        ///
+        /// \todo: this should be redefined as price.from_units or something similar
+        ///
+        /// \param value
+        /// \param valuation
         explicit constexpr price(int64_t value = 0,
                                  iso_4217 valuation = iso_4217())
         : value(value), valuation(valuation)
@@ -163,7 +168,17 @@ namespace esl::economics {
             return double(value) / valuation.denominator;
         }
 
-        friend std::ostream &operator<<(std::ostream &o, const price &p)
+        std::ostream &operator << (std::ostream &o) const
+        {
+            std::ios_base::fmtflags flags_(o.flags());
+            int precision_ = ceil(log10(valuation.denominator));
+            o << this->valuation << ' ' << std::fixed
+              << std::setprecision(precision_) << double(*this);
+            o.flags(flags_);
+            return o;
+        }
+
+        friend std::ostream &operator << (std::ostream &o, const price &p)
         {
             std::ios_base::fmtflags flags_(o.flags());
             int precision_ = ceil(log10(p.valuation.denominator));

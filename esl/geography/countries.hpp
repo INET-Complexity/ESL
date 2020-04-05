@@ -29,12 +29,14 @@
 
 #include <string>
 
+
 namespace esl::geography {
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     // ISO 3166-1 alpha-2 Country Code
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     namespace countries {
+        constexpr iso_3166_1_alpha_2 AD = iso_3166_1_alpha_2({'A', 'D'});
         constexpr iso_3166_1_alpha_2 AE = iso_3166_1_alpha_2({'A', 'E'});
         constexpr iso_3166_1_alpha_2 AF = iso_3166_1_alpha_2({'A', 'F'});
         constexpr iso_3166_1_alpha_2 AG = iso_3166_1_alpha_2({'A', 'G'});
@@ -506,8 +508,8 @@ namespace esl::geography {
             return "Israel";
         case unique_hash(IM):
             return "Isle of Man";
-        case unique_hash(IN):
-            return "India";
+        //case unique_hash(IN):
+        //    return "India";
         case unique_hash(IO):
             return "British Indian Ocean Territory";
         case unique_hash(IQ):
