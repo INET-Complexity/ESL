@@ -35,6 +35,35 @@
 #include <esl/quantity.hpp>
 #include <esl/law/property_collection.hpp>
 
+/*
+#ifdef __GNUG__
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+
+std::string demangle1(const char* name) {
+
+    int status = -4; // some arbitrary value to eliminate the compiler warning
+
+    // enable c++11 by passing the flag -std=c++11 to g++
+    std::unique_ptr<char, void(*)(void*)> res {
+        abi::__cxa_demangle(name, NULL, NULL, &status),
+        std::free
+    };
+
+    return (status==0) ? res.get() : name ;
+}
+
+#else
+
+// does nothing if not g++
+std::string demangle1(const char* name) {
+    return name;
+}
+#endif
+*/
+
+
 
 namespace esl::economics::accounting {
 
@@ -47,17 +76,36 @@ namespace esl::economics::accounting {
 
         const quantity withdrawal;
 
-        explicit insufficent_inventory(quantity before, quantity withdrawal)
-        : before(before), withdrawal(withdrawal)
-        {}
+        const identity<law::property> identifier;
+
+        const std::string property_name;
+
+        std::string message;
+
+        ///
+        /// \brief                  used to
+        /// \param before
+        /// \param withdrawal
+        /// \param property_name    textual description of the property that is
+        ///                         missing, used for message only
+        explicit insufficent_inventory(quantity before, quantity withdrawal, identity<law::property> identifier, const std::string &property_name = "property")
+        : before(before)
+        , withdrawal(withdrawal)
+        , identifier(identifier)
+        , property_name(property_name)
+        {
+            std::stringstream stream_;
+            stream_ << "insufficient inventory (" << before << ") for withdrawal (" << withdrawal << ") of " << property_name << std::endl;
+            message = stream_.str();
+        }
 
         ///
         /// \return a human-readable message that describes the missing item and
         /// quantity
         [[nodiscard]] const char *what() const noexcept override
         {
-            std::stringstream stream_;
-            return stream_.str().c_str();
+
+            return message.c_str();
         }
     };
 
@@ -124,12 +172,14 @@ namespace esl::economics::accounting {
         }
 
 
-        // std::enable_if<std::is_base_of<asset, property_t_>::value, price>
+        ///
+        /// \brief
+        ///
+        /// \param a
+        /// \return
         price value(const accounting::standard &a)
         {
-            // throw not_implemented_exception("price value(const standard
-            // &a)");
-            auto result_ = economics::cash(a.reporting_currency).value(0);
+            auto result_ = economics::cash(a.reporting_currency).price(0);
             for(auto [k, v] : items) {
                 auto unit_     = k->value(a);
                 auto multiple_ = static_cast<int64_t>((unit_.value * v.amount) / v.basis);
@@ -162,11 +212,11 @@ namespace esl::economics::accounting {
             auto iterator_ = items.find(item);
 
             if(items.end() == iterator_ && q.amount > 0) {
-                throw insufficent_inventory(quantity(0), q);
+                throw insufficent_inventory(quantity(0), q, item->identifier, typeid(property_t_).name());
             }
 
             if(iterator_->second < q) {
-                throw insufficent_inventory(iterator_->second, q);
+                throw insufficent_inventory(iterator_->second, q, item->identifier, typeid(property_t_).name());
             }
 
             iterator_->second -= q;
@@ -198,11 +248,11 @@ namespace esl::economics::accounting {
             for(auto [k, v] : items) {
                 auto i = m.find(k);
                 if(m.end() == i) {
-                    std::cout << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
-                    throw insufficent_inventory(quantity(0), quantity(1));
+                    LOG(error) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
+                    throw insufficent_inventory(quantity(0), quantity(1), k->identifier, typeid(property_t_).name());
                 } else if(i->second < v) {
-                    std::cout << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
-                    throw insufficent_inventory(i->second, v);
+                    LOG(error) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
+                    throw insufficent_inventory(i->second, v, k->identifier, typeid(property_t_).name());
                 } else if(i->second == v) {
                     m.erase(k);
                 } else {

@@ -57,6 +57,9 @@ namespace esl::economics {
             assert(lot > 0);
         }
 
+        ///
+        /// \param p
+        /// \param lot
         explicit quote(const price &p, uint64_t lot = 1)
         : type(p)
         , lot(lot)
@@ -64,9 +67,9 @@ namespace esl::economics {
             assert(lot > 0);
         }
 
-        quote(const quote &q, uint64_t lot = 1)
+        quote(const quote &q)
         : type(q.type)
-        , lot(lot)
+        , lot(q.lot)
         {
             assert(lot > 0);
         }
@@ -84,6 +87,7 @@ namespace esl::economics {
                 [this](auto &&arg) { return floating_point_t_(arg) / lot; },
                 type);
         }
+
 
         template<class archive_t>
         void save(archive_t &archive, const unsigned int version) const

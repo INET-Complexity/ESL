@@ -84,9 +84,16 @@ namespace esl::economics::markets::walras {
         /// \brief
         ///
         std::map<esl::identity<esl::law::property>, double> clear_market( const std::unordered_map<identity<agent>
-                                   , std::shared_ptr<walras::differentiable_order_message>> &o
-                                   , const esl::simulation::time_interval &step);
+                                   , std::shared_ptr<walras::differentiable_order_message>> &orders, const esl::simulation::time_interval &step);
 
+        ///
+        /// \return friendly description of the agent mentioning the identifier
+        [[nodiscard]] std::string describe() const override
+        {
+            std::stringstream stream_;
+            stream_ << "Walrasian price setter " << identifier;
+            return stream_.str();
+        }
 
         template<class archive_t>
         void serialize(archive_t & archive, const unsigned int version)

@@ -29,8 +29,9 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
 
-#include <esl/economics/markets/order_message.hpp>
 #include <esl/economics/markets/differentiable_demand_supply_function.hpp>
+#include <esl/economics/markets/order_message.hpp>
+#include <esl/quantity.hpp>
 
 
 namespace esl::economics::markets::walras {
@@ -44,6 +45,9 @@ namespace esl::economics::markets::walras {
           differentiable_order_message,
           esl::interaction::library_message_code<0x00A2U>()>
     {
+
+        std::map<esl::identity<esl::law::property>, quantity> supply;
+
         using order_message<
             differentiable_order_message,
             esl::interaction::library_message_code<0x00A2U>()>::order_message;

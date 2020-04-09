@@ -31,6 +31,14 @@
 #include <esl/economics/markets/walras/tatonnement.hpp>
 
 
+template <class... T> struct always_false : std::false_type {};
+
+template <> struct always_false</* implementation defined */> : std::true_type{};
+
+
+
+
+
 namespace esl::economics::markets::walras {
     price_setter::price_setter()
     : price_setter(identity<price_setter>())
@@ -143,13 +151,10 @@ namespace esl::economics::markets::walras {
     ///
     ///
     std::map<identity<law::property>, double> price_setter::clear_market(
-        const std::unordered_map< identity<agent>,
-            std::shared_ptr<walras::differentiable_order_message>> &o,
+        const std::unordered_map<identity<agent>,
+            std::shared_ptr<walras::differentiable_order_message>> &orders,
         const simulation::time_interval &step)
     {
-
-
-
         std::map<identity<law::property>, quote> quotes_;
         for(const auto &[k, v] : traded_properties) {
             (void)k;
@@ -157,48 +162,20 @@ namespace esl::economics::markets::walras {
         }
 
         tatonnement::excess_demand_model model_(quotes_);
-
-        model_.excess_demand_functions_.clear();
-
-        for(auto [key, function_] : o) {
+        for(auto [key, function_] : orders) {
             (void)key;
             model_.excess_demand_functions_.push_back(function_);
         }
-
-        bool debug_supply_demand_ = false;
-
-        if(debug_supply_demand_) {
-            for(auto [key, function_] : o) {
-                int N = 100;
-                for(int i = 0; i < N * 2; ++i) {
-                    std::map<esl::identity<esl::law::property>,
-                             std::tuple<esl::economics::quote, double>>
-                        call_;
-                    for(const auto &[k, v] : traded_properties) {
-                        (void)k;
-                        call_.emplace(k->identifier,
-                                      std::make_tuple(v, double(i) / N));
-                    }
-                    auto X = function_->excess_demand_m(call_);
-                    std::cout << call_ << std::endl;
-                    std::cout << X << std::endl;
-                }
-            }
-        }
-
-
-
-
         auto result_ = model_.do_compute();
 
         // if finding a price failed, return previous price vector
         if(!result_.has_value()) {
-            std::map<esl::identity<esl::law::property>, double> dummy_;
+            std::map<identity<law::property>, double> previous_;
             for(const auto &[k, v] : traded_properties) {
                 (void)k;
-                dummy_.insert({k->identifier, 1.0 * double(v)});
+                previous_.insert({k->identifier, 1.0 * double(v)});
             }
-            return dummy_;
+            return previous_;
         }
 
 
@@ -207,9 +184,11 @@ namespace esl::economics::markets::walras {
         // round to the nearest valid price
         for(auto [p, q] : traded_properties) {
 
-            double X = result_.value().find(p->identifier)->second;
-            std::tuple<quote, double> a2 = std::make_tuple(quote(q), X);
-            args.emplace(p->identifier, a2);
+            double scalar_ = result_.value().find(p->identifier)->second;
+            std::tuple<quote, double> solution_ = std::make_tuple(q, scalar_);
+            args.emplace(p->identifier, solution_);
+
+
 
             std::visit(
                 [this, result_, p = p](auto &quote) {
@@ -227,54 +206,102 @@ namespace esl::economics::markets::walras {
                         quote =
                             exchange_rate(uint64_t(X2), quote.denominator());
                         this->traded_properties[p].type = quote;
-                    } /*else{
-                         static_assert(std::always_false<T>::value,
+                    }else{
+                         static_assert(always_false<type_>::value,
                                        "non-exhaustive handling of quotes");
-                     }*/
+                     }
                 },
                 q.type);
         }
 
+        for(const auto &[participant, order_]: orders) {
+            auto demand_ = order_->excess_demand_m(args);
 
-
-
-        for(const auto &[k, v] : o) {
-            auto demand_ = v->excess_demand_m(args);
-            auto minimum_transfer_ =
-                0.0001;  // TODO: this must be deduced from the property...
-            // if(fungible){
-            //  minimum_transfer_ =
-            //}else{
-            //  minimum_transfer_ = 1
-            //}
-
-            auto property_ = traded_properties.begin();
-            for(auto [k2, ed] : demand_) {
-                accounting::inventory_filter<law::property> transfers_;
-                auto exact_quantity_ = quantity(int(abs(ed)), 1);
-                transfers_.insert(property_->first, exact_quantity_);
-                property_++;
-                if(ed < -minimum_transfer_) {
-                    auto transferor_ =
-                        dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto transferee_ =
-                        reinterpret_identity_cast<law::owner<law::property>,
-                                                  agent>(*this);
-                    auto m =
-                        this->template create_message<interaction::transfer>(
-                            k, step.lower, (*this), k, transferor_, transferee_,
-                            transfers_);
-                } else if(ed > minimum_transfer_) {
-                    auto transferor_ =
-                        reinterpret_identity_cast<law::owner<law::property>,
-                                                  agent>(*this);
-                    auto transferee_ =
-                        dynamic_identity_cast<law::owner<law::property>>(k);
-                    auto m =
-                        this->template create_message<interaction::transfer>(
-                            k, step.lower, (*this), k, transferor_, transferee_,
-                            transfers_);
+            for(const auto &[property_, data_]: traded_properties){
+                double excess_ = demand_.find(property_->identifier)->second * data_.lot;
+                auto s = order_->supply.find(property_->identifier);
+                quantity supply_(0, 1);
+                // allow supply to not be set, in which case it is set to zero
+                if(order_->supply.end() != s){
+                    supply_ = s->second;
                 }
+                auto demand_abs_ = quantity(int(abs(excess_)), 1);
+                // less than one unit bought or sold
+                if(demand_abs_ > -1. && demand_abs_ < 1. ){
+                    continue;
+                }
+
+                // s + e > 0 -> long position, e <= 1 sell e >= 1 buy
+                if(double(supply_) + excess_ > 0){
+                    if(excess_ >= 0){
+                        accounting::inventory_filter<law::property> transfers_;
+                        transfers_.insert(property_, demand_abs_);
+                        // the participant buys more of the property
+                        auto transferor_ = reinterpret_identity_cast<law::owner<law::property>, agent>(*this);
+                        auto transferee_ = dynamic_identity_cast<law::owner<law::property>>(participant);
+                        auto m = this->template create_message<interaction::transfer>(participant, step.lower,(*this), participant, transferor_, transferee_,transfers_);
+                        LOG(trace) << step << ": " << transferor_ << " transfer " << transfers_ << " to " << transferee_ << std::endl;
+                    }else{
+                        accounting::inventory_filter<law::property> transfers_;
+                        transfers_.insert(property_, demand_abs_);
+                        auto transferor_ =
+                            dynamic_identity_cast<law::owner<law::property>>(participant);
+                        auto transferee_ = reinterpret_identity_cast<law::owner<law::property>,agent>(*this);
+                        auto m = this->template create_message<interaction::transfer>(participant, step.lower, (*this), participant, transferor_, transferee_, transfers_);
+                        LOG(trace) << step << ": " << transferor_ << " transfer " << transfers_ << " to " << transferee_ << std::endl;
+                    }
+                }else {  // s + e < 0 -> short position, e <= 1 sell e >= 1 buy
+                    if(excess_ >= 0) {
+                        accounting::inventory_filter<law::property> transfers_;
+                        transfers_.insert(property_, demand_abs_);
+                        // the participant buys more of the property
+                        auto transferor_ =
+                            reinterpret_identity_cast<law::owner<law::property>,
+                                                      agent>(*this);
+                        auto transferee_ =
+                            dynamic_identity_cast<law::owner<law::property>>(
+                                participant);
+                        auto m = this->template create_message<
+                            interaction::transfer>(
+                            participant, step.lower, (*this), participant,
+                            transferor_, transferee_, transfers_);
+                        LOG(trace)
+                            << step << ": " << transferor_ << " transfer "
+                            << transfers_ << " to " << transferee_ << std::endl;
+                    } else {
+                        accounting::inventory_filter<law::property> transfers_;
+                        transfers_.insert(property_, demand_abs_);
+                        auto transferor_ =
+                            dynamic_identity_cast<law::owner<law::property>>(
+                                participant);
+                        auto transferee_ =
+                            reinterpret_identity_cast<law::owner<law::property>,
+                                                      agent>(*this);
+                        auto m = this->template create_message<
+                            interaction::transfer>(
+                            participant, step.lower, (*this), participant,
+                            transferor_, transferee_, transfers_);
+                        LOG(trace)
+                            << step << ": " << transferor_ << " transfer "
+                            << transfers_ << " to " << transferee_ << std::endl;
+                    }
+                }
+/*
+                std::visit(
+                    [this, p = property_](auto &quote) {
+                        using type_ = std::decay_t<decltype(quote)>;
+                        if constexpr(std::is_same_v<type_, price>) {
+
+
+                        } else if constexpr(std::is_same_v<type_, exchange_rate>) {
+
+                        }else{
+                            static_assert(always_false<type_>::value,
+                                          "non-exhaustive handling of quotes");
+                        }
+                    },
+                    data_.type);
+*/
             }
         }
         return result_.value();
