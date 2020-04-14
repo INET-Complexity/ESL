@@ -163,10 +163,14 @@ namespace esl::economics::accounting {
     {
         law::property_filter_map<property_t_, quantity> items;
 
-        inventory_by_fungibility() : items()
-        {}
+        inventory_by_fungibility()
+        : items()
+        {
 
-        inventory_by_fungibility(property_t_ item, quantity q) : items()
+        }
+
+        inventory_by_fungibility(property_t_ item, quantity q)
+        : items()
         {
             items.insert(make_pair(item, q));
         }
@@ -180,7 +184,7 @@ namespace esl::economics::accounting {
         price value(const accounting::standard &a)
         {
             auto result_ = economics::cash(a.reporting_currency).price(0);
-            for(auto [k, v] : items) {
+            for(auto [k, v]: items) {
                 auto unit_     = k->value(a);
                 auto multiple_ = static_cast<int64_t>((unit_.value * v.amount) / v.basis);
                 // auto q  = quantity(multiple_, unit_.valuation.denominator);
@@ -202,7 +206,7 @@ namespace esl::economics::accounting {
 
         void insert(const inventory_by_fungibility<property_t_, true> &added)
         {
-            for(const auto &[k, v] : added.items) {
+            for(const auto &[k, v]: added.items) {
                 insert(k, v);
             }
         }
@@ -224,7 +228,7 @@ namespace esl::economics::accounting {
 
         void erase(const inventory_by_fungibility<property_t_, true> &removed)
         {
-            for(const auto &[k, v] : removed.items) {
+            for(const auto &[k, v]: removed.items) {
                 erase(k, v);
             }
         }

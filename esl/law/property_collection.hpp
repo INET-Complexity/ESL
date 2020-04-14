@@ -59,7 +59,7 @@ namespace esl::law {
         constexpr bool operator()(const std::shared_ptr<property_t_> &lhs,
                                   const std::shared_ptr<property_t_> &rhs) const
         {
-            return (*lhs) == (*rhs);
+            return lhs->identifier == rhs->identifier;
         }
     };
 
@@ -68,13 +68,13 @@ namespace esl::law {
                                property_collection_equality<property>>;
 
     template<typename value_t_>
-    using property_map = std::map<std::shared_ptr<property>, value_t_>;
-            /*
+    using property_map = //std::map<std::shared_ptr<property>, value_t_>;
+
         std::unordered_map<std::shared_ptr<property>,
                            value_t_,
                            property_collection_hash<property>,
                            property_collection_equality<property>>;
-            */
+
 
     template<typename property_t_>
     using property_filter_set =

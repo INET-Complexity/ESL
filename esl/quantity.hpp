@@ -72,7 +72,7 @@ namespace esl {
         std::uint64_t amount;
 
         ///
-        /// \brief  The
+        /// \brief  The number of sub-units to make one part
         ///
         std::uint64_t basis;
 
@@ -92,8 +92,11 @@ namespace esl {
 
         ///
         /// \param q
-        constexpr quantity(const quantity &q) : quantity(q.amount, q.basis)
-        {}
+        constexpr quantity(const quantity &q)
+        : quantity(q.amount, q.basis)
+        {
+
+        }
 
         ///
         /// \param operand

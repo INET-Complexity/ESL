@@ -46,7 +46,7 @@ public:
     test_share_issuing_company(const esl::identity<esl::economics::company> &i)
     : esl::economics::company(i, esl::law::jurisdictions::US)
     {
-        auto main_issue_                = esl::economics::finance::share();
+        auto main_issue_                = esl::economics::finance::share_class();
         shares_outstanding[main_issue_] = 1'000'000;
     }
 };
@@ -206,11 +206,11 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
 
 
     std::vector<std::tuple<std::shared_ptr<esl::economics::company>,
-                           esl::economics::finance::share>>
+                           esl::economics::finance::share_class>>
         shares_;
 
     std::map<std::tuple<esl::identity<esl::economics::company>,
-                        esl::economics::finance::share>,
+                        esl::economics::finance::share_class>,
              esl::identity<esl::law::property>>
         stocks_;
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
         auto company_ = std::make_shared<esl::economics::company>(
             company_identifier_, esl::law::jurisdictions::US);
 
-        auto main_issue_ = esl::economics::finance::share();
+        auto main_issue_ = esl::economics::finance::share_class();
         //company_->dividend_payouts = create_output<price>("dividend");
         company_->shares_outstanding[main_issue_] = 1'000'000;
 
@@ -238,8 +238,8 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
             shares_.emplace_back(make_tuple(company_, share_));
 
             auto key_ = std::make_tuple<esl::identity<esl::economics::company>,
-                                        esl::economics::finance::share>(
-                *company_, esl::economics::finance::share(share_));
+                                        esl::economics::finance::share_class>(
+                *company_, esl::economics::finance::share_class(share_));
             stocks_.insert({key_, stock_->identifier});
         }
     }

@@ -31,7 +31,7 @@
 #include <utility>
 
 #include <esl/economics/currencies.hpp>
-#include <esl/economics/finance/share.hpp>
+#include <esl/economics/finance/share_class.hpp>
 #include <esl/economics/price.hpp>
 #include <esl/interaction/message.hpp>
 
@@ -64,7 +64,7 @@ namespace esl::economics::finance {
 
         // total dividends
         // per share type, shares outstanding, dividend per share
-        std::map<share, std::tuple<std::uint64_t, price>> dividend_per_share;
+        std::map<share_class, std::tuple<std::uint64_t, price>> dividend_per_share;
 
         dividend_policy(
             simulation::time_point announcement_date =
@@ -74,7 +74,7 @@ namespace esl::economics::finance {
                 {simulation::time_point(0), simulation::time_point(0)},
             simulation::time_point payable_date = simulation::time_point(0),
             const iso_4217 &dividend_currency   = currencies::USD,
-            const std::map<share, std::tuple<std::uint64_t, price>>
+            const std::map<share_class, std::tuple<std::uint64_t, price>>
                 &dividend_per_share = {});
 
         ///
@@ -146,13 +146,13 @@ namespace esl::economics::finance {
         /// \brief  For optimization purposes, we allow the agents to compute
         /// their own payout and simply bill the company,
         ///         rather than first notifying them about the amount they own.
-        std::map<share, std::uint64_t> shares_on_record;
+        std::map<share_class, std::uint64_t> shares_on_record;
         // set<share> shares_on_record;
 
         explicit dividend_record(
             identity<agent> sender                          = identity<agent>(),
             identity<agent> recipient                       = identity<agent>(),
-            std::map<share, std::uint64_t> shares_on_record = {}
+            std::map<share_class, std::uint64_t> shares_on_record = {}
             //, set<share> shares_on_record = {}
             ,
             simulation::time_point sent     = simulation::time_point(),

@@ -28,7 +28,7 @@
 #include <esl/economics/markets/demand_supply_function.hpp>
 #include <esl/mathematics/variable.hpp>
 
-
+using namespace esl;
 
 struct differentiable_demand_supply_function
     : public demand_supply_function
@@ -37,22 +37,22 @@ struct differentiable_demand_supply_function
 
 
     
-    virtual std::map<esl::identity<esl::law::property>, esl::variable>
-    excess_demand_m(const std::map< esl::identity<esl::law::property>
-                                  , std::tuple<esl::economics::quote, esl::variable>
+    virtual std::map<identity<law::property>, variable>
+    excess_demand_m(const std::map< identity<law::property>
+                                  , std::tuple<economics::quote, variable>
                                   > &quotes) const = 0;
 
     ///
     /// \brief  Shim to convert from auto-differentiated variables to double
     ///
-    virtual std::map<esl::identity<esl::law::property>, double> excess_demand_m(
-        const std::map<esl::identity<esl::law::property>,
-                       std::tuple<esl::economics::quote, double>> &quotes)
+    virtual std::map<identity<law::property>, double> excess_demand_m(
+        const std::map<identity<law::property>,
+                       std::tuple<economics::quote, double>> &quotes)
         const override
     {
 
-        std::map<esl::identity<esl::law::property>,
-                 std::tuple<esl::economics::quote, esl::variable>> quotes_;
+        std::map<identity<law::property>,
+                 std::tuple<economics::quote, variable>> quotes_;
         for(auto [k, v]: quotes) {
             quotes_.insert({ k
                            , std::make_tuple( std::get<0>(v)
@@ -60,11 +60,11 @@ struct differentiable_demand_supply_function
                            });
         }
 
-        std::map<esl::identity<esl::law::property>, esl::variable> intermediate_ = excess_demand_m(quotes_);
+        std::map<identity<law::property>, variable> intermediate_ = excess_demand_m(quotes_);
 
-        std::map<esl::identity<esl::law::property>, double> result_;
+        std::map<identity<law::property>, double> result_;
         for(auto [k,v]: intermediate_) {
-            result_.insert({k, v.value()}); //v.val()});
+            result_.insert({k, v.value()});
         }
         return result_;
     }

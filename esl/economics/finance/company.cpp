@@ -59,14 +59,14 @@ namespace esl::economics {
     /// shares etc \warning: the rounding rule is in favor of the company,
     /// fractional currency dividends are not paid out! \param
     /// unappropriated_profit \return
-    std::map<finance::share, std::tuple<std::uint64_t, price>>
+    std::map<finance::share_class, std::tuple<std::uint64_t, price>>
     company::compute_dividend_per_share(const price &unappropriated_profit)
     {
         if(double(unappropriated_profit) <= 0) {
             return {};
         }
 
-        std::map<finance::share, std::tuple<std::uint64_t, price>> result_;
+        std::map<finance::share_class, std::tuple<std::uint64_t, price>> result_;
 
         double fraction_ = double(unappropriated_profit) / total_shares();
 
@@ -74,8 +74,8 @@ namespace esl::economics {
             if(s.dividend) {
                 result_.insert(make_pair(
                     s, std::make_tuple(q,
-                                       cash(primary_jurisdiction.tender)
-                                           .value(fraction_ * q))));
+                                              cash(primary_jurisdiction.tender)
+                                                  .price(fraction_ * q))));
             }
         }
 

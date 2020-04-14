@@ -27,10 +27,11 @@
 
 #include <esl/economics/iso_4217.hpp>
 
+#include <esl/data/log.hpp>
+#include <esl/economics/finance/securities_lending_contract.hpp>
+#include <esl/economics/finance/stock.hpp>
 #include <esl/economics/markets/quote.hpp>
 #include <esl/economics/money.hpp>
-#include <esl/economics/finance/stock.hpp>
-#include <esl/data/log.hpp>
 
 
 namespace esl::economics::accounting {
@@ -93,6 +94,28 @@ namespace esl::economics::accounting {
                 / (q.basis * i->second.lot);
 
             return price(value_, std::get<price>(i->second.type).valuation);
+        }
+
+        [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const
+        {
+            price result_ = price(0ll, this->reporting_currency);
+
+            for(auto &security_: c.basket){
+                auto i = mark_to_market.find(security_.first);
+                if(mark_to_market.end() == i){
+                    LOG(error) << "no market price for stock " << security_.first << std::endl;
+                    throw std::logic_error("no market price");
+                }
+
+                // TODO: use foreign_currencies if valuation is in different currency
+
+                int64_t value_ = (std::get<price>(i->second.type).value * security_.second.amount * q.amount)
+                                 / (q.basis * i->second.lot);
+
+                result_.value += value_;
+            }
+
+            return result_;//price(value_, std::get<price>(i->second.type).valuation);
         }
 
         /*///

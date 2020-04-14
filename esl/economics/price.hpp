@@ -61,7 +61,7 @@ namespace esl::economics {
 
         }
 
-        explicit constexpr price(float value_untruncated = 0.f,
+        explicit constexpr price(float value_untruncated,
                                  iso_4217 valuation = iso_4217())
                 : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
         {
@@ -69,7 +69,7 @@ namespace esl::economics {
         }
 
 
-        explicit constexpr price(double value_untruncated = 0.,
+        explicit constexpr price(double value_untruncated,
                                  iso_4217 valuation = iso_4217())
                 : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
         {

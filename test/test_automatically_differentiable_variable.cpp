@@ -58,7 +58,7 @@ using esl::economics::quote;
 #include <esl/economics/finance/company.hpp>
 using esl::economics::company;
 using esl::economics::cash;
-using esl::economics::finance::share;
+using esl::economics::finance::bond;
 using esl::economics::finance::stock;
 using esl::economics::finance::bond;
 using esl::economics::finance::shareholder;
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(variable_constructor)
         environment e;
         model model_(e, parametrization(0, 0, 3));
 
-        std::vector<std::tuple<std::shared_ptr<company>, share>>             shares_;
-        std::map<std::tuple<identity<company>,share>, identity<property>>    stocks_;
+        std::vector<std::tuple<std::shared_ptr<company>, share_class>>             shares_;
+        std::map<std::tuple<identity<company>, share_class>, identity<property>>    stocks_;
         property_map<quote>                                                         traded_assets_;
         property_map<size_t>                                                        shares_outstanding_;
 

@@ -31,8 +31,7 @@ namespace esl::economics::finance {
     /// \return     A fictional code from company details (any matches to the real world are coincidental).
     ///             There can be collisions in the space of 9^12 possible ISIN codes per country.
     // constexpr
-    isin create_isin(geography::iso_3166_1_alpha_2 issuer, const identity<company> &c,
-                     share s)
+    isin create_isin(geography::iso_3166_1_alpha_2 issuer, const identity<company> &c, share_class s)
     {
         constexpr std::array<char, 36> table_ = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
@@ -62,7 +61,8 @@ namespace esl::economics::finance {
     }
 
     identity<law::property>
-    create_share_identifier(identity<company> company_identifier, share details)
+    create_share_identifier(identity<company> company_identifier,
+                            share_class details)
     {
         std::vector<std::uint64_t> result_;
         for(auto d : company_identifier.digits) {
@@ -78,7 +78,7 @@ namespace esl::economics::finance {
 
     }
 
-    stock::stock(company &issuer, const share &details)
+    stock::stock(company &issuer, const share_class &details)
     : stock::stock(issuer.create<property>(),
                    issuer.primary_jurisdiction.sovereign,
                    (identity<company>)issuer, details)
@@ -87,7 +87,7 @@ namespace esl::economics::finance {
     }
 
     stock::stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
-                 const identity<company> &i, const share &s)
+                 const identity<company> &i, const share_class &s)
     : stock(pi, i, s, create_isin(c, i, s))
     {
 
@@ -95,7 +95,7 @@ namespace esl::economics::finance {
 
     stock::stock(const identity<property> &pi,
                  const identity<company> &company_identifier,
-                 const share &details, const isin &code)
+                 const share_class &details, const isin &code)
     : property(pi)
     , security(pi, code)
     , company_identifier(company_identifier)
@@ -103,6 +103,7 @@ namespace esl::economics::finance {
     {
 
     }
+
 }
 
 

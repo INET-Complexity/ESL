@@ -32,7 +32,7 @@ namespace esl::economics::finance {
         const simulation::time_interval &dividend_period,
         simulation::time_point payable_date,
         const iso_4217 &dividend_currency,
-        const std::map<share, std::tuple<std::uint64_t, price>>
+        const std::map<share_class, std::tuple<std::uint64_t, price>>
         &dividend_per_share)
         : announcement_date(announcement_date)
         , ex_dividend_date(ex_dividend_date)

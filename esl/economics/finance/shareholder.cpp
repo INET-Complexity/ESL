@@ -24,11 +24,11 @@
 ///
 #include <esl/economics/finance/shareholder.hpp>
 
-#include <esl/economics/finance/dividend.hpp>
-#include <esl/economics/finance/share.hpp>
-#include <esl/simulation/identity.hpp>
 #include <esl/economics/finance/company.hpp>
+#include <esl/economics/finance/dividend.hpp>
+#include <esl/economics/finance/share_class.hpp>
 #include <esl/economics/markets/walras/quote_message.hpp>
+#include <esl/simulation/identity.hpp>
 
 #include <algorithm>
 using std::min;

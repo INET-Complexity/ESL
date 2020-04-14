@@ -63,7 +63,7 @@ namespace esl::economics::finance {
         ///
         /// A datastructure relating the shares of a company to stocks
         ///
-        std::map<std::tuple<identity<company>, share>, identity<law::property>>
+        std::map<std::tuple<identity<company>, share_class>, identity<law::property>>
             stocks;
 
         ///
@@ -76,7 +76,7 @@ namespace esl::economics::finance {
         /// \brief Datastructure to map share holdings to the issuing company
         ///
         typedef std::unordered_map<identity<company>,
-                                   std::map<share, std::uint64_t>>
+                                   std::map<share_class, std::uint64_t>>
             share_holdings;
 
         share_holdings shares;

@@ -27,7 +27,7 @@
 #include <memory>
 
 #include <esl/economics/finance/security.hpp>
-#include <esl/economics/finance/share.hpp>
+#include <esl/economics/finance/share_class.hpp>
 
 namespace esl::economics {
     struct company;
@@ -37,10 +37,19 @@ namespace esl::economics::finance {
     struct stock
     : public virtual security
     {
+        ///
+        /// \brief  The company that issued the shares
+        ///
         identity<company> company_identifier;
 
-        share details;
+        ///
+        /// \brief The description of the share
+        ///
+        share_class details;
 
+        ///
+        ///
+        ///
         stock();
 
         ///
@@ -48,37 +57,27 @@ namespace esl::economics::finance {
         ///         This modifies the issuing company, as it needs to create a new
         ///         child property.
         ///
-        stock(company &issuer, const share &details);
+        stock(company &issuer, const share_class &details);
 
 
         ///
         /// \brief  Creates a fictional ISIN code for the company
         ///
         stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
-              const identity<company> &i, const share &s);
+              const identity<company> &i, const share_class &s);
 
         ///
         ///
         ///
         stock(const identity<property> &pi,
               const identity<company> &company_identifier,
-              const share &details,
+              const share_class &details,
               const isin &code);
 
-        inline bool operator<(const stock &operand) const
-        {
-            if(company_identifier < operand.company_identifier) {
-                return true;
-            }
+        //price value(const accounting::standard &a,
+        //            const quantity &amount) const override;
 
-            if(company_identifier > operand.company_identifier) {
-                return false;
-            }
 
-            return details < operand.details;
-        }
-
-        
         /*C++20 constexpr*/ std::string name() const override
         {
             std::stringstream stream_;

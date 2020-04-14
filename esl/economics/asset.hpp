@@ -27,8 +27,9 @@
 
 #include <boost/serialization/serialization.hpp>
 
-#include <esl/law/property.hpp>
+#include <esl/quantity.hpp>
 #include <esl/economics/price.hpp>
+#include <esl/law/property.hpp>
 
 
 namespace esl {
@@ -57,19 +58,23 @@ namespace esl::economics {
         ///
         /// \brief
         ///
-        asset(esl::identity<law::property> i = esl::identity<law::property>());
+        explicit asset(esl::identity<law::property> i = esl::identity<law::property>());
 
-        ~asset() = default;
+        ~asset() override = default;
 
         ///
         /// \brief
         ///
-        std::string name() const override;
+        [[nodiscard]] std::string name() const override;
+
 
         ///
         /// \param a    Valuation method and accounting rules
         /// \return
-        virtual price value(const accounting::standard &a) const;
+        //[[nodiscard]] virtual price value(const accounting::standard &a, const quantity &amount) const;
+
+
+
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
@@ -78,6 +83,9 @@ namespace esl::economics {
             archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(law::property);
         }
     };
+
+
+
 
 }  // namespace esl::economics
 

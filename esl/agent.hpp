@@ -80,6 +80,15 @@ namespace esl {
             return !(*this == rhs);
         }
 
+        ///
+        /// \return friendly description of the agent mentioning the identifier
+        [[nodiscard]] virtual std::string describe() const
+        {
+            std::stringstream stream_;
+            stream_ << "agent " << identifier;
+            return stream_.str();
+        }
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

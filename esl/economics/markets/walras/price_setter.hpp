@@ -48,6 +48,8 @@ namespace esl::economics::markets::walras {
     public:
         law::property_map<quote> traded_properties; // move the market base?
 
+        simulation::time_point latest = 0;
+
         std::shared_ptr<data::output<std::vector<price>>> output_clearing_prices_;
 
     protected:
@@ -79,6 +81,7 @@ namespace esl::economics::markets::walras {
         /// \return
         simulation::time_point act(simulation::time_interval step,
                        std::seed_seq &seed) override;
+
 
         ///
         /// \brief

@@ -28,10 +28,12 @@
 
 #include <stdexcept>
 
+#include <boost/type_traits/is_virtual_base_of.hpp>
+
 #include <esl/agent.hpp>
+#include <esl/data/log.hpp>
 #include <esl/economics/accounting/inventory.hpp>
 #include <esl/interaction/transfer.hpp>
-#include <esl/data/log.hpp>
 
 namespace esl::law {
     ///
@@ -52,31 +54,40 @@ namespace esl::law {
     /// \brief  The base class transfers properties of any type.
     ///
     template<>
-    struct owner<esl::law::property>
+    struct owner<property>
     : public virtual agent
-    , public identifiable_as<owner<esl::law::property>>
+    , public identifiable_as<owner<property>>
     {
     public:
-        law::property_map<quantity> inventory;
+        property_map<quantity> inventory;
 
-        explicit owner(const identity<owner<esl::law::property>> &i =
-                  identity<owner<esl::law::property>>())
-        : agent(i), identifiable_as<owner<esl::law::property>>(), inventory()
+        explicit owner(const identity<owner<property>> &i =
+                           identity<owner<property>>())
+        : agent(i), identifiable_as<owner<property>>(), inventory()
         {
-            auto callback_ = [this](auto msg, simulation::time_interval ti, std::seed_seq &seed) {
-                (void) seed;
+            auto callback_ = [this](auto msg,
+                                    simulation::time_interval ti,
+                                    std::seed_seq &seed) {
+                (void)seed;
                 if(this->identifier == msg->transferor) {
                     msg->transferred.erase_from(inventory);
                 } else if(this->identifier == msg->transferee) {
                     msg->transferred.insert_into(inventory);
                 } else {
-                    LOG(notice) << "message recipient " << identifier << " is not a party to the transfer between transferee " << msg->transferee << " and transferor " << msg->transferor << std::endl;
+                    LOG(notice)
+                        << "message recipient " << identifier
+                        << " is not a party to the transfer between transferee "
+                        << msg->transferee << " and transferor "
+                        << msg->transferor << std::endl;
                 }
                 return simulation::time_point(ti.upper);
             };
 
 
-            ESL_REGISTER_CALLBACK(interaction::transfer, 0, callback_, "process interaction::transfer");
+            ESL_REGISTER_CALLBACK(interaction::transfer,
+                                  50,
+                                  callback_,
+                                  "process interaction::transfer");
         }
 
         template<class archive_t>
@@ -84,7 +95,8 @@ namespace esl::law {
         {
             (void)version;
             archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(agent);
-            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(identifiable_as<owner<esl::law::property>>);
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(
+                identifiable_as<owner<property>>);
             archive &BOOST_SERIALIZATION_NVP(inventory);
         }
     };
@@ -97,8 +109,10 @@ namespace esl::law {
         template<typename property_t_>
         struct filter_inserter<false, property_t_>
         {
-            void insert(economics::accounting::inventory_filter<property_t_> &properties,
-                        std::shared_ptr<property_t_> p,
+            void insert(economics::accounting::inventory_filter<property_t_>
+                            &properties,
+                        std::shared_ptr<property_t_>
+                            p,
                         const quantity &q)
             {
                 assert(q == quantity(1, 1));
@@ -106,8 +120,10 @@ namespace esl::law {
                 properties.insert(p);
             }
 
-            void erase(economics::accounting::inventory_filter<property_t_> &properties,
-                       std::shared_ptr<property_t_> p,
+            void erase(economics::accounting::inventory_filter<property_t_>
+                           &properties,
+                       std::shared_ptr<property_t_>
+                           p,
                        const quantity &q)
             {
                 assert(q == quantity(1, 1));
@@ -119,15 +135,18 @@ namespace esl::law {
         template<typename property_t_>
         struct filter_inserter<true, property_t_>
         {
-            void insert(economics::accounting::inventory_filter<property_t_> &properties,
+            void insert(economics::accounting::inventory_filter<property_t_>
+                            &properties,
                         std::shared_ptr<property_t_> p,
                         const quantity &q)
             {
                 properties.insert(p, q);
             }
 
-            void erase(economics::accounting::inventory_filter<property_t_> &properties,
-                       std::shared_ptr<property_t_> p,
+            void erase(economics::accounting::inventory_filter<property_t_>
+                           &properties,
+                       std::shared_ptr<property_t_>
+                           p,
                        const quantity &q)
             {
                 properties.erase(p, q);
@@ -137,17 +156,12 @@ namespace esl::law {
 
     template<typename property_t_>
     struct owner
-    : public virtual owner<esl::law::property>
+    : public virtual owner<property>
     , public identifiable_as<owner<property_t_>>
     {
-        // \note 2019-10-01
-        // This assertion is disabled due to the difficulty of determining
-        // the base class
-        //
-        //static_assert(boost::is_base_of<esl::law::property, property_t_>::value ||
-        //              boost::is_virtual_base_of<esl::law::property, property_t_>::value,
-        //              "filtered type must derive from property");
-
+        static_assert( boost::is_base_of<property, property_t_>::value
+                    || boost::is_virtual_base_of<property, property_t_>::value,
+                      "filtered type must derive from property");
 
         ///
         /// \brief the legal_person's holdings filtered by this particular
@@ -155,16 +169,18 @@ namespace esl::law {
         ///
         economics::accounting::inventory_filter<property_t_> properties;
 
-        using owner<esl::law::property>::owner;
+        using owner<property>::owner;
 
-        explicit owner(const identity<owner<esl::law::property>> &i =
-                       identity<owner<esl::law::property>>())
-        : owner<esl::law::property>(i)
+        explicit owner(const identity<owner<property>> &i =
+                           identity<owner<property>>())
+        : owner<property>(i)
         , identifiable_as<owner<property_t_>>()
         , properties()
         {
-            auto process_transfer_ = [this](auto msg, simulation::time_interval ti, std::seed_seq &seed) {
-                (void) seed;
+            auto process_transfer_ = [this](auto msg,
+                                            simulation::time_interval ti,
+                                            std::seed_seq &seed) {
+                (void)seed;
                 if((*this).identifier == msg->transferor) {
                     // this process is duplicated several times for every
                     // inherited owner<p>, as we are reliant on dynamic type
@@ -174,9 +190,12 @@ namespace esl::law {
                         if(!d) {
                             continue;
                         }
+                        //LOG(trace) << typeid(property_t_).name() << " " <<  identifier << " is sending "<< msg->transferred.items << " to " << msg->transferee << std::endl;
                         detail::filter_inserter<
-                            std::is_base_of<economics::fungible, property_t_>::value,
-                            property_t_>().erase(properties, d, q);
+                            std::is_base_of<economics::fungible,
+                                            property_t_>::value,
+                            property_t_>()
+                            .erase(properties, d, q);
                     }
 
                 } else if((*this).identifier == msg->transferee) {
@@ -185,13 +204,15 @@ namespace esl::law {
                         if(!d) {
                             continue;
                         }
+                        //LOG(trace) << typeid(property_t_).name() << " " <<  identifier << " is receiving "<< msg->transferred.items << " to " << msg->transferee << std::endl;
                         detail::filter_inserter<
-                            std::is_base_of<economics::fungible, property_t_>::value,
-                            property_t_>().insert(properties, d, q);
+                            std::is_base_of<economics::fungible,
+                                            property_t_>::value,
+                            property_t_>()
+                            .insert(properties, d, q);
                     }
-                } else {
-                    throw std::logic_error(
-                        "message recipient is not a party to the transfer");
+                }else{
+                    LOG(notice) << "message recipient is not a party to the transfer" << std::endl;
                 }
                 return ti.upper;
             };
@@ -201,14 +222,18 @@ namespace esl::law {
             description_ << typeid(property_t_).name();
             description_ << ")";
 
-            ESL_REGISTER_CALLBACK(interaction::transfer, 0, process_transfer_,  description_.str());
+            ESL_REGISTER_CALLBACK(interaction::transfer,
+                                  50,
+                                  process_transfer_,
+                                  description_.str());
         }
 
 
-        void take(std::shared_ptr<property_t_> property, quantity amount) 
+        void take(std::shared_ptr<property_t_> property, quantity amount)
         {
-           this->properties.insert( property, amount);
-            esl::law::owner<esl::law::property>::inventory.insert(std::make_pair(property ,amount));
+            this->properties.insert(property, amount);
+            esl::law::owner<esl::law::property>::inventory.insert(
+                std::make_pair(property, amount));
         }
 
 
@@ -216,23 +241,22 @@ namespace esl::law {
         void serialize(archive_t &archive, const unsigned int version)
         {
             (void)version;
-            archive &boost::serialization::base_object<owner<esl::law::property>>(*this);
+            archive
+                &boost::serialization::base_object<owner<esl::law::property>>(
+                    *this);
 
-            //archive & BOOST_SERIALIZATION_NVP(properties);
+            // archive & BOOST_SERIALIZATION_NVP(properties);
         }
     };
 }  // namespace esl::law
 
 #ifdef WITH_MPI
 #include <boost/mpi.hpp>
-namespace boost:: mpi {
+namespace boost::mpi {
     template<typename property_t_>
-    struct is_mpi_datatype<esl::law::owner<property_t_>>
-    : mpl::false_
-    {
-
-    };
-}      // namespace boost::mpi
+    struct is_mpi_datatype<esl::law::owner<property_t_>> : mpl::false_
+    { };
+}  // namespace boost::mpi
 #endif  // WITH_MPI
 
 

@@ -146,7 +146,7 @@ namespace esl {
         ///
         /// \param rhs
         /// \return `true` if all digits match the other identity's digits,
-        /// `false` otherwise.
+        ///         `false` otherwise.
         ///
         template<typename identifiable_other_type_>
         [[nodiscard]] constexpr inline bool

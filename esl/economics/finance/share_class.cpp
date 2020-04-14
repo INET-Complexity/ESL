@@ -20,7 +20,7 @@
 ///
 ///             You may obtain instructions to fulfill the attribution requirements in CITATION.cff
 ///
-#include <esl/economics/finance/share.hpp>
+#include <esl/economics/finance/share_class.hpp>
 using namespace esl::economics::finance;
 
 #ifdef WITH_PYTHON

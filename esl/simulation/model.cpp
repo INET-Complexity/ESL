@@ -64,7 +64,9 @@ namespace esl::simulation {
 
         do {
             if (0==(step.lower%print_every)){
+                LOG(trace) << "------------------------------------------------------------" << std::endl;
                 LOG(trace) <<" time " << step << " round " << round_ << std::endl;
+                LOG(trace) << "------------------------------------------------------------" << std::endl;
             }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {

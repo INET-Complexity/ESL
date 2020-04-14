@@ -66,7 +66,8 @@ namespace esl::data {
         ///
         ///
         output(const std::string &name =
-                   ("observable_" + std::to_string(sizeof...(variable_types_))), bool eager = true)
+                   ( "observable_" + std::to_string(sizeof...(variable_types_)))
+                   , bool eager = false)
         : output_base(name)
         , values()
         , eager(eager)

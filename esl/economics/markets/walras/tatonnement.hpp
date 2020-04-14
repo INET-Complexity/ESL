@@ -64,9 +64,15 @@ namespace tatonnement {
         std::vector<adept::adouble> active_x_;  // Active state variables
 
         adept::adouble calc_function_value(const adept::adouble *x);
+        std::vector<adept::adouble> multiroot_function_value(const adept::adouble *x);
+
         double         calc_function_value(const double *x);
+        std::vector<double> multiroot_function_value(const double *x);
 
         double calc_function_value_and_gradient(const double *x, double *dJ_dx) ;
+
+        std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
+
         //friend double extern "C" my_function_value(const gsl_vector *variables, void *params);
         //friend void extern "C" my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
         //friend void extern "C" my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);

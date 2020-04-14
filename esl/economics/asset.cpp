@@ -39,10 +39,13 @@ namespace esl::economics {
         return "asset";
     }
 
-    price asset::value(const accounting::standard &a) const
-    {
-        return price(0ll, a.reporting_currency);
-    }
+    ///
+    /// \param a    Valuation method and accounting rules
+    /// \return
+    //[[nodiscard]] price asset::value(const accounting::standard &a, const quantity &amount) const
+    //{
+    //    return price(0ll, a.reporting_currency);
+    //}
 }
 
 

@@ -35,9 +35,9 @@ SET(CMAKE_CXX_STANDARD              17)
 SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
-IF(NOT ESL_TARGET_NAME)
+#IF(NOT ESL_TARGET_NAME)
     SET(ESL_TARGET_NAME     "esl")
-ENDIF()
+#ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)
     MESSAGE("Build type (CMAKE_BUILD_TYPE) not set, defaulting to Release build.")
@@ -115,11 +115,11 @@ LIST(APPEND Boost_LIBRARIES
         serialization
         unit_test_framework
         thread
-        log
-        log_setup
+        #log
+        #log_setup
         )
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-#ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 ################################################################################
 
@@ -144,12 +144,14 @@ SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og") # -fno-omit-frame-pointer -mno-omit-leaf-fra
 SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
 SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
 
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
-if(COMPILER_SUPPORTS_MARCH_NATIVE)
-    # the second flag displays which target flags are actually selected
-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
-endif()
+IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+    if(COMPILER_SUPPORTS_MARCH_NATIVE)
+        # the second flag displays which target flags are actually selected
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
+ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
 
@@ -301,6 +303,7 @@ SET(SOURCE_FILES
         esl/economics/fungibility.hpp
         esl/economics/tangibility.hpp
 
+        esl/economics/money.cpp
         esl/economics/money.hpp
 
         esl/economics/owner.cpp
@@ -333,8 +336,8 @@ SET(SOURCE_FILES
         esl/economics/finance/security.cpp
         esl/economics/finance/security.hpp
 
-        esl/economics/finance/share.cpp
-        esl/economics/finance/share.hpp
+        esl/economics/finance/share_class.cpp
+        esl/economics/finance/share_class.hpp
 
         esl/mathematics/rational.cpp
         esl/mathematics/rational.hpp
@@ -422,7 +425,7 @@ SET(SOURCE_FILES
         esl/data/severity.hpp
         esl/data/representation.cpp esl/data/representation.hpp esl/economics/finance/debtor.cpp esl/economics/finance/debtor.hpp)
 
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
+ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/economics/markets/order_book/book.cpp esl/economics/markets/order_book/book.hpp esl/economics/money.cpp esl/economics/finance/securities_lending_contract.cpp esl/economics/finance/securities_lending_contract.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
 

@@ -34,21 +34,50 @@
 namespace esl::economics::finance {
 
     ///
-    /// \brief A certificate of ownership of an organization
+    /// \brief  The details of a certificate of (part-) ownership of a company
     ///
-    struct share
+    struct share_class
     {
         friend class boost::serialization::access;
 
+        ///
+        /// \brief
+        ///
         const std::uint8_t rank  = 0;
-        const std::uint8_t votes = 1;
-        const bool dividend      = true;
-        const float preference   = 0.0;  // minimum dividend (if available)
-        const bool cumulative    = false;
-        const bool redeemable    = false;
+
+        ///
+        /// \brief  The number of votes per share, which can be zero.
+        ///         Alternatively, some companies operate by assigning one vote
+        ///         per individual shareholder that meets are certain threshold.
+        ///
+        const uint8_t votes = 1;
+
+        ///
+        /// \brief  If a share has non-zero dividend preference, the holder
+        ///         receives a percentage before of dividends before other
+        ///         shares are allocated a dividend payment
+        ///
+        const /*dividend*/ float preference   = 0.0;
+
+        ///
+        /// \brief  Whether the share is eligible for dividend
+        ///
+        const bool dividend = true;
+
+        ///
+        /// \brief
+        ///
+        const bool cumulative = false;
+
+        ///
+        ///
+        ///
+        const bool redeemable = false;
+
+
         //    bool wind_up;
 
-        constexpr bool operator==(const share &s) const
+        constexpr bool operator==(const share_class &s) const
         {
             return rank == s.rank
                 && votes == s.votes
@@ -58,7 +87,7 @@ namespace esl::economics::finance {
                 && redeemable == s.redeemable;
         }
 
-        constexpr bool operator<(const share &s) const
+        constexpr bool operator<(const share_class &s) const
         {
             return rank < s.rank;
         }
@@ -79,9 +108,9 @@ namespace esl::economics::finance {
 
 namespace std {
     template <>
-    struct hash<esl::economics::finance::share>
+    struct hash<esl::economics::finance::share_class>
     {
-        size_t operator()(const esl::economics::finance::share& s) const
+        size_t operator()(const esl::economics::finance::share_class & s) const
         {
             size_t result_ = 0;
             boost::hash_combine(result_,s.rank);

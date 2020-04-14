@@ -65,13 +65,13 @@ namespace esl::economics {
         ///
         /// \brief  The number of shares outstanding for each share class
         ///
-        std::map<finance::share, std::uint64_t> shares_outstanding;
+        std::map<finance::share_class, std::uint64_t> shares_outstanding;
 
         ///
         /// \brief Stores shareholders for each share class
         ///
         std::unordered_map<identity<shareholder>,
-                           std::map<finance::share, std::uint64_t>>
+                           std::map<finance::share_class, std::uint64_t>>
             shareholders;
 
         ///
@@ -90,7 +90,7 @@ namespace esl::economics {
         /// shares etc \warning: the rounding rule is in favor of the company,
         /// fractional currency dividends are not paid out! \param
         /// unappropriated_profit \return
-        std::map<finance::share, std::tuple<std::uint64_t, price>>
+        std::map<finance::share_class, std::tuple<std::uint64_t, price>>
         compute_dividend_per_share(const price &unappropriated_profit);
 
     protected:

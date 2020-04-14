@@ -48,8 +48,11 @@ namespace esl::economics {
     {
         explicit cash(iso_4217 denomination)
         : /* law::property(esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
-        , */ money(denomination, esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
-        {}
+        , */ law::property(identity<law::property>({typeid(cash).hash_code(), std::hash<iso_4217>()(denomination)}))
+        , money(denomination, identity<law::property>({typeid(cash).hash_code(), std::hash<iso_4217>()(denomination)}))
+        {
+
+        }
 
         virtual ~cash() = default;
 
@@ -65,16 +68,6 @@ namespace esl::economics {
             return this->denomination == c.denomination;
         }
 
-
-        ///
-        /// \param a    valuation method and accounting rules
-        /// \return
-        price value(const accounting::standard &a) const override
-        {
-            (void)a;
-            return price(static_cast<int64_t>(denomination.denominator), denomination);
-        }
-
         ///
         quantity amount(double real = 0.,
                         std::function<uint64_t(double)> rounding_rule =
@@ -84,13 +77,15 @@ namespace esl::economics {
                             denomination.denominator);
         }
 
-        price value(double real = 0.,
+        price price(double real = 0.,
                     std::function<int64_t(double)> rounding_rule =
                         rounding::integer_towards_zero<double, int64_t>)
         {
-            return price(rounding_rule(real * denomination.denominator),
+            return esl::economics::price(rounding_rule(real * denomination.denominator),
                          denomination);
         }
+
+
     };
 }  // namespace esl::economics
 

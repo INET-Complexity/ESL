@@ -30,23 +30,24 @@
 #include <esl/economics/tangibility.hpp>
 #include <esl/law/property.hpp>
 
-
-class agent;
+namespace esl {
+    class agent;
+}
 
 namespace esl::law {
 
     struct contract
     : public virtual property
-    , public economics::infungible
+    , public economics::fungible
     , public economics::intangible
     {
         std::vector<identity<agent>> parties;
 
         explicit contract(std::vector<identity<agent>> parties = {})
         : property()
-        , infungible()
+        , fungible()
         , intangible()
-        , parties(std::move(parties))
+        , parties(parties)
         {
 
         }

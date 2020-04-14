@@ -87,7 +87,9 @@ namespace esl {
         ///
         ///
         entity() : entity(identity<entity_type_>())
-        {}
+        {
+
+        }
 
     public:
         ///
@@ -116,11 +118,13 @@ namespace esl {
         /// \param e    Entity to be copied
         entity(const entity<entity_type_> &e)
         : identifier(e.identifier), children_(e.children_)
-        {}
+        {
+
+        }
 
     public:
 
-        constexpr bool operator==(const entity_type_ &operand) const
+        constexpr bool operator == (const entity_type_ &operand) const
         {
             return this->identifier == operand.identifier;
         }
@@ -133,7 +137,7 @@ namespace esl {
         /// \return
         template<typename other_entity_type_>
         constexpr bool
-        operator==(const entity<other_entity_type_> &operand) const
+        operator == (const entity<other_entity_type_> &operand) const
         {
             return this->identifier == operand.identifier;
         }
@@ -146,7 +150,7 @@ namespace esl {
         /// \return
         template<typename other_entity_type_>
         constexpr bool
-        operator!=(const entity<other_entity_type_> &operand) const
+        operator != (const entity<other_entity_type_> &operand) const
         {
             return this->identifier != operand.identifier;
         }
