@@ -71,12 +71,28 @@ namespace esl::interaction {
         struct callback_t
         {
             callback_handle     function;
+
+//#ifndef ESL_BUILD_RELEASE
+            ///
+            /// \brief  A brief description that specifies what this action does
+            ///
             const std::string   description;
-#ifndef ESL_BUILD_RELEASE
-            const std::string   message; // the message typename
+
+            ///
+            /// \brief  The message typename
+            ///
+            const std::string   message; // typically the message typename
+
+            ///
+            /// \brief  The code file where this callback is defined.
+            ///
             const std::string   file;
+
+            ///
+            /// \brief The line in the file where it is defined
+            ///
             const size_t        line;
-#endif
+//#endif
         };
 
 
@@ -213,7 +229,11 @@ namespace esl::interaction {
                 return callback(converted_, step, seed);
             };
 
-            callback_t callback_ = {function_, description, message, file, line};
+            callback_t callback_ = { function_
+//#ifndef ESL_BUILD_RELEASE
+                                   , description, message, file, line
+//#endif
+                                    };
             iterator_->second.emplace(priority, callback_);
         }
 

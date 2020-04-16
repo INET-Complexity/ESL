@@ -44,7 +44,7 @@ namespace esl::economics::finance {
     ///
     struct security
     : public asset
-    , public fungible
+    , public virtual fungible
     , public law::contract
     {
         isin code;

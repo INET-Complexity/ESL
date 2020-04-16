@@ -253,7 +253,7 @@ namespace tatonnement {
 
 
 
-
+#ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
     ///
     /// compute the function value without differentiation
     /// \param x
@@ -285,6 +285,8 @@ namespace tatonnement {
         stack_.continue_recording();
         return result;
     }
+#endif
+
 
     double
     excess_demand_model::calc_function_value_and_gradient(const double *x,
@@ -296,7 +298,9 @@ namespace tatonnement {
 
         stack_.new_recording();
         adept::adouble J = calc_function_value(&active_x_[0]);
+
         J.set_gradient(1.0);
+
         stack_.compute_adjoint();
         adept::get_gradients(&active_x_[0], active_x_.size(), dJ_dx);
         return adept::value(J);
@@ -389,7 +393,7 @@ namespace tatonnement {
                     break;
                 }
 
-                status = gsl_multiroot_test_residual (solver_->f, 1e-2);
+                status = gsl_multiroot_test_residual (solver_->f, 1e-3);
             } while (status == GSL_CONTINUE && iter < 1000);
 
             //std::vector<double> solution_;

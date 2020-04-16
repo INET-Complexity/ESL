@@ -27,7 +27,6 @@
 
 #include <map>
 #include <tuple>
-#include <unordered_map>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
@@ -75,7 +74,7 @@ namespace esl::economics::finance {
         ///
         /// \brief Datastructure to map share holdings to the issuing company
         ///
-        typedef std::unordered_map<identity<company>,
+        typedef std::map<identity<company>,
                                    std::map<share_class, std::uint64_t>>
             share_holdings;
 

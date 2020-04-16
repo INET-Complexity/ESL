@@ -191,11 +191,17 @@ namespace esl::law {
                             continue;
                         }
                         //LOG(trace) << typeid(property_t_).name() << " " <<  identifier << " is sending "<< msg->transferred.items << " to " << msg->transferee << std::endl;
-                        detail::filter_inserter<
-                            std::is_base_of<economics::fungible,
-                                            property_t_>::value,
-                            property_t_>()
-                            .erase(properties, d, q);
+
+                        try {
+                            detail::filter_inserter<
+                                std::is_base_of<economics::fungible,
+                                                property_t_>::value,
+                                property_t_>()
+                                .erase(properties, d, q);
+                        }catch(economics::accounting::insufficent_inventory e){
+                            LOG(error) << " property owner " << identifier << " " << e.what() << std::endl;
+                            throw e;
+                        }
                     }
 
                 } else if((*this).identifier == msg->transferee) {

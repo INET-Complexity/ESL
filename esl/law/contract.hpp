@@ -38,7 +38,7 @@ namespace esl::law {
 
     struct contract
     : public virtual property
-    , public economics::fungible
+    , public virtual economics::fungible
     , public economics::intangible
     {
         std::vector<identity<agent>> parties;

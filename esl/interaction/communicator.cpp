@@ -120,15 +120,22 @@ namespace esl::interaction {
 
     void communicator::trace_callbacks() const
     {
+
         for(const auto &[k, callbacks_]: callbacks_){
             if(callbacks_.empty()){
                 continue;
             }
-
+//#ifdef ESL_BUILD_RELEASE
+  //          LOG(trace) << "priority " << callbacks_.begin()->first << std::endl;
+    //        for(const auto &[p, f]: callbacks_){
+      //          LOG(trace) << "\t[" << int(p) << "] " << f.function.target_type().name() << std::endl;
+        //    }
+///#else
             LOG(trace) << callbacks_.begin()->second.message << std::endl;
             for(const auto &[p, f]: callbacks_){
                 LOG(trace) << "\t[" << int(p) << "] " << f.description << std::endl;
             }
+//#endif
         }
     }
 

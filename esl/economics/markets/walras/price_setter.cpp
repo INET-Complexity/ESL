@@ -135,7 +135,7 @@ namespace esl::economics::markets::walras {
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
-                output_clearing_prices_->put(step.lower, prices_);
+                //output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
             } else { // restore previous prices
                 for(const auto &[k, v]: traded_properties) {
@@ -156,7 +156,7 @@ namespace esl::economics::markets::walras {
 
         for(const auto &p : participants) {
             auto m = this->template create_message<walras::quote_message>(
-                p, step.lower, this->identifier, p, quote_map_);
+                p, step.lower + 1, this->identifier, p, quote_map_);
         }
         state = clearing_market;
 
@@ -288,7 +288,7 @@ namespace esl::economics::markets::walras {
                                  < std::abs(std::get<1>(b));
                       });
             //
-            int64_t error_ = accumulator_;
+             int64_t error_ = accumulator_;
             if(error_ < 0){ // assigned too many
 
                 if(allocations_.size() < -error_){
@@ -300,7 +300,7 @@ namespace esl::economics::markets::walras {
                 }
             }else{
                 //assert(allocations_.size() >= uint64_t(error_));
-                if(allocations_.size() < -error_){
+                if(allocations_.size() < uint64_t(error_)){
                     LOG(notice) << "clearing price beyond rounding error" << std::endl;
                 }
 
@@ -427,7 +427,7 @@ namespace esl::economics::markets::walras {
                         }
                     }
                 }else{ // participant wants to sell/short///////////////////////////////////////////////////////////////////////////
-                    if(long_amount_ > 0) {  // they had long pos
+                    if(long_amount_ > 0 || short_amount_ == 0) {  // they had long pos/had nothing
 
                         if(-v >= long_amount_){// cancel all
                             // 1 cancel long, by transferring stocks back to market agent
@@ -490,7 +490,7 @@ namespace esl::economics::markets::walras {
                         }
                     }else{
                         //extend the short position
-                        auto amount_to_extend = v;
+                        auto amount_to_extend = -v;
 
                         std::map<identity<property>, esl::quantity> basket_;
                         basket_.emplace(property_->identifier, quantity(1,1));

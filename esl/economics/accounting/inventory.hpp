@@ -250,6 +250,9 @@ namespace esl::economics::accounting {
         void erase_from(law::property_map<quantity> &m) const
         {
             for(auto [k, v] : items) {
+                if(v == 0){
+                    continue;
+                }
                 auto i = m.find(k);
                 if(m.end() == i) {
                     LOG(error) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;

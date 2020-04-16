@@ -63,8 +63,13 @@ namespace esl::economics::finance {
                 (void) seed;
                 for(auto &[k, v] : m->proposed){
                     assert(std::holds_alternative<price>(v.type));
-                    auto p = std::make_pair(k, std::get<price>(v.type));
-                    this->prices.insert(std::move(p));
+
+                    auto i = prices.find(k);
+                    if(prices.end() == i){
+                        prices.emplace(k, std::get<price>(v.type));
+                    }else{
+                        i->second.value = std::get<price>(v.type).value;
+                    }
                 }
                 return step.upper;
             };

@@ -60,13 +60,11 @@ namespace esl::simulation {
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
 
-        unsigned int print_every = 1;
+        unsigned int print_every = 100;
 
         do {
             if (0==(step.lower%print_every)){
-                LOG(trace) << "------------------------------------------------------------" << std::endl;
-                LOG(trace) <<" time " << step << " round " << round_ << std::endl;
-                LOG(trace) << "------------------------------------------------------------" << std::endl;
+                std::cout <<" time " << step << " round " << round_ << std::endl;
             }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {

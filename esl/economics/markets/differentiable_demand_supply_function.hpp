@@ -42,6 +42,7 @@ struct differentiable_demand_supply_function
                                   , std::tuple<economics::quote, variable>
                                   > &quotes) const = 0;
 
+#ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
     ///
     /// \brief  Shim to convert from auto-differentiated variables to double
     ///
@@ -68,6 +69,7 @@ struct differentiable_demand_supply_function
         }
         return result_;
     }
+#endif
 
     template<class archive_t>
     void serialize(archive_t &archive, const unsigned int version)

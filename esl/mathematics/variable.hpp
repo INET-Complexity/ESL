@@ -40,7 +40,11 @@ namespace esl {
     template<>
     inline double value(variable value)
     {
+#ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
         return value.value();
+#else
+        return value;
+#endif
     }
 
 }  // namespace esl
