@@ -138,19 +138,21 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Og -DESL_DEBUG") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og -DESL_DEBUG") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
 
-SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
-SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
+SET(CMAKE_C_FLAGS_RELEASE "-g -O3 -DESL_RELEASE")
+SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DESL_RELEASE")
 
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
-    include(CheckCXXCompilerFlag)
+    INCLUDE(CheckCXXCompilerFlag)
     CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
-    if(COMPILER_SUPPORTS_MARCH_NATIVE)
+    IF(COMPILER_SUPPORTS_MARCH_NATIVE)
         # the second flag displays which target flags are actually selected
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    endif()
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    ENDIF()
+ELSE()
+
 ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
@@ -423,9 +425,26 @@ SET(SOURCE_FILES
 
         esl/data/severity.cpp
         esl/data/severity.hpp
-        esl/data/representation.cpp esl/data/representation.hpp esl/economics/finance/debtor.cpp esl/economics/finance/debtor.hpp)
+        esl/data/representation.cpp
+        esl/data/representation.hpp
 
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/economics/markets/order_book/book.cpp esl/economics/markets/order_book/book.hpp esl/economics/money.cpp esl/economics/finance/securities_lending_contract.cpp esl/economics/finance/securities_lending_contract.hpp)
+        esl/economics/finance/debtor.cpp
+        esl/economics/finance/debtor.hpp
+
+        esl/data/null_streambuf.hpp
+        esl/data/null_ostream.hpp
+        esl/data/channel.cpp
+        esl/data/channel.hpp
+
+        #esl/economics/markets/order_book/book.cpp
+        #esl/economics/markets/order_book/book.hpp
+
+        esl/economics/money.cpp
+        esl/economics/finance/securities_lending_contract.cpp
+        esl/economics/finance/securities_lending_contract.hpp
+        )
+
+ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
 
