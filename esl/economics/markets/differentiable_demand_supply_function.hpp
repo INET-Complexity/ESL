@@ -31,14 +31,14 @@
 using namespace esl;
 
 struct differentiable_demand_supply_function
-    : public demand_supply_function
+: public demand_supply_function
 {
     virtual ~differentiable_demand_supply_function() = default;
 
 
     
     virtual std::map<identity<law::property>, variable>
-    excess_demand_m(const std::map< identity<law::property>
+    excess_demand(const std::map< identity<law::property>
                                   , std::tuple<economics::quote, variable>
                                   > &quotes) const = 0;
 
@@ -46,26 +46,25 @@ struct differentiable_demand_supply_function
     ///
     /// \brief  Shim to convert from auto-differentiated variables to double
     ///
-    virtual std::map<identity<law::property>, double> excess_demand_m(
-        const std::map<identity<law::property>,
-                       std::tuple<economics::quote, double>> &quotes)
+    /// \param quotes
+    /// \return
+    virtual std::map<identity<law::property>, double> excess_demand(
+        const std::map<identity<law::property>, std::tuple<economics::quote, double> > &quotes)
         const override
     {
 
         std::map<identity<law::property>,
                  std::tuple<economics::quote, variable>> quotes_;
         for(auto [k, v]: quotes) {
-            quotes_.insert({ k
-                           , std::make_tuple( std::get<0>(v)
-                                            , esl::variable(std::get<1>(v)))
-                           });
+            auto differential_ =std::make_tuple(std::get<0>(v),variable(std::get<1>(v)));
+            quotes_.emplace(k, differential_);
         }
 
-        std::map<identity<law::property>, variable> intermediate_ = excess_demand_m(quotes_);
+        std::map<identity<law::property>, variable> intermediate_ = excess_demand(quotes_);
 
         std::map<identity<law::property>, double> result_;
         for(auto [k,v]: intermediate_) {
-            result_.insert({k, v.value()});
+            result_.emplace(k, adept::value(v));
         }
         return result_;
     }

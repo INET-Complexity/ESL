@@ -225,7 +225,7 @@ namespace tatonnement {
         std::map<esl::identity<esl::law::property>, adept::adouble> terms_map;
         for(const auto &f : excess_demand_functions_) {
             //LOG(trace) << "f->excess_demand_m(quote_scalars_) " << f << std::endl;
-            auto demand_per_property_ = f->excess_demand_m(quote_scalars_);
+            auto demand_per_property_ = f->excess_demand(quote_scalars_);
             //LOG(trace) << demand_per_property_ << std::endl;
             for(auto [k, v]: demand_per_property_) {
                 if(terms_map.find(k) == terms_map.end()){
@@ -248,12 +248,6 @@ namespace tatonnement {
             assert(terms_map.end() != terms_map.find(k));
             result_.push_back(terms_map.find(k)->second);
         }
-
-        for(auto &v: result_){
-            std::cout << adept::value(v) << std::endl;
-        }
-
-        LOG(notice) << "clearing errors " << result_ << std::endl;
         return result_;
     }
 
@@ -404,7 +398,7 @@ namespace tatonnement {
             //std::cout << solution_ << std::endl;
            // printf ("status = %s\n", gsl_strerror (status));
 
-            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
             if(status == GSL_SUCCESS) {
                 std::map<esl::identity<esl::law::property>, double> result_;
                 for(size_t i = 0; i < active_x_.size(); ++i) {
@@ -436,7 +430,7 @@ namespace tatonnement {
             LOG(error)  << "minimizer failed after " << iter
                         << " iterations: " << gsl_strerror(status) << std::endl;
         }else{
-////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
             /*const double initial_step_size       = 1.0e-5;
             const double line_search_tolerance   = 1.0e-5;
             const double converged_gradient_norm = 1.0e-4;

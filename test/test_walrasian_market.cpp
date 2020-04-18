@@ -82,7 +82,7 @@ struct test_trader_order
 
     }
 
-    std::map<esl::identity<esl::law::property>, esl::variable> excess_demand_m(
+    std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(
     const std::map<esl::identity<esl::law::property>,
                    std::tuple<esl::economics::quote, esl::variable>> &quotes)
     const  override

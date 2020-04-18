@@ -58,14 +58,11 @@ namespace esl {
 struct demand_supply_function
 {
     virtual ~demand_supply_function() = default;
-
     ///
     /// \param quotes
     /// \return
-    virtual std::map < esl::identity<esl::law::property>, double> excess_demand_m(
-        const std::map< esl::identity<esl::law::property>
-                      , std::tuple<esl::economics::quote, double>
-                      > &quotes) const = 0;
+    virtual std::map < esl::identity<esl::law::property>, double>
+    excess_demand(const std::map<esl::identity<esl::law::property>, std::tuple<esl::economics::quote, double>> &quotes) const = 0;
 
     ///
     /// \tparam archive_t
