@@ -48,20 +48,17 @@ namespace esl::data {
         std::ostream &stream;
 
         ///
-        const std::string &format;
         const char *function_name;
         const char *source_file;
         const unsigned int line;
 
         constexpr channel(severity level,
                           std::ostream &stream,
-                          const std::string &format,
                           const char *function_name = nullptr,
                           const char *source_file   = nullptr,
                           unsigned int line         = 0)
         : level(level)
         , stream(stream)
-        , format(format)
         , function_name(function_name)
         , source_file(source_file)
         , line(line)
@@ -71,7 +68,7 @@ namespace esl::data {
         channel &operator<<(output_t &&value)
         {
             std::vector<std::ostream *> os = {&stream};
-#ifndef ESL_RELEASE
+#if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             os.push_back(&std::cout);
 #endif
             for(auto o : os) {
@@ -98,7 +95,7 @@ namespace esl::data {
         static channel &endl(channel &stream)
         {
             stream << std::endl;
-#ifndef ESL_RELEASE
+#if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             std::cout << std::endl;
 #endif
             return stream;
@@ -112,7 +109,7 @@ namespace esl::data {
         channel &operator<<(line_end_t manipulator)
         {
             manipulator(stream);
-#ifndef ESL_RELEASE
+#if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             manipulator(std::cout);
 #endif
             return *this;

@@ -27,12 +27,10 @@
 
 #include <unordered_map>
 #include <unordered_set>
-
 #include <map>
 
 #include <esl/law/property.hpp>
-
-
+#include <esl/economics/money.hpp>
 
 
 namespace esl::law {
@@ -74,6 +72,54 @@ namespace esl::law {
                            value_t_,
                            property_collection_hash<property>,
                            property_collection_equality<property>>;
+
+
+
+    ///
+    /// \brief This is a quick hack to format properties better.
+    ///         TODO consider making property_map<quantity> a proper class
+    ///
+    /// \tparam value_t_
+    /// \tparam allocator_
+    /// \param stream
+    /// \param associative
+    /// \return
+    template<typename value_t_, typename allocator_>
+    constexpr std::ostream &
+    operator<<(std::ostream &stream,
+               const std::unordered_map<std::shared_ptr<property>,
+                   value_t_,
+                   property_collection_hash<property>,
+                   property_collection_equality<property>,
+                   allocator_> &associative)
+    {
+        stream << '{';
+        if(!associative.empty()) {
+            auto b = associative.begin();
+
+            std::shared_ptr<economics::money> m_ = std::dynamic_pointer_cast<economics::money>(b->first);
+            if(!m_){
+                stream << b->first->name()   << ": " << (b->second);
+            }else{
+                stream << m_->price(b->second );
+            }
+            std::advance(b, 1);
+            for(auto i =  b; i != associative.end(); ++i) {
+                std::shared_ptr<economics::money> m = std::dynamic_pointer_cast<economics::money>(i->first);
+                if(!m_){
+                    stream << ", " << i->first->name()   << ": " << (i->second);
+                }else{
+                    stream << ", " << m_->price(b->second );
+                }
+            }
+        }
+        stream << '}';
+        return stream;
+    }
+
+
+
+
 
 
     template<typename property_t_>

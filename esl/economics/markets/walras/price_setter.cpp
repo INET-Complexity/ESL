@@ -125,6 +125,7 @@ namespace esl::economics::markets::walras {
             if(!orders_.empty()) {
                 // there is at least one order so we clear the market
                 auto scalars_ = clear_market(orders_, step);
+
                 std::vector<price> prices_;
                 for(auto &[k, v]: traded_properties){
                     (void)v;
@@ -135,7 +136,7 @@ namespace esl::economics::markets::walras {
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
-                //output_clearing_prices_->put(step.lower, prices_);
+                output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
             } else { // restore previous prices
                 for(const auto &[k, v]: traded_properties) {
@@ -153,6 +154,8 @@ namespace esl::economics::markets::walras {
                 ++sequence_;
             }
         }
+
+        //LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
 
         for(const auto &p : participants) {
             auto m = this->template create_message<walras::quote_message>(
@@ -186,7 +189,7 @@ namespace esl::economics::markets::walras {
             (void)key;
             model_.excess_demand_functions_.push_back(function_);
         }
-        auto result1_ = model_.do_compute();
+        auto result1_ = model_.compute_clearing_quotes();
 
         // if finding a price failed, return previous price vector
         if(!result1_.has_value()) {
@@ -230,7 +233,6 @@ namespace esl::economics::markets::walras {
                     }
                 }, q.type);
         }
-
 
         ////////////////////////////////////////////////////////////////////////
         // recompute demand for solution
@@ -291,7 +293,7 @@ namespace esl::economics::markets::walras {
              int64_t error_ = accumulator_;
             if(error_ < 0){ // assigned too many
 
-                if(allocations_.size() < -error_){
+                if(allocations_.size() < uint64_t(-error_)){
                     LOG(notice) << "clearing price beyond rounding error" << std::endl;
                 }
 
@@ -326,6 +328,12 @@ namespace esl::economics::markets::walras {
 
 
         for(const auto &[property_, data_]: traded_properties) {
+            // if no agents expressed interest, transfers_ might be empty
+            if(transfers_.end() == transfers_.find(*property_)){
+                continue;
+            }
+
+
             for(auto &[p, v]: transfers_.find(*property_)->second){
                 if(v == 0){
                     continue;
@@ -429,7 +437,7 @@ namespace esl::economics::markets::walras {
                 }else{ // participant wants to sell/short///////////////////////////////////////////////////////////////////////////
                     if(long_amount_ > 0 || short_amount_ == 0) {  // they had long pos/had nothing
 
-                        if(-v >= long_amount_){// cancel all
+                        if(uint64_t(-v) >= long_amount_){// cancel all
                             // 1 cancel long, by transferring stocks back to market agent
                             auto r = receive_.find(p);
                             if(receive_.end() == r){

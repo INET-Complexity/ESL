@@ -63,16 +63,16 @@ namespace tatonnement {
         adept::Stack stack_;                    // Adept stack object
         std::vector<adept::adouble> active_x_;  // Active state variables
 
-        adept::adouble calc_function_value(const adept::adouble *x);
+        //adept::adouble calc_function_value(const adept::adouble *x);
         std::vector<adept::adouble> multiroot_function_value(const adept::adouble *x);
 
 #ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
-        double         calc_function_value(const double *x);
+        //double         calc_function_value(const double *x);
 
         std::vector<double> multiroot_function_value(const double *x);
 #endif
 
-        double calc_function_value_and_gradient(const double *x, double *dJ_dx) ;
+        //double calc_function_value_and_gradient(const double *x, double *dJ_dx) ;
 
         std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
 
@@ -81,7 +81,8 @@ namespace tatonnement {
         //friend void extern "C" my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
 
     public:
-        std::optional<std::map<esl::identity<esl::law::property>, double>> do_compute();
+        std::optional<std::map<esl::identity<esl::law::property>, double>>
+        compute_clearing_quotes();
     };  // model
 }  // namespace tatonnement
 

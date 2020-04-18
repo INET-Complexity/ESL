@@ -62,6 +62,8 @@ namespace esl::economics {
     std::map<finance::share_class, std::tuple<std::uint64_t, price>>
     company::compute_dividend_per_share(const price &unappropriated_profit)
     {
+        // in the default implementation, the company does not pay out of it
+        // did not have any excess income in the previous period
         if(double(unappropriated_profit) <= 0) {
             return {};
         }

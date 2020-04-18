@@ -198,7 +198,7 @@ namespace esl::law {
                                                 property_t_>::value,
                                 property_t_>()
                                 .erase(properties, d, q);
-                        }catch(economics::accounting::insufficent_inventory e){
+                        }catch(economics::accounting::insufficent_inventory &e){
                             LOG(error) << " property owner " << identifier << " " << e.what() << std::endl;
                             throw e;
                         }

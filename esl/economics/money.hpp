@@ -27,6 +27,9 @@
 
 #include <esl/economics/asset.hpp>
 #include <esl/economics/fungibility.hpp>
+#include <esl/algorithms.hpp>
+#include <esl/quantity.hpp>
+#include <esl/economics/price.hpp>
 
 
 namespace esl::economics {
@@ -38,7 +41,6 @@ namespace esl::economics {
     struct money
     : public asset
     , public fungible
-
     {
         iso_4217 denomination;
 
@@ -47,7 +49,9 @@ namespace esl::economics {
         , asset(i)
         , fungible()
         , denomination(denomination)
-        {}
+        {
+
+        }
 
         virtual ~money() = default;
 
@@ -66,6 +70,28 @@ namespace esl::economics {
         constexpr inline bool operator != (const money &m) const
         {
             return !(*this == m);
+        }
+
+        ///
+        quantity amount(double real = 0.,
+                        std::function<uint64_t(double)> rounding_rule =
+                        rounding::integer_towards_zero<double, uint64_t>)
+        {
+            return quantity(rounding_rule(real * denomination.denominator),
+                            denomination.denominator);
+        }
+
+        esl::economics::price price(const quantity &q)
+        {
+            return esl::economics::price(int64_t (q.amount * q.basis), denomination);
+        }
+
+        esl::economics::price price(double real = 0.,
+                    std::function<int64_t(double)> rounding_rule =
+                    rounding::integer_towards_zero<double, int64_t>)
+        {
+            return esl::economics::price(rounding_rule(real * denomination.denominator),
+                                         denomination);
         }
 
     };

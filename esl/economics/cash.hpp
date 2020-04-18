@@ -25,11 +25,10 @@
 #ifndef ESL_CASH_HPP
 #define ESL_CASH_HPP
 
-#include <esl/algorithms.hpp>
-#include <esl/economics/iso_4217.hpp>
 #include <esl/economics/money.hpp>
 #include <esl/economics/tangibility.hpp>
-#include <esl/quantity.hpp>
+
+
 
 namespace esl::economics {
     namespace detail {
@@ -67,24 +66,6 @@ namespace esl::economics {
         {
             return this->denomination == c.denomination;
         }
-
-        ///
-        quantity amount(double real = 0.,
-                        std::function<uint64_t(double)> rounding_rule =
-                            rounding::integer_towards_zero<double, uint64_t>)
-        {
-            return quantity(rounding_rule(real * denomination.denominator),
-                            denomination.denominator);
-        }
-
-        price price(double real = 0.,
-                    std::function<int64_t(double)> rounding_rule =
-                        rounding::integer_towards_zero<double, int64_t>)
-        {
-            return esl::economics::price(rounding_rule(real * denomination.denominator),
-                         denomination);
-        }
-
 
     };
 }  // namespace esl::economics

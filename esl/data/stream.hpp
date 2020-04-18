@@ -44,7 +44,6 @@ namespace esl::data {
         {
             return stream_;
         }
-
     };
 
     class terminal

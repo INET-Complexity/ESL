@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(variable_constructor)
 
         edmodel_.excess_demand_functions_.push_back(dm);
 */
-        edmodel_.do_compute();
+        edmodel_.compute_clearing_quotes();
     }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

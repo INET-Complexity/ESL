@@ -37,16 +37,23 @@ namespace esl::economics::finance {
     : public loan
     {
     public:
-        std::map<identity<property>, esl::quantity> basket;
+        std::map<identity<property>, quantity> basket;
 
-        securities_lending_contract(identity<agent> lender, identity<agent> borrower, std::map<identity<property>, esl::quantity> basket = {})
+        securities_lending_contract( identity<agent> lender
+                                   , identity<agent> borrower
+                                   , std::map<identity<property>, quantity> basket = {})
         : loan(lender, borrower)
         , basket(basket)
         {
 
         }
 
-
+        [[nodiscard]] std::string name() const override
+        {
+            std::stringstream stream_;
+            stream_ << "securities lending contract " << identifier;
+            return stream_.str();
+        }
     };
 
 }//namespace esl::economics::finance

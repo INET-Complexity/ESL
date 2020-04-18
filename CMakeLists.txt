@@ -138,17 +138,21 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og -DESL_DEBUG") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og -DESL_DEBUG") # -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage")
 
-SET(CMAKE_C_FLAGS_RELEASE "-g -O3 -DESL_RELEASE")
-SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DESL_RELEASE")
+SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
+SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
+
+
+
+
 
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     INCLUDE(CheckCXXCompilerFlag)
     CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+    ADD_DEFINITIONS(-DESL_RELEASE)
     IF(COMPILER_SUPPORTS_MARCH_NATIVE)
-        # the second flag displays which target flags are actually selected
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     ENDIF()
 ELSE()
@@ -158,7 +162,9 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
 
-ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
+#ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
+#ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
+#ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
 #ADD_DEFINITIONS(-DADEPT_NO_AUTOMATIC_DIFFERENTIATION)
 
@@ -442,11 +448,17 @@ SET(SOURCE_FILES
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
-        )
+        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp)
 
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
+ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+    TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
+endif()
 
 
 IF(WIN32)

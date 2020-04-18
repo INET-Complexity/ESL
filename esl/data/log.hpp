@@ -38,28 +38,17 @@
 
 
 namespace esl::data {
-
-
-
     ///
     /// \brief  A logger is an output that collects human readable messages,
     ///         stored as strings, which are tagged with the message
-    ///         priority. The messages can contain formatting strings
-    ///         (provided by the {fmt} library) that can interpolate
-    ///         a small number of predefined variables.
+    ///         priority.
     ///
     /// \details    The named variables are:
     /// -#  {severity}          The message severity
     /// -#  {simulation_time}   The time point in the simulation
     /// -#  {message}           The message text
     /// -#  {timestamp}
-    template<
-//#if defined(ESL_RELEASE)
-//        severity filter_ = warning
-//#else
-        severity filter_ = trace
-//#endif
-        >
+    template<severity filter_>
     class log
     : public output_base
     {
@@ -68,12 +57,42 @@ namespace esl::data {
         null_ostream null_;
 
     public:
-        const std::string format;
+        ///
+        /// \brief
+        ///
+        virtual void apply_formatting(channel &channel_
+                              , severity level
+                              , const char *source_file = nullptr
+                              , unsigned int line         = 0 )
+        {
+            if(source_file) {
+                std::stringstream library_root_;
+                library_root_
+                    << "esl"
+                    << char(std::filesystem::path::preferred_separator);
+                const std::string root_ = library_root_.str();
 
-        log(const std::string &name, const std::string format = "({severity}) ")
-        : output_base(name, {data::stream(buffer_),
-                             data::terminal(data::terminal::type::out)})
-        , format(format)
+                auto source_file_ = std::string(source_file);
+
+                size_t common_part_ = source_file_.rfind(root_);
+                if(std::string::npos == common_part_) {
+                    common_part_ = 1 + source_file_.rfind(
+                        char(std::filesystem::path::preferred_separator));
+                    if(std::string::npos == common_part_) {
+                        common_part_ = 0;
+                    }
+                }else{
+                    common_part_ += root_.size();
+                }
+                channel_ << '(' << level << ", " << &source_file[common_part_]
+                         << '[' << line << ']' << ')' << ' ';
+            }else{
+                channel_ << '(' << level << ')' << ' ';
+            }
+        }
+
+        explicit log(const std::string &name)
+        : output_base(name, {std::make_shared<stream>(buffer_),   std::make_shared<terminal>(terminal::type::out)})
         {
 
         }
@@ -99,39 +118,17 @@ namespace esl::data {
                               unsigned int line         = 0)
         {
             if(level_ < filter_) {
-                return channel(level_, null_, format, function_name,
+                return channel(level_, null_, function_name,
                                source_file, line);
             }
             auto channel_ = channel(level_,
                                     buffer_,
-                                    format,
                                     function_name,
                                     source_file,
                                     line);
-            if(source_file) {
-                std::stringstream library_root_;
-                library_root_
-                    << "esl"
-                    << char(std::filesystem::path::preferred_separator);
-                const std::string root_ = library_root_.str();
 
-                auto source_file_ = std::string(source_file);
+            apply_formatting(channel_, level_, source_file, line);
 
-                size_t common_part_ = source_file_.rfind(root_);
-                if(std::string::npos == common_part_) {
-                    common_part_ = 1 + source_file_.rfind(
-                            char(std::filesystem::path::preferred_separator));
-                    if(std::string::npos == common_part_) {
-                        common_part_ = 0;
-                    }
-                }else{
-                    common_part_ += root_.size();
-                }
-                channel_ << '(' << level_ << ", " << &source_file[common_part_]
-                        << '[' << line << ']' << ')' << ' ';
-            }else{
-                channel_ << '(' << level_ << ')' << ' ';
-            }
             return channel_;
         }
 
@@ -146,17 +143,17 @@ namespace esl::data {
         constexpr channel get(severity level)
         {
             if(level < filter_) {
-                return channel(level, null_, format);
+                return channel(level, null_);
             }
-            return channel(level, buffer_, format);
+            return channel(level, buffer_);
         }
     };
-
 
     ///
     /// \brief  The main log is always instantiated.
     ///
-    static data::log main_log("main");
+    static data::log<(ESL_RELEASE > 0?warning:trace) >main_log("main");
+
 }  // namespace esl::data
 
 #define LOG(level) \

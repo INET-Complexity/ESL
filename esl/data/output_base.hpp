@@ -25,16 +25,15 @@
 #ifndef ESL_DATA_OUTPUT_BASE_HPP
 #define ESL_DATA_OUTPUT_BASE_HPP
 
-
-#include <esl/data/representation.hpp>
-
 #include <string>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
 
+#include <esl/data/representation.hpp>
 #include <esl/data/stream.hpp>
 
 
@@ -54,9 +53,13 @@ namespace esl::data {
         std::string name;
 
         ///
-        /// \brief  The output is ultimately saved to one or more ostreams
+        /// \brief  The output is ultimately saved to one or more ostreams.
+        /// TODO    If the output_base is moved between compute nodes, the state
+        ///         of these streams is guaranteed to be maintained.
         ///
-        std::vector<stream> streams;
+        /// \details
+        ///
+        std::vector<std::shared_ptr<stream>> streams;
 
         ///
         /// \param value    The variable to write to the output streams.
@@ -64,7 +67,7 @@ namespace esl::data {
         void write(output_t_ value)
         {
             for(auto &s: streams){
-                s << value << std::endl;
+                (*s) << value << std::endl;
             }
         }
 
@@ -73,10 +76,14 @@ namespace esl::data {
         ///
         /// \param name
         explicit output_base( const std::string &name = "output_base"
-                            , stream out = terminal(terminal::out) );
+                            , std::shared_ptr<stream> out = std::make_shared<terminal>(terminal::out));
 
-        explicit output_base(const std::string &name, std::vector<stream> streams);
-
+        ///
+        /// \param name
+        /// \param streams  A collection of streams that this output has
+        ///                 exclusive access to.
+        explicit output_base( const std::string &name
+                            , std::vector<std::shared_ptr<stream>> streams);
 
         ///
         /// \brief  Recovering the output values and storage is handled by the

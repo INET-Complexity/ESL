@@ -81,13 +81,18 @@ namespace esl::simulation::parameter {
         /// \param sample
         /// \param start
         /// \param end
-        parametrization( std::uint64_t sample   = 0
-                       , time_point start       = time_point()
-                       , time_point end         = time_point() + 1)
+        parametrization( std::uint64_t sample       = 0
+                       , time_point start           = time_point()
+                       , time_point end             = time_point() + 1
+
+                       , std::uint64_t verbosity    = 1 )
         {
             values["sample"] = std::make_shared<constant<std::uint64_t>>(sample);
             values["start"]  = std::make_shared<constant<time_point>>(start);
             values["end"]    = std::make_shared<constant<time_point>>(end);
+
+
+            values["verbosity"] = std::make_shared<constant<std::uint64_t>>(verbosity);
         }
 
 

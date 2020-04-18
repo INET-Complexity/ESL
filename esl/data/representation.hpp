@@ -36,6 +36,7 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
+#include <forward_list>
 
 namespace std {
     ///
@@ -191,6 +192,27 @@ namespace std {
         stream << ']';
         return stream;
     }
+    ///
+    ///  \brief  Formats std::forward_list, a single linked list data structure.
+    ///
+    /// \tparam element_t_
+    /// \param os
+    /// \param vector
+    /// \return
+    template<typename element_t_>
+    constexpr std::ostream &operator<<(std::ostream &stream,
+                                       const std::forward_list<element_t_> &list)
+    {
+        stream << '[';
+        if(!list.empty()) {
+            stream << *list.cbegin();
+            for(auto i = list.cbegin() + 1; i != list.end(); ++i) {
+                stream << " -> " << *i;
+            }
+        }
+        stream << ']';
+        return stream;
+    }
 
     ///
     ///  \brief  Formats std::list, a doubly linked list data structure.
@@ -208,6 +230,29 @@ namespace std {
             stream << *list.cbegin();
             for(auto i = list.cbegin() + 1; i != list.end(); ++i) {
                 stream << " <-> " << *i;
+            }
+        }
+        stream << ']';
+        return stream;
+    }
+
+    ///
+    ///  \brief  Formats std::array, a fixed-size array
+    ///
+    /// \tparam element_t_
+    /// \param os
+    /// \param vector
+    /// \return
+    template<typename element_t_, size_t elements_>
+    constexpr std::ostream &operator<<(std::ostream &stream,
+                                       const std::array<element_t_, elements_> &
+                                           array)
+    {
+        stream << '[';
+        if(0 < elements_) {
+            stream << *array.cbegin();
+            for(size_t i = 1; i < elements_; ++i) {
+                stream << ", " << array[i];
             }
         }
         stream << ']';

@@ -24,10 +24,11 @@
 ///
 #include <esl/data/output_base.hpp>
 
+
 namespace esl::data {
 
     output_base::output_base( const std::string &name
-                            , stream out)
+                            , std::shared_ptr<stream> out)
     : name(name)
     , streams()
     {
@@ -36,7 +37,7 @@ namespace esl::data {
 
 
     output_base::output_base( const std::string &name
-        , std::vector<stream> streams)
+        , std::vector<std::shared_ptr<stream>> streams)
         : name(name)
         , streams(streams)
     {
@@ -45,6 +46,7 @@ namespace esl::data {
 }
 
 #ifdef WITH_PYTHON
+
 #include <boost/python.hpp>
 
 using namespace boost::python;

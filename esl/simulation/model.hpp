@@ -44,6 +44,11 @@ namespace esl::simulation {
     protected:
         computation::environment &environment_;
 
+        ///
+        /// \brief  Tracks the total number of rounds that the model has run.
+        ///
+        unsigned int rounds_;
+
     public:
         ///
         /// \brief
@@ -81,6 +86,12 @@ namespace esl::simulation {
         /// \brief  The agents in the model.
         ///
         agent_collection agents;
+
+        ///
+        /// \brief  How often the environment should print status updates
+        ///         during computation. If 0
+        ///
+        std::uint64_t verbosity;
 
         ///
         /// \brief

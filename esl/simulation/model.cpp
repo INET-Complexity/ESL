@@ -24,6 +24,9 @@
 ///
 #include <esl/simulation/model.hpp>
 
+#include <chrono>
+using std::chrono::high_resolution_clock;
+
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/data/log.hpp>
@@ -31,14 +34,16 @@
 
 namespace esl::simulation {
     model::model( computation::environment &e
-                , const parameter::parametrization &parameters)
-    : environment_(e)
-    , parameters(parameters)
-    , start(parameters.get<time_point>("start"))
-    , end(parameters.get<time_point>("end"))
-    , time(parameters.get<time_point>("start"))
-    , sample(parameters.get<std::uint64_t>("sample"))
-    , agents(e)
+        , const parameter::parametrization &parameters)
+        : environment_(e)
+        , rounds_(0)
+        , parameters(parameters)
+        , start(parameters.get<time_point>("start"))
+        , end(parameters.get<time_point>("end"))
+        , time(parameters.get<time_point>("start"))
+        , sample(parameters.get<std::uint64_t>("sample"))
+        , agents(e)
+        , verbosity(parameters.get<std::uint64_t>("verbosity"))
     {
 
     }
@@ -52,50 +57,57 @@ namespace esl::simulation {
     {
         assert(!step.empty());
 
+        auto timer_start_ = high_resolution_clock::now();
         environment_.before_step();
 
-        // to be set externally
-        std::uint64_t sample_ = this->parameters.get<std::uint64_t>("sample");
-
+        // read the sample index from the parameter collection
         auto first_event_   = step.upper;
         unsigned int round_ = 0;
-
-        unsigned int print_every = 100;
-
         do {
-            if (0==(step.lower%print_every)){
-                std::cout <<" time " << step << " round " << round_ << std::endl;
+
+            if (verbosity > 0 && 0 == (rounds_ % verbosity)){
+                LOG(notice) << "time " << step << " round " << round_ << std::endl;
             }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
+                auto agent_start_ = high_resolution_clock::now();
+
                 // The seed is deterministic in the following variables:
                 std::seed_seq seed_ {
                     std::uint64_t(std::hash<identity<agent>>()(i)),
                     std::uint64_t(step.lower),
                     std::uint64_t(round_),
-                    sample_
+                    sample
                 };
 
-                //try {
+                try {
                     first_event_ = std::min(first_event_,
                                             a->process_messages(step, seed_));
                     first_event_ = std::min(first_event_, a->act(step, seed_));
-                /*} catch(const std::runtime_error &e) {
+                } catch(const std::runtime_error &e) {
 
-                    std::cout <<  e.what() << std::endl;
+                    LOG(error) << e.what() << std::endl;
                     throw e;
                 } catch(const std::exception &e) {
-                    std::cout <<  e.what() << std::endl;
+                    LOG(error) <<  e.what() << std::endl;
                     throw e;
                 } catch(...) {
                     throw;
-                }*/
+                }
+
                 a->inbox.clear();
+
+                auto agent_end_ = high_resolution_clock::now() - agent_start_;
             }
             environment_.send_messages(*this);
             ++round_;
+            ++rounds_;
         } while(step.lower >= first_event_);
+
         environment_.after_step(*this);
+        auto total_ = high_resolution_clock::now() - timer_start_;
+
+        LOG(notice) << "step " << step << " took " << (double(total_.count()) / 1e+9) <<  " seconds" << std::endl;
 
         return first_event_;
     }
@@ -125,6 +137,5 @@ BOOST_PYTHON_MODULE(model)
         .def_readwrite("time", &model::time)
         ;
 }
-
 
 #endif

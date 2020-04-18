@@ -27,10 +27,11 @@
 
 #include <ostream>
 
+
 namespace esl::data {
 
     enum severity
-        : std::uint8_t
+    : std::uint8_t
     {
         trace   =   0,
         notice  =   1,
@@ -40,7 +41,7 @@ namespace esl::data {
         //model
     };
 
-    inline constexpr std::ostream &operator<<(std::ostream &stream, severity level)
+    inline constexpr std::ostream &operator << (std::ostream &stream, severity level)
     {
         switch(level) {
         case trace:
@@ -55,8 +56,7 @@ namespace esl::data {
         return stream;
     }
 }
-
+// this injects the severity enum into the global namespace, for use in logging.
 using namespace esl::data;
-
 
 #endif  // ME_SEVERITY_HPP
