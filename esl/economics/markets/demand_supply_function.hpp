@@ -50,31 +50,34 @@ namespace esl {
 #include <esl/law/property.hpp>
 
 
-
-///
-/// \brief                  excess demand (demand-supply) function dynamic in
-/// the number of properties.
-///
-struct demand_supply_function
-{
-    virtual ~demand_supply_function() = default;
+namespace esl::economics::markets {
     ///
-    /// \param quotes
-    /// \return
-    virtual std::map < esl::identity<esl::law::property>, double>
-    excess_demand(const std::map<esl::identity<esl::law::property>, std::tuple<esl::economics::quote, double>> &quotes) const = 0;
-
+    /// \brief                  excess demand (demand-supply) function dynamic in the number of properties.
     ///
-    /// \tparam archive_t
-    /// \param archive
-    /// \param version
-    template<class archive_t>
-    void serialize(archive_t &archive, const unsigned int version)
+    struct demand_supply_function
     {
-        (void)archive;
-        (void)version;
-    }
-};
+        virtual ~demand_supply_function() = default;
+        ///
+        /// \param quotes
+        /// \return
+        virtual std::map<esl::identity<esl::law::property>, double>
+        excess_demand(const std::map<esl::identity<esl::law::property>,
+                                     std::tuple<esl::economics::quote, double>>
+                          &quotes) const = 0;
+
+        ///
+        /// \tparam archive_t
+        /// \param archive
+        /// \param version
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)archive;
+            (void)version;
+        }
+    };
+
+}//
 
 #ifdef WITH_MPI
 namespace boost::mpi {

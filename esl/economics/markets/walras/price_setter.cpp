@@ -567,6 +567,7 @@ namespace esl::economics::markets::walras {
                             s = ss;
                         }
 
+
                         auto sale_ =
                             usd_->amount((amount_to_extend
                                           * double(std::get<price>(data_.type)))
@@ -588,6 +589,11 @@ namespace esl::economics::markets::walras {
             }
 
             for(auto &[k, v] : i_r.items) {
+                if(0 == v.amount){
+                    i_r.items.erase(k);
+                    continue;
+                }
+
                 auto property_ = offset_->second.items.find(k);
                 if(offset_->second.items.end() == property_) {
                     continue;
@@ -605,6 +611,9 @@ namespace esl::economics::markets::walras {
                     i_r.items.erase(k);
                     offset_->second.items.erase(property_);
                 }
+            }
+            if(i_r.items.empty()){
+                receive_.erase(p);
             }
         }
 

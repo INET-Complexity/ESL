@@ -1,6 +1,6 @@
 /// \file   price_setter.hpp
 ///
-/// \brief
+/// \brief  Walrasian price-setter agent
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2018-07-19
