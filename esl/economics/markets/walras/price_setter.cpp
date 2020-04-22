@@ -619,8 +619,8 @@ namespace esl::economics::markets::walras {
 
 
         for(auto [p, i] : send_) {
-            LOG(trace) << "market sends to " << p << " items " << i
-                       << std::endl;
+            //LOG(trace) << "market sends to " << p << " items " << i
+            //           << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, identifier, p,
                 reinterpret_identity_cast<law::owner<law::property>>(
@@ -629,8 +629,8 @@ namespace esl::economics::markets::walras {
         }
 
         for(auto [p, i] : receive_) {
-            LOG(trace) << "market receives from " << p << " items " << i
-                       << std::endl;
+            //LOG(trace) << "market receives from " << p << " items " << i
+            //           << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, p, identifier,
                 reinterpret_identity_cast<law::owner<law::property>>(p),
