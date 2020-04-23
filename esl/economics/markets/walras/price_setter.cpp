@@ -62,6 +62,7 @@ namespace esl::economics::markets::walras {
 
     : agent(i), market(i, traded_properties), state(sending_quotes)
     {
+
         output_clearing_prices_ =
             create_output<std::vector<price>>("clearing_prices");
 
@@ -342,7 +343,14 @@ namespace esl::economics::markets::walras {
                         //  purchase
                         accounting::inventory_filter<law::property> purchased_;
                         purchased_.insert(property_, quantity(uint64_t(v), 1));
-                        send_.emplace(p, purchased_);
+
+                        if(send_.end() != send_.find(p)){
+                            send_.find(p)->second.insert(purchased_);
+                        }else{
+                            send_.emplace(p, purchased_);
+                        }
+
+
                         //  payment
                         // they should send cash for the purchase
                         auto j = receive_.find(p);
@@ -365,6 +373,7 @@ namespace esl::economics::markets::walras {
                             std::map<identity<property>, esl::quantity> basket_;
                             basket_.emplace(property_->identifier,
                                             quantity(1, 1));
+
                             auto short_contract_ = std::make_shared<
                                 finance::securities_lending_contract>(
                                 identifier, p, basket_);
@@ -590,7 +599,7 @@ namespace esl::economics::markets::walras {
 
             for(auto &[k, v] : i_r.items) {
                 if(0 == v.amount){
-                    i_r.items.erase(k);
+                    //i_r.items.erase(k);
                     continue;
                 }
 
@@ -606,9 +615,9 @@ namespace esl::economics::markets::walras {
                 } else if(v < property_->second) {  // sending more than recv
                     auto diff_        = property_->second - v;
                     property_->second = diff_;
-                    i_r.items.erase(k);
+                    //i_r.items.erase(k);
                 } else {  // sending and rececing same amount
-                    i_r.items.erase(k);
+                    //i_r.items.erase(k);
                     offset_->second.items.erase(property_);
                 }
             }

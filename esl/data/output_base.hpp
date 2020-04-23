@@ -70,19 +70,24 @@ namespace esl::data {
                 (*s) << value << std::endl;
             }
         }
+        ///
+        /// \brief
+        ///
+        /// \param name
+        explicit output_base( const std::string &name = "output_base");// = std::make_shared<terminal>(terminal::out));
 
         ///
         /// \brief
         ///
         /// \param name
-        explicit output_base( const std::string &name = "output_base"
-                            , std::shared_ptr<stream> out = std::make_shared<terminal>(terminal::out));
+        output_base( const std::string &name// = "output_base"
+                            , std::shared_ptr<stream> out);// = std::make_shared<terminal>(terminal::out));
 
         ///
         /// \param name
         /// \param streams  A collection of streams that this output has
         ///                 exclusive access to.
-        explicit output_base( const std::string &name
+        output_base( const std::string &name
                             , std::vector<std::shared_ptr<stream>> streams);
 
         ///

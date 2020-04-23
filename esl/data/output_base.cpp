@@ -27,10 +27,15 @@
 
 namespace esl::data {
 
-    output_base::output_base( const std::string &name
-                            , std::shared_ptr<stream> out)
+    output_base::output_base(const std::string &name)
     : name(name)
     , streams()
+    {
+    }
+
+    output_base::output_base( const std::string &name
+                            , std::shared_ptr<stream> out)
+    : output_base(name)
     {
         streams.push_back(out);
     }

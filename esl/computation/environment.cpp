@@ -24,6 +24,8 @@
 ///
 #include <sstream>
 #include <fstream>
+#include <chrono>
+using std::chrono::high_resolution_clock;
 
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -84,6 +86,7 @@ namespace esl::computation {
 
     void environment::after_run(simulation::model &simulation)
     {
+        return;
         for(auto &[i, a] : simulation.agents.local_agents_) {
             for(auto o: a->outputs){
                 std::stringstream filename_;
@@ -167,7 +170,9 @@ namespace esl::computation {
     /// \param simulation
     void environment::run(simulation::model &simulation)
     {
+        auto timer_start_run_ = high_resolution_clock::now();
         simulation.initialize();
+        auto timer_initialization_ = high_resolution_clock::now() - timer_start_run_;
 
         simulation::time_interval step_ = {simulation.start, simulation.end};
         do {
@@ -178,9 +183,18 @@ namespace esl::computation {
             step_.lower = simulation.step(step_);
         } while(step_.lower < simulation.end);
 
+        auto timer_simulation_ = high_resolution_clock::now() - timer_initialization_;
+
         simulation.terminate();
 
+        auto timer_termination_ = high_resolution_clock::now() - timer_simulation_;
+
         after_run(simulation);
+
+        auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
+
+        auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
+        std::cout << "running simulation in " << typeid(decltype(*this)).name() << " took " << (double(timer_total_.count()) / 1e+9) <<  " seconds" << std::endl;
     }
 }// namespace esl::computation
 

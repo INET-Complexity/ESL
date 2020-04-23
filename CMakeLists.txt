@@ -138,7 +138,7 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage")
 
 SET(CMAKE_C_FLAGS_RELEASE "-g -O3")

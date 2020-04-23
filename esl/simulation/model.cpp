@@ -66,7 +66,7 @@ namespace esl::simulation {
         do {
 
             if (verbosity > 0 && 0 == (rounds_ % verbosity)){
-                LOG(notice) << "time " << step << " round " << round_ << "------------" << std::endl;
+                std::cout /*LOG(trace)*/ << "time " << step << " round " << round_  << std::endl;
             }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
