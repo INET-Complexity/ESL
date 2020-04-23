@@ -183,7 +183,9 @@ namespace esl::computation {
             step_.lower = simulation.step(step_);
         } while(step_.lower < simulation.end);
 
-        auto timer_simulation_ = high_resolution_clock::now() - timer_initialization_;
+        auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
+        std::cout << "simulation took " << (double(timer_simulation_.count()) / 1e+9) <<  " seconds" << std::endl;
+
 
         simulation.terminate();
 

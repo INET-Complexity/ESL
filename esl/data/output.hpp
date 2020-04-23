@@ -57,20 +57,15 @@ namespace esl::data {
         std::vector<std::tuple<simulation::time_point, variable_types_...>> values;
 
     public:
-        ///
-        /// \brief  Whether the output
-        ///
-        bool eager;
 
         ///
         ///
         ///
         output(const std::string &name =
                    ( "observable_" + std::to_string(sizeof...(variable_types_)))
-                   , bool eager = false)
-        : output_base(name)
+                   , bool buffered = false)
+        : output_base(name, buffered)
         , values()
-        , eager(eager)
         {
 
         }
@@ -82,7 +77,7 @@ namespace esl::data {
         {
             values.emplace_back(
                 std::tuple<simulation::time_point, variable_types_...>(t, v...));
-            if(eager){
+            if(!buffered){
                 (write(v), ...);
             }
         }

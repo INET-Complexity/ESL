@@ -27,10 +27,12 @@
 
 namespace esl::data {
 
-    output_base::output_base(const std::string &name)
+    output_base::output_base(const std::string &name, bool buffered)
     : name(name)
     , streams()
+    , buffered(buffered)
     {
+
     }
 
     output_base::output_base( const std::string &name
@@ -41,10 +43,10 @@ namespace esl::data {
     }
 
 
-    output_base::output_base( const std::string &name
+    output_base::output_base(const std::string &name
         , std::vector<std::shared_ptr<stream>> streams)
-        : name(name)
-        , streams(streams)
+    : name(name)
+    , streams(streams)
     {
         
     }

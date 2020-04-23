@@ -62,6 +62,12 @@ namespace esl::data {
         std::vector<std::shared_ptr<stream>> streams;
 
         ///
+        /// \brief  Whether the output values are to be buffered until the end
+        ///         of the simulation or whether they should be written immediately
+        ///
+        bool buffered;
+
+        ///
         /// \param value    The variable to write to the output streams.
         template<typename output_t_>
         void write(output_t_ value)
@@ -70,18 +76,19 @@ namespace esl::data {
                 (*s) << value << std::endl;
             }
         }
-        ///
-        /// \brief
-        ///
-        /// \param name
-        explicit output_base( const std::string &name = "output_base");// = std::make_shared<terminal>(terminal::out));
 
         ///
         /// \brief
         ///
         /// \param name
-        output_base( const std::string &name// = "output_base"
-                            , std::shared_ptr<stream> out);// = std::make_shared<terminal>(terminal::out));
+        explicit output_base( const std::string &name = "output_base"
+                            , bool buffered = true);
+
+        ///
+        /// \brief
+        ///
+        /// \param name
+        output_base( const std::string &name , std::shared_ptr<stream> out);
 
         ///
         /// \param name
