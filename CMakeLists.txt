@@ -138,15 +138,11 @@ MESSAGE("----------------------------------------")
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Og ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
 
 SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
 SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
-
-
-
-
 
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     INCLUDE(CheckCXXCompilerFlag)
@@ -162,17 +158,18 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
 
-#ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
-#ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
+ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
+ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
 #ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
+# Used to benchmark improvements using automatic differentiation
 #ADD_DEFINITIONS(-DADEPT_NO_AUTOMATIC_DIFFERENTIATION)
 
 
 
 ENABLE_TESTING()
 ################################################################################
-list(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${EIGEN3_INCLUDE_DIR})
+list(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
 IF(WITH_MPI)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_PATH})
 ENDIF()

@@ -72,12 +72,10 @@ namespace esl::economics {
 
         double fraction_ = double(unappropriated_profit) / total_shares();
 
-        for(const auto &[s, q] : shares_outstanding) {
+        for(const auto &[s, q]: shares_outstanding) {
             if(s.dividend) {
                 result_.insert(make_pair(
-                    s, std::make_tuple(q,
-                                              cash(primary_jurisdiction.tender)
-                                                  .price(fraction_ * q))));
+                    s, std::make_tuple(q,cash(primary_jurisdiction.tender).price(fraction_ * q))));
             }
         }
 

@@ -95,22 +95,29 @@ namespace esl::economics::markets::tatonnement {
         adept::adouble calc_function_value(const adept::adouble *x);
         std::vector<adept::adouble> multiroot_function_value(const adept::adouble *x);
 
-#ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
+#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
         double         calc_function_value(const double *x);
         std::vector<double> multiroot_function_value(const double *x);
-#endif
+
 
         double minimizer_function_value_and_gradient(const double *x, double *dJ_dx) ;
         std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
+#endif
 
         friend double ::my_function_value(const gsl_vector *variables, void *params);
+
+
+#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
         friend void ::my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
         friend void ::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
+#endif
 
         friend int ::multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
+
+#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
         friend int ::multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
         friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
-
+#endif
 
     public:
         std::optional<std::map<identity<law::property>, double>>

@@ -39,7 +39,10 @@
 namespace esl::economics::markets::walras {
 
     ///
-    /// \brief  "price setter" is the market mechanism that implements demand and supply matching via numerical method
+    /// \brief  walras::price_setter is a market organizer that tries
+    ///         to find clearing prices satisfying Walras' law. For this purpose
+    ///         several numerical methods are implemented, some of which benefit
+    ///         form automatic differentiation.
     ///
     struct price_setter
     : market

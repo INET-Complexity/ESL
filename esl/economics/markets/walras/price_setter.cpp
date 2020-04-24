@@ -25,6 +25,7 @@
 #include <esl/economics/markets/walras/price_setter.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <type_traits>
 using std::map;

@@ -78,7 +78,7 @@ namespace esl::data {
             values.emplace_back(
                 std::tuple<simulation::time_point, variable_types_...>(t, v...));
             if(!buffered){
-                (write(v), ...);
+                (write(std::make_tuple(t, v)), ...);
             }
         }
 
