@@ -122,7 +122,7 @@ namespace esl::economics::markets::walras {
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
-                LOG(error) << prices_ << std::endl;
+                //LOG(error) << prices_ << std::endl;
                 output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
             } else {  // restore previous prices
@@ -192,8 +192,10 @@ namespace esl::economics::markets::walras {
         }
 
         auto result_ = result1_.value();
+
         ////////////////////////////////////////////////////////////////////////
         // round to the nearest valid price
+
         std::map<identity<law::property>, std::tuple<quote, double>> solution_;
         for(auto [p, q] : this->traded_properties) {
             double scalar_ = result_.find(p->identifier)->second;
@@ -309,7 +311,7 @@ namespace esl::economics::markets::walras {
                 pair_.first->second.emplace(p, a);
             }
         }
-        LOG(trace) << transfers_ << std::endl;
+        //LOG(trace) << transfers_ << std::endl;
 
         //
         //  send_: we, the market maker, send items to participant
@@ -320,14 +322,11 @@ namespace esl::economics::markets::walras {
 
         auto usd_ = std::make_shared<cash>(currencies::USD);
 
-
         for(const auto &[property_, data_] : traded_properties) {
             // if no agents expressed interest, transfers_ might be empty
             if(transfers_.end() == transfers_.find(*property_)) {
                 continue;
             }
-
-
             for(auto &[p, v] : transfers_.find(*property_)->second) {
                 if(v == 0) {
                     continue;
@@ -351,7 +350,6 @@ namespace esl::economics::markets::walras {
                         }else{
                             send_.emplace(p, purchased_);
                         }
-
 
                         //  payment
                         // they should send cash for the purchase

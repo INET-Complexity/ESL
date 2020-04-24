@@ -84,14 +84,11 @@ namespace esl::simulation::parameter {
         parametrization( std::uint64_t sample       = 0
                        , time_point start           = time_point()
                        , time_point end             = time_point() + 1
-
-                       , std::uint64_t verbosity    = ESL_RELEASE ? 1000 : 1 )
+                       , std::uint64_t verbosity    = ESL_RELEASE ? 1000 : 100 )
         {
             values["sample"] = std::make_shared<constant<std::uint64_t>>(sample);
             values["start"]  = std::make_shared<constant<time_point>>(start);
             values["end"]    = std::make_shared<constant<time_point>>(end);
-
-
             values["verbosity"] = std::make_shared<constant<std::uint64_t>>(verbosity);
         }
 
@@ -103,14 +100,11 @@ namespace esl::simulation::parameter {
             if(values.end() == iterator_) {
                 throw std::exception();
             }
-
             auto value_ =
                 std::dynamic_pointer_cast<constant<parameter_t_>>(iterator_->second);
-
-            if(!value_) {
-                throw std::exception();
+            if(!value_){
+                throw std::out_of_range("parametrization[" + name + "]");
             }
-
             return value_->choice;
         }
 

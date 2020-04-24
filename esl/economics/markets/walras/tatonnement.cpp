@@ -274,16 +274,13 @@ namespace esl::economics::markets::tatonnement {
          for(unsigned int i = 0; i < active_.size(); ++i) {
              active_[i] = x[i];
          }
-
-         LOG(error) << "evaluating at " <<  active_ << std::endl;
-
+         LOG(trace) << "evaluating at " <<  active_ << std::endl;
          auto intermediate_ = multiroot_function_value(&active_[0]);
          std::vector<double> result;
          for(auto v: intermediate_){
              result.push_back(adept::value(v));
          }
-
-         LOG(error) << "\tyielded " <<  result << std::endl ;
+         LOG(trace) << "\tyielded " <<  result << std::endl ;
          stack_.continue_recording();
          return result;
      }
@@ -340,27 +337,23 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
-        bool debug_market_excess_ = true;
-        if(debug_market_excess_){
+        const bool debug_market_excess = false;
+        if(debug_market_excess){
             for(auto e: range(0.01, 2.00, 0.01)){
                 size_t n = std::max(size_t(1), quotes_.size());
                 std::vector<double> variables_;
                 for(size_t i = 0; i < n; ++i) {
                     variables_.push_back(e);
                 }
-
                 ////////////////////////////////////////////////////////////////
-
                 std::map<identity<law::property>,
                     std::tuple<quote, double>>
                     quote_scalars_;
-
                 size_t i = 0;
                 for(auto [k, v]: quotes_) {
                     quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
                     ++i;
                 }
-
                 std::map<identity<law::property>, double> terms_map;
                 for(const auto &f : excess_demand_functions_) {
                     auto demand_per_property_ = f->excess_demand(quote_scalars_);
@@ -372,20 +365,15 @@ namespace esl::economics::markets::tatonnement {
                         }
                     }
                 }
-
                 std::vector<double> result_;
-
                 for(auto [k, v]: quotes_){
                     assert(terms_map.end() != terms_map.find(k));
                     result_.push_back(terms_map.find(k)->second);
                 }
-
                 ////////////////////////////////////////////////////////////////
-
                 LOG(warning) << e << ", " << result_[0] << std::endl;
             }
         }
-
 
         for(auto method_ : methods){
             active_.clear();
@@ -416,28 +404,27 @@ namespace esl::economics::markets::tatonnement {
 
                 const gsl_multiroot_fdfsolver_type *solver_t_ = gsl_multiroot_fdfsolver_hybridsj;
                 gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc (solver_t_, active_.size());
-
                 gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
 
                 int status = GSL_CONTINUE;
                 for(size_t iter = 0; iter < 1000 && GSL_CONTINUE == status; ++iter){
                     status = gsl_multiroot_fdfsolver_iterate (solver_);
+                    if(GSL_SUCCESS != status){
 
-                    status = gsl_multiroot_test_residual (solver_->f, 1e-2);
+                    }
+                    status = gsl_multiroot_test_residual (solver_->f, 1e-4);
                 }
 
                 if(GSL_SUCCESS == status){
-
                     std::map<esl::identity<esl::law::property>, double> result_;
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        result_.insert({mapping_index_[i], scalar_});
+                        result_.emplace(mapping_index_[i], scalar_);
                     }
-
                     gsl_multiroot_fdfsolver_free(solver_);
                     gsl_vector_free(variables_);
-                    return result_;
+                     return result_;
                 }
 
                 LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;

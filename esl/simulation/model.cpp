@@ -106,9 +106,7 @@ namespace esl::simulation {
 
         environment_.after_step(*this);
         auto total_ = high_resolution_clock::now() - timer_start_;
-
-        LOG(notice) << "step " << step << " took " << (double(total_.count()) / 1e+9) <<  " seconds" << std::endl;
-
+        //LOG(notice) << "step " << step << " took " << (double(total_.count()) / 1e+9) <<  " seconds" << std::endl;
         return first_event_;
     }
 

@@ -142,6 +142,23 @@ namespace esl {
         return std::exp(result_log_ / elements_);
     }
 
+    template<typename iterator_t_>
+    auto growth_rate(iterator_t_ begin, iterator_t_ end)
+    -> decltype(typename std::iterator_traits<iterator_t_>::value_type()
+                + 0)
+    {
+        auto result_log_ =
+            typename std::iterator_traits<iterator_t_>::value_type(0);
+        size_t elements_ = 1;
+        auto next_ = std::next(begin);
+
+        for(begin; next_ != end; ++begin, ++next_, ++elements_) {
+            result_log_ += std::log(*next_) - std::log(*begin);
+        }
+
+        return std::exp(result_log_ / elements_) - 1;
+    }
+
     template<typename container_t_>
     auto geometric_mean(const container_t_ &c)
     {

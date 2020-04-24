@@ -34,7 +34,9 @@ using std::chrono::high_resolution_clock;
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/simulation/model.hpp>
+using esl::simulation::time_point;
 #include <esl/economics/price.hpp>
+using esl::economics::price;
 #include <esl/data/serialization.hpp>
 #include <esl/data/log.hpp>
 
@@ -87,24 +89,33 @@ namespace esl::computation {
     void environment::after_run(simulation::model &simulation)
     {
         return;
-        for(auto &[i, a] : simulation.agents.local_agents_) {
-            for(auto o: a->outputs){
+        for(auto &[i, a]: simulation.agents.local_agents_) {
+            for(const auto &o: a->outputs){
                 std::stringstream filename_;
                 filename_ << i << '_' << o.first << ".xml";
-                std::cout << filename_.str() << std::endl;
-                std::ofstream ofs(filename_.str());
-                LOG(trace) << "output " << o.second->name << " to file " << filename_.str() << std::endl;
-                assert(ofs.good());
-                boost::archive::xml_oarchive oa(ofs);
-                oa.template register_type<esl::economics::price>();
-                oa.template register_type<std::vector<esl::economics::price>>();
-                typedef std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>> tuple_time_point_price_vector;
-                oa.template register_type<tuple_time_point_price_vector>();
-                typedef std::vector<std::tuple<esl::simulation::time_point, std::vector<esl::economics::price>>> time_series_price_vector;
-                oa.template register_type<time_series_price_vector>();
-                oa.template register_type<esl::data::output<std::vector<esl::economics::price>>>();
-                esl::data::output_base *ptr = o.second.get();
-                oa << boost::serialization::make_nvp("output", ptr);
+                
+                try{
+                    std::ofstream ofs(filename_.str());
+                    LOG(trace) << "output " << o.second->name << " to file "
+                               << filename_.str() << std::endl;
+                    assert(ofs.good());
+                    boost::archive::xml_oarchive oa(ofs);
+                    oa.template register_type<price>();
+                    oa.template register_type<std::vector<price>>();
+                    typedef std::tuple<time_point, std::vector<price>>
+                        tuple_time_point_price_vector;
+                    oa.template register_type<tuple_time_point_price_vector>();
+                    typedef std::vector<
+                        std::tuple<time_point, std::vector<price>>>
+                        time_series_price_vector;
+                    oa.template register_type<time_series_price_vector>();
+                    oa.template register_type<
+                        data::output<std::vector<price>>>();
+                    data::output_base *ptr = o.second.get();
+                    oa << boost::serialization::make_nvp("output", ptr);
+                }catch(std::exception &e){
+                    
+                }
             }
         }
     }
@@ -117,21 +128,19 @@ namespace esl::computation {
         size_t messages_ = 0;
         for(auto &[i, a] : simulation.agents.local_agents_) {
             (void) i;
-            for(auto m : a->outbox) {
+            for(const auto &m: a->outbox) {
                 auto iterator_ =
                     simulation.agents.local_agents_.find(m->recipient);
                 if(simulation.agents.local_agents_.end() == iterator_) {
                     // not in distributed mode, and no local agent matching
                     throw std::logic_error("agent not found "
-                                           + m->recipient.representation());
+                                          + m->recipient.representation());
                 }
-
                 iterator_->second->inbox.insert({m->received, m});
                 ++messages_;
             }
             a->outbox.clear();
         }
-
         return messages_;
     }
 
@@ -150,7 +159,6 @@ namespace esl::computation {
         // agent_action_time_.erase(a);
         deactivated_.push_back(a);
     }
-
 
     ///
     /// \param simulation
@@ -184,19 +192,17 @@ namespace esl::computation {
         } while(step_.lower < simulation.end);
 
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
-        std::cout << "simulation took " << (double(timer_simulation_.count()) / 1e+9) <<  " seconds" << std::endl;
-
-
+        LOG(trace) << "simulation took "
+                   << (double(timer_simulation_.count()) / 1e+9)
+                   <<  " seconds" << std::endl;
         simulation.terminate();
-
         auto timer_termination_ = high_resolution_clock::now() - timer_simulation_;
-
         after_run(simulation);
-
         auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
-
         auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
-        std::cout << "running simulation in " << typeid(decltype(*this)).name() << " took " << (double(timer_total_.count()) / 1e+9) <<  " seconds" << std::endl;
+        LOG(trace) << "running simulation in " << typeid(decltype(*this)).name()
+                   << " took " << (double(timer_total_.count()) / 1e+9)
+                   << " seconds" << std::endl;
     }
 }// namespace esl::computation
 
