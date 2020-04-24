@@ -122,6 +122,7 @@ namespace esl::economics::markets::walras {
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
+                LOG(error) << prices_ << std::endl;
                 output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
             } else {  // restore previous prices
@@ -179,6 +180,7 @@ namespace esl::economics::markets::walras {
         }
         auto result1_ = model_.compute_clearing_quotes();
 
+
         // if finding a price failed, return previous price vector
         if(!result1_.has_value()) {
             std::map<identity<law::property>, double> previous_;
@@ -190,7 +192,6 @@ namespace esl::economics::markets::walras {
         }
 
         auto result_ = result1_.value();
-
         ////////////////////////////////////////////////////////////////////////
         // round to the nearest valid price
         std::map<identity<law::property>, std::tuple<quote, double>> solution_;
