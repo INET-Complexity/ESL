@@ -233,10 +233,18 @@ namespace esl::economics::markets::walras {
             orders_;
         for(const auto &[participant, order_] : orders) {
             auto demand_ = order_->excess_demand(solution_);
+
+
             for(const auto &[property_, excess_] : demand_) {
-                if(excess_ == 0) {
+                if(excess_ >= -0.00001 && excess_ <= 0.00001) {
                     continue;
                 }
+
+                auto excess_units_ = (excess_ / ( double(std::get<0>(solution_.find(property_)->second))
+                                                  * double(std::get<1>(solution_.find(property_)->second))
+                ));
+
+
                 auto i = volumes_.find(property_);
                 if(volumes_.end() == i) {
                     i = volumes_.emplace(property_, 0).first;
@@ -244,17 +252,26 @@ namespace esl::economics::markets::walras {
                         property_, map<identity<agent>,
                                std::tuple<double, quantity, quantity>>());
                 }
-                i->second += abs(excess_);
+                i->second += abs(excess_units_);
 
                 auto j = order_->supply.find(property_);
                 if(order_->supply.end() == j){
                     orders_.find(property_)->second.emplace(
                         participant,
-                        std::make_tuple(excess_, quantity(0, 1), quantity(0, 1)));
+                        std::make_tuple(excess_units_, quantity(0, 1), quantity(0, 1)));
+
+                    LOG(trace) << participant << " demands {" << property_ << ", "
+                               << excess_units_ << "}" << std::endl;
                 }else{
+                    excess_units_ -= double(std::get<0>(j->second));
+                    excess_units_ += double(std::get<1>(j->second));
+
+                    LOG(trace) << participant << " demands {" << property_ << ", "
+                               << excess_units_ << "}" << std::endl;
+
                     orders_.find(property_)->second.emplace(
                         participant,
-                        std::make_tuple(excess_, std::get<0>(j->second),
+                        std::make_tuple(excess_units_, std::get<0>(j->second),
                                         std::get<1>(j->second)));
                 }
             }
@@ -269,12 +286,12 @@ namespace esl::economics::markets::walras {
             if(volumes_.end() == i) {
                 continue;  // no agents expressed interest
             }
-            int64_t accumulator_ = 0;
+            int64_t error_ = 0;
             std::vector<std::tuple<identity<agent>, int64_t>> allocations_;
             for(auto [p, a] : orders_.find(property_->identifier)->second) {
-                auto alloc_ = int64_t(std::get<0>(a));  // / i->second);
-                accumulator_ += alloc_;
-                allocations_.push_back(std::make_tuple(p, alloc_));
+                auto alloc_ = int64_t(std::get<0>(a));
+                error_ += alloc_;
+                allocations_.emplace_back(p, alloc_);
             }
             std::sort(allocations_.begin(), allocations_.end(),
                       [](const auto &a, const auto &b) -> bool {
@@ -282,9 +299,7 @@ namespace esl::economics::markets::walras {
                                  < std::abs(std::get<1>(b));
                       });
             //
-            int64_t error_ = accumulator_;
             if(error_ < 0) {  // assigned too many
-
                 if(allocations_.size() < uint64_t(-error_)) {
                     LOG(notice)
                         << "clearing price beyond rounding error" << std::endl;
@@ -311,7 +326,7 @@ namespace esl::economics::markets::walras {
                 pair_.first->second.emplace(p, a);
             }
         }
-        //LOG(trace) << transfers_ << std::endl;
+        LOG(trace) << transfers_ << std::endl;
 
         //
         //  send_: we, the market maker, send items to participant

@@ -104,10 +104,6 @@ extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * param
     assert(model_ && "parameter must be (excess_demand_model *)");
     auto cb_ = model_->multiroot_function_value_and_gradient(x->data, df->data);
 
-    //for(size_t i = 0; i < cb_.size(); ++i){
-    //    gsl_vector_set(f, i, cb_[i]);
-   // }
-
     return GSL_SUCCESS;
 }
 
@@ -232,6 +228,7 @@ namespace esl::economics::markets::tatonnement {
         for(const auto &f : excess_demand_functions_) {
             //LOG(trace) << "f->excess_demand_m(quote_scalars_) " << f << std::endl;
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
+
             //LOG(trace) << demand_per_property_ << std::endl;
             for(auto [k, v]: demand_per_property_) {
                 if(terms_map.find(k) == terms_map.end()){
@@ -274,13 +271,11 @@ namespace esl::economics::markets::tatonnement {
          for(unsigned int i = 0; i < active_.size(); ++i) {
              active_[i] = x[i];
          }
-         LOG(trace) << "evaluating at " <<  active_ << std::endl;
          auto intermediate_ = multiroot_function_value(&active_[0]);
          std::vector<double> result;
-         for(auto v: intermediate_){
+         for(const auto &v: intermediate_){
              result.push_back(adept::value(v));
          }
-         LOG(trace) << "\tyielded " <<  result << std::endl ;
          stack_.continue_recording();
          return result;
      }
@@ -337,7 +332,7 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
-        const bool debug_market_excess = false;
+        constexpr bool debug_market_excess = false;
         if(debug_market_excess){
             for(auto e: range(0.01, 2.00, 0.01)){
                 size_t n = std::max(size_t(1), quotes_.size());
@@ -349,29 +344,33 @@ namespace esl::economics::markets::tatonnement {
                 std::map<identity<law::property>,
                     std::tuple<quote, double>>
                     quote_scalars_;
+                std::map<identity<law::property>,
+                    double>
+                    price_render_;
                 size_t i = 0;
                 for(auto [k, v]: quotes_) {
+                    price_render_.emplace(k, double(v) * variables_[i]);
                     quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
                     ++i;
                 }
-                std::map<identity<law::property>, double> terms_map;
+                std::map<identity<law::property>, std::vector<double>> terms_map;
                 for(const auto &f : excess_demand_functions_) {
                     auto demand_per_property_ = f->excess_demand(quote_scalars_);
                     for(auto [k, v]: demand_per_property_) {
                         if(terms_map.find(k) == terms_map.end()){
-                            terms_map.emplace(k, v);
-                        }else{
-                            (terms_map.find(k)->second) += v;
-                        }
+                            terms_map.emplace(k, std::vector<double>());
+                        }//else{
+                            terms_map.find(k)->second.push_back(v);
+                        //}
                     }
                 }
                 std::vector<double> result_;
                 for(auto [k, v]: quotes_){
-                    assert(terms_map.end() != terms_map.find(k));
-                    result_.push_back(terms_map.find(k)->second);
+                    //assert(terms_map.end() != terms_map.find(k));
+                    //result_.push_back(terms_map.find(k)->second);
                 }
                 ////////////////////////////////////////////////////////////////
-                LOG(warning) << e << ", " << result_[0] << std::endl;
+                //std::cout << price_render_ << ", " << terms_map << std::endl;
             }
         }
 
@@ -408,11 +407,11 @@ namespace esl::economics::markets::tatonnement {
 
                 int status = GSL_CONTINUE;
                 for(size_t iter = 0; iter < 1000 && GSL_CONTINUE == status; ++iter){
-                    status = gsl_multiroot_fdfsolver_iterate (solver_);
+                    status = gsl_multiroot_fdfsolver_iterate(solver_);
                     if(GSL_SUCCESS != status){
 
                     }
-                    status = gsl_multiroot_test_residual (solver_->f, 1e-4);
+                    status = gsl_multiroot_test_residual(solver_->f, 1e-4);
                 }
 
                 if(GSL_SUCCESS == status){
