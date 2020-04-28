@@ -190,9 +190,10 @@ namespace esl::economics::markets::tatonnement {
 
         for(const auto &f : excess_demand_functions_) {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
+
             for(auto [k, v]: demand_per_property_) {
                 if(terms_map.find(k) == terms_map.end()){
-                    terms_map.emplace(k, v);
+                    terms_map.emplace(k,  v);
                 }else{
                     (terms_map.find(k)->second) += v;
                 }

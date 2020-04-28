@@ -242,6 +242,7 @@ namespace esl::economics::markets::walras {
 
                 auto excess_units_ = (excess_ / ( double(std::get<0>(solution_.find(property_)->second))
                                                   * double(std::get<1>(solution_.find(property_)->second))
+
                 ));
 
 
@@ -263,11 +264,12 @@ namespace esl::economics::markets::walras {
                     LOG(trace) << participant << " demands {" << property_ << ", "
                                << excess_units_ << "}" << std::endl;
                 }else{
-                    excess_units_ -= double(std::get<0>(j->second));
-                    excess_units_ += double(std::get<1>(j->second));
+                    //excess_units_ -= double(std::get<0>(j->second));
+                    //excess_units_ += double(std::get<1>(j->second));
 
                     LOG(trace) << participant << " demands {" << property_ << ", "
-                               << excess_units_ << "}" << std::endl;
+                               << std::setprecision(5) << excess_units_
+                               << "}" << std::endl;
 
                     orders_.find(property_)->second.emplace(
                         participant,
