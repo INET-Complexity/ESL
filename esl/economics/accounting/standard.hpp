@@ -98,7 +98,7 @@ namespace esl::economics::accounting {
 
         [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const
         {
-            price result_ = price(0ll, this->reporting_currency);
+            price result_ = price(0ll, reporting_currency);
 
             for(auto &security_: c.basket){
                 auto i = mark_to_market.find(security_.first);

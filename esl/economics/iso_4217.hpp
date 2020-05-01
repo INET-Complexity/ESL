@@ -39,12 +39,12 @@ namespace esl::economics {
     ///
     struct iso_4217
     {
-        const std::array<char, 3> code;
+        std::array<char, 3> code;
 
         ///
         /// \todo: rename to unit
         ///
-        const std::uint64_t denominator;
+        std::uint64_t denominator;
 
         //
         constexpr explicit iso_4217(std::array<char, 3> isocode = {'X', 'X',
@@ -60,13 +60,14 @@ namespace esl::economics {
 
         ~iso_4217() = default;
 
-        //inline iso_4217 &operator = (const iso_4217 &operand)
-        //{
-        //    for(auto i = 0; i < code.size(); ++i) {
-        //        code[i] = operand.code[i];
-        //    }
-        //    return *this;
-        //}
+        /*inline iso_4217 &operator = (const iso_4217 &operand)
+        {
+            for(auto i = 0; i < code.size(); ++i) {
+                code[i] = operand.code[i];
+            }
+            denominator = operand.denominator;
+            return *this;
+        }*/
 
         [[nodiscard]] inline constexpr bool
         operator == (const iso_4217 &operand) const

@@ -82,6 +82,13 @@ namespace esl::economics {
 
         }
 
+        constexpr price(price &&p) noexcept
+        : price(std::move(p.value)
+        , std::move(p.valuation))
+        {
+
+        }
+
         /*price &operator = (const price &p)
         {
             value = p.value;

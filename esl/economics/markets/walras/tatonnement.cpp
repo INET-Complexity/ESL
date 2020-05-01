@@ -426,7 +426,8 @@ namespace esl::economics::markets::tatonnement {
                     gsl_vector_free(variables_);
                      return result_;
                 }
-
+                gsl_multiroot_fdfsolver_free(solver_);
+                gsl_vector_free(variables_);
                 LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
 
 #else
