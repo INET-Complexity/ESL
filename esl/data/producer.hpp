@@ -84,7 +84,6 @@ namespace esl::data {
                 archive >> boost::serialization::make_nvp(key_.c_str(), value_);
                 assert(value_);
             }
-
         }
 
         template<class archive_t>

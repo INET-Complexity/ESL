@@ -56,6 +56,7 @@ namespace esl::economics::finance {
         explicit loan( esl::identity<esl::agent> lender
                      , esl::identity<esl::agent> borrower
                      )
+
         : esl::law::contract({lender, borrower})
         {
 

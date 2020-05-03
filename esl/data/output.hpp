@@ -100,8 +100,6 @@ namespace esl::data {
     };
 }  // namespace esl::data
 
-
-
 #ifdef WITH_MPI
 #include <boost/mpi.hpp>
 namespace boost::mpi {
@@ -113,7 +111,5 @@ namespace boost::mpi {
     };
 }  // namespace boost::mpi
 #endif  // WITH_MPI
-
-
 
 #endif  // ESL_DATA_OUTPUT_HPP

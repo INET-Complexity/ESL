@@ -32,6 +32,7 @@
 #include <esl/economics/finance/stock.hpp>
 #include <esl/economics/markets/quote.hpp>
 #include <esl/economics/money.hpp>
+#include <esl/economics/cash.hpp>
 
 
 namespace esl::economics::accounting {
@@ -82,6 +83,11 @@ namespace esl::economics::accounting {
             return i->second * foreign_;
         }
 
+        [[nodiscard]] price value(const esl::economics::cash &c, const quantity &q) const
+        {
+            return value((const money &)c, q);
+        }
+
         [[nodiscard]] price value(const finance::stock &s, const quantity &q) const
         {
             auto i = mark_to_market.find(s.identifier);
@@ -94,6 +100,11 @@ namespace esl::economics::accounting {
                 / (q.basis * i->second.lot);
 
             return price(value_, std::get<price>(i->second.type).valuation);
+        }
+
+        [[nodiscard]] price value(const finance::loan &l, const quantity &q) const
+        {
+            return price(-1.00 * double(q), reporting_currency);
         }
 
         [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const
@@ -112,24 +123,11 @@ namespace esl::economics::accounting {
                 int64_t value_ = (std::get<price>(i->second.type).value * security_.second.amount * q.amount)
                                  / (q.basis * i->second.lot);
 
-                result_.value += value_;
+                result_.value -= value_;
             }
 
-            return result_;//price(value_, std::get<price>(i->second.type).valuation);
-        }
-
-        /*///
-        /// \brief
-        /// \param a    Any unidentified asset.
-        /// \return     Zero valuation
-        [[nodiscard]] price value(const asset &a) const
-        {
-            (void)a;
-            auto result_ = price(0ll, reporting_currency);
-            LOG(warning) << "unknown asset " << a.identifier
-                         << " was valued at " << result_ << std::endl;
             return result_;
-        }*/
+        }
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

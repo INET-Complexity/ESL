@@ -56,7 +56,7 @@ namespace esl::data {
     protected:
         const type type_;
     public:
-        terminal(type standard = out)
+        explicit terminal(type standard = out)
         :   stream(standard == out ? std::cout : std::cerr)
         ,   type_(standard)
         {
@@ -70,14 +70,13 @@ namespace esl::data {
     {
         std::ofstream file_;
     public:
-        file(const std::string name)
+        explicit file(const std::string& name)
         : stream(file_)
         , file_(name)
         {
 
         }
     };
-
-    }
+}
 
 #endif  // ME_STREAM_HPP

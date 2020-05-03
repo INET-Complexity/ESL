@@ -62,7 +62,9 @@ namespace esl::data {
         , function_name(function_name)
         , source_file(source_file)
         , line(line)
-        { }
+        {
+
+        }
 
         template<typename output_t>
         channel &operator<<(output_t &&value)
@@ -106,7 +108,7 @@ namespace esl::data {
         // type of ostream manipulators such as std::endl
         typedef ostream_t &(*line_end_t)(ostream_t &);
 
-        channel &operator<<(line_end_t manipulator)
+        channel &operator << (line_end_t manipulator)
         {
             manipulator(stream);
 #if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)

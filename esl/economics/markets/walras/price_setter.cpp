@@ -33,6 +33,7 @@ using std::map;
 #include <esl/economics/markets/walras/quote_message.hpp>
 #include <esl/economics/markets/walras/tatonnement.hpp>
 using esl::law::property;
+using esl::economics::finance::securities_lending_contract;
 
 #include <esl/economics/finance/securities_lending_contract.hpp>
 
@@ -76,30 +77,34 @@ namespace esl::economics::markets::walras {
             });
     }
 
-    simulation::time_point price_setter::act(simulation::time_interval step,
-                                             std::seed_seq &seed)
+    ///
+    /// \brief
+    ///
+    /// \param step
+    /// \param seed
+    /// \return
+    simulation::time_point price_setter::act(simulation::time_interval step, std::seed_seq &seed)
     {
         (void)seed;
         simulation::time_point next_ = step.upper;
         std::vector<quote> quotes_;
 
-        if(state == sending_quotes) {
+        if(state == sending_quotes){
             // send out initial quotes and wait for orders,
             // scheduled in the same time step
             next_ = step.lower;
-            for(const auto &[k, v] : traded_properties) {
+            for(const auto &[k, v]: traded_properties) {
                 (void)k;
                 quotes_.push_back(v);
             }
-        } else {
+        }else{
             std::unordered_map<
                 identity<agent>,
                 std::shared_ptr<walras::differentiable_order_message>>
                 orders_;
-            for(const auto &[k, message_] : inbox) {
+            for(const auto &[k, message_]: inbox) {
                 (void)k;
-                if(walras::differentiable_order_message::code
-                   == message_->type) {
+                if(walras::differentiable_order_message::code == message_->type) {
                     auto order_ = std::dynamic_pointer_cast<
                         walras::differentiable_order_message>(message_);
 
@@ -107,17 +112,15 @@ namespace esl::economics::markets::walras {
                         next_ = step.lower;
                         break;
                     }
-
-                    orders_.insert({order_->sender, order_});
+                    orders_.emplace(order_->sender, order_);
                 }
             }
 
             if(!orders_.empty()) {
                 // there is at least one order so we clear the market
                 auto scalars_ = clear_market(orders_, step);
-
                 std::vector<price> prices_;
-                for(auto &[k, v] : traded_properties) {
+                for(auto &[k, v]: traded_properties){
                     (void)v;
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
@@ -125,8 +128,8 @@ namespace esl::economics::markets::walras {
                 //LOG(error) << prices_ << std::endl;
                 output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
-            } else {  // restore previous prices
-                for(const auto &[k, v] : traded_properties) {
+            }else{  // restore previous prices
+                for(const auto &[k, v]: traded_properties){
                     (void)k;
                     quotes_.push_back(v);
                 }
@@ -136,7 +139,7 @@ namespace esl::economics::markets::walras {
         law::property_map<quote> quote_map_;
         {
             size_t sequence_ = 0;
-            for(const auto &[k, v] : traded_properties) {
+            for(const auto &[k, v]: traded_properties) {
                 quote_map_.insert({k, quotes_[sequence_]});
                 ++sequence_;
             }
@@ -151,6 +154,111 @@ namespace esl::economics::markets::walras {
         state = clearing_market;
         return next_;
     }
+
+
+    ///
+    /// \brief  Applies a solution of quotes to the currently stored traded_properties
+    ///
+    /// \param result_
+    /// \param traded_properties
+    /// \return
+    std::map<identity<law::property>, std::tuple<quote, double>> apply_results(
+            std::map<identity<law::property>, double> result_
+            , law::property_map<quote> &traded_properties
+            )
+    {
+        std::map<identity<law::property>, std::tuple<quote, double>> solution_;
+        for(auto [p, q]: traded_properties) {
+            double scalar_ = result_.find(p->identifier)->second;
+            std::tuple<quote, double> part_ = std::make_tuple(q, scalar_);
+            solution_.emplace(p->identifier, part_);
+
+            std::visit(
+                    [&, result_, p = p](auto &quote) {
+                        using type_ = std::decay_t<decltype(quote)>;
+                        if constexpr(std::is_same_v<type_, price>) {
+                            std::get<price>(traded_properties[p].type).value =
+                                    int64_t(quote.value
+                                            * result_.find(p->identifier)->second);
+
+                        } else if constexpr(std::is_same_v<type_, exchange_rate>) {
+                            quote = exchange_rate(
+                                    uint64_t(quote.numerator()
+                                             * result_.find(p->identifier)->second),
+                                    quote.denominator());
+                            traded_properties[p].type = quote;
+                        } else {
+                            static_assert(always_false<type_>::value,
+                                          "non-exhaustive handling of quote types");
+                        }
+                    },
+                    q.type);
+        }
+        return solution_;
+    }
+
+
+    ///
+    /// \brief  Computes the transfers from and to the market agent
+    ///
+    /// \param traded_properties
+    /// \param volumes_
+    /// \param orders_
+    /// \return
+    map<identity<property>, map<identity<agent>, int64_t>> compute_transfers
+        ( const law::property_map<quote> &traded_properties
+        , const map<identity<property>, double> &volumes_
+        , const map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> &orders_
+        )
+    {
+        map<identity<property>, map<identity<agent>, int64_t>> transfers_;
+        for(const auto &[property_, data_]: traded_properties) {
+            auto i = volumes_.find(property_->identifier);
+            if(volumes_.end() == i) {
+                continue;  // no agents expressed interest
+            }
+            int64_t error_ = 0;
+            std::vector<std::tuple<identity<agent>, int64_t>> allocations_;
+            for(auto [p, a]: orders_.find(property_->identifier)->second) {
+                auto alloc_ = int64_t(std::get<0>(a));
+                error_ += alloc_;
+                allocations_.emplace_back(p, alloc_);
+            }
+            std::sort(allocations_.begin(), allocations_.end(),
+                      [](const auto &a, const auto &b) -> bool {
+                          return std::abs(std::get<1>(a))
+                                 < std::abs(std::get<1>(b));
+                      });
+
+            if(error_ < 0){  // assigned too many
+                if(allocations_.size() < uint64_t(-error_)) {
+                    LOG(notice) << "clearing price beyond rounding error" << std::endl;
+                }
+
+                for(size_t ii = 0; ii < uint64_t(-error_); ++ii) {
+                    std::get<1>(allocations_[ii % allocations_.size()]) += 1;
+                }
+            }else{
+                // assert(allocations_.size() >= uint64_t(error_));
+                if(allocations_.size() < uint64_t(error_)) {
+                    LOG(notice) << "clearing price beyond rounding error" << std::endl;
+                }
+
+                for(size_t ii = 0; ii < uint64_t(error_); ++ii) {
+                    std::get<1>(allocations_[ii % allocations_.size()]) -= 1;
+                }
+            }
+            auto pair_ = transfers_.emplace(property_->identifier, map<identity<agent>, int64_t>());
+
+            for(auto [p, a]: allocations_) {
+                pair_.first->second.emplace(p, a);
+            }
+        }
+        LOG(trace) << transfers_ << std::endl;
+        return transfers_;
+    }
+
+
 
     ///
     /// \brief  Clear market using tatonnement. It is assumed the price_setter
@@ -168,7 +276,7 @@ namespace esl::economics::markets::walras {
     {
         law::property_map<quote> old_quotes_ = traded_properties;
         std::map<identity<law::property>, quote> quotes_;
-        for(const auto &[k, v] : traded_properties) {
+        for(const auto &[k, v]: traded_properties) {
             (void)k;
             quotes_.emplace(k->identifier, v);
         }
@@ -180,7 +288,6 @@ namespace esl::economics::markets::walras {
         }
         auto result1_ = model_.compute_clearing_quotes();
 
-
         // if finding a price failed, return previous price vector
         if(!result1_.has_value()) {
             std::map<identity<law::property>, double> previous_;
@@ -191,151 +298,59 @@ namespace esl::economics::markets::walras {
             return previous_;
         }
 
-        auto result_ = result1_.value();
+        auto solution_ = apply_results(result1_.value(), traded_properties);
 
-        ////////////////////////////////////////////////////////////////////////
-        // round to the nearest valid price
-
-        std::map<identity<law::property>, std::tuple<quote, double>> solution_;
-        for(auto [p, q] : this->traded_properties) {
-            double scalar_ = result_.find(p->identifier)->second;
-            std::tuple<quote, double> part_ = std::make_tuple(q, scalar_);
-            solution_.emplace(p->identifier, part_);
-
-            std::visit(
-                [this, result_, p = p](auto &quote) {
-                    using type_ = std::decay_t<decltype(quote)>;
-                    if constexpr(std::is_same_v<type_, price>) {
-                        std::get<price>(traded_properties[p].type).value =
-                            int64_t(quote.value
-                                    * result_.find(p->identifier)->second);
-
-                    } else if constexpr(std::is_same_v<type_, exchange_rate>) {
-                        quote = exchange_rate(
-                            uint64_t(quote.numerator()
-                                     * result_.find(p->identifier)->second),
-                            quote.denominator());
-                        traded_properties[p].type = quote;
-                    } else {
-                        static_assert(always_false<type_>::value,
-                                      "non-exhaustive handling of quote types");
-                    }
-                },
-                q.type);
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // recompute demand for solution
         ////////////////////////////////////////////////////////////////////////
         map<identity<property>, double> volumes_;
-        map<identity<property>,
-            map<identity<agent>, std::tuple<double, quantity, quantity>>>
-            orders_;
+        map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> orders_;
         for(const auto &[participant, order_] : orders) {
             auto demand_ = order_->excess_demand(solution_);
-
-
             for(const auto &[property_, excess_] : demand_) {
                 if(excess_ >= -0.00001 && excess_ <= 0.00001) {
                     continue;
                 }
 
-                auto excess_units_ = (excess_ / ( double(std::get<0>(solution_.find(property_)->second))
-                                                  * double(std::get<1>(solution_.find(property_)->second))
-
-                ));
-
+                auto quote_ = solution_.find(property_)->second;
+                auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
 
                 auto i = volumes_.find(property_);
                 if(volumes_.end() == i) {
                     i = volumes_.emplace(property_, 0).first;
-                    orders_.emplace(
-                        property_, map<identity<agent>,
-                               std::tuple<double, quantity, quantity>>());
+                    orders_.emplace( property_
+                                   , map<identity<agent>, std::tuple<double, quantity, quantity>>()
+                                   );
                 }
-                i->second += abs(excess_units_);
+                i->second += abs(units_);
 
                 auto j = order_->supply.find(property_);
                 if(order_->supply.end() == j){
-                    orders_.find(property_)->second.emplace(
-                        participant,
-                        std::make_tuple(excess_units_, quantity(0, 1), quantity(0, 1)));
+                    orders_.find(property_)->second.emplace( participant
+                                                           , std::make_tuple(units_, 0, 0));
 
                     LOG(trace) << participant << " demands {" << property_ << ", "
-                               << excess_units_ << "}" << std::endl;
+                               << units_ << "}" << std::endl;
                 }else{
                     //excess_units_ -= double(std::get<0>(j->second));
                     //excess_units_ += double(std::get<1>(j->second));
 
                     LOG(trace) << participant << " demands {" << property_ << ", "
-                               << std::setprecision(5) << excess_units_
+                               << std::setprecision(5) << units_
                                << "}" << std::endl;
 
                     orders_.find(property_)->second.emplace(
                         participant,
-                        std::make_tuple(excess_units_, std::get<0>(j->second),
-                                        std::get<1>(j->second)));
+                        std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
                 }
             }
         }
-
 
         ////////////////////////////////////////////////////////////////////////
-        // compute transfers in terms of the primary property
-        map<identity<property>, map<identity<agent>, int64_t>> transfers_;
-        for(const auto &[property_, data_] : traded_properties) {
-            auto i = volumes_.find(property_->identifier);
-            if(volumes_.end() == i) {
-                continue;  // no agents expressed interest
-            }
-            int64_t error_ = 0;
-            std::vector<std::tuple<identity<agent>, int64_t>> allocations_;
-            for(auto [p, a] : orders_.find(property_->identifier)->second) {
-                auto alloc_ = int64_t(std::get<0>(a));
-                error_ += alloc_;
-                allocations_.emplace_back(p, alloc_);
-            }
-            std::sort(allocations_.begin(), allocations_.end(),
-                      [](const auto &a, const auto &b) -> bool {
-                          return std::abs(std::get<1>(a))
-                                 < std::abs(std::get<1>(b));
-                      });
-            //
-            if(error_ < 0) {  // assigned too many
-                if(allocations_.size() < uint64_t(-error_)) {
-                    LOG(notice)
-                        << "clearing price beyond rounding error" << std::endl;
-                }
+        auto transfers_ = compute_transfers(traded_properties, volumes_, orders_);
 
-                for(size_t ii = 0; ii < uint64_t(-error_); ++ii) {
-                    std::get<1>(allocations_[ii % allocations_.size()]) += 1;
-                }
-            } else {
-                // assert(allocations_.size() >= uint64_t(error_));
-                if(allocations_.size() < uint64_t(error_)) {
-                    LOG(notice)
-                        << "clearing price beyond rounding error" << std::endl;
-                }
 
-                for(size_t ii = 0; ii < uint64_t(error_); ++ii) {
-                    std::get<1>(allocations_[ii % allocations_.size()]) -= 1;
-                }
-            }
-            auto pair_ = transfers_.emplace(property_->identifier,
-                                            map<identity<agent>, int64_t>());
-
-            for(auto [p, a] : allocations_) {
-                pair_.first->second.emplace(p, a);
-            }
-        }
-        LOG(trace) << transfers_ << std::endl;
-
-        //
         //  send_: we, the market maker, send items to participant
         //  receive_: we, the market maker, receive items from participant
-        //
-        map<identity<agent>, accounting::inventory_filter<law::property>> send_,
-            receive_;
+        map<identity<agent>, accounting::inventory_filter<law::property>> send_, receive_;
 
         auto usd_ = std::make_shared<cash>(currencies::USD);
 
@@ -353,255 +368,71 @@ namespace esl::economics::markets::walras {
                 if(orders.find(p)->second->supply.end() == i) {
                     continue;
                 }
-                uint64_t &long_amount_  = std::get<0>(i->second).amount;
-                uint64_t &short_amount_ = std::get<1>(i->second).amount;
+                uint64_t &long_  = std::get<0>(i->second).amount;
+                uint64_t &short_ = std::get<1>(i->second).amount;
 
                 if(v > 0) {  // send properties to this agent, or receive shorts
-                    if(long_amount_ > 0) {  // they had long pos
-                        //  purchase
-                        accounting::inventory_filter<law::property> purchased_;
-                        purchased_.insert(property_, quantity(uint64_t(v), 1));
+                    if(short_ > 0) {  // there was a short position
+                        assert(long_ == 0);
 
-                        if(send_.end() != send_.find(p)){
-                            send_.find(p)->second.insert(purchased_);
-                        }else{
-                            send_.emplace(p, purchased_);
-                        }
-
-                        //  payment
-                        // they should send cash for the purchase
-                        auto j = receive_.find(p);
-                        if(receive_.end() == j) {
-                            auto [jj, succes_] = receive_.emplace(
-                                p,
-                                accounting::inventory_filter<law::property>());
-                            j = jj;
-                        }
-                        auto q__ =
-                            usd_->amount(v * double(std::get<price>(data_.type))
-                                         / data_.lot);
-                        j->second.insert(usd_, q__);
-                    } else if(short_amount_
-                              > 0) {  // there was a short position
-                        if(uint64_t(v) >= short_amount_) {  // cancel all
-                            // 1 cancel short, by transferring shorts back to
-                            // market agent cancel the short, by receiving their
-                            // short contracts
-                            std::map<identity<property>, esl::quantity> basket_;
-                            basket_.emplace(property_->identifier,
-                                            quantity(1, 1));
-
-                            auto short_contract_ = std::make_shared<
-                                finance::securities_lending_contract>(
-                                identifier, p, basket_);
-                            auto r = receive_.find(p);
-                            if(receive_.end() == r) {
-                                auto [rr, b_] = receive_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                r = rr;
-                            }
-                            r->second.insert(short_contract_,
-                                             quantity(short_amount_, 1));
-                            // we pay back the collateral amount
-                            auto s = send_.find(p);
-                            if(send_.end() == s) {
-                                auto [ss, success_] = send_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                s = ss;
-                            }
-
-                            auto o           = old_quotes_.find(property_);
-                            auto collateral_ = usd_->amount(
-                                (short_amount_
-                                 * double(std::get<price>(o->second.type)))
-                                / o->second.lot);
-                            s->second.insert(usd_, collateral_);
-
-                            ////////////////////////////////////////////////////
-                            //
-
-                            v -= short_amount_;
-
-                            if(v > 0) {
-                                // this is all copy pasted from above
-                                accounting::inventory_filter<law::property>
-                                    purchased_;
-                                purchased_.insert(property_,
-                                                  quantity(uint64_t(v), 1));
-                                send_.emplace(p, purchased_);
-
-                                ////////////////////////////////////////////////////////
-                                //  payment
-                                // they should send cash for the purchase
-                                auto j = receive_.find(p);
-                                if(receive_.end() == j) {
-                                    auto [jj, succes_] = receive_.emplace(
-                                        p, accounting::inventory_filter<
-                                               law::property>());
-                                    j = jj;
-                                }
-                                j->second.insert(
-                                    usd_,
-                                    usd_->amount(
-                                        v * double(std::get<price>(data_.type))
-                                        / data_.lot));
-                            }
-
-                        } else {  // cancel in part
-
-                            auto amount_to_cancel = v;
-
-                            std::map<identity<property>, esl::quantity> basket_;
-                            basket_.emplace(property_->identifier,
-                                            quantity(1, 1));
-                            auto short_contract_ = std::make_shared<
-                                finance::securities_lending_contract>(
-                                identifier, p, basket_);
-                            auto r = receive_.find(p);
-                            if(receive_.end() == r) {
-                                auto [rr, b_] = receive_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                r = rr;
-                            }
-                            r->second.insert(short_contract_,
-                                             quantity(amount_to_cancel, 1));
-                            // we pay back the collateral amount
-                            auto s = send_.find(p);
-                            if(send_.end() == s) {
-                                auto [ss, success_] = send_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                s = ss;
-                            }
-
-                            auto o           = old_quotes_.find(property_);
-                            auto collateral_ = usd_->amount(
-                                (amount_to_cancel
-                                 * double(std::get<price>(o->second.type)))
-                                / o->second.lot);
-                            s->second.insert(usd_, collateral_);
-                        }
-                    }
-                } else {  // participant wants to
-                          // sell/short///////////////////////////////////////////////////////////////////////////
-                    if(long_amount_ > 0
-                       || short_amount_
-                              == 0) {  // they had long pos/had nothing
-
-                        if(uint64_t(-v) >= long_amount_) {  // cancel all
-                            // 1 cancel long, by transferring stocks back to
-                            // market agent
-                            auto r = receive_.find(p);
-                            if(receive_.end() == r) {
-                                auto [rr, b_] = receive_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                r = rr;
-                            }
-                            r->second.insert(property_,
-                                             quantity(long_amount_, 1));
-
-                            auto s = send_.find(p);
-                            if(send_.end() == s) {
-                                auto [ss, success_] = send_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                s = ss;
-                            }
-                            auto proceeds_ = usd_->amount(
-                                (long_amount_
-                                 * double(std::get<price>(data_.type)))
-                                / data_.lot);
-                            s->second.insert(usd_, proceeds_);
-
-
-                            ////////////////////////////////////////////////////
-                            //
-
-                            v += long_amount_;
-                            if(v < 0) {
-                                std::map<identity<property>, esl::quantity>
-                                    basket_;
-                                basket_.emplace(property_->identifier,
-                                                quantity(1, 1));
-                                auto short_contract_ = std::make_shared<
-                                    finance::securities_lending_contract>(
-                                    identifier, p, basket_);
-
-                                auto j = send_.find(p);
-                                if(send_.end() == j) {
-                                    auto [jj, succes_] = send_.emplace(
-                                        p, accounting::inventory_filter<
-                                               law::property>());
-                                    j = jj;
-                                }
-
-                                j->second.insert(short_contract_,
-                                                 quantity(uint64_t(-v), 1));
-                                j->second.insert(
-                                    usd_,
-                                    usd_->amount(
-                                        -v * double(std::get<price>(data_.type))
-                                        / data_.lot));
-                            }
-
-                        } else {  // cancel in part
-
-                            auto amount_to_cancel = -v;
-                            auto r                = receive_.find(p);
-                            if(receive_.end() == r) {
-                                auto [rr, b_] = receive_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                r = rr;
-                            }
-                            r->second.insert(property_,
-                                             quantity(amount_to_cancel, 1));
-
-
-                            // we pay back the collateral amount
-                            auto s = send_.find(p);
-                            if(send_.end() == s) {
-                                auto [ss, success_] = send_.emplace(
-                                    p, accounting::inventory_filter<
-                                           law::property>());
-                                s = ss;
-                            }
-                            auto proceeds_ = usd_->amount(
-                                (amount_to_cancel
-                                 * double(std::get<price>(data_.type)))
-                                / data_.lot);
-                            s->second.insert(usd_, proceeds_);
-                        }
-                    } else {
-                        // extend the short position
-                        auto amount_to_extend = -v;
+                        uint64_t cancel_ = std::min(uint64_t(v), short_);
+                        LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
 
                         std::map<identity<property>, esl::quantity> basket_;
-                        basket_.emplace(property_->identifier, quantity(1, 1));
-                        auto short_contract_ = std::make_shared<
-                            finance::securities_lending_contract>(identifier, p,
-                                                                  basket_);
-                        auto s = send_.find(p);
-                        if(send_.end() == s) {
-                            auto [ss, b_] = receive_.emplace(
-                                p,
-                                accounting::inventory_filter<law::property>());
-                            s = ss;
-                        }
+                        basket_.emplace(property_->identifier, 1);
 
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, basket_);
+                        auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
+                        r->second.insert(short_contract_, quantity(cancel_, 1));
+                        // we pay back the collateral amount
+                        auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
 
-                        auto sale_ =
-                            usd_->amount((amount_to_extend
-                                          * double(std::get<price>(data_.type)))
-                                         / data_.lot);
+                        auto o = old_quotes_.find(property_);
+                        auto collateral_ = usd_->amount(cancel_ * double(std::get<price>(o->second.type)) / o->second.lot);
+
+                        s->second.insert(usd_, collateral_);
+                        v -= short_;
+                    }
+
+                    if(uint64_t(v) > 0){
+                        LOG(trace) << p << " purchased additional " << v << std::endl;
+                        accounting::inventory_filter<law::property> purchased_;
+                        purchased_.insert(property_, quantity(uint64_t(v), 1));
+                        send_.emplace(p, purchased_);
+
+                        // they should send cash for the purchase
+                        auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
+                        r->second.insert(usd_, usd_->amount(v * double(std::get<price>(data_.type)) / data_.lot));
+                    }
+                }else{  // participant wants to sell/short
+
+                    if(long_ > 0){
+
+                        uint64_t cancel_ = std::min(uint64_t(-v), long_);
+                        LOG(trace) << "cancel the long position of " << p <<" by " << cancel_ << std::endl;
+
+                        auto r = receive_.emplace( p, accounting::inventory_filter<law::property>()).first;
+                        r->second.insert(property_, quantity(cancel_, 1));
+
+                        auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
+                        auto proceeds_ = usd_->amount(cancel_ * double(std::get<price>(data_.type)) / data_.lot);
+                        s->second.insert(usd_, proceeds_);
+                        v += long_;
+                    }
+
+                    if(v <  0){
+                        // extend the short position
+                        auto amount_to_extend = uint64_t(-v);
+                        LOG(trace) << "extend the short position of " << p <<" by " << amount_to_extend << std::endl;
+                        std::map<identity<property>, quantity> basket_;
+                        basket_.emplace(property_->identifier, 1);
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, basket_);
+                        auto s = send_.emplace( p, accounting::inventory_filter<law::property>()).first;
+
+                        auto sale_ = usd_->amount(amount_to_extend * double(std::get<price>(data_.type)) / data_.lot);
 
                         s->second.insert(usd_, sale_);
-                        s->second.insert(short_contract_,
-                                         quantity(amount_to_extend, 1));
+                        s->second.insert(short_contract_, quantity(amount_to_extend, 1));
                     }
                 }
             }
@@ -665,7 +496,7 @@ namespace esl::economics::markets::walras {
                 i);
         }
 
-        return result_;
+        return result1_.value();
     }
 
 }  // namespace esl::economics::markets::walras

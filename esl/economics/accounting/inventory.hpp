@@ -26,6 +26,8 @@
 #ifndef ESL_INVENTORY_HPP
 #define ESL_INVENTORY_HPP
 
+#include <initializer_list>
+
 #include <boost/serialization/unordered_map.hpp>
 
 #include <esl/economics/accounting/standard.hpp>
@@ -169,6 +171,12 @@ namespace esl::economics::accounting {
 
         }
 
+        inventory_by_fungibility(std::initializer_list<std::pair<const std::shared_ptr<property_t_>, quantity>> l)
+        : items(l)
+        {
+
+        }
+
         inventory_by_fungibility(property_t_ item, quantity q)
         : items()
         {
@@ -294,6 +302,13 @@ namespace esl::economics::accounting {
         law::property_filter_set<property_t_> items;
 
         inventory_by_fungibility() = default;
+
+
+        inventory_by_fungibility(std::initializer_list<std::shared_ptr<property_t_>> l)
+        : items(l)
+        {
+
+        }
 
         void insert(std::shared_ptr<property_t_> value)
         {
