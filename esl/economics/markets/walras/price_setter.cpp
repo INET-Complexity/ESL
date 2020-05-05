@@ -382,7 +382,7 @@ namespace esl::economics::markets::walras {
                         assert(long_ == 0);
 
                         uint64_t cancel_ = std::min(uint64_t(v), short_);
-                        LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
+                        //LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
 
 
                         auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
@@ -399,7 +399,7 @@ namespace esl::economics::markets::walras {
                     }
 
                     if(uint64_t(v) > 0){
-                        LOG(trace) << p << " purchased additional " << v << std::endl;
+                        //LOG(trace) << p << " purchased additional " << v << std::endl;
                         accounting::inventory_filter<law::property> purchased_;
                         purchased_.insert(property_, quantity(uint64_t(v), 1));
                         send_.emplace(p, purchased_);
@@ -413,7 +413,7 @@ namespace esl::economics::markets::walras {
                     if(long_ > 0){
 
                         uint64_t cancel_ = std::min(uint64_t(-v), long_);
-                        LOG(trace) << "cancel the long position of " << p <<" by " << cancel_ << std::endl;
+                        //LOG(trace) << "cancel the long position of " << p <<" by " << cancel_ << std::endl;
 
                         auto r = receive_.emplace( p, accounting::inventory_filter<law::property>()).first;
                         r->second.insert(property_, quantity(cancel_, 1));
@@ -427,7 +427,7 @@ namespace esl::economics::markets::walras {
                     if(v <  0){ // is still smaller than zero
                         // extend the short position
                         auto amount_to_extend = uint64_t(-v);
-                        LOG(trace) << "extend the short position of " << p <<" by " << amount_to_extend << std::endl;
+                        //LOG(trace) << "extend the short position of " << p <<" by " << amount_to_extend << std::endl;
 
                         auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
                         auto s = send_.emplace( p, accounting::inventory_filter<law::property>()).first;

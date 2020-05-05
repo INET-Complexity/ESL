@@ -355,7 +355,7 @@ namespace esl::economics::markets::tatonnement {
 
 
 
-
+/*
         size_t n = std::max(size_t(1), quotes_.size());
         std::vector<double> variables_;
         for(size_t i = 0; i < n; ++i) {
@@ -388,7 +388,7 @@ namespace esl::economics::markets::tatonnement {
         }
 
         LOG(warning) << "shapley shubik solution " << terms_map << std::endl;
-
+*/
 
 
 
@@ -443,6 +443,29 @@ namespace esl::economics::markets::tatonnement {
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         for(auto method_ : methods){
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
@@ -488,8 +511,9 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        //scalar_ = std::min(scalar_, 1.001);
-                        //scalar_ = std::max(scalar_, 1./1.001);
+                        std::cout << scalar_ << std::endl;
+                        scalar_ = std::min(scalar_, 5.);
+                        scalar_ = std::max(scalar_, 1./5.);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);

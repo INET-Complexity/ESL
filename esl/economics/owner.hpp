@@ -210,7 +210,7 @@ namespace esl::law {
                         if(!d) {
                             continue;
                         }
-                        LOG(trace) << typeid(property_t_).name() << " (" << i->identifier << ") " <<  msg->transferee << " is receiving "<< msg->transferred.items << " from " << msg->transferor << std::endl;
+                        //LOG(trace) << typeid(property_t_).name() << " (" << i->identifier << ") " <<  msg->transferee << " is receiving "<< msg->transferred.items << " from " << msg->transferor << std::endl;
                         detail::filter_inserter<
                             std::is_base_of<economics::fungible,
                                             property_t_>::value,
