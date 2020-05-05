@@ -47,8 +47,11 @@ struct always_false<> : std::true_type
 { };
 
 namespace esl::economics::markets::walras {
-    price_setter::price_setter() : price_setter(identity<price_setter>())
-    { }
+    price_setter::price_setter()
+    : price_setter(identity<price_setter>())
+    {
+
+    }
 
     ///
     /// \brief
@@ -62,7 +65,9 @@ namespace esl::economics::markets::walras {
                                law::property_map<quote>
                                    traded_properties)
 
-    : agent(i), market(i, traded_properties), state(sending_quotes)
+    : agent(i)
+    , market(i, traded_properties)
+    , state(sending_quotes)
     {
 
         output_clearing_prices_ =
@@ -254,7 +259,9 @@ namespace esl::economics::markets::walras {
                 pair_.first->second.emplace(p, a);
             }
         }
-        LOG(trace) << transfers_ << std::endl;
+        if(transfers_.size()){
+            LOG(trace) << transfers_ << std::endl;
+        }
         return transfers_;
     }
 
@@ -289,7 +296,7 @@ namespace esl::economics::markets::walras {
         auto result1_ = model_.compute_clearing_quotes();
 
         // if finding a price failed, return previous price vector
-        if(!result1_.has_value()) {
+        if(!result1_.has_value()){
             std::map<identity<law::property>, double> previous_;
             for(const auto &[k, v] : traded_properties) {
                 (void)k;
@@ -314,7 +321,7 @@ namespace esl::economics::markets::walras {
                 auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
 
                 auto i = volumes_.find(property_);
-                if(volumes_.end() == i) {
+                if(volumes_.end() == i){
                     i = volumes_.emplace(property_, 0).first;
                     orders_.emplace( property_
                                    , map<identity<agent>, std::tuple<double, quantity, quantity>>()
@@ -330,9 +337,6 @@ namespace esl::economics::markets::walras {
                     LOG(trace) << participant << " demands {" << property_ << ", "
                                << units_ << "}" << std::endl;
                 }else{
-                    //excess_units_ -= double(std::get<0>(j->second));
-                    //excess_units_ += double(std::get<1>(j->second));
-
                     LOG(trace) << participant << " demands {" << property_ << ", "
                                << std::setprecision(5) << units_
                                << "}" << std::endl;
@@ -346,7 +350,6 @@ namespace esl::economics::markets::walras {
 
         ////////////////////////////////////////////////////////////////////////
         auto transfers_ = compute_transfers(traded_properties, volumes_, orders_);
-
 
         //  send_: we, the market maker, send items to participant
         //  receive_: we, the market maker, receive items from participant
@@ -366,7 +369,10 @@ namespace esl::economics::markets::walras {
 
                 auto i = orders.find(p)->second->supply.find(*property_);
                 if(orders.find(p)->second->supply.end() == i) {
-                    continue;
+                    auto [ii,b] = orders.find(p)->second->supply.insert({property_->identifier
+                                                                         , std::make_tuple(quantity(0,1)
+                                                                         ,quantity(0,1))});
+                    i = ii;
                 }
                 uint64_t &long_  = std::get<0>(i->second).amount;
                 uint64_t &short_ = std::get<1>(i->second).amount;
@@ -378,10 +384,8 @@ namespace esl::economics::markets::walras {
                         uint64_t cancel_ = std::min(uint64_t(v), short_);
                         LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
 
-                        std::map<identity<property>, esl::quantity> basket_;
-                        basket_.emplace(property_->identifier, 1);
 
-                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, basket_);
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
                         auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         r->second.insert(short_contract_, quantity(cancel_, 1));
                         // we pay back the collateral amount
@@ -391,7 +395,7 @@ namespace esl::economics::markets::walras {
                         auto collateral_ = usd_->amount(cancel_ * double(std::get<price>(o->second.type)) / o->second.lot);
 
                         s->second.insert(usd_, collateral_);
-                        v -= short_;
+                        v -= cancel_;
                     }
 
                     if(uint64_t(v) > 0){
@@ -404,7 +408,7 @@ namespace esl::economics::markets::walras {
                         auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         r->second.insert(usd_, usd_->amount(v * double(std::get<price>(data_.type)) / data_.lot));
                     }
-                }else{  // participant wants to sell/short
+                }else{  // v < 0 so participant wants to sell/short
 
                     if(long_ > 0){
 
@@ -417,16 +421,15 @@ namespace esl::economics::markets::walras {
                         auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         auto proceeds_ = usd_->amount(cancel_ * double(std::get<price>(data_.type)) / data_.lot);
                         s->second.insert(usd_, proceeds_);
-                        v += long_;
+                        v += cancel_;
                     }
 
-                    if(v <  0){
+                    if(v <  0){ // is still smaller than zero
                         // extend the short position
                         auto amount_to_extend = uint64_t(-v);
                         LOG(trace) << "extend the short position of " << p <<" by " << amount_to_extend << std::endl;
-                        std::map<identity<property>, quantity> basket_;
-                        basket_.emplace(property_->identifier, 1);
-                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, basket_);
+
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
                         auto s = send_.emplace( p, accounting::inventory_filter<law::property>()).first;
 
                         auto sale_ = usd_->amount(amount_to_extend * double(std::get<price>(data_.type)) / data_.lot);

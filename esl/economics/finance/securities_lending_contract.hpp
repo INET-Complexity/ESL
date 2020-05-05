@@ -33,17 +33,33 @@
 
 namespace esl::economics::finance {
 
+     inline identity<law::property> prepend(identity<law::property>::digit_t v, identity<law::property> p)
+    {
+        std::vector<identity<law::property>::digit_t> result_ = {v};
+        for(auto d: p.digits){
+            result_.emplace_back(d);
+        }
+        return identity<law::property>(result_);
+    }
+
+
     class securities_lending_contract
     : public loan
     {
     public:
-        std::map<identity<property>, quantity> basket;
+        //std::map<identity<property>, quantity> basket;
+
+        identity<property> security;
+        quantity size;
 
         securities_lending_contract( identity<agent> lender
                                    , identity<agent> borrower
-                                   , std::map<identity<property>, quantity> basket = {})
-        : loan(lender, borrower)
-        , basket(basket)
+                                   , identity<property> security
+                                   , quantity size)
+        : property(prepend(typeid(securities_lending_contract).hash_code(), security))
+        , loan(lender, borrower)
+        , security(security)
+        , size(size)
         {
 
         }

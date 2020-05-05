@@ -333,6 +333,74 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        size_t n = std::max(size_t(1), quotes_.size());
+        std::vector<double> variables_;
+        for(size_t i = 0; i < n; ++i) {
+            variables_.push_back(1.0);
+        }
+        ////////////////////////////////////////////////////////////////
+        std::map<identity<law::property>,
+                std::tuple<quote, double>>
+                quote_scalars_;
+        std::map<identity<law::property>,
+                double>
+                price_render_;
+        size_t i = 0;
+        for(auto [k, v]: quotes_) {
+            price_render_.emplace(k, double(v) * variables_[i]);
+            quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
+            ++i;
+        }
+        std::map<identity<law::property>, std::vector<double>> terms_map;
+        for(const auto &f : excess_demand_functions_) {
+            auto demand_per_property_ = f->excess_demand(quote_scalars_);
+
+            for(auto [k, v]: demand_per_property_) {
+                if(terms_map.find(k) == terms_map.end()){
+                    terms_map.emplace(k, std::vector<double>());
+                }//else{
+                terms_map.find(k)->second.push_back(v);
+                //}
+            }
+        }
+
+        LOG(warning) << "shapley shubik solution " << terms_map << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
         constexpr bool debug_market_excess = false;
         if(debug_market_excess){
             for(auto e: range(0.01, 2.00, 0.01)){
@@ -410,9 +478,9 @@ namespace esl::economics::markets::tatonnement {
                 for(size_t iter = 0; iter < 1000 && GSL_CONTINUE == status; ++iter){
                     status = gsl_multiroot_fdfsolver_iterate(solver_);
                     if(GSL_SUCCESS != status){
-
+                        break;
                     }
-                    status = gsl_multiroot_test_residual(solver_->f, 1e-4);
+                    status = gsl_multiroot_test_residual(solver_->f, 1e-6);
                 }
 
                 if(GSL_SUCCESS == status){
@@ -420,6 +488,8 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
+                        //scalar_ = std::min(scalar_, 1.001);
+                        //scalar_ = std::max(scalar_, 1./1.001);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);
@@ -464,7 +534,6 @@ namespace esl::economics::markets::tatonnement {
 
                 gsl_multiroot_fsolver_free (solver_);
                 gsl_vector_free(variables_);
-
 #endif
                //if(status == GSL_SUCCESS) {
                 //    return result_;
@@ -552,10 +621,6 @@ namespace esl::economics::markets::tatonnement {
                 LOG(error)  << "gradient-free minimizer failed after " << iter
                             << " iterations: " << gsl_strerror(status) << std::endl;
 #endif
-
-
-
-
             }
         }
         return std::nullopt;

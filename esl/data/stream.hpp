@@ -68,11 +68,13 @@ namespace esl::data {
     class file
     : public stream
     {
+    private:
         std::ofstream file_;
     public:
-        explicit file(const std::string& name)
+
+        explicit file(const std::string& name, const std::string &output_prefix = "output/")
         : stream(file_)
-        , file_(name)
+        , file_(output_prefix + name)
         {
 
         }

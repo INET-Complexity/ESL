@@ -104,28 +104,23 @@ namespace esl::economics::accounting {
 
         [[nodiscard]] price value(const finance::loan &l, const quantity &q) const
         {
+            (void) l;
             return price(-1.00 * double(q), reporting_currency);
         }
 
         [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const
         {
             price result_ = price(0ll, reporting_currency);
-
-            for(auto &security_: c.basket){
-                auto i = mark_to_market.find(security_.first);
-                if(mark_to_market.end() == i){
-                    LOG(error) << "no market price for stock " << security_.first << std::endl;
-                    throw std::logic_error("no market price");
-                }
-
-                // TODO: use foreign_currencies if valuation is in different currency
-
-                int64_t value_ = (std::get<price>(i->second.type).value * security_.second.amount * q.amount)
-                                 / (q.basis * i->second.lot);
-
-                result_.value -= value_;
+            auto i = mark_to_market.find(c.security);
+            if(mark_to_market.end() == i){
+                LOG(error) << "no market price for stock " << c.security << std::endl;
+                throw std::logic_error("no market price");
             }
-
+            // TODO: use foreign_currencies if valuation is in different currency
+            int64_t value_ = (std::get<price>(i->second.type).value * c.size.amount * q.amount)
+                             / (q.basis * i->second.lot);
+            result_.value -= value_;
+            //LOG(trace) << "value of " << q << " short contracts = " << result_ << std::endl;
             return result_;
         }
 
@@ -136,9 +131,6 @@ namespace esl::economics::accounting {
             archive & BOOST_SERIALIZATION_NVP(reporting_currency);
         }
     };
-
-
-
 }
 
 #endif  // ESL_STANDARD_HPP
