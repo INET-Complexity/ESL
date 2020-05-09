@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 
+
 namespace esl::data {
     class stream
     {
@@ -65,20 +66,7 @@ namespace esl::data {
     };
 
 
-    class file
-    : public stream
-    {
-    private:
-        std::ofstream file_;
-    public:
 
-        explicit file(const std::string& name, const std::string &output_prefix = "output/")
-        : stream(file_)
-        , file_(output_prefix + name)
-        {
-
-        }
-    };
 }
 
 #endif  // ME_STREAM_HPP

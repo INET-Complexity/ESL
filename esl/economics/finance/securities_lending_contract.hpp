@@ -44,7 +44,7 @@ namespace esl::economics::finance {
 
 
     class securities_lending_contract
-    : public loan
+    : public  esl::law::contract
     {
     public:
         //std::map<identity<property>, quantity> basket;
@@ -57,7 +57,8 @@ namespace esl::economics::finance {
                                    , identity<property> security
                                    , quantity size)
         : property(prepend(typeid(securities_lending_contract).hash_code(), security))
-        , loan(lender, borrower)
+        //, loan(lender, borrower)
+        , contract({lender, borrower})
         , security(security)
         , size(size)
         {

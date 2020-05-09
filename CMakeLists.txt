@@ -60,6 +60,10 @@ ENDIF(CCACHE_FOUND)
 ################################################################################
 # Library optional add-ons
 ################################################################################
+set(Boost_USE_STATIC_LIBS   ON)
+SET(CMAKE_EXE_LINKER_FLAGS " -static")
+
+
 
 OPTION(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
@@ -108,7 +112,7 @@ ENDIF()
 
 
 ################################################################################
-#SET(Boost_USE_STATIC_LIBS ON)
+
 LIST(APPEND Boost_LIBRARIES
         program_options
         date_time
@@ -118,15 +122,17 @@ LIST(APPEND Boost_LIBRARIES
         #log
         #log_setup
         )
-ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+#ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+#ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 ################################################################################
 
 # optional accelerators for scientific computing
-#SET(BLA_STATIC ON)
+SET(BLA_STATIC ON)
 FIND_PACKAGE(BLAS)
 FIND_PACKAGE(LAPACK)
+
+
 # GSL is required for optimisation routines
 FIND_PACKAGE(GSL REQUIRED)
 
@@ -185,11 +191,9 @@ ENDIF()
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
-LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
+LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
 
 IF(WIN32)
-    #LIST(APPEND ALL_LINKED_LIBRARIES )
-    #LINK_DIRECTORIES("C:/msys64/usr/lib")
     LIST(APPEND ALL_LINKED_LIBRARIES)
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES dl util)
@@ -215,7 +219,7 @@ IF(BLAS_FOUND)
     ENDIF()
 ENDIF()
 
-LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
+LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 
 ################################################################################
 
@@ -268,6 +272,9 @@ SET(SOURCE_FILES
 
         esl/data/output.cpp
         esl/data/output.hpp
+
+        esl/data/file.cpp
+        esl/data/file.hpp
 
         esl/data/producer.cpp
         esl/data/producer.hpp
@@ -439,13 +446,11 @@ SET(SOURCE_FILES
         esl/data/channel.cpp
         esl/data/channel.hpp
 
-        #esl/economics/markets/order_book/book.cpp
-        #esl/economics/markets/order_book/book.hpp
 
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
-        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp)
+        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
@@ -461,11 +466,11 @@ endif()
 IF(WIN32)
 
     LINK_DIRECTORIES("C:/msys64/usr/lib")
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 ELSE()
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
-    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl -static  -static-libgcc -static-libstdc++)
+    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl -static  -static-libgcc -static-libstdc++)
 ENDIF()
 
 ################################################################################

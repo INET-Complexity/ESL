@@ -179,20 +179,15 @@ namespace esl::economics {
         {
             std::ios_base::fmtflags flags_(o.flags());
             int precision_ = ceil(log10(valuation.denominator));
-            o << this->valuation << ' ' << std::fixed
-              << std::setprecision(precision_) << double(*this);
+            o << this->valuation << '(' << std::fixed
+              << std::setprecision(precision_) << double(*this) << ')';
             o.flags(flags_);
             return o;
         }
 
         friend std::ostream &operator << (std::ostream &o, const price &p)
         {
-            std::ios_base::fmtflags flags_(o.flags());
-            int precision_ = ceil(log10(p.valuation.denominator));
-            o << p.valuation << ' ' << std::fixed
-              << std::setprecision(precision_) << double(p);
-            o.flags(flags_);
-            return o;
+            return p.operator<<(o);
         }
 
         //friend std::istream &operator>>(std::istream &i, const price &p)

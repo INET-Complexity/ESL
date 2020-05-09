@@ -64,6 +64,11 @@ namespace esl::economics::finance {
 
         virtual ~loan() = default;
 
+        std::string name() const override
+        {
+            return "loan";
+        }
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

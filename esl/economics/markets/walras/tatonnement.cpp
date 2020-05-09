@@ -511,9 +511,8 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        std::cout << scalar_ << std::endl;
-                        scalar_ = std::min(scalar_, 5.);
-                        scalar_ = std::max(scalar_, 1./5.);
+                        scalar_ = std::min(scalar_, 3.);
+                        scalar_ = std::max(scalar_, 1./3.);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);
@@ -522,8 +521,6 @@ namespace esl::economics::markets::tatonnement {
                 }
                 gsl_multiroot_fdfsolver_free(solver_);
                 gsl_vector_free(variables_);
-                LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
-
 #else
                 gsl_multiroot_function root_function;
 
@@ -559,20 +556,19 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multiroot_fsolver_free (solver_);
                 gsl_vector_free(variables_);
 #endif
-               //if(status == GSL_SUCCESS) {
+                //if(status == GSL_SUCCESS) {
                 //    return result_;
-               // }
+                // }
 
                 // no progress to a new solution, so use the old solution
                 // n.b. this most frequently happens when we get the market clearing
                 // prices right on the first try
-               // if(status == GSL_ENOPROG) {
-               //     return result_;
-               // }
+                // if(status == GSL_ENOPROG) {
+                //     return result_;
+                // }
                 LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
                 continue;
             }else{
-
                 const double initial_step_size       = 1.0e-5;
                 const double line_search_tolerance   = 1.0e-5;
                 const double converged_gradient_norm = 1.0e-4;

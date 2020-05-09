@@ -37,7 +37,7 @@ namespace esl::simulation {
     {
     public:
         ///
-        /// \brief The identity of the world is "{}".
+        /// \brief The identity of the world is "".
         ///
         world();
 
