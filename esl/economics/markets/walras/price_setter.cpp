@@ -259,9 +259,9 @@ namespace esl::economics::markets::walras {
                 pair_.first->second.emplace(p, a);
             }
         }
-        if(transfers_.size()){
-            LOG(trace) << transfers_ << std::endl;
-        }
+        //if(transfers_.size()){
+        //    LOG(trace) << transfers_ << std::endl;
+        //}
         return transfers_;
     }
 
@@ -310,9 +310,9 @@ namespace esl::economics::markets::walras {
         ////////////////////////////////////////////////////////////////////////
         map<identity<property>, double> volumes_;
         map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> orders_;
-        for(const auto &[participant, order_] : orders) {
+        for(const auto &[participant, order_]: orders) {
             auto demand_ = order_->excess_demand(solution_);
-            for(const auto &[property_, excess_] : demand_) {
+            for(const auto &[property_, excess_]: demand_) {
                 if(excess_ >= -0.00001 && excess_ <= 0.00001) {
                     continue;
                 }
@@ -334,12 +334,12 @@ namespace esl::economics::markets::walras {
                     orders_.find(property_)->second.emplace( participant
                                                            , std::make_tuple(units_, 0, 0));
 
-                    LOG(trace) << participant << " demands {" << property_ << ", "
-                               << units_ << "}" << std::endl;
+                    //LOG(trace) << participant << " demands {" << property_ << ", "
+                    //           << units_ << "}" << std::endl;
                 }else{
-                    LOG(trace) << participant << " demands {" << property_ << ", "
-                               << std::setprecision(5) << units_
-                               << "}" << std::endl;
+                    //LOG(trace) << participant << " demands {" << property_ << ", "
+                    //           << std::setprecision(5) << units_
+                    //           << "}" << std::endl;
 
                     orders_.find(property_)->second.emplace(
                         participant,
@@ -388,9 +388,11 @@ namespace esl::economics::markets::walras {
                         auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
                         auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         r->second.insert(short_contract_, quantity(cancel_, 1));
-                        // we pay back the collateral amount
-                        auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
 
+                        // ???
+                        // auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
+                        //
+                        auto s = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         auto o = old_quotes_.find(property_);
                         auto collateral_ = usd_->amount(cancel_ * double(std::get<price>(o->second.type)) / o->second.lot);
 
@@ -488,7 +490,7 @@ namespace esl::economics::markets::walras {
                 reinterpret_identity_cast<law::owner<law::property>>(p), i);
         }
 
-        for(auto [p, i] : receive_) {
+        for(auto [p, i]: receive_) {
             //LOG(trace) << "market receives from " << p << " items " << i
             //           << std::endl;
             this->template create_message<interaction::transfer>(

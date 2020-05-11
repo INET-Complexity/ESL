@@ -198,5 +198,53 @@ namespace esl {
 
         return result_;
     }
+
+
+
+
+    template <typename element_t_,
+            typename iterator_t_ = decltype(std::begin(std::declval<element_t_>())),
+            typename = decltype(std::end(std::declval<element_t_>()))>
+    constexpr auto enumerate(element_t_ &&iterable)
+    {
+        struct iterator
+        {
+            size_t i;
+            iterator_t_ iter;
+
+            bool operator != (const iterator & other) const
+            {
+                return iter != other.iter;
+            }
+
+            void operator ++ ()
+            {
+                ++i;
+                ++iter;
+            }
+
+            auto operator * () const
+            {
+                return std::tie(i, *iter);
+            }
+        };
+
+        struct iterable_wrapper
+        {
+            element_t_ iterable;
+            auto begin()
+            {
+                return iterator{ 0, std::begin(iterable) };
+            }
+
+            auto end()
+            {
+                return iterator{ 0, std::end(iterable) };
+            }
+        };
+
+        return iterable_wrapper{ std::forward<element_t_>(iterable) };
+    }
+
 }  // namespace esl
 #endif  // ESL_ALGORITHMS_HPP

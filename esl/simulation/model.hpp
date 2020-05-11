@@ -72,8 +72,13 @@ namespace esl::simulation {
         time_point time;
 
         ///
-        /// \brief  Acts as the seed when using random number generators in the
-        ///         model.
+        /// \brief  Indexes a run of the model when using multiple samples
+        ///         in Monte-Carlo methods, used to seed random number generators
+        ///         so that runs with the same sample number and other parameters
+        ///         produce the same output.
+        ///
+        /// \details    This requires that the principle of determinism is followed in both
+        ///             our library implementations and the user's models.
         ///
         const std::uint64_t sample;
 

@@ -41,6 +41,16 @@ namespace esl::data {
         ///
         std::unordered_map<std::string, std::shared_ptr<output_base>> outputs;
 
+
+        void add_output_stream(const std::string &name, std::shared_ptr<stream> s)
+        {
+            auto i = outputs.find(name);
+            if(outputs.end() == i){
+                throw std::invalid_argument("output \"" + name + "\" not found (use create_output first)");
+            }
+            i->second->streams.push_back(s);
+        }
+
         producer() = default;
 
         virtual ~producer() = default;
