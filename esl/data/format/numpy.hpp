@@ -1,9 +1,9 @@
-/// \file   sink.hpp
+/// \file   numpy.hpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2020-03-31
+/// \date       2020-04-16
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,30 +22,14 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ME_STREAM_HPP
-#define ME_STREAM_HPP
-
-#include <fstream>
-#include <iostream>
 
 
-namespace esl::data {
-    class stream
-    {
-    protected:
-        std::ostream &stream_;
-    public:
-        explicit stream(std::ostream &stream)
-        : stream_(stream)
-        {
+#ifndef ME_NUMPY_HPP
+#define ME_NUMPY_HPP
 
-        }
 
-        operator std::ostream &()
-        {
-            return stream_;
-        }
-    };
-}
+class numpy
+{ };
 
-#endif  // ME_STREAM_HPP
+
+#endif  // ME_NUMPY_HPP

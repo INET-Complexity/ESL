@@ -1,4 +1,4 @@
-/// \file   sink.hpp
+/// \file   terminal.hpp
 ///
 /// \brief
 ///
@@ -22,30 +22,34 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ME_STREAM_HPP
-#define ME_STREAM_HPP
+#ifndef ME_DATA_TERMINAL_HPP
+#define ME_DATA_TERMINAL_HPP
 
-#include <fstream>
-#include <iostream>
+#include <esl/data/stream.hpp>
 
 
 namespace esl::data {
-    class stream
+
+    class terminal
+    : public stream
     {
-    protected:
-        std::ostream &stream_;
     public:
-        explicit stream(std::ostream &stream)
-        : stream_(stream)
+        enum type {
+            out, error,
+        };
+    protected:
+        const type type_;
+    public:
+        explicit terminal(type standard = out)
+        :   stream(standard == out ? std::cout : std::cerr)
+        ,   type_(standard)
         {
 
-        }
-
-        operator std::ostream &()
-        {
-            return stream_;
         }
     };
+
+
+
 }
 
-#endif  // ME_STREAM_HPP
+#endif// ME_DATA_TERMINAL_HPP

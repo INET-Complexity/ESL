@@ -32,6 +32,7 @@
 
 #include <esl/data/null_ostream.hpp>
 #include <esl/data/channel.hpp>
+#include <esl/data/terminal.hpp>
 #include <esl/data/representation.hpp>
 #include <esl/data/output.hpp>
 #include <esl/simulation/time.hpp>

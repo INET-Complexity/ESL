@@ -110,7 +110,7 @@ namespace esl::economics::accounting {
 
         [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const
         {
-            price result_ = price(0ll, reporting_currency);
+            price result_ = price(0.00, reporting_currency);
             auto i = mark_to_market.find(c.security);
             if(mark_to_market.end() == i){
                 LOG(error) << "no market price for stock " << c.security << std::endl;

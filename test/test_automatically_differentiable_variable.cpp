@@ -61,6 +61,8 @@ using esl::economics::cash;
 using esl::economics::finance::bond;
 using esl::economics::finance::stock;
 using esl::economics::finance::bond;
+
+using esl::economics::finance::share_class;
 using esl::economics::finance::shareholder;
 
 #include <esl/mathematics/variable.hpp>

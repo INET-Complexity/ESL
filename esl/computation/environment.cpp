@@ -56,7 +56,7 @@ namespace esl::computation {
     {
         size_t result_ = 0;
         for(auto a : activated_) {
-            activate_agent(a);
+            //activate_agent(a);
             ++result_;
         }
         activated_.clear();
@@ -69,7 +69,7 @@ namespace esl::computation {
     size_t environment::deactivate()
     {
         size_t result_ = 0;
-        for(auto a : deactivated_) {
+        for(const auto &a : deactivated_) {
             deactivate_agent(a);
             ++result_;
         }
@@ -88,7 +88,7 @@ namespace esl::computation {
 
     void environment::after_run(simulation::model &simulation)
     {
-        return;
+        return; /// TODO
         for(auto &[i, a]: simulation.agents.local_agents_) {
             for(const auto &o: a->outputs){
                 std::stringstream filename_;
@@ -140,6 +140,7 @@ namespace esl::computation {
                 ++messages_;
             }
             a->outbox.clear();
+            a->outbox.shrink_to_fit();
         }
         return messages_;
     }
@@ -192,7 +193,7 @@ namespace esl::computation {
         } while(step_.lower < simulation.end);
 
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
-        LOG(trace) << "simulation took "
+        std::cout << "simulation took "
                    << (double(timer_simulation_.count()) / 1e+9)
                    <<  " seconds" << std::endl;
         simulation.terminate();
@@ -200,7 +201,7 @@ namespace esl::computation {
         after_run(simulation);
         auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
         auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
-        LOG(trace) << "running simulation in " << typeid(decltype(*this)).name()
+        std::cout << "running simulation in " << typeid(decltype(*this)).name()
                    << " took " << (double(timer_total_.count()) / 1e+9)
                    << " seconds" << std::endl;
     }

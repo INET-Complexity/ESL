@@ -27,6 +27,7 @@
 
 #include <array>
 #include <cassert>
+#include <ostream>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
@@ -46,9 +47,14 @@ namespace esl::economics {
         ///
         std::uint64_t denominator;
 
+        constexpr iso_4217(const iso_4217 &operand)
+        : iso_4217(operand.code, operand.denominator)
+        {
+
+        }
+
         //
-        constexpr explicit iso_4217(std::array<char, 3> isocode = {'X', 'X',
-                                                                   'X'},
+        constexpr iso_4217(const std::array<char, 3> &isocode = {'X', 'X', 'X'},
                                     std::uint64_t denominator   = 100)
         : code(isocode), denominator(denominator)
         {
@@ -60,14 +66,14 @@ namespace esl::economics {
 
         ~iso_4217() = default;
 
-        /*inline iso_4217 &operator = (const iso_4217 &operand)
+        inline iso_4217 &operator = (const iso_4217 &operand)
         {
-            for(auto i = 0; i < code.size(); ++i) {
+            for(size_t i = 0; i < code.size(); ++i) {
                 code[i] = operand.code[i];
             }
             denominator = operand.denominator;
             return *this;
-        }*/
+        }
 
         [[nodiscard]] inline constexpr bool
         operator == (const iso_4217 &operand) const

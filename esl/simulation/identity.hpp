@@ -117,17 +117,17 @@ namespace esl {
         ///
         /// \param i    Other identity
         ///
-        identity(identity<identifiable_type_> &&i) noexcept
-        : digits(i.digits)
-        {
+        //identity(identity<identifiable_type_> &&i) noexcept
+        //: digits(i.digits)
+        //{
 
-        }
+        //}
 
         ///
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator=(const identity<identifiable_type_> &rhs)
+        operator = (const identity<identifiable_type_> &rhs)
         {
             digits = rhs.digits;
             return *this;

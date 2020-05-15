@@ -37,7 +37,6 @@
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_multiroots.h>
 
-
 #include <adept_source.h>
 
 
@@ -453,19 +452,6 @@ namespace esl::economics::markets::tatonnement {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         for(auto method_ : methods){
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
@@ -474,7 +460,7 @@ namespace esl::economics::markets::tatonnement {
                 for(auto [k, v] : quotes_) {
                     (void) v;
                     mapping_index_.emplace_back(k);
-                    active_.emplace_back(1.0);
+                    active_.emplace_back(1.0 );
                 }
             }
 
@@ -490,7 +476,7 @@ namespace esl::economics::markets::tatonnement {
 
                 gsl_vector *variables_ = gsl_vector_alloc(active_.size());
                 for(size_t i = 0; i < active_.size(); ++i) {
-                    gsl_vector_set(variables_, i, 1.0);
+                    gsl_vector_set(variables_, i, 1.0 );
                 }
 
                 const gsl_multiroot_fdfsolver_type *solver_t_ = gsl_multiroot_fdfsolver_hybridsj;
@@ -503,7 +489,7 @@ namespace esl::economics::markets::tatonnement {
                     if(GSL_SUCCESS != status){
                         break;
                     }
-                    status = gsl_multiroot_test_residual(solver_->f, 1e-6);
+                    status = gsl_multiroot_test_residual(solver_->f, 1e-3);
                 }
 
                 if(GSL_SUCCESS == status){
@@ -511,8 +497,8 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        scalar_ = std::min(scalar_, 3.);
-                        scalar_ = std::max(scalar_, 1./3.);
+                        scalar_ = std::min(scalar_, 10.);
+                        scalar_ = std::max(scalar_, 1./10.);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);
@@ -566,7 +552,7 @@ namespace esl::economics::markets::tatonnement {
                 // if(status == GSL_ENOPROG) {
                 //     return result_;
                 // }
-                LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
+                //LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
                 continue;
             }else{
                 const double initial_step_size       = 1.0e-5;
@@ -575,8 +561,6 @@ namespace esl::economics::markets::tatonnement {
 
 #if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
                 const auto *minimizer_type = gsl_multimin_fdfminimizer_vector_bfgs2;
-
-                active_.clear();
 
                 gsl_multimin_function_fdf my_function;
                 my_function.n      = active_.size();
@@ -635,8 +619,8 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multimin_fdfminimizer_free(minimizer);
                 gsl_vector_free(x);
 
-                LOG(error)  << "gradient-based minimizer failed after " << iter
-                            << " iterations: " << gsl_strerror(status) << std::endl;
+                //LOG(error)  << "gradient-based minimizer failed after " << iter
+                //            << " iterations: " << gsl_strerror(status) << std::endl;
 #else
                 LOG(error)  << "gradient-free minimizer failed after " << iter
                             << " iterations: " << gsl_strerror(status) << std::endl;

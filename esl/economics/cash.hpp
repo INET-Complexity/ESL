@@ -25,17 +25,15 @@
 #ifndef ESL_CASH_HPP
 #define ESL_CASH_HPP
 
+#include <string>
+#include <sstream>
+
 #include <esl/economics/money.hpp>
 #include <esl/economics/tangibility.hpp>
 
 
 
 namespace esl::economics {
-    namespace detail {
-
-    }
-
-
     ///
     /// \brief  (Financial) cash, that for example can be exchanged
     /// electronically. For tangible (physical) money, such as notes and coins,
@@ -45,10 +43,19 @@ namespace esl::economics {
     : public money
     , public intangible
     {
+    private:
+        static identity<law::property>
+        create_identifier(const iso_4217 &denomination)
+        {
+            return identity<law::property>(
+                    {typeid(cash).hash_code(),
+                     std::hash<iso_4217>()(denomination)});
+        }
+
+    public:
         explicit cash(iso_4217 denomination)
-        : /* law::property(esl::identity<esl::law::property>({typeid(cash).hash_code(), std::hash<esl::economics::iso_4217>()(denomination)}))
-        , */ law::property(identity<law::property>({typeid(cash).hash_code(), std::hash<iso_4217>()(denomination)}))
-        , money(denomination, identity<law::property>({typeid(cash).hash_code(), std::hash<iso_4217>()(denomination)}))
+                : law::property( create_identifier(denomination))
+                , money(denomination,  create_identifier(denomination))
         {
 
         }

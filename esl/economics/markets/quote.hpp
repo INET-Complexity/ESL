@@ -88,6 +88,24 @@ namespace esl::economics {
                 type);
         }
 
+        quote &operator=(const quote &o)
+        {
+            lot = o.lot;
+            type = o.type;
+            /*std::visit([&](const auto &quote)
+                       {
+                           using type_ = std::decay_t<decltype(quote)>;
+                           if constexpr(std::is_same_v<type_, price>) {
+                               this->type.emplace<price>(quote) ;
+                           }else if constexpr(std::is_same_v<type_, exchange_rate>) {
+                               this->type.emplace<exchange_rate>(quote) ;
+                           }
+                       },
+                       o.type);*/
+
+            return *this;
+        }
+
 
         template<class archive_t>
         void save(archive_t &archive, const unsigned int version) const

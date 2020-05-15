@@ -89,11 +89,12 @@ namespace esl::economics {
 
         }
 
-        /*price &operator = (const price &p)
+        price &operator = (const price &p)
         {
-            value = p.value;
+            value     = p.value;
             valuation = p.valuation;
-        }*/
+            return *this;
+        }
 
         [[nodiscard]] constexpr bool operator==(const price &operand) const
         {

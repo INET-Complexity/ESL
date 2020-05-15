@@ -60,9 +60,10 @@ ENDIF(CCACHE_FOUND)
 ################################################################################
 # Library optional add-ons
 ################################################################################
-set(Boost_USE_STATIC_LIBS   ON)
-SET(CMAKE_EXE_LINKER_FLAGS " -static")
-
+IF(WIN32)
+    SET(Boost_USE_STATIC_LIBS   ON)
+    SET(CMAKE_EXE_LINKER_FLAGS " -static")
+ENDIF()
 
 
 OPTION(WITH_MPI "Enable MPI using Boost.MPI" OFF)
@@ -112,7 +113,7 @@ ENDIF()
 
 
 ################################################################################
-
+#SET(Boost_USE_STATIC_LIBS ON)
 LIST(APPEND Boost_LIBRARIES
         program_options
         date_time
@@ -128,7 +129,9 @@ FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 ################################################################################
 
 # optional accelerators for scientific computing
-SET(BLA_STATIC ON)
+IF(WIN32)
+    SET(BLA_STATIC ON)
+ENDIF()
 FIND_PACKAGE(BLAS)
 FIND_PACKAGE(LAPACK)
 
@@ -142,13 +145,18 @@ MESSAGE("profile  " ${CMAKE_BUILD_TYPE})
 MESSAGE("compiler " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} " (" ${CMAKE_CXX_COMPILER} ")")
 MESSAGE("----------------------------------------")
 
+ADD_COMPILE_OPTIONS(-m64)
+
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
 SET(CMAKE_C_FLAGS_DEBUG "-g -Og ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
 
-SET(CMAKE_C_FLAGS_RELEASE "-g -O3")
-SET(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+
+#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     INCLUDE(CheckCXXCompilerFlag)
@@ -165,7 +173,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
 ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
-ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
+ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE) # ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
 #ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
 # Used to benchmark improvements using automatic differentiation
@@ -191,7 +199,11 @@ ENDIF()
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
-LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
+IF(WIN32)
+    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
+ELSE()
+    LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl) #)
+ENDIF()
 
 IF(WIN32)
     LIST(APPEND ALL_LINKED_LIBRARIES)
@@ -219,8 +231,12 @@ IF(BLAS_FOUND)
     ENDIF()
 ENDIF()
 
-LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 
+IF(WIN32)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+ELSE()
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
+ENDIF()
 ################################################################################
 
 SET(SOURCE_FILES
@@ -450,7 +466,7 @@ SET(SOURCE_FILES
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
-        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp)
+        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp esl/data/terminal.cpp esl/data/terminal.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
@@ -469,8 +485,8 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 ELSE()
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl -static  -static-libgcc -static-libstdc++)
-    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl -static  -static-libgcc -static-libstdc++)
+    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+    LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 ENDIF()
 
 ################################################################################

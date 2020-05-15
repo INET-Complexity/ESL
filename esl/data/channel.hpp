@@ -29,6 +29,8 @@
 
 #include <vector>
 #include <iostream>
+#include <mutex>
+#include <thread>
 
 #include <esl/data/severity.hpp>
 
@@ -39,19 +41,43 @@ namespace esl::data {
     /// \brief  A channel is a formatter that adds additional information
     ///         to the message. It is instantiated by the log class.
     ///
-    struct channel
+    class channel
     {
+    public:
         ///
         const severity level;
 
+    private:
+        ///
+        /// \brief  The output stream this channel operates on
         ///
         std::ostream &stream;
 
         ///
+        /// \brief  The name of the surrounding function
+        ///
         const char *function_name;
+
+        ///
+        /// \brief  Name of the source file, ideally with the local path from the project root folder.
+        ///
         const char *source_file;
+
+        ///
+        /// \brief  Line number in source_file
+        ///
         const unsigned int line;
 
+    public:
+
+        ///
+        /// \brief  A channel wraps an output stream with meta-information needed for logging.
+        ///
+        /// \param level
+        /// \param stream
+        /// \param function_name
+        /// \param source_file
+        /// \param line
         constexpr channel(severity level,
                           std::ostream &stream,
                           const char *function_name = nullptr,
@@ -67,7 +93,7 @@ namespace esl::data {
         }
 
         template<typename output_t>
-        channel &operator<<(output_t &&value)
+        channel &operator << (output_t &&value)
         {
             std::vector<std::ostream *> os = {&stream};
 #if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
@@ -105,7 +131,6 @@ namespace esl::data {
 
         typedef std::basic_ostream<char, std::char_traits<char>> ostream_t;
 
-        // type of ostream manipulators such as std::endl
         typedef ostream_t &(*line_end_t)(ostream_t &);
 
         channel &operator << (line_end_t manipulator)

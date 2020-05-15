@@ -130,13 +130,15 @@ namespace esl::economics::markets::walras {
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
-                //LOG(error) << prices_ << std::endl;
                 output_clearing_prices_->put(step.lower, prices_);
                 latest = step.lower;
             }else{  // restore previous prices
                 for(const auto &[k, v]: traded_properties){
                     (void)k;
                     quotes_.push_back(v);
+                }
+                if(step.lower > 1){
+                    next_ = step.lower;
                 }
             }
         }
