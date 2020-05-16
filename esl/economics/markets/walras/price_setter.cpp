@@ -184,9 +184,13 @@ namespace esl::economics::markets::walras {
                     [&, result_, p = p](auto &quote) {
                         using type_ = std::decay_t<decltype(quote)>;
                         if constexpr(std::is_same_v<type_, price>) {
-                            std::get<price>(traded_properties[p].type).value =
-                                    int64_t(quote.value
-                                            * result_.find(p->identifier)->second);
+                            auto value_ = int64_t(quote.value
+                                                 * result_.find(p->identifier)->second);
+                            if(0 == value_){//} && POSITIVE){
+                                value_ = 1;
+                            }
+                            std::get<price>(traded_properties[p].type).value =value_
+                                    ;
 
                         } else if constexpr(std::is_same_v<type_, exchange_rate>) {
                             quote = exchange_rate(
