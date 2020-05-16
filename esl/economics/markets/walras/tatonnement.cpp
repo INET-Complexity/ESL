@@ -491,7 +491,7 @@ namespace esl::economics::markets::tatonnement {
                     if(GSL_SUCCESS != status){
                         break;
                     }
-                    status = gsl_multiroot_test_residual(solver_->f, 1e-4);
+                    status = gsl_multiroot_test_residual(solver_->f, 1e-3);
                 }
 
                 if(GSL_SUCCESS == status){
@@ -499,8 +499,8 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        scalar_ = std::min(scalar_, 2.);
-                        scalar_ = std::max(scalar_, 1./2.);
+                        scalar_ = std::min(scalar_, 1.2);
+                        scalar_ = std::max(scalar_, 1./1.2);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);

@@ -84,7 +84,7 @@ namespace esl::economics::markets::tatonnement {
         ///         root finding solver does not make progress towards a
         ///         solution.
         ///
-        std::vector<solver> methods = {multiple_root, minimization};
+        std::vector<solver> methods = {multiple_root/*, minimization*/};
 
     protected:
         std::map<identity<law::property>, quote> quotes_;
