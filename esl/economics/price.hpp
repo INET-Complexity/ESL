@@ -76,6 +76,7 @@ namespace esl::economics {
 
         }
 
+
         constexpr price(const price &p)
         : price(p.value, p.valuation)
         {
@@ -141,6 +142,12 @@ namespace esl::economics {
             return *this;
         }
 
+
+        [[nodiscard]] constexpr price operator - ()
+        {
+            return price(-value, valuation);
+        }
+
         [[nodiscard]] constexpr price operator-(const price &operand) const
         {
             assert(valuation == operand.valuation);
@@ -165,7 +172,7 @@ namespace esl::economics {
         {
             return price(static_cast<int64_t>(p.value * operand), p.valuation);
         }
-
+;
         [[nodiscard]] constexpr friend price operator*(const uint64_t &operand, const price &p)
         {
             return p * operand;

@@ -483,13 +483,15 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc (solver_t_, active_.size());
                 gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
 
+                size_t max_iterations_ = size_t(std::pow(10, active_.size()));
+
                 int status = GSL_CONTINUE;
-                for(size_t iter = 0; iter < 1000 && GSL_CONTINUE == status; ++iter){
+                for(size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i){
                     status = gsl_multiroot_fdfsolver_iterate(solver_);
                     if(GSL_SUCCESS != status){
                         break;
                     }
-                    status = gsl_multiroot_test_residual(solver_->f, 1e-3);
+                    status = gsl_multiroot_test_residual(solver_->f, 1e-4);
                 }
 
                 if(GSL_SUCCESS == status){
@@ -497,8 +499,8 @@ namespace esl::economics::markets::tatonnement {
                     auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                     for(size_t i = 0; i < active_.size(); ++i) {
                         auto scalar_ = gsl_vector_get(solver_best_, i);
-                        scalar_ = std::min(scalar_, 10.);
-                        scalar_ = std::max(scalar_, 1./10.);
+                        scalar_ = std::min(scalar_, 2.);
+                        scalar_ = std::max(scalar_, 1./2.);
                         result_.emplace(mapping_index_[i], scalar_);
                     }
                     gsl_multiroot_fdfsolver_free(solver_);
