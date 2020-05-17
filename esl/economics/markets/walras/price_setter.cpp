@@ -123,7 +123,11 @@ namespace esl::economics::markets::walras {
 
             if(!orders_.empty()) {
                 // there is at least one order so we clear the market
+                auto before_ = std::chrono::high_resolution_clock::now();
                 auto scalars_ = clear_market(orders_, step);
+                LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+9) <<  " seconds" << std::endl;
+
+
                 std::vector<price> prices_;
                 for(auto &[k, v]: traded_properties){
                     (void)v;

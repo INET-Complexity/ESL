@@ -246,5 +246,33 @@ namespace esl {
         return iterable_wrapper{ std::forward<element_t_>(iterable) };
     }
 
+
+
+    template<typename coordinate_t_ = double>
+    std::vector<std::vector<coordinate_t_>> sample_barycentric(size_t dimensions, size_t divisions, coordinate_t_ remainder=1.0)
+    {
+        if(dimensions == 1){
+            return  {{remainder}};
+        }
+
+        std::vector<std::vector<double>> result_;
+        for(int n = 0; n < divisions; ++n){
+            auto fraction_ = (double(n)+0.0) / (divisions);
+            if(fraction_ > remainder){
+                break;
+            }
+            auto next_remainder_ = remainder - fraction_;
+            if(next_remainder_ <= 0.){
+                //continue;
+            }
+            auto tails_ = sample_barycentric(dimensions - 1, divisions, next_remainder_);
+            for(auto t: tails_){
+                t.push_back(fraction_);
+                result_.push_back(t);
+            }
+        }
+        return result_;
+    }
+
 }  // namespace esl
 #endif  // ESL_ALGORITHMS_HPP
