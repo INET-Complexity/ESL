@@ -437,15 +437,6 @@ SET(SOURCE_FILES
         esl/data/log.cpp
         esl/data/log.hpp
 
-        esl/economics/markets/order_book/order.cpp
-        esl/economics/markets/order_book/order.hpp
-
-        esl/economics/markets/order_book/matching_engine.cpp
-        esl/economics/markets/order_book/matching_engine.hpp
-
-        esl/data/log.cpp
-        esl/data/log.hpp
-
         esl/data/stream.cpp
         esl/data/stream.hpp
 
