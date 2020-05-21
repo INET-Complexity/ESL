@@ -101,7 +101,7 @@ namespace esl::law {
             if(!m_){
                 stream << b->first->name()   << ": " << (b->second);
             }else{
-                stream << m_->price(b->second );
+                //stream << m_->price(b->second );
             }
             std::advance(b, 1);
             for(auto i =  b; i != associative.end(); ++i) {
@@ -109,7 +109,7 @@ namespace esl::law {
                 if(!m_){
                     stream << ", " << i->first->name()   << ": " << (i->second);
                 }else{
-                    stream << ", " << m_->price(b->second );
+                  //  stream << ", " << m_->price(b->second );
                 }
             }
         }

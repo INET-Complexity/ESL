@@ -155,8 +155,7 @@ namespace esl::economics::markets::walras {
                 ++sequence_;
             }
         }
-        // LOG(trace) << describe() << " " << identifier << " time " <<
-        // step.lower <<  " clearing prices " << quote_map_ << std::endl;
+        //LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
 
         for(const auto &p : participants) {
             auto m = this->template create_message<walras::quote_message>(

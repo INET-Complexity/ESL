@@ -143,7 +143,7 @@ namespace esl::economics {
         }
 
 
-        [[nodiscard]] constexpr price operator - ()
+        [[nodiscard]] constexpr price operator - () const
         {
             return price(-value, valuation);
         }
