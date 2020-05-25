@@ -74,7 +74,7 @@ using esl::economics::rate;
 #include <esl/economics/markets/walras/tatonnement.hpp>
 #include <esl/economics/markets/walras/price_setter.hpp>
 using esl::economics::markets::walras::price_setter;
-
+using namespace esl::economics::markets::tatonnement;
 
 #include <esl/economics/interest_rate.hpp>
 using esl::economics::nominal_interest_rate;
@@ -84,18 +84,32 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
 BOOST_AUTO_TEST_CASE(variable_constructor)
     {
-        std::vector<esl::variable> v = {1.0, 3.0, 5.0, 7.0};
-        for(auto x : v){
-            //x.();
-            //auto f = -(x * x * x);
-            //f.grad();
-            //BOOST_CHECK_CLOSE(f.val(), - (x.val() * x.val() * x.val()), 0.000'000'1);
-            //BOOST_CHECK_CLOSE(x.adj(), -3. * (x.val()  * x.val() ) + 1.0, 0.000'000'1);
+        adept::Stack stack_;
+        std::vector<double> v = {1.0, 3.0, 5.0, 7.0};
+        for(auto x1 : v){
+
+            esl::variable x = x1;
+            stack_.new_recording();
+
+            adept::adouble f = -(x * x * x);
+
+            stack_.independent(&x, 1);
+            stack_.dependent(&x, 1);
+            double j[1] = {0.};
+            stack_.jacobian(j);
+
+
+            f.set_gradient(1.0);
+            stack_.compute_adjoint();
+            double dj[1] = {0.};
+            adept::get_gradients(&x, 1, dj);
+
+            BOOST_CHECK_CLOSE(adept::value(f), - (adept::value(x) * adept::value(x) * adept::value(x)), 0.000'000'1);
+
+            BOOST_CHECK_CLOSE(dj[0], -3. * (adept::value(x)  * adept::value(x) ) , 0.000'000'1);
         }
 
-
-
-
+        /*
         environment e;
         model model_(e, parametrization(0, 0, 3));
 
@@ -113,20 +127,21 @@ BOOST_AUTO_TEST_CASE(variable_constructor)
         std::cout << bond_->name() << std::endl;
         std::map<identity<property>, quote> initial_quotes_;
         initial_quotes_.emplace( bond_->identifier,quote(price(1.00, USD)));
-        tatonnement::excess_demand_model edmodel_(initial_quotes_);
+        excess_demand_model edmodel_(initial_quotes_);
         std::map<identity<property>, price> valuations_;
         valuations_.emplace(bond_->identifier, price(1.50, USD));
 
 
-/*
-        auto dm = std::make_shared<dividend_discount_ddsf>
-            (esl::identity<esl::agent>()
-                , esl::identity<esl::agent>()
-                , 0,0, valuations_);
 
-        edmodel_.excess_demand_functions_.push_back(dm);
-*/
-        edmodel_.compute_clearing_quotes();
+      //  auto dm = std::make_shared<dividend_discount_ddsf>
+      //      (esl::identity<esl::agent>()
+     //           , esl::identity<esl::agent>()
+     //           , 0,0, valuations_);
+
+       // edmodel_.excess_demand_functions_.push_back(dm);
+
+        edmodel_.compute_clearing_quotes();*/
+
     }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

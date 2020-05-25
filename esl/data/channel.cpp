@@ -25,3 +25,9 @@
 
 
 #include "channel.hpp"
+
+
+namespace esl::data
+{
+    std::mutex channel::mutex_;
+}

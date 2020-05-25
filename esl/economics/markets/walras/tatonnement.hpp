@@ -1,8 +1,7 @@
 /// \file   tatonnement.hpp
 ///
 /// \brief  Implements the tâtonnement process (hill climbing), implemented as a
-///         numerical optimisation (L-BFGS) with
-///         automatic differentiation using the Stan-math library.
+///         numerical optimisation using quasi-Newton methods.
 ///
 /// \remark This code uses the spelling `tatonnement`, as the accent on `â` can
 ///         not be rendered in some filesystem character sets.

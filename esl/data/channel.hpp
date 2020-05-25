@@ -31,6 +31,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <mutex>
 
 #include <esl/data/severity.hpp>
 
@@ -52,6 +53,8 @@ namespace esl::data {
         /// \brief  The output stream this channel operates on
         ///
         std::ostream &stream;
+
+        static std::mutex mutex_;
 
         ///
         /// \brief  The name of the surrounding function
@@ -95,6 +98,7 @@ namespace esl::data {
         template<typename output_t>
         channel &operator << (output_t &&value)
         {
+            std::lock_guard<std::mutex> lock_(mutex_);
             std::vector<std::ostream *> os = {&stream};
 #if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             os.push_back(&std::cout);
@@ -113,6 +117,7 @@ namespace esl::data {
         /// \return
         channel &operator<<(manipulator function)
         {
+            std::lock_guard<std::mutex> lock_(mutex_);
             return function(*this);
         }
 
@@ -122,6 +127,7 @@ namespace esl::data {
         /// \return
         static channel &endl(channel &stream)
         {
+            std::lock_guard<std::mutex> lock_(mutex_);
             stream << std::endl;
 #if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             std::cout << std::endl;
@@ -135,6 +141,7 @@ namespace esl::data {
 
         channel &operator << (line_end_t manipulator)
         {
+            std::lock_guard<std::mutex> lock_(mutex_);
             manipulator(stream);
 #if !(defined(ESL_RELEASE) && ESL_RELEASE > 0)
             manipulator(std::cout);

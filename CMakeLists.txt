@@ -450,9 +450,9 @@ SET(SOURCE_FILES
 
         esl/data/null_streambuf.hpp
         esl/data/null_ostream.hpp
+
         esl/data/channel.cpp
         esl/data/channel.hpp
-
 
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
@@ -489,31 +489,31 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 
 ################################################################################
 
-#FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
-#
-#FOREACH(test_src ${TEST_SRCS})
-#    MESSAGE("TEST " ${test_src})
-#    GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
-#
-#    ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
-#    TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
-#    SET_TARGET_PROPERTIES(${test_name} PROPERTIES
-#        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
-#
-#    # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
-#    IF(${test_name} MATCHES "^(test_mpi_)")
-#        IF(WITH_MPI)
-#            MESSAGE("\t MPI TEST")
-#            ADD_TEST(NAME ${test_name}
-#                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-#                    COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
-#        ENDIF()
-#    ELSE()
-#        ADD_TEST(NAME ${test_name}
-#                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-#                COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
-#    ENDIF()
-#ENDFOREACH(test_src)
+FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
+
+FOREACH(test_src ${TEST_SRCS})
+    MESSAGE("TEST " ${test_src})
+    GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
+
+    ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
+    TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
+    SET_TARGET_PROPERTIES(${test_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
+
+    # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
+    IF(${test_name} MATCHES "^(test_mpi_)")
+        IF(WITH_MPI)
+            MESSAGE("\t MPI TEST")
+            ADD_TEST(NAME ${test_name}
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                    COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
+        ENDIF()
+    ELSE()
+        ADD_TEST(NAME ${test_name}
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
+    ENDIF()
+ENDFOREACH(test_src)
 
 ################################################################################
 

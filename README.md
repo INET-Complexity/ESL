@@ -64,26 +64,11 @@ make test
 
 In the following minimal example, we create an empty model and populate it with two agents. We give the first agent `a` some cash, which it then transfers to agent `b` in the next time step.
  
-```python
-import esl.agent
-import esl.simulation.model
-from esl.economics import cash, currencies
-
-m = esl.simulation.model()
-
-a = m.create(esl.agent)
-b = m.create(esl.agent)
-
-cash_amount = cash(10, currencies.USD)
-
-a.cash_properties.insert(cash_amount)
-
-a.create_message(transfer_cash(cash_amount), b)
-
-m.step()
-
-assert(b.cash_properties[esl.currencies.USD] == cash_amount)
-
+```C++
+int main()
+{
+    
+}
 ```
 
 
