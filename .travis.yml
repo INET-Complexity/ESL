@@ -15,8 +15,8 @@ addons:
   apt:
     sources:
     packages:
-      - gcc-7
-      - g++-7
+      - gcc-8
+      - g++-8
       - gfortran
       - cmake
 
