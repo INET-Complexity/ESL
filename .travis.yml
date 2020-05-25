@@ -34,7 +34,7 @@ install:
     - wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
     - tar -xvf adept-2.0.5.tar.gz
     - cd adept-2.0.5/
-    - ./configure && make -j2 && make install
+    - ./configure && make -j2 && sudo make install
 
 script:
     - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
