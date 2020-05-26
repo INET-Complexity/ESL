@@ -15,8 +15,8 @@ addons:
   apt:
     sources:
     packages:
-      - gcc-8
-      - g++-8
+      - gcc-9
+      - g++-9
       - gfortran
       - cmake
 
@@ -37,15 +37,18 @@ install:
     - cd adept-2.0.5/
     - ./configure && make -j2 && sudo make install
     - cd include && ./create_adept_source_header
+    - ls
+    - pwd
+    - ls /usr/local/include/
     - sudo cp adept_source.h /usr/local/include/
     - cd ../..
 
 script:
-    - sudo ln -s /usr/bin/gcc-8 /usr/local/bin/gcc
-    - sudo ln -s /usr/bin/g++-8 /usr/local/bin/g++
+    - sudo ln -s /usr/bin/gcc-9 /usr/local/bin/gcc
+    - sudo ln -s /usr/bin/g++-9 /usr/local/bin/g++
     - gcc -v && g++ -v && cmake --version
-    - export CC=/usr/bin/gcc-8
-    - export CXX=/usr/bin/g++-8
+    - export CC=/usr/bin/gcc-9
+    - export CXX=/usr/bin/g++-9
     - mkdir build && cd build && cmake ../ 
     - make -j2
     - make test

@@ -130,4 +130,4 @@ BOOST_AUTO_TEST_CASE(initialization)
 BOOST_AUTO_TEST_SUITE_END()  // ESL
 
 
-#endif WITH_MPI
+#endif//WITH_MPI
