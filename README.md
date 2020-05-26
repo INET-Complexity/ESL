@@ -61,14 +61,10 @@ make test
 
 
 ## Examples
+Work in progress
 
-In the following minimal example, we create an empty model and populate it with two agents. We give the first agent `a` some cash, which it then transfers to agent `b` in the next time step.
- 
 ```C++
-int main()
-{
-    
-}
+
 ```
 
 
