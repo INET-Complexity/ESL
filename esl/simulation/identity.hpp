@@ -238,14 +238,14 @@ namespace esl {
 
             auto iterator_ = i.digits.begin();
             auto width_    = std::setw(stream.width());
-            stream << '"';
+            stream << std::setw(0) << '"';
             stream << std::setfill('0') << width_ << *iterator_;
             ++iterator_;
             for(; iterator_ != i.digits.end(); ++iterator_) {
                 stream << '-';
                 stream << std::setfill('0') << width_ << *iterator_;
             }
-            stream << '"';
+            stream << std::setw(0) << '"'; // stream width resets
             return stream;
         }
 
