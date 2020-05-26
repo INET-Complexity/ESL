@@ -37,7 +37,7 @@ install:
     - cd adept-2.0.5/
     - ./configure && make -j2 && sudo make install
     - cd include && ./create_adept_source_header
-    - sudo cp adept_source.h /usr/local/include
+    - sudo cp adept_source.h /usr/local/include/
     - cd ../..
 
 script:
