@@ -22,23 +22,20 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
+#include <esl/version.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE version
 
 #include <boost/test/included/unit_test.hpp>
 
-
-#include <esl/version.hpp>
-
 BOOST_AUTO_TEST_SUITE(ESL)
 
 
-BOOST_AUTO_TEST_CASE(version)
+BOOST_AUTO_TEST_CASE(version_parsed)
 {
     auto version_ = esl::version();
-    BOOST_TEST(version_.length() >= 5);
+    BOOST_CHECK_EQUAL(version_.length(), 5);
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

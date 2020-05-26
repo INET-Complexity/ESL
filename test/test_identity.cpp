@@ -22,10 +22,13 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+
+
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE identity
 
 #include <boost/test/included/unit_test.hpp>
+
 
 #include <esl/simulation/identifiable_as.hpp>
 #include <esl/simulation/identity.hpp>
@@ -33,7 +36,6 @@
 #include <string>
 using std::string;
 #include <sstream>
-
 
 
 BOOST_AUTO_TEST_SUITE(ESL)

@@ -23,7 +23,7 @@
 ///             requirements in CITATION.cff
 ///
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE walras
+#define BOOST_TEST_MODULE walrasian_market
 
 #include <boost/test/included/unit_test.hpp>
 
@@ -31,16 +31,16 @@
 
 
 #include <esl/computation/environment.hpp>
-#include <esl/economics/finance/shareholder.hpp>
-#include <esl/economics/finance/stock.hpp>
 #include <esl/economics/markets/walras/price_setter.hpp>
 #include <esl/law/jurisdictions.hpp>
 #include <esl/simulation/model.hpp>
 
 #include <esl/economics/markets/walras/quote_message.hpp>
-#include <esl/economics/markets/walras/order_message.hpp>
 
-struct test_share_issuing_company : public esl::economics::company
+
+
+struct test_share_issuing_company
+: public esl::economics::company
 {
 public:
     test_share_issuing_company(const esl::identity<esl::economics::company> &i)
@@ -151,15 +151,6 @@ struct test_constant_demand_trader
     {
         (void) seed;
         esl::economics::accounting::standard a(esl::economics::currencies::USD);
-        auto wealth1_ =
-            esl::law::owner<esl::economics::cash>::properties.value(a);
-        auto wealth2_ =
-            esl::law::owner<esl::economics::finance::stock>::properties.value(
-                a);
-
-        auto working_capital_ = wealth1_ + wealth2_;
-
-        (void) working_capital_;
 
         for(auto [k, message_] : inbox) {
             switch(k) {
@@ -281,6 +272,9 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
     }
 
     model_.step({0, 1});
+
+    model_.step({1, 2});
+    model_.step({1, 3});
     BOOST_CHECK_EQUAL(participants_[0]->prices.size(), 2);
 }
 
