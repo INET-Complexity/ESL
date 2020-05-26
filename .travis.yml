@@ -36,9 +36,9 @@ install:
     - tar -xvf adept-2.0.5.tar.gz
     - cd adept-2.0.5/
     - ./configure && make -j2 && sudo make install
-    - cd include && ./create_adept_source_header && cd ..
+    - cd include && ./create_adept_source_header
     - sudo cp adept_source.h /usr/local/include
-    - cd ..
+    - cd ../..
 
 script:
     - sudo ln -s /usr/bin/gcc-8 /usr/local/bin/gcc
