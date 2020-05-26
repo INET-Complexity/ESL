@@ -128,6 +128,11 @@ BOOST_AUTO_TEST_CASE(initialization)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
+#else
+/// @TODO until there is a better solution, here is a dummy test case
+BOOST_AUTO_TEST_SUITE(ESL)
+    BOOST_AUTO_TEST_CASE(mpi_not_enabled) {
 
-
+    }
+}
 #endif//WITH_MPI

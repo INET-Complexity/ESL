@@ -87,10 +87,10 @@ BOOST_AUTO_TEST_CASE(identity_ostream_operator)
 {
     esl::identity<dummy_base> i = {1, 0, 23, 456, 7};
 
-    string reference2_ = "01-00-23-456-07";
+    string reference2_ = "\"01-00-23-456-07\"";
     BOOST_CHECK_EQUAL(i.representation(2), reference2_);
 
-    string reference0_ = "1-0-23-456-7";
+    string reference0_ = "\"1-0-23-456-7\"";
     BOOST_CHECK_EQUAL(i.representation(0), reference0_);
 }
 
