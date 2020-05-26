@@ -30,7 +30,7 @@
 #include <string>
 
 namespace esl {
-    static std::string version();
+    std::string version();
 }  // namespace esl
 
 #endif  // ESL_VERSION_HPP
