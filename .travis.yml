@@ -14,6 +14,8 @@ cache:
 addons:
   apt:
     sources:
+      - sourceline: 'ppa:ubuntu-toolchain-r/test'
+
     packages:
       - gcc-9
       - g++-9
@@ -24,6 +26,8 @@ before_install:
   - test -n $CC && unset CC
 
 install:
+    - sudo apt-get update -qq
+    - sudo apt install gcc-9 g++-9
     - sudo apt install openmpi-bin libopenmpi-dev
     - sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
     - sudo apt install libopenblas-dev liblapack-dev
