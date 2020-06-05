@@ -31,6 +31,7 @@
 
 #include <esl/law/property.hpp>
 #include <esl/economics/money.hpp>
+#include <esl/computation/allocator.hpp>
 
 
 namespace esl::law {
@@ -86,7 +87,7 @@ namespace esl::law {
     /// \return
     template<typename value_t_, typename allocator_>
     constexpr std::ostream &
-    operator<<(std::ostream &stream,
+    operator << (std::ostream &stream,
                const std::unordered_map<std::shared_ptr<property>,
                    value_t_,
                    property_collection_hash<property>,
@@ -126,14 +127,20 @@ namespace esl::law {
     using property_filter_set =
         std::unordered_set<std::shared_ptr<property_t_>,
                            property_collection_hash<property_t_>,
-                           property_collection_equality<property_t_>>;
+                           property_collection_equality<property_t_>
+                           , boost::fast_pool_allocator<std::shared_ptr<property_t_> >
+                           >;
 
     template<typename property_t_, typename value_t_>
     using property_filter_map =
         std::unordered_map<std::shared_ptr<property_t_>,
                            value_t_,
                            property_collection_hash<property_t_>,
-                           property_collection_equality<property_t_>>;
+                           property_collection_equality<property_t_>
+
+                            , boost::fast_pool_allocator<std::pair<const std::shared_ptr<property_t_>, value_t_>>
+
+                           >;
 
 }  // namespace esl::law
 

@@ -12,7 +12,7 @@ namespace esl::data {
         if(!file_.good()){
             std::stringstream message_;
             message_ << "Can't create output file " << (prefix / name);
-            LOG(error) << message_.str() << std::endl;
+            LOG(errorlog) << message_.str() << std::endl;
             throw std::runtime_error(message_.str());
         }
     }

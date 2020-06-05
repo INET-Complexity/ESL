@@ -53,6 +53,10 @@ namespace esl::simulation {
 
     }
 
+    //std::map<esl::identity<esl::agent>, double> timings_;
+    //std::map<esl::identity<esl::agent>, double> timings_cb_;
+    //std::map<esl::identity<esl::agent>, double> timings_act_;
+
     time_point model::step(time_interval step)
     {
         assert(!step.empty());
@@ -70,8 +74,13 @@ namespace esl::simulation {
             }
             first_event_   = step.upper;
             for(auto &[i, a] : agents.local_agents_) {
-                auto agent_start_ = high_resolution_clock::now();
 
+                //double agent_cb_end_;
+                //timings_.emplace(i, 0.);
+                //timings_cb_.emplace(i, 0.);
+                //timings_act_.emplace(i, 0.);
+                //auto agent_start_ = high_resolution_clock::now();
+                //auto agent_act_ = high_resolution_clock::now();
                 // The seed is deterministic in the following variables:
                 std::seed_seq seed_ {
                     std::uint64_t(std::hash<identity<agent>>()(i)),
@@ -81,22 +90,29 @@ namespace esl::simulation {
                 };
 
                 try {
-                    first_event_ = std::min(first_event_,
-                                            a->process_messages(step, seed_));
+                    first_event_ = std::min(first_event_, a->process_messages(step, seed_));
+                    //agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count());
+                    //agent_act_ = high_resolution_clock::now();
                     first_event_ = std::min(first_event_, a->act(step, seed_));
                 } catch(const std::runtime_error &e) {
-
-                    LOG(error) << e.what() << std::endl;
+                    LOG(errorlog) << e.what() << std::endl;
                     throw e;
                 } catch(const std::exception &e) {
-                    LOG(error) <<  e.what() << std::endl;
+                    LOG(errorlog) <<  e.what() << std::endl;
                     throw e;
                 } catch(...) {
                     throw;
                 }
-                a->inbox.clear();
+                a->inbox.clear(); 
+                //auto agent_end_ = high_resolution_clock::now() - agent_start_;
 
-                auto agent_end_ = high_resolution_clock::now() - agent_start_;
+
+                //timings_cb_[a->identifier] += agent_cb_end_;
+                //timings_act_[a->identifier] += double( (high_resolution_clock::now() - agent_act_).count());
+                //timings_[a->identifier] += (double(agent_end_.count()) );
+                //LOG(notice) << "a" << a->identifier << " tcb " << step << " " << std::setprecision(8) << timings_cb_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl;
+                //LOG(notice) << "a" << a->identifier << " tac " << step << " " << std::setprecision(8) << timings_act_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl;
+
             }
             environment_.send_messages(*this);
             ++round_;
@@ -105,7 +121,7 @@ namespace esl::simulation {
 
         environment_.after_step(*this);
         auto total_ = high_resolution_clock::now() - timer_start_;
-        LOG(notice) << "step " << step << " took " << (double(total_.count()) / 1e+9) <<  " seconds" << std::endl;
+        //LOG(notice) << "step " << step << " took " << (double(total_.count()) / 1e+9) <<  " seconds" << std::endl;
         return first_event_;
     }
 

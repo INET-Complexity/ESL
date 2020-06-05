@@ -263,10 +263,10 @@ namespace esl::economics::accounting {
                 }
                 auto i = m.find(k);
                 if(m.end() == i) {
-                    LOG(error) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
+                    LOG(errorlog) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
                     throw insufficent_inventory(quantity(0), quantity(1), k->identifier, typeid(property_t_).name());
                 } else if(i->second < v) {
-                    LOG(error) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
+                    LOG(errorlog) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
                     throw insufficent_inventory(i->second, v, k->identifier, typeid(property_t_).name());
                 } else if(i->second == v) {
                     m.erase(k);

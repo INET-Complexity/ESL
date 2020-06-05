@@ -36,7 +36,7 @@ namespace esl::data {
         trace   =   0,
         notice  =   1,
         warning =   2,
-        error   =   3
+        errorlog   =   3
         //,
         //model
     };
@@ -50,7 +50,7 @@ namespace esl::data {
             return (stream << "notice");
         case warning:
             return (stream << "warning");
-        case error:
+        case errorlog:
             return (stream << "error");
         }
         return stream;

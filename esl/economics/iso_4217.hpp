@@ -28,6 +28,7 @@
 #include <array>
 #include <cassert>
 #include <ostream>
+#include <string>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>

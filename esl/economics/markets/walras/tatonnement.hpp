@@ -34,6 +34,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <adept.h>
 
@@ -57,6 +58,14 @@ extern "C" int multiroot_function_value_cb(const gsl_vector *x, void *params, gs
 extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
 extern "C" int multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
 
+
+
+extern "C" double uniroot_function_value (double x, void *params);
+extern "C" double uniroot_function_value_and_gradient (double x, void *params);
+extern "C" void   uniroot_function_jacobian_cb (double x, void *params, double *y, double *dy);
+
+
+
 namespace esl::economics::markets::tatonnement {
     ///
     /// \brief
@@ -74,7 +83,7 @@ namespace esl::economics::markets::tatonnement {
         /// \brief
         ///
         enum solver { minimization
-                    , multiple_root
+                    , root
         };
 
         ///
@@ -83,7 +92,7 @@ namespace esl::economics::markets::tatonnement {
         ///         root finding solver does not make progress towards a
         ///         solution.
         ///
-        std::vector<solver> methods = {multiple_root/*, minimization*/};
+        std::vector<solver> methods = {root, minimization};
 
     protected:
         std::map<identity<law::property>, quote> quotes_;
@@ -98,12 +107,14 @@ namespace esl::economics::markets::tatonnement {
         double         calc_function_value(const double *x);
         std::vector<double> multiroot_function_value(const double *x);
 
-
         double minimizer_function_value_and_gradient(const double *x, double *dJ_dx) ;
         std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
 #endif
-
         friend double ::my_function_value(const gsl_vector *variables, void *params);
+
+        friend double ::uniroot_function_value (double x, void *params);
+        friend double ::uniroot_function_value_and_gradient (double x, void *params);
+        friend void   ::uniroot_function_jacobian_cb (double x, void *params, double *y, double *dy);
 
 
 #if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)

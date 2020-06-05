@@ -25,6 +25,8 @@
 #ifndef ESL_DIFFERENTIABLE_DEMAND_SUPPLY_FUNCTION_HPP
 #define ESL_DIFFERENTIABLE_DEMAND_SUPPLY_FUNCTION_HPP
 
+#include <map>
+
 #include <esl/economics/markets/demand_supply_function.hpp>
 #include <esl/mathematics/variable.hpp>
 

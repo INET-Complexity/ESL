@@ -35,7 +35,7 @@
 
 #include <esl/data/representation.hpp>
 #include <esl/data/stream.hpp>
-
+#include <esl/computation/allocator.hpp>
 
 namespace esl::data {
     ///
@@ -59,7 +59,9 @@ namespace esl::data {
         ///
         /// \details
         ///
-        std::vector<std::shared_ptr<stream>> streams;
+        std::vector< std::shared_ptr<stream>
+                   , boost::pool_allocator<std::shared_ptr<stream> >
+                   > streams;
 
         ///
         /// \brief  Whether the output values are to be buffered until the end
@@ -95,7 +97,7 @@ namespace esl::data {
         /// \param streams  A collection of streams that this output has
         ///                 exclusive access to.
         output_base( const std::string &name
-                            , std::vector<std::shared_ptr<stream>> streams);
+                            , std::vector<std::shared_ptr<stream>, boost::pool_allocator<std::shared_ptr<stream> >> streams);
 
         ///
         /// \brief  Recovering the output values and storage is handled by the

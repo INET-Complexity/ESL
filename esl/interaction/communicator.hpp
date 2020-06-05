@@ -33,7 +33,9 @@
 
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/pool/poolfwd.hpp>
 
+#include <esl/computation/allocator.hpp>
 #include <esl/interaction/header.hpp>
 
 namespace esl::simulation {
@@ -72,7 +74,6 @@ namespace esl::interaction {
         {
             callback_handle     function;
 
-//#ifndef ESL_BUILD_RELEASE
             ///
             /// \brief  A brief description that specifies what this action does
             ///
@@ -92,18 +93,21 @@ namespace esl::interaction {
             /// \brief The line in the file where it is defined
             ///
             const size_t        line;
-//#endif
+
         };
-
-
 
         ///
         /// \brief  The inbox stores messages by delivery time.
         ///
-        typedef std::multimap<simulation::time_point, message_t> inbox_t;
+        typedef std::multimap< simulation::time_point
+                             , message_t
+                             , std::less<>
+                             , boost::fast_pool_allocator<std::pair<const simulation::time_point, message_t> >
+                             //, computation::allocator<std::pair<const simulation::time_point, message_t> >
+                             > inbox_t;
 
         ///
-        typedef std::vector<message_t> outbox_t;
+        typedef std::vector<message_t, boost::pool_allocator<message_t>> outbox_t;
 
         ///
         typedef std::int8_t priority_t;
@@ -128,8 +132,7 @@ namespace esl::interaction {
         ///
         bool locked_;
 
-        std::map<message_code, std::multimap<priority_t, callback_t>>
-            callbacks_;
+        std::map<message_code, std::multimap<priority_t, callback_t>> callbacks_;
 
     public:
         enum scheduling
@@ -230,9 +233,9 @@ namespace esl::interaction {
             };
 
             callback_t callback_ = { function_
-//#ifndef ESL_BUILD_RELEASE
+
                                    , description, message, file, line
-//#endif
+
                                     };
             iterator_->second.emplace(priority, callback_);
         }
