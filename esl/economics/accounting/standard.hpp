@@ -77,7 +77,7 @@ namespace esl::economics::accounting {
                 std::stringstream message_;
                 message_ << "no exchange rate provided converting ";
                 message_ << m.denomination << " to " << reporting_currency;
-                LOG(error) << message_.str() << std::endl;
+                LOG(errorlog) << message_.str() << std::endl;
                 throw std::domain_error(message_.str().c_str());
             }
             return i->second * foreign_;
@@ -92,7 +92,7 @@ namespace esl::economics::accounting {
         {
             auto i = mark_to_market.find(s.identifier);
             if(mark_to_market.end() == i){
-                LOG(error) << "no market price for stock " << s.identifier << std::endl;
+                LOG(errorlog) << "no market price for stock " << s.identifier << std::endl;
                 throw std::logic_error("no market price");
             }
 
@@ -113,7 +113,7 @@ namespace esl::economics::accounting {
             price result_ = price(0.00, reporting_currency);
             auto i = mark_to_market.find(c.security);
             if(mark_to_market.end() == i){
-                LOG(error) << "no market price for stock " << c.security << std::endl;
+                LOG(errorlog) << "no market price for stock " << c.security << std::endl;
                 throw std::logic_error("no market price");
             }
             // TODO: use foreign_currencies if valuation is in different currency

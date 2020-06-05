@@ -95,10 +95,10 @@ namespace esl::simulation {
                     //agent_act_ = high_resolution_clock::now();
                     first_event_ = std::min(first_event_, a->act(step, seed_));
                 } catch(const std::runtime_error &e) {
-                    LOG(error) << e.what() << std::endl;
+                    LOG(errorlog) << e.what() << std::endl;
                     throw e;
                 } catch(const std::exception &e) {
-                    LOG(error) <<  e.what() << std::endl;
+                    LOG(errorlog) <<  e.what() << std::endl;
                     throw e;
                 } catch(...) {
                     throw;

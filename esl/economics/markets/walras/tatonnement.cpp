@@ -402,7 +402,7 @@ namespace esl::economics::markets::tatonnement {
     {
         if(methods.empty()){
             const auto error_no_solvers_ = "no solution method specified";
-            LOG(error) << error_no_solvers_ << std::endl;
+            LOG(errorlog) << error_no_solvers_ << std::endl;
             throw std::domain_error(error_no_solvers_);
         }
 
@@ -711,10 +711,10 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multimin_fdfminimizer_free(minimizer);
                 gsl_vector_free(x);
 
-                //LOG(error)  << "gradient-based minimizer failed after " << iter
+                //LOG(errorlog)  << "gradient-based minimizer failed after " << iter
                 //            << " iterations: " << gsl_strerror(status) << std::endl;
 #else
-                LOG(error)  << "gradient-free minimizer failed after " << iter
+                LOG(errorlog)  << "gradient-free minimizer failed after " << iter
                             << " iterations: " << gsl_strerror(status) << std::endl;
 #endif
             }
