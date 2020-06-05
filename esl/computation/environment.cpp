@@ -193,7 +193,7 @@ namespace esl::computation {
         } while(step_.lower < simulation.end);
 
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
-        /*LOG(notice)*/std::cout << "simulation took "
+        LOG(notice) << "simulation took "
                     << (double(timer_simulation_.count()) / 1e+9)
                     <<  " seconds" << std::endl;
         simulation.terminate();
@@ -201,7 +201,7 @@ namespace esl::computation {
         after_run(simulation);
         auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
         auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
-        /*LOG(notice)*/std::cout << "running simulation in " << typeid(decltype(*this)).name()
+        LOG(notice) << "running simulation in " << typeid(decltype(*this)).name()
                     << " took " << (double(timer_total_.count()) / 1e+9)
                     << " seconds" << std::endl;
     }
