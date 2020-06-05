@@ -25,6 +25,8 @@
 #include <esl/interaction/communicator.hpp>
 #include <esl/data/log.hpp>
 
+#include <chrono>
+using std::chrono::high_resolution_clock;
 
 namespace esl::interaction {
     communicator::communicator(scheduling schedule)
@@ -33,6 +35,8 @@ namespace esl::interaction {
     {
 
     }
+
+    std::map<std::string, double> timings_callback_;
 
     ///
     /// \brief  Handles a single message, calling all associated callbacks
@@ -56,13 +60,28 @@ namespace esl::interaction {
 
         for(auto i = callback_->second.rbegin(); i != callback_->second.rend();
             ++i) {
+            timings_callback_.emplace(std::get<1>(*i).description, 0.);
+            auto before_handler_ = high_resolution_clock::now();
+
             auto next_event_ = std::get<1>(*i).function(message, step, seed);
             assert(step.lower <= next_event_ && next_event_ <= step.upper);
             first_event_ = std::min(first_event_, next_event_);
+
+            timings_callback_[std::get<1>(*i).description] += double(
+                    (high_resolution_clock::now() - before_handler_).count());
+
+//            if (step.lower % 1000 == 0) {
+//                std::cout << std::get<1>(*i).description << ": "
+//                          << timings_callback_[std::get<1>(*i).description] / 1e+9 / step.lower << " s" << std::endl;
+//            }
         }
+
+
 
         return first_event_;
     }
+
+
 
     ///
     /// \param step
@@ -73,6 +92,9 @@ namespace esl::interaction {
                                    std::seed_seq &seed)
     {
         // create mapping priority -> message
+
+
+
         std::multimap<priority_t, message_t> priority_;
         for(const auto &[k, m] : inbox) {
             // message will be received in the future
@@ -113,6 +135,7 @@ namespace esl::interaction {
             for(const auto &m : equal_) {
                 auto next_event_ = process_message(m, step, seed);
                 first_event_     = std::min(first_event_, next_event_);
+
             }
         }
         return first_event_;

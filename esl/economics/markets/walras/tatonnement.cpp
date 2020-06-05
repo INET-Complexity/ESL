@@ -35,7 +35,9 @@
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multimin.h>
+#include <gsl/gsl_roots.h>
 #include <gsl/gsl_multiroots.h>
+
 
 #include <adept_source.h>
 
@@ -141,7 +143,79 @@ multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gs
     return GSL_SUCCESS;
 }
 
+
+
+
+
+
+
+
+
+
+
+extern "C"
+double
+uniroot_function_value (double x, void *params)
+{
+    auto *model_ = static_cast<excess_demand_model *>(params);
+    assert(model_ && "parameter must be (excess_demand_model *)");
+
+    auto cb_ = model_->multiroot_function_value(&x);
+
+    return cb_[0];
+}
+
+extern "C"
+double
+uniroot_function_value_and_gradient (double x, void *params)
+{
+    auto *model_ = static_cast<excess_demand_model *>(params);
+    assert(model_ && "parameter must be (excess_demand_model *)");
+
+    double df = 0.;
+    auto cb_ = model_->multiroot_function_value_and_gradient(&x, &df);
+
+    return df;
+}
+
+extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * f, double * df)
+{
+    auto *model_ = static_cast<excess_demand_model *>(params);
+    assert(model_ && "parameter must be (excess_demand_model *)");
+
+    double jacobian_ = 0.;
+
+    auto cb_ = model_->multiroot_function_value_and_gradient(&x, &jacobian_);
+
+    *f = cb_[0];
+
+    if(!std::isfinite(jacobian_)){
+        jacobian_ = (x-1);
+    }
+    *df = jacobian_;
+}
+
+
 #endif
+
+
+
+
+
+void handler (const char * reason,
+              const char * file,
+              int line,
+              int gsl_errno)
+{
+
+
+}
+
+
+
+
+
+
 
 
 template<typename number_t_>
@@ -332,74 +406,6 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-        size_t n = std::max(size_t(1), quotes_.size());
-        std::vector<double> variables_;
-        for(size_t i = 0; i < n; ++i) {
-            variables_.push_back(1.0);
-        }
-        ////////////////////////////////////////////////////////////////
-        std::map<identity<law::property>,
-                std::tuple<quote, double>>
-                quote_scalars_;
-        std::map<identity<law::property>,
-                double>
-                price_render_;
-        size_t i = 0;
-        for(auto [k, v]: quotes_) {
-            price_render_.emplace(k, double(v) * variables_[i]);
-            quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
-            ++i;
-        }
-        std::map<identity<law::property>, std::vector<double>> terms_map;
-        for(const auto &f : excess_demand_functions_) {
-            auto demand_per_property_ = f->excess_demand(quote_scalars_);
-
-            for(auto [k, v]: demand_per_property_) {
-                if(terms_map.find(k) == terms_map.end()){
-                    terms_map.emplace(k, std::vector<double>());
-                }//else{
-                terms_map.find(k)->second.push_back(v);
-                //}
-            }
-        }
-
-        LOG(warning) << "shapley shubik solution " << terms_map << std::endl;
-*/
-
-
-
-
-
-
-
-
-
-
-
-
         constexpr bool debug_market_excess = false;
         if(debug_market_excess){
             for(auto e: range(0.01, 2.00, 0.01)){
@@ -442,16 +448,6 @@ namespace esl::economics::markets::tatonnement {
             }
         }
 
-
-
-
-
-
-
-
-
-
-
         for(auto method_ : methods){
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
@@ -464,51 +460,145 @@ namespace esl::economics::markets::tatonnement {
                 }
             }
 
-            if (method_ == multiple_root){
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-                gsl_multiroot_function_fdf root_function;
+            if (method_ == root){
+#if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+                if(1 == quotes_.size()){
 
-                root_function.n      = active_.size();
-                root_function.f      = &multiroot_function_value_cb;
-                root_function.df     = &multiroot_function_jacobian_cb;
-                root_function.fdf    = &multiroot_function_value_and_gradient_cb;
-                root_function.params = static_cast<void *>(this);
+                    auto old_handler = gsl_set_error_handler (&handler);
+/*
+                    int status;
+                    int iter = 0;
+                    int max_iter = 100;
+                    const gsl_root_fsolver_type *T;
+                    gsl_root_fsolver *s;
+                    double x_lo = 0.01, x_hi = 100.0;
+                    gsl_function F;
 
-                gsl_vector *variables_ = gsl_vector_alloc(active_.size());
-                for(size_t i = 0; i < active_.size(); ++i) {
-                    gsl_vector_set(variables_, i, 1.0 );
-                }
+                    F.function = &uniroot_function_value;
+                    F.params =  static_cast<void *>(this);
 
-                const gsl_multiroot_fdfsolver_type *solver_t_ = gsl_multiroot_fdfsolver_hybridsj;
-                gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc (solver_t_, active_.size());
-                gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
+                    T = gsl_root_fsolver_brent;
+                    s = gsl_root_fsolver_alloc (T);
+                    gsl_root_fsolver_set (s, &F, x_lo, x_hi);
 
-                size_t max_iterations_ = size_t(std::pow(10, active_.size()));
+                    do
+                    {
+                        iter++;
+                        status = gsl_root_fsolver_iterate (s);
+                        auto r = gsl_root_fsolver_root (s);
+                        x_lo = gsl_root_fsolver_x_lower (s);
+                        x_hi = gsl_root_fsolver_x_upper (s);
+                        status = gsl_root_test_interval (x_lo, x_hi,
+                                                         0, 0.0001);
 
-                int status = GSL_CONTINUE;
-                for(size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i){
-                    status = gsl_multiroot_fdfsolver_iterate(solver_);
-                    if(GSL_SUCCESS != status){
-                        break;
+
                     }
-                    status = gsl_multiroot_test_residual(solver_->f, 1e-3);
-                }
+                    while (status == GSL_CONTINUE && iter < max_iter);
 
-                if(GSL_SUCCESS == status){
-                    std::map<esl::identity<esl::law::property>, double> result_;
-                    auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
-                    for(size_t i = 0; i < active_.size(); ++i) {
-                        auto scalar_ = gsl_vector_get(solver_best_, i);
-                        scalar_ = std::min(scalar_, 1.2);
-                        scalar_ = std::max(scalar_, 1./1.2);
-                        result_.emplace(mapping_index_[i], scalar_);
+                    if (GSL_SUCCESS == status) {
+                        std::map<esl::identity<esl::law::property>, double> result_;
+                        auto solver_best_ = gsl_root_fsolver_root(s);
+
+                        result_.emplace(mapping_index_[0], solver_best_);
+                        gsl_root_fsolver_free(s);
+                        return result_;
+                    }
+
+
+
+
+
+
+                /*/
+                    int status;
+                    int iter = 0;
+                    int max_iter = 100;
+                    const gsl_root_fdfsolver_type *T;
+                    gsl_root_fdfsolver *s;
+                    double xt = 1.00007858;
+
+                    gsl_function_fdf FDF;
+
+                    FDF.f = &uniroot_function_value;
+                    FDF.df = &uniroot_function_value_and_gradient;
+                    FDF.fdf = &uniroot_function_jacobian_cb;
+                    FDF.params = static_cast<void *>(this);
+
+                    T = gsl_root_fdfsolver_steffenson;
+                     s = gsl_root_fdfsolver_alloc (T);
+
+
+                    gsl_root_fdfsolver_set (s, &FDF, xt);
+
+                    do  {
+                        ++iter;
+                        status = gsl_root_fdfsolver_iterate(s);
+                        double x0 = xt;
+                        xt = gsl_root_fdfsolver_root (s);
+                        status = gsl_root_test_delta (xt, x0, 0.001, 0.00001);
+                    }
+                    while (status == GSL_CONTINUE && iter < max_iter);
+
+                    if (GSL_SUCCESS == status) {
+                        std::map<esl::identity<esl::law::property>, double> result_;
+                        auto solver_best_ = gsl_root_fdfsolver_root(s);
+                        result_.emplace(mapping_index_[0], solver_best_);
+                        gsl_root_fdfsolver_free (s);
+                        return result_;
+                    }
+                    gsl_root_fdfsolver_free (s);
+
+                    ////*/
+
+
+                    gsl_set_error_handler (old_handler);
+
+
+                } else {
+                    gsl_multiroot_function_fdf root_function;
+
+                    root_function.n = active_.size();
+                    root_function.f = &multiroot_function_value_cb;
+                    root_function.df = &multiroot_function_jacobian_cb;
+                    root_function.fdf = &multiroot_function_value_and_gradient_cb;
+                    root_function.params = static_cast<void *>(this);
+
+                    gsl_vector *variables_ = gsl_vector_alloc(active_.size());
+                    for (size_t i = 0; i < active_.size(); ++i) {
+                        gsl_vector_set(variables_, i, 1.0);
+                    }
+
+                    const gsl_multiroot_fdfsolver_type *solver_t_ = gsl_multiroot_fdfsolver_hybridsj;
+                    gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc(solver_t_, active_.size());
+                    gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
+
+                    size_t max_iterations_ = size_t(std::pow(10, active_.size()));
+
+                    int status = GSL_CONTINUE;
+                    for (size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i) {
+                        status = gsl_multiroot_fdfsolver_iterate(solver_);
+                        if (GSL_SUCCESS != status) {
+                            break;
+                        }
+                        status = gsl_multiroot_test_residual(solver_->f, 1e-3);
+                    }
+
+                    if (GSL_SUCCESS == status) {
+                        std::map<esl::identity<esl::law::property>, double> result_;
+                        auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
+                        for (size_t i = 0; i < active_.size(); ++i) {
+                            auto scalar_ = gsl_vector_get(solver_best_, i);
+                            scalar_ = std::min(scalar_, 1.2);
+                            scalar_ = std::max(scalar_, 1. / 1.2);
+                            result_.emplace(mapping_index_[i], scalar_);
+                        }
+                        gsl_multiroot_fdfsolver_free(solver_);
+                        gsl_vector_free(variables_);
+                        return result_;
                     }
                     gsl_multiroot_fdfsolver_free(solver_);
                     gsl_vector_free(variables_);
-                     return result_;
                 }
-                gsl_multiroot_fdfsolver_free(solver_);
-                gsl_vector_free(variables_);
 #else
                 gsl_multiroot_function root_function;
 

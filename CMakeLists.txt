@@ -152,8 +152,8 @@ SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 SET(CMAKE_C_FLAGS_DEBUG "-g -Og ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
 
-SET(CMAKE_C_FLAGS_RELEASE "-O3")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(CMAKE_C_FLAGS_RELEASE "-O3 --profile-use")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 --profile-use")
 
 
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
