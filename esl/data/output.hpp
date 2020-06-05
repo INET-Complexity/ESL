@@ -34,6 +34,7 @@
 #include <esl/data/output_base.hpp>
 #include <esl/simulation/time.hpp>
 
+#include <esl/computation/allocator.hpp>
 
 namespace esl::data {
     ///
@@ -54,7 +55,9 @@ namespace esl::data {
         ///
         /// \brief The (process-local) observed history of values.
         ///
-        std::vector<std::tuple<simulation::time_point, variable_types_...>> values;
+        std::vector< std::tuple<simulation::time_point, variable_types_...>
+                   , boost::pool_allocator<std::tuple<simulation::time_point, variable_types_...>>
+                   > values;
 
     public:
 

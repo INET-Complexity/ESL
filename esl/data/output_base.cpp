@@ -44,7 +44,7 @@ namespace esl::data {
 
 
     output_base::output_base(const std::string &name
-        , std::vector<std::shared_ptr<stream>> streams)
+        , std::vector<std::shared_ptr<stream>, boost::pool_allocator<std::shared_ptr<stream> >> streams)
     : name(name)
     , streams(streams)
     {

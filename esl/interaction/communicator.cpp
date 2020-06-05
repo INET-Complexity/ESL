@@ -95,7 +95,7 @@ namespace esl::interaction {
 
 
 
-        std::multimap<priority_t, message_t> priority_;
+        std::multimap<priority_t, message_t, std::less<>,     boost::fast_pool_allocator<std::pair<const priority_t, message_t> >       > priority_;
         for(const auto &[k, m] : inbox) {
             // message will be received in the future
             if(k > step.lower) {
