@@ -51,7 +51,7 @@ namespace esl::data {
     {
         friend class boost::serialization::access;
 
-    protected:
+    protected:public:
         ///
         /// \brief The (process-local) observed history of values.
         ///
