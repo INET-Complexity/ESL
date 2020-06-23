@@ -1,9 +1,9 @@
-/// \file   book.hpp
+/// \file   matching_engine.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2020-04-05
+/// \date       2020-03-27
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -24,46 +24,6 @@
 ///
 
 
-#ifndef ME_ORDER_BOOK_HPP
-#define ME_ORDER_BOOK_HPP
+#include "matching_engine.hpp"
 
-#include <map>
-#include <queue>
-#include <string>
-
-
-#include <esl/economics/markets/order_book/order.hpp>
-
-
-namespace esl::economics::markets::order_book {
-
-    class book
-    {
-    public:
-        bool insert(const order &order);
-
-        void erase(const order &order);
-
-        order &find(order::side_t side, const esl::identity<esl::law::property>& id);
-
-        bool match(std::queue<order> &);
-
-        [[nodiscard]] price spread() const
-        {
-            return orders_ask.cbegin()->first - orders_bid.cbegin() ->first;
-        }
-
-        void match(order &bid, order &ask);
-
-
-        typedef std::multimap<price, order, std::greater<>> bid_t;
-        typedef std::multimap<price, order, std::less<>> ask_t;
-
-
-        bid_t orders_bid;
-        ask_t orders_ask;
-    };
-}  // namespace esl::economics::markets::order_book
-
-
-#endif  // ME_ORDER_BOOK_HPP
+#include <iostream>

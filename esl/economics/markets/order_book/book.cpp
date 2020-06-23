@@ -32,107 +32,93 @@ namespace esl::economics::markets::order_book {
 
     bool book::insert(const order &order)
     {
-        if(order.getSide() == order::buy)
-            orders_bid.insert(bid_t::value_type(order.getPrice(), order));
-        else
-            orders_ask.insert(ask_t::value_type(order.getPrice(), order));
+        if(order.side == order::buy) {
+            orders_bid.insert(bid_t::value_type(order.m_price, order));
+        }else if(order.side == order::sell) {
+            orders_ask.insert(ask_t::value_type(order.m_price, order));
+        }
         return true;
     }
 
     void book::erase(const order &order)
     {
-        std::string id = order.getClientID();
-        if(order.getSide() == order::buy) {
-            bid_t::iterator i;
-            for(i = orders_bid.begin(); i != orders_bid.end(); ++i)
-                if(i->second.getClientID() == id) {
+        if(order.side == order::buy) {
+            for(auto i = orders_bid.begin(); i != orders_bid.end(); ++i){
+                if(i->second.identifier == order.identifier) {
                     orders_bid.erase(i);
                     return;
                 }
-        } else if(order.getSide() == order::sell) {
-            ask_t::iterator i;
-            for(i = orders_ask.begin(); i != orders_ask.end(); ++i)
-                if(i->second.getClientID() == id) {
+            }
+        } else if(order.side == order::sell) {
+            for(auto i = orders_ask.begin(); i != orders_ask.end(); ++i){
+                if(i->second.identifier == order.identifier) {
                     orders_ask.erase(i);
                     return;
                 }
+            }
         }
     }
 
     bool book::match(std::queue<order> &orders)
     {
         while(true) {
-            if(!orders_bid.size() || !orders_ask.size())
-                return orders.size() != 0;
+            if(orders_bid.empty() || orders_ask.empty()) {
+                return !orders.empty();
+            }
 
-            bid_t::iterator iBid = orders_bid.begin();
-            ask_t::iterator iAsk = orders_ask.begin();
+            auto i_bid_ = orders_bid.begin();
+            auto i_ask_ = orders_ask.begin();
 
-
-            if(iBid->second.getPrice() >= iAsk->second.getPrice()) {
-                order &bid = iBid->second;
-                order &ask = iAsk->second;
+            if(i_bid_->second.m_price >= i_ask_->second.m_price) {
+                order &bid = i_bid_->second;
+                order &ask = i_ask_->second;
 
                 match(bid, ask);
                 orders.push(bid);
                 orders.push(ask);
 
-                if(bid.isClosed())
-                    orders_bid.erase(iBid);
-                if(ask.isClosed())
-                    orders_ask.erase(iAsk);
-            } else
-                return orders.size() != 0;
+                if(bid.closed()) {
+                    orders_bid.erase(i_bid_);
+                }
+
+                if(ask.closed()) {
+                    orders_ask.erase(i_ask_);
+                }
+            } else {
+                return !orders.empty();
+            }
         }
     }
 
-    order &book::find(order::side side, std::string id)
+    order &book::find(order::side_t side, const esl::identity<esl::law::property>& identifier)
     {
         if(side == order::buy) {
-            bid_t::iterator i;
-            for(i = orders_bid.begin(); i != orders_bid.end(); ++i)
-                if(i->second.getClientID() == id)
-                    return i->second;
+            for(auto & i : orders_bid) {
+                if (i.second.identifier == identifier) {
+                    return i.second;
+                }
+            }
         } else if(side == order::sell) {
-            ask_t::iterator i;
-            for(i = orders_ask.begin(); i != orders_ask.end(); ++i)
-                if(i->second.getClientID() == id)
-                    return i->second;
+            for(auto & i : orders_ask) {
+                if (i.second.identifier == identifier) {
+                    return i.second;
+                }
+            }
         }
+
         throw std::exception();
     }
 
     void book::match(order &bid, order &ask)
     {
-        auto price = ask.getPrice();
-        int quantity = 0;
+        auto price = ask.m_price;
+        auto quantity_ = std::min(bid.quantity, ask.quantity);
 
-        if(bid.getOpenQuantity() > ask.getOpenQuantity())
-            quantity = ask.getOpenQuantity();
-        else
-            quantity = bid.getOpenQuantity();
+        bid.quantity -= quantity_;
+        ask.quantity -= quantity_;
 
-        bid.execute(price, quantity);
-        ask.execute(price, quantity);
+        // TODO: 1 tradereport to all participants
+        //       2 executionreports to buyer/seller
     }
 
-    void book::display() const
-    {
-        bid_t::const_iterator iBid;
-        ask_t::const_iterator iAsk;
-
-
-        LOG(trace) << "BIDS:" << std::endl;
-
-        LOG(trace) << "-----" << std::endl << std::endl;
-        for(iBid = orders_bid.begin(); iBid != orders_bid.end(); ++iBid)
-            LOG(trace) << iBid->second << std::endl;
-
-        LOG(trace) << std::endl << std::endl;
-
-        LOG(trace) << "ASKS:" << std::endl;
-        LOG(trace) << "-----" << std::endl << std::endl;
-        for(iAsk = orders_ask.begin(); iAsk != orders_ask.end(); ++iAsk)
-            LOG(trace) << iAsk->second << std::endl;
-    }
 }

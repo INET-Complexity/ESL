@@ -457,7 +457,19 @@ SET(SOURCE_FILES
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
-        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp esl/data/terminal.cpp esl/data/terminal.hpp esl/computation/allocator.cpp esl/computation/allocator.hpp)
+        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp esl/data/terminal.cpp esl/data/terminal.hpp esl/computation/allocator.cpp esl/computation/allocator.hpp
+
+
+        esl/economics/markets/order_book/matching_engine.cpp
+        esl/economics/markets/order_book/matching_engine.hpp
+
+
+        esl/economics/markets/order_book/book.cpp
+        esl/economics/markets/order_book/book.hpp
+
+        esl/economics/markets/order_book/order.cpp
+        esl/economics/markets/order_book/order.hpp
+        esl/economics/markets/ticker.cpp esl/economics/markets/ticker.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
