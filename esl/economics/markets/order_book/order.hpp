@@ -35,6 +35,7 @@
 #include <esl/simulation/identity.hpp>
 #include <esl/economics/markets/ticker.hpp>
 #include <esl/economics/price.hpp>
+#include <utility>
 
 
 namespace esl::economics::markets::order_book {
@@ -68,7 +69,7 @@ namespace esl::economics::markets::order_book {
 
         std::uint64_t quantity;
 
-        order( const ticker &symbol
+        order( ticker symbol
              , const esl::identity<esl::agent> &owner
              , const esl::identity<order> &clientId
              , side_t side
@@ -79,9 +80,9 @@ namespace esl::economics::markets::order_book {
         : lifetime(lifetime)
         , side(side)
         , identifier(clientId)
-        , m_symbol(symbol)
+        , m_symbol(std::move(symbol))
         , owner(owner)
-        , m_price(limit)
+        , m_price(std::move(limit))
         , quantity(quantity)
         {
 

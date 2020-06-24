@@ -35,6 +35,14 @@ public:
     esl::identity<esl::law::property> base;
     esl::identity<esl::law::property> quote;
 
+    ticker(const esl::identity<esl::law::property> &base,
+                     const esl::identity<esl::law::property> &quote    )
+    : base(base)
+    , quote(quote)
+    {
+
+    }
+
     [[nodiscard]] constexpr bool operator == (const ticker &other) const
     {
         return base == other.base && quote == other.quote;

@@ -66,7 +66,7 @@ namespace esl::economics::markets::order_book {
 
         void erase(const order &order)
         {
-            books_t::iterator i = books.find(order.m_symbol);
+            auto i = books.find(order.m_symbol);
             if(books.end() != i) {
                 i->second.erase(order);
             }

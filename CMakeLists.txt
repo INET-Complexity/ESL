@@ -469,7 +469,7 @@ SET(SOURCE_FILES
 
         esl/economics/markets/order_book/order.cpp
         esl/economics/markets/order_book/order.hpp
-        esl/economics/markets/ticker.cpp esl/economics/markets/ticker.hpp)
+        esl/economics/markets/ticker.cpp esl/economics/markets/ticker.hpp esl/economics/markets/order_book/avellaneda_stoikov.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
