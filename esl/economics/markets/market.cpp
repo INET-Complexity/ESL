@@ -27,13 +27,17 @@
 
 namespace esl::economics {
 
-    market::market() : market(identity<agent>())
+    market::market()
+    : market(identity<agent>())
     {
 
     }
 
-    market::market(identity<agent> i, law::property_map<quote> traded)
-    : agent(i), traded_properties(move(traded))
+    market::market( identity<agent> i
+                  , std::vector<esl::economics::markets::ticker> traded
+                  )
+    : agent(i)
+    , traded_properties(move(traded))
     {
 
     }

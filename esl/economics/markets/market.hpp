@@ -30,6 +30,7 @@
 #include <esl/agent.hpp>
 #include <esl/economics/owner.hpp>
 #include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/ticker.hpp>
 
 
 namespace esl::economics {
@@ -49,7 +50,7 @@ namespace esl::economics {
         ///
         /// \brief  The set of assets traded in this market.
         ///
-        law::property_map<quote> traded_properties;
+        std::vector<esl::economics::markets::ticker> traded_properties;
 
         ///
         /// \brief  The list of market participants that the market communicates
@@ -83,7 +84,9 @@ namespace esl::economics {
 
         ///
         /// \brief  Create a market for a set of assets.
-        market(identity<agent> i, law::property_map<quote> traded = {});
+
+        market(identity<agent> i, std::vector<esl::economics::markets::ticker> traded = {});
+
 
         virtual ~market() = default;
 

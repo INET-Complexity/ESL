@@ -29,60 +29,58 @@
 #include <esl/simulation/identity.hpp>
 #include <esl/law/property.hpp>
 
-struct ticker
-{
-public:
-    esl::identity<esl::law::property> base;
-    esl::identity<esl::law::property> quote;
+namespace esl::economics::markets {
 
-    ticker(const esl::identity<esl::law::property> &base,
-                     const esl::identity<esl::law::property> &quote    )
-    : base(base)
-    , quote(quote)
+    struct ticker
     {
+    public:
+        esl::identity<esl::law::property> base;
+        esl::identity<esl::law::property> quote;
 
-    }
+        ticker(const esl::identity<esl::law::property> &base,
+               const esl::identity<esl::law::property> &quote)
+        : base(base)
+        , quote(quote)
+        {
 
-    [[nodiscard]] constexpr bool operator == (const ticker &other) const
-    {
-        return base == other.base && quote == other.quote;
-    }
+        }
 
-    [[nodiscard]] constexpr bool operator != (const ticker &other) const
-    {
-        return base != other.base || quote != other.quote;
-    }
+        [[nodiscard]] constexpr bool operator==(const ticker &other) const {
+            return base == other.base && quote == other.quote;
+        }
 
-    [[nodiscard]] constexpr bool operator < (const ticker &other) const
-    {
-        return base < other.base || (base == other.base && quote < other.quote);
-    }
+        [[nodiscard]] constexpr bool operator!=(const ticker &other) const {
+            return base != other.base || quote != other.quote;
+        }
 
-    [[nodiscard]] constexpr bool operator <= (const ticker &other) const
-    {
-        return (*this < other) || (*this == other);
-    }
+        [[nodiscard]] constexpr bool operator<(const ticker &other) const {
+            return base < other.base || (base == other.base && quote < other.quote);
+        }
 
-    [[nodiscard]] constexpr bool operator > (const ticker &other) const
-    {
-        return base > other.base || (base == other.base && quote > other.quote);
-    }
+        [[nodiscard]] constexpr bool operator<=(const ticker &other) const {
+            return (*this < other) || (*this == other);
+        }
 
-    [[nodiscard]] constexpr bool operator >= (const ticker &other) const
-    {
-        return (*this > other) || (*this == other);
-    }
-};
+        [[nodiscard]] constexpr bool operator>(const ticker &other) const {
+            return base > other.base || (base == other.base && quote > other.quote);
+        }
+
+        [[nodiscard]] constexpr bool operator>=(const ticker &other) const {
+            return (*this > other) || (*this == other);
+        }
+    };
+
+}
 
 namespace std
 {
     template<>
-    struct hash<ticker>
+    struct hash<esl::economics::markets::ticker>
     {
-        std::size_t operator () (ticker const& symbol) const noexcept
+        std::size_t operator () (esl::economics::markets::ticker const& symbol) const noexcept
         {
-            auto h1 = std::hash<esl::identity<esl::law::property>>{}(symbol.base);
-            auto h2 = std::hash<esl::identity<esl::law::property>>{}(symbol.quote);
+            size_t h1 = std::hash<esl::identity<esl::law::property>>{}(symbol.base);
+            size_t h2 = std::hash<esl::identity<esl::law::property>>{}(symbol.quote);
 
             // TODO: settle on hash combination function
             return h1 ^= h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2);
@@ -90,5 +88,16 @@ namespace std
     };
 }
 
+#ifdef WITH_MPI
+#include <boost/mpi.hpp>
+namespace boost::mpi {
+    template<>
+    struct is_mpi_datatype<esl::economics::markets::ticker>
+    : public mpl::false_
+    {
+
+    };
+}  // namespace boost::mpi
+#endif  // WITH_MPI
 
 #endif //ME_TICKER_HPP
