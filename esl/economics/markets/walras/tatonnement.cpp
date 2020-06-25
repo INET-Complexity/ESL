@@ -44,6 +44,13 @@
 
 using esl::economics::markets::tatonnement::excess_demand_model;
 
+
+enum solver_state
+        { SUCCESS
+        , NONFINITE_GRADIENT
+}state_ = SUCCESS;
+
+
 ///
 /// \brief  C compatible callback for the minimiser to find the function
 ///         value.
@@ -178,37 +185,33 @@ uniroot_function_value_and_gradient (double x, void *params)
     return df;
 }
 
-extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * f, double * df)
+extern "C" void uniroot_function_jacobian_cb (double x, void *parameters, double *f, double * df)
 {
-    auto *model_ = static_cast<excess_demand_model *>(params);
+    auto *model_ = static_cast<excess_demand_model *>(parameters);
     assert(model_ && "parameter must be (excess_demand_model *)");
 
-    double jacobian_ = 0.;
+    auto function_value_ = model_->multiroot_function_value_and_gradient(&x, df);
 
-    auto cb_ = model_->multiroot_function_value_and_gradient(&x, &jacobian_);
-
-    *f = cb_[0];
-
-    if(!std::isfinite(jacobian_)){
-        jacobian_ = (x-1);
+    if(!std::isfinite(*df)){
+        std::cout << "nonfinite jacobian" << std::endl;
+        state_ = NONFINITE_GRADIENT;
+    }else{
+        state_ = SUCCESS;
     }
-    *df = jacobian_;
+    *f = function_value_[0];
 }
-
-
 #endif
 
 
-
-
-
-void handler (const char * reason,
-              const char * file,
+void handler (const char *reason,
+              const char *file,
               int line,
-              int gsl_errno)
+              int gsl_error)
 {
-
-
+    (void)reason;
+    (void)file;
+    (void)line;
+    (void)gsl_error;
 }
 
 
@@ -230,10 +233,8 @@ std::vector<number_t_> range(number_t_ start, number_t_ stop,
 
 namespace esl::economics::markets::tatonnement {
 
-    excess_demand_model::excess_demand_model(
-        std::map<identity<law::property>, quote>
-            initial_quotes)
-    : quotes_(initial_quotes)
+    excess_demand_model::excess_demand_model( law::property_map<quote> initial_quotes)
+    : quotes(initial_quotes)
     , stack_()
     {
 
@@ -247,19 +248,19 @@ namespace esl::economics::markets::tatonnement {
     /// \param x
     /// \return
     adept::adouble
-    excess_demand_model::calc_function_value(const adept::adouble *x)
+    excess_demand_model::demand_supply_mismatch(const adept::adouble *x)
     {
-        std::map<esl::identity<esl::law::property>,
-                 std::tuple<esl::economics::quote, adept::adouble>>
+        std::map< identity< law::property>,
+                 std::tuple< quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
-        for(auto [k, v]: quotes_) {
-            quote_scalars_.insert({k, std::make_tuple(v, x[n])});
+        for(auto [k, v]: quotes) {
+            quote_scalars_.insert({k->identifier, std::make_tuple(v, x[n])});
             ++n;
         }
 
-        std::map<esl::identity<esl::law::property>, adept::adouble> terms_map;
+        std::map< identity< law::property>, adept::adouble> terms_map;
 
         for(const auto &f : excess_demand_functions_) {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
@@ -268,7 +269,7 @@ namespace esl::economics::markets::tatonnement {
                 if(terms_map.find(k) == terms_map.end()){
                     terms_map.emplace(k,  v);
                 }else{
-                    (terms_map.find(k)->second) += v;
+                    terms_map.find(k)->second += v;
                 }
             }
         }
@@ -278,7 +279,6 @@ namespace esl::economics::markets::tatonnement {
             target_ += (pow(t, 2));
         }
 
-        //LOG(notice) << " clearing error " << target_.value() << std::endl;
         return target_;
     }
 
@@ -286,38 +286,36 @@ namespace esl::economics::markets::tatonnement {
     /// \param x
     /// \return
     std::vector<adept::adouble>
-    excess_demand_model::multiroot_function_value(const adept::adouble *x)
+    excess_demand_model::excess_demand(const adept::adouble *x)
     {
         std::map<identity<law::property>,
             std::tuple<quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
-        for(auto [k, v]: quotes_) {
-            quote_scalars_.emplace(k, std::make_tuple(v, x[n]));
+        for(auto [k, v]: quotes) {
+            quote_scalars_.emplace(k->identifier, std::make_tuple(v, x[n]));
             ++n;
         }
 
         std::map<identity<law::property>, adept::adouble> terms_map;
         for(const auto &f : excess_demand_functions_) {
-            //LOG(trace) << "f->excess_demand_m(quote_scalars_) " << f << std::endl;
-            auto demand_per_property_ = f->excess_demand(quote_scalars_);
+             auto demand_per_property_ = f->excess_demand(quote_scalars_);
 
-            //LOG(trace) << demand_per_property_ << std::endl;
-            for(auto [k, v]: demand_per_property_) {
+             for(auto [k, v]: demand_per_property_) {
                 if(terms_map.find(k) == terms_map.end()){
                     terms_map.emplace(k, v);
                 }else{
-                    (terms_map.find(k)->second) += v;
+                    terms_map.find(k)->second += v;
                 }
             }
         }
 
         std::vector<adept::adouble> result_;
 
-        for(auto [k, v]: quotes_) {
-            assert(terms_map.end() != terms_map.find(k));
-            result_.push_back(terms_map.find(k)->second);
+        for(auto [k, v]: quotes) {
+            assert(terms_map.end() != terms_map.find(k->identifier));
+            result_.push_back(terms_map.find(k->identifier)->second);
         }
         return result_;
     }
@@ -334,7 +332,7 @@ namespace esl::economics::markets::tatonnement {
          for(unsigned int i = 0; i < active_.size(); ++i) {
              active_[i] = x[i];
          }
-         double result = adept::value(calc_function_value(&active_[0]));
+         double result = adept::value(demand_supply_mismatch(&active_[0]));
          stack_.continue_recording();
          return result;
      }
@@ -345,7 +343,7 @@ namespace esl::economics::markets::tatonnement {
          for(unsigned int i = 0; i < active_.size(); ++i) {
              active_[i] = x[i];
          }
-         auto intermediate_ = multiroot_function_value(&active_[0]);
+         auto intermediate_ = excess_demand(&active_[0]);
          std::vector<double> result;
          for(const auto &v: intermediate_){
              result.push_back(adept::value(v));
@@ -362,7 +360,7 @@ namespace esl::economics::markets::tatonnement {
          }
 
          stack_.new_recording();
-         adept::adouble J = calc_function_value(&active_[0]);
+         adept::adouble J = demand_supply_mismatch(&active_[0]);
 
          J.set_gradient(1.0);
 
@@ -379,7 +377,7 @@ namespace esl::economics::markets::tatonnement {
         }
 
         stack_.new_recording();
-        std::vector<adept::adouble> values_ = multiroot_function_value(&active_[0]);
+        std::vector<adept::adouble> values_ = excess_demand(&active_[0]);
 
         stack_.independent(&active_[0], active_.size());
         stack_.dependent(&values_[0], values_.size());
@@ -406,69 +404,28 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
-        constexpr bool debug_market_excess = false;
-        if(debug_market_excess){
-            for(auto e: range(0.01, 2.00, 0.01)){
-                size_t n = std::max(size_t(1), quotes_.size());
-                std::vector<double> variables_;
-                for(size_t i = 0; i < n; ++i) {
-                    variables_.push_back(e);
-                }
-                ////////////////////////////////////////////////////////////////
-                std::map<identity<law::property>,
-                    std::tuple<quote, double>>
-                    quote_scalars_;
-                std::map<identity<law::property>,
-                    double>
-                    price_render_;
-                size_t i = 0;
-                for(auto [k, v]: quotes_) {
-                    price_render_.emplace(k, double(v) * variables_[i]);
-                    quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
-                    ++i;
-                }
-                std::map<identity<law::property>, std::vector<double>> terms_map;
-                for(const auto &f : excess_demand_functions_) {
-                    auto demand_per_property_ = f->excess_demand(quote_scalars_);
-                    for(auto [k, v]: demand_per_property_) {
-                        if(terms_map.find(k) == terms_map.end()){
-                            terms_map.emplace(k, std::vector<double>());
-                        }//else{
-                            terms_map.find(k)->second.push_back(v);
-                        //}
-                    }
-                }
-                std::vector<double> result_;
-                for(auto [k, v]: quotes_){
-                    //assert(terms_map.end() != terms_map.find(k));
-                    //result_.push_back(terms_map.find(k)->second);
-                }
-                ////////////////////////////////////////////////////////////////
-                //std::cout << price_render_ << ", " << terms_map << std::endl;
-            }
-        }
-
         for(auto method_ : methods){
+            stack_.new_recording();
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
-            mapping_index_.reserve(quotes_.size());
-            {
-                for(auto [k, v] : quotes_) {
-                    (void) v;
-                    mapping_index_.emplace_back(k);
-                    active_.emplace_back(1.0 );
-                }
+
+            mapping_index_.reserve(quotes.size());
+            for(auto [k, v] : quotes) {
+                (void) v;
+                mapping_index_.emplace_back(k->identifier);
+                active_.emplace_back(1.0 );
             }
+
 
             if (method_ == root){
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-                if(1 == quotes_.size()){
-
+                if(1 == quotes.size()){
                     auto old_handler = gsl_set_error_handler (&handler);
-/*
+
+                    /*
                     int status;
                     int iter = 0;
-                    int max_iter = 100;
+                    int max_iter = 20;
                     const gsl_root_fsolver_type *T;
                     gsl_root_fsolver *s;
                     double x_lo = 0.01, x_hi = 100.0;
@@ -491,7 +448,6 @@ namespace esl::economics::markets::tatonnement {
                         status = gsl_root_test_interval (x_lo, x_hi,
                                                          0, 0.0001);
 
-
                     }
                     while (status == GSL_CONTINUE && iter < max_iter);
 
@@ -499,49 +455,56 @@ namespace esl::economics::markets::tatonnement {
                         std::map<esl::identity<esl::law::property>, double> result_;
                         auto solver_best_ = gsl_root_fsolver_root(s);
 
+
+                        solver_best_ = std::max(circuit_breaker.first, solver_best_);
+                        solver_best_ = std::min(circuit_breaker.second, solver_best_);
+
                         result_.emplace(mapping_index_[0], solver_best_);
                         gsl_root_fsolver_free(s);
                         return result_;
                     }
 
-
-
-
-
-
                 /*/
-                    int status;
-                    int iter = 0;
-                    int max_iter = 100;
-                    const gsl_root_fdfsolver_type *T;
-                    gsl_root_fdfsolver *s;
-                    double xt = 1.00007858;
+                    int status          = GSL_CONTINUE;
+                    size_t iterations_  = 0;
+                    auto max_iterations_ = size_t(1000);
 
-                    gsl_function_fdf FDF;
+                    double value_           = 1.0;
 
-                    FDF.f = &uniroot_function_value;
-                    FDF.df = &uniroot_function_value_and_gradient;
-                    FDF.fdf = &uniroot_function_jacobian_cb;
-                    FDF.params = static_cast<void *>(this);
+                    gsl_function_fdf function_;
+                    function_.f         = &uniroot_function_value;
+                    function_.df        = &uniroot_function_value_and_gradient;
+                    function_.fdf       = &uniroot_function_jacobian_cb;
+                    function_.params    = static_cast<void *>(this);
 
-                    T = gsl_root_fdfsolver_steffenson;
-                     s = gsl_root_fdfsolver_alloc (T);
+                    const gsl_root_fdfsolver_type *solver_ = gsl_root_fdfsolver_steffenson;
+                    gsl_root_fdfsolver *s = gsl_root_fdfsolver_alloc (solver_);
 
-
-                    gsl_root_fdfsolver_set (s, &FDF, xt);
+                    gsl_root_fdfsolver_set (s, &function_, value_);
 
                     do  {
-                        ++iter;
+                        ++iterations_;
                         status = gsl_root_fdfsolver_iterate(s);
-                        double x0 = xt;
-                        xt = gsl_root_fdfsolver_root (s);
-                        status = gsl_root_test_delta (xt, x0, 0.001, 0.00001);
+
+                        const double x0 = value_;
+                        value_ = gsl_root_fdfsolver_root (s);
+
+                        if(state_ != SUCCESS){
+                            status = GSL_FAILURE;
+                            break;
+                        }
+
+                        status = gsl_root_test_delta (value_, x0, 0.001, 0.00001);
                     }
-                    while (status == GSL_CONTINUE && iter < max_iter);
+                    while (status == GSL_CONTINUE && iterations_ < max_iterations_);
 
                     if (GSL_SUCCESS == status) {
                         std::map<esl::identity<esl::law::property>, double> result_;
                         auto solver_best_ = gsl_root_fdfsolver_root(s);
+
+                        solver_best_ = std::max(circuit_breaker.first, solver_best_);
+                        solver_best_ = std::min(circuit_breaker.second, solver_best_);
+
                         result_.emplace(mapping_index_[0], solver_best_);
                         gsl_root_fdfsolver_free (s);
                         return result_;
@@ -552,8 +515,6 @@ namespace esl::economics::markets::tatonnement {
 
 
                     gsl_set_error_handler (old_handler);
-
-
                 } else {
                     gsl_multiroot_function_fdf root_function;
 
@@ -572,7 +533,7 @@ namespace esl::economics::markets::tatonnement {
                     gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc(solver_t_, active_.size());
                     gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
 
-                    size_t max_iterations_ = size_t(std::pow(10, active_.size()));
+                    auto max_iterations_ = size_t(std::pow(10, active_.size()));
 
                     int status = GSL_CONTINUE;
                     for (size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i) {
@@ -588,8 +549,10 @@ namespace esl::economics::markets::tatonnement {
                         auto solver_best_ = gsl_multiroot_fdfsolver_root(solver_);
                         for (size_t i = 0; i < active_.size(); ++i) {
                             auto scalar_ = gsl_vector_get(solver_best_, i);
-                            scalar_ = std::min(scalar_, 1.2);
-                            scalar_ = std::max(scalar_, 1. / 1.2);
+
+                            scalar_ = std::max(circuit_breaker.first, scalar_);
+                            scalar_ = std::min(circuit_breaker.second, scalar_);
+
                             result_.emplace(mapping_index_[i], scalar_);
                         }
                         gsl_multiroot_fdfsolver_free(solver_);
@@ -714,8 +677,8 @@ namespace esl::economics::markets::tatonnement {
                 //LOG(errorlog)  << "gradient-based minimizer failed after " << iter
                 //            << " iterations: " << gsl_strerror(status) << std::endl;
 #else
-                LOG(errorlog)  << "gradient-free minimizer failed after " << iter
-                            << " iterations: " << gsl_strerror(status) << std::endl;
+                //LOG(errorlog)  << "gradient-free minimizer failed after " << iter
+               //             << " iterations: " << gsl_strerror(status) << std::endl;
 #endif
             }
         }

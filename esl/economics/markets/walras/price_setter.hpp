@@ -35,6 +35,7 @@
 
 #include <esl/economics/markets/market.hpp>
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
+#include <esl/economics/markets/walras/tatonnement.hpp>
 
 namespace esl::economics::markets::walras {
 
@@ -49,16 +50,14 @@ namespace esl::economics::markets::walras {
     {
     private:
     public:
-        law::property_map<quote> traded_properties; // move the market base?
-
-        simulation::time_point latest = 0;
-
         std::shared_ptr<data::output<std::vector<price>>> output_clearing_prices_;
 
     protected:
         friend class boost::serialization::access;
 
         explicit price_setter( );
+
+        //tatonnement::excess_demand_model model_;
 
     public:
         enum state_t
@@ -68,6 +67,7 @@ namespace esl::economics::markets::walras {
 
         state_t state;
 
+        law::property_map<quote> traded_properties;
         ///
         ///
         /// \details    Initialises the differentiable variable context to 1.0 times the initial quotes. In essence, the

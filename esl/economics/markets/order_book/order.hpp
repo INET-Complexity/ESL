@@ -105,7 +105,8 @@ namespace esl::economics::markets::order_book {
 
     inline std::ostream &operator << (std::ostream &ostream, const order &order)
     {
-
+        (void)ostream;
+        (void)order;
     }
 
 }  // namespace esl::economics::markets::order_book
