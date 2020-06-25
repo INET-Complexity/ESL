@@ -35,7 +35,6 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
 #ifndef ME_AVELLANEDA_STOIKOV_HPP
 #define ME_AVELLANEDA_STOIKOV_HPP
 
@@ -44,9 +43,8 @@
 #include <utility>
 #include <esl/quantity.hpp>
 
+
 namespace esl::economics::markets::order_book{
-
-
     ///
     /// \param mid          Market mid price, i.e. (bid+ask)/2
     /// \param n_long
@@ -54,17 +52,16 @@ namespace esl::economics::markets::order_book{
     /// \param theta        Time as fraction of the total trading session, 0.0 = market open, 1.0 = market close
     /// \param sigma        Brownian motion volatility estimate (Bachelier vol)
     /// \param gamma        Risk aversion parameter, $\gamma = 0$ implies risk neutrality, $\gamma > 0$ implies risk aversion. Paper uses 0.01 in example
-    /// \param k            Arrival rate estimate $\lambda = A \exp(-k \delta)$, default is parameter from paper. Paper uses $k = 1.5$ (and $A = 1400$
+    /// \param k            Arrival rate estimate $\lambda = A \exp(-k \delta)$, default is parameter from paper. Paper uses $k = 1.5$ (and $A = 140)$
     /// \return
-    std::pair<price, price> avellaneda_stoikov
-            ( const price& mid
-            , quantity n_long
-            , quantity n_short
-            , double theta
-            , double sigma
-            , double gamma  = 0.01
-            , double k      = 1.5
-            )
+    std::pair<price, price> avellaneda_stoikov( const price& mid
+                                              , quantity n_long
+                                              , quantity n_short
+                                              , double theta
+                                              , double sigma
+                                              , double gamma
+                                              , double k
+                                              )
     {
         assert(0 <= theta && theta <= 1.0);
         assert(sigma > 0.);
@@ -75,7 +72,6 @@ namespace esl::economics::markets::order_book{
         assert(bid_ <= ask_);
         return {price(bid_, mid.valuation), price(ask_, mid.valuation)};
     }
-
 };
 
 

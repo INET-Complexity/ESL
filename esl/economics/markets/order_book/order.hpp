@@ -56,14 +56,14 @@ namespace esl::economics::markets::order_book {
         , sell
         } side;
 
-        ticker m_symbol;
-
-        esl::identity<esl::agent> owner;
-
         ///
         /// \brief  An identifier provided by the owner
         ///
         esl::identity<order> identifier;
+
+        ticker m_symbol;
+
+        esl::identity<esl::agent> owner;
 
         esl::economics::price m_price;
 
