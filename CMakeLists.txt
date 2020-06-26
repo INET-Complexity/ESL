@@ -472,7 +472,7 @@ SET(SOURCE_FILES
         esl/economics/markets/ticker.cpp
         esl/economics/markets/ticker.hpp
 
-        esl/economics/markets/order_book/avellaneda_stoikov.hpp test/test_avellaneda_stoikov.cpp
+        esl/economics/markets/order_book/avellaneda_stoikov.hpp
 
         esl/economics/markets/order_book/exchange.cpp
         esl/economics/markets/order_book/exchange.hpp
@@ -481,16 +481,13 @@ SET(SOURCE_FILES
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
-
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
 endif()
 
-
 IF(WIN32)
-
     LINK_DIRECTORIES("C:/msys64/usr/lib")
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
