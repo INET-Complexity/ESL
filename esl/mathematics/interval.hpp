@@ -64,10 +64,6 @@ namespace esl::mathematics {
             return right_closed_;
         }
 
-        static_assert(std::is_floating_point<number_t_>::value
-                      // TODO: || esl::is_rational<number_t_>::value
-                      || std::is_integral<number_t_>::value);
-
         number_t_ lower;
         number_t_ upper;
 
@@ -77,8 +73,8 @@ namespace esl::mathematics {
         ///         to time_point(0)
         ///
         constexpr interval()
-        : lower(0)
-        , upper(0)
+        : lower()
+        , upper()
         {
 
         }
@@ -109,8 +105,11 @@ namespace esl::mathematics {
             }
 
             // (lower < upper) is implied
-            if(1 == upper - lower){
-               return left_closed_ && right_closed_;
+            if constexpr(std::is_integral<number_t_>::value){
+                if (1 == upper - lower)
+                {
+                    return left_closed_ && right_closed_;
+                }
             }
 
             return false;

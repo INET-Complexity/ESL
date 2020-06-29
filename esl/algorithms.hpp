@@ -36,6 +36,33 @@
 namespace esl {
 
     ///
+    /// \brief  Constexpr integer exponentiation
+    ///
+    /// \tparam integer_t_
+    /// \param x
+    /// \param p
+    /// \return
+    template<typename integer_t_ = unsigned int>
+    constexpr integer_t_ nonnegative_integer_power(integer_t_ x, integer_t_ p) noexcept
+    {
+        if(p == 0){
+            return 1;
+        }
+        if(p == 1){
+            return x;
+        }
+
+        auto half_ = nonnegative_integer_power(x, p / 2);
+
+        if (p % 2 == 0){
+            return half_ * half_;
+        }
+
+        return x * half_ * half_;
+    }
+
+
+    ///
     /// \brief Copy container elements into a std::array
     ///
     /// \tparam element_t_

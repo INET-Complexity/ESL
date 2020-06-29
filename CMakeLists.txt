@@ -476,7 +476,7 @@ SET(SOURCE_FILES
 
         esl/economics/markets/order_book/exchange.cpp
         esl/economics/markets/order_book/exchange.hpp
-        )
+        esl/computation/block_pool.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")

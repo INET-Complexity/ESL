@@ -34,11 +34,11 @@ namespace esl::economics::markets {
     struct ticker
     {
     public:
-        esl::identity<esl::law::property> base;
-        esl::identity<esl::law::property> quote;
+        identity<law::property> base;
+        identity<law::property> quote;
 
-        ticker(const esl::identity<esl::law::property> &base,
-               const esl::identity<esl::law::property> &quote)
+        ticker(const identity<law::property> &base  = identity<law::property>(),
+               const identity<law::property> &quote = identity<law::property>())
         : base(base)
         , quote(quote)
         {

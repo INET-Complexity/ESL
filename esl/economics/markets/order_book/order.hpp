@@ -26,21 +26,19 @@
 #define ESL_ECONOMICS_MARKETS_ORDER_HPP
 
 #include <string>
-
+#include <utility>
 #include <iomanip>
 #include <ostream>
-#include <string>
 
 #include <esl/agent.hpp>
 #include <esl/simulation/identity.hpp>
 #include <esl/economics/markets/ticker.hpp>
-#include <esl/economics/price.hpp>
-#include <utility>
+#include <esl/economics/markets/quote.hpp>
 
 
 namespace esl::economics::markets::order_book {
 
-    class order
+    class limit_order_message
     {
     private:
     public:
@@ -56,33 +54,27 @@ namespace esl::economics::markets::order_book {
         , sell
         } side;
 
-        ///
-        /// \brief  An identifier provided by the owner
-        ///
-        esl::identity<order> identifier;
 
-        ticker m_symbol;
+        ticker symbol;
 
-        esl::identity<esl::agent> owner;
+        identity<agent> owner;
 
-        esl::economics::price m_price;
+        quote limit;
 
-        std::uint64_t quantity;
+        std::uint32_t quantity;
 
-        order( ticker symbol
-             , const esl::identity<esl::agent> &owner
-             , const esl::identity<order> &clientId
-             , side_t side
-             , price limit
-             , std::uint64_t quantity
-             , lifetime_t lifetime = good_until_cancelled
-             )
+        limit_order_message  ( ticker symbol
+                             , const identity<agent> &owner
+                             , side_t side
+                             , const quote& limit
+                             , std::uint64_t quantity
+                             , lifetime_t lifetime = good_until_cancelled
+                             )
         : lifetime(lifetime)
         , side(side)
-        , identifier(clientId)
-        , m_symbol(std::move(symbol))
+        , symbol(std::move(symbol))
         , owner(owner)
-        , m_price(std::move(limit))
+        , limit(limit)
         , quantity(quantity)
         {
 
@@ -99,14 +91,15 @@ namespace esl::economics::markets::order_book {
         }
 
     protected:
-        friend std::ostream &operator << (std::ostream &, const order &);
+        friend std::ostream &operator << (std::ostream &, const limit_order_message &);
     };
 
 
-    inline std::ostream &operator << (std::ostream &ostream, const order &order)
+    inline std::ostream &operator << (std::ostream &ostream, const limit_order_message &order)
     {
         (void)ostream;
         (void)order;
+        return ostream;
     }
 
 }  // namespace esl::economics::markets::order_book

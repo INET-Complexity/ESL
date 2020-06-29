@@ -90,6 +90,14 @@ namespace esl::economics {
 
         }
 
+
+        constexpr price(double value_untruncated, const price &similar)
+            : price(value_untruncated, similar.valuation)
+        {
+
+        }
+
+
         price &operator = (const price &p)
         {
             value     = p.value;
