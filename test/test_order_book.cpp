@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
         book_.insert(bid_toosmall_);
 
 
-        BOOST_CHECK_EQUAL(book_.executions.size(), 1);
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::invalid);
+        BOOST_CHECK_EQUAL(book_.reports.size(), 1);
+        BOOST_CHECK_EQUAL(book_.reports.front().state,  execution_report::invalid);
 
         auto bid_toolarge_ = limit_order_message
         ( ticker_dummy_
@@ -103,8 +103,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
         );
         book_.insert(bid_toolarge_);
 
-        BOOST_CHECK_EQUAL(book_.executions.size(), 2);
-        BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::invalid);
+        BOOST_CHECK_EQUAL(book_.reports.size(), 2);
+        BOOST_CHECK_EQUAL(book_.reports.back().state,  execution_report::invalid);
     }
 
     limit_order_message create_bid(double p, size_t q = 1000)
@@ -169,20 +169,16 @@ BOOST_AUTO_TEST_SUITE(ESL)
         auto book_ = markets::order_book::statically_allocated::book<10>(min_, max_);
 
         book_.insert(create_bid(4.75));
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
+        BOOST_CHECK_EQUAL(book_.reports.front().state,  execution_report::placement);
 
         book_.insert(create_bid(4.75));
         book_.insert(create_bid(4.76));
         book_.insert(create_bid(4.74));
-        BOOST_CHECK_EQUAL(book_.executions.size(), 4);
-        BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::placement);
+        BOOST_CHECK_EQUAL(book_.reports.size(), 4);
+        BOOST_CHECK_EQUAL(book_.reports.back().state,  execution_report::placement);
 
         BOOST_CHECK(book_.bid());
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price(4.76, currencies::USD), 100 *  currencies::USD.denominator));
-
-        //book_.insert(create_ask(4.78, 500));
-        //BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::placement);
-
     }
 
 
@@ -193,26 +189,39 @@ BOOST_AUTO_TEST_SUITE(ESL)
         auto  max_ = quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::statically_allocated::book<10>(min_, max_);
 
-        book_.insert(create_bid(4.75));
-        book_.insert(create_bid(4.75));
-        book_.insert(create_bid(4.76));
+        book_.insert(create_bid(4.75, 500));
+        book_.insert(create_bid(4.75, 500));
         book_.insert(create_bid(4.74));
-        BOOST_CHECK_EQUAL(book_.executions.size(), 4);
+        book_.insert(create_bid(4.76, 500));
 
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
-        book_.insert(create_ask(4.69, 500));
-        //BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::match);
+        book_.insert(create_ask(4.69, 750));    // expect: execute 500 at 4.76 and 250 at 4.75
 
-        //BOOST_CHECK_EQUAL(book_.executions.size(), 6);
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
 
-        //std::cout << book_.executions << std::endl;
+        book_.reports.clear();
 
+        book_.insert(create_ask(4.75, 1000));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
+
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price(4.74, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+
+
+        book_.insert(create_bid(4.75, 200));   //  expect: execute 200 at 4.75
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.reports.back().quantity, 200);
+
+
+        book_.display();
+
+        book_.insert(create_bid(4.75, 51));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
+
+
+        book_.display();
+
+        std::cout << "???? " << book_.ask().value() << std::endl;
+        BOOST_CHECK(!book_.ask());
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
     }
-
-
-
-
-
 
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

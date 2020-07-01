@@ -53,10 +53,12 @@ namespace esl::computation::block_pool {
         ///
         element_t_ data;
 
+        typedef std::uint64_t index_t;
+
         ///
         /// \brief  The index associated with this block
         ///
-        std::uint64_t index;
+        index_t index;
 
         ///
         /// \brief  A pointer to the next free block
