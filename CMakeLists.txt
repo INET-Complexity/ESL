@@ -149,8 +149,8 @@ ADD_COMPILE_OPTIONS(-m64)
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
+SET(CMAKE_CXX_FLAGS_DEBUG "-g   ")#    --coverage -fprofile-arcs -ftest-coverage")
 
 SET(CMAKE_C_FLAGS_RELEASE "-O3 ")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 ")

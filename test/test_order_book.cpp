@@ -37,6 +37,7 @@
 #include <esl/economics/markets/order_book/book.hpp>
 #undef private
 #undef protected
+#include <esl/data/representation.hpp>
 
 using namespace esl;
 using namespace esl::economics;
@@ -56,7 +57,6 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.ticks,10'000);
 
         BOOST_CHECK_EQUAL(book_.limits_.size(),999 * 100 + 1);
-
 
         markets::order_book::statically_allocated::book<10>::limit l_;
 
@@ -107,8 +107,6 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::invalid);
     }
 
-
-
     limit_order_message create_bid(double p, size_t q = 1000)
     {
         esl::economics::markets::ticker ticker_dummy_;
@@ -150,7 +148,6 @@ BOOST_AUTO_TEST_SUITE(ESL)
         auto  max_ = quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::statically_allocated::book<20>(min_, max_);
 
-
         for(double p: std::vector<double>{
                 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
                 4.96, 4.97, 4.98, 4.99, 5.00, 5.01, 5.02, 5.03, 5.04,
@@ -163,22 +160,34 @@ BOOST_AUTO_TEST_SUITE(ESL)
             BOOST_CHECK_EQUAL(q, rtq_);
         }
 
+    }
 
-        /*book_.insert(create_bid(4.75));
+    BOOST_AUTO_TEST_CASE(statically_allocated_book_placement)
+    {
+        auto  min_ = quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto book_ = markets::order_book::statically_allocated::book<10>(min_, max_);
+
+        book_.insert(create_bid(4.75));
+        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
+
+        book_.insert(create_bid(4.75));
         book_.insert(create_bid(4.76));
         book_.insert(create_bid(4.74));
         BOOST_CHECK_EQUAL(book_.executions.size(), 4);
+        BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::placement);
 
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
-        book_.insert(create_ask(4.76, 500));
+        BOOST_CHECK(book_.bid());
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price(4.76, currencies::USD), 100 *  currencies::USD.denominator));
 
-        BOOST_CHECK_EQUAL(book_.executions.size(), 6);
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
-        */
+        //book_.insert(create_ask(4.78, 500));
+        //BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::placement);
+
     }
 
-    /*
-    BOOST_AUTO_TEST_CASE(statically_allocated_book_placement)
+
+
+    BOOST_AUTO_TEST_CASE(statically_allocated_book_match)
     {
         auto  min_ = quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
         auto  max_ = quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
@@ -191,12 +200,19 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.executions.size(), 4);
 
         BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
-        book_.insert(create_ask(4.76, 500));
+        book_.insert(create_ask(4.69, 500));
+        //BOOST_CHECK_EQUAL(book_.executions.back().state,  execution_report::match);
 
-        BOOST_CHECK_EQUAL(book_.executions.size(), 6);
-        BOOST_CHECK_EQUAL(book_.executions.front().state,  execution_report::placement);
+        //BOOST_CHECK_EQUAL(book_.executions.size(), 6);
+
+        //std::cout << book_.executions << std::endl;
 
     }
-     */
+
+
+
+
+
+
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
