@@ -121,9 +121,7 @@ namespace esl::economics::markets::order_book {
             ,   placement
             } state : 2;
 
-
-
-            std::uint64_t               quantity;
+            std::uint32_t               quantity;
             std::uint64_t               identifier;
             limit_order_message::side_t side;           // possibly superfluous
             quote                       limit;
@@ -274,6 +272,7 @@ namespace esl::economics::markets::order_book {
             //, decode(decode)
             , ticks(minimum.lot)
             {
+                reports.reserve(32);
                 assert(!valid_limits.empty());
                 assert(minimum.lot == maximum.lot);
                 // +1 because the maximum value is included
@@ -294,6 +293,32 @@ namespace esl::economics::markets::order_book {
                 decode = [&](const auto &l) -> quote {
                     return default_decode(l);
                 };
+            }
+
+            ///
+            /// \brief
+            ///
+            /// \param new_limits
+            void resize(mathematics::interval<quote> new_limits)
+            {
+                if(new_limits.lower > valid_limits.lower && new_limits.lower <= valid_limits.upper){
+                    // safely encode and erase orders in between
+                    limit lower_;
+                    encode(new_limits.lower, lower_);
+
+                    for(auto i = &limits_[0]; i < lower_; ++i){
+                        for(auto j = i->first; nullptr != j; j = j->data.successor){
+
+                        }
+                    }
+
+                }
+
+                if(new_limits.upper < valid_limits.upper && new_limits.upper > valid_limits.lower) {
+
+                }
+
+                valid_limits = new_limits;
             }
 
             [[nodiscard]] std::optional<quote> bid() const
@@ -473,7 +498,7 @@ namespace esl::economics::markets::order_book {
                 }
 
                 auto block_ = pool_.emplace(record
-                      { .quantity  = order.quantity
+                      { .quantity  = remainder_
                       , .owner     = order.owner
                       , .successor = nullptr
                 });
@@ -526,40 +551,75 @@ namespace esl::economics::markets::order_book {
                 pool_.erase(order);
             }
 
-
-            void display() const
+            ///
+            /// \brief
+            ///
+            /// \param levels
+            void display(std::uint64_t levels = 5) const
             {
-                for(auto i = &limits_[limits_.size() - 1]; i >= &limits_[0]; --i){
-                    if(!i->first){
+                std::cout << "            bid |                | ask            "
+                          << std::endl;
+
+                std::uint64_t displayed_ = 0;
+                std::vector<std::pair<std::uint32_t, double>> ask_displayed_;
+                for(auto i = best_ask_; i <= &limits_[limits_.size() - 1] && displayed_ < levels; ++i) {
+                    if(!i->first) {
                         continue;
                     }
-
                     std::uint64_t quantity_ = 0;
-
-                    for(auto *j = i->first; nullptr != j; j = j->data.successor) {
+                    for(auto *j = i->first; nullptr != j;
+                        j       = j->data.successor) {
                         quantity_ += j->data.quantity;
                     }
-                    if(quantity_ <= 0){
+                    if(quantity_ <= 0) {
                         continue;
                     }
-                    if(i >= best_ask_) {
-                        std::cout << "                | "
-                                  << std::left << std::setw(14)
-                                  << double(decode(i - &limits_[0]))*100*100
-                                  << " | "
-                                  << std::left << std::setw(15)
-                                  << quantity_
-                                  << std::endl;
-                    }else{
-                        std::cout << std::right << std::setw(15)
-                                  << quantity_ << " | "
-                                  << std::left << std::setw(14)
-                                  << double(decode(i - &limits_[0]))*100*100
-                                  << " | "
-                                  << std::endl;
-                    }
 
+                    ask_displayed_.push_back({quantity_,double(decode(i - &limits_[0]))*100*100});
+                    /*std::cout << "                | "
+                              << std::left << std::setw(14)
+                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << double(decode(i - &limits_[0]))*100*100
+                              << " | "
+                              << std::left << std::setw(15)
+                              << quantity_
+                              << std::endl;*/
+                    ++displayed_;
                 }
+
+                for(auto r = ask_displayed_.rbegin(); r!= ask_displayed_.rend(); ++r){
+                    std::cout << "                | "
+                              << std::left << std::setw(14)
+                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << r->second
+                              << " | "
+                              << std::left << std::setw(15)
+                              << r->first
+                              << std::endl;
+                }
+
+                //std::cout << "------------------------------------------------" << std::endl;
+
+                displayed_ = 0;
+                for(auto i = best_bid_; i >= &limits_[0] && displayed_ < levels; --i) {
+                    if(!i->first) {
+                        continue;
+                    }
+                    std::uint64_t quantity_ = 0;
+                    for(auto *j = i->first; nullptr != j;
+                        j       = j->data.successor) {
+                        quantity_ += j->data.quantity;
+                    }
+                    if(quantity_ <= 0) {
+                        continue;
+                    }
+                    std::cout << std::right << std::setw(15)
+                              << quantity_ << " | "
+                              << std::left << std::setw(14)
+                              << std::setprecision(int(std::log10(valid_limits.lower.lot  ))) << double(decode(i - &limits_[0]))*100*100
+                              << " | "
+                              << std::endl;
+                    ++displayed_;
+                }
+
             }
 
         };

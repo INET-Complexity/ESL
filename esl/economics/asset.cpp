@@ -56,11 +56,13 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(asset)
 {
+    /*
     class_<esl::economics::asset, bases<esl::law::property>>(
         "asset", init<esl::identity<esl::economics::asset>>())
         .def("name", &esl::economics::asset::name)
         .def("value", &esl::economics::asset::value)
         ;
+        */
 }
 
 #endif  // WITH_PYTHON

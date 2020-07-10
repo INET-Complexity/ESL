@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         bp_.erase(0);
         bp_.erase(1);
         bp_.erase(2);
-        bp_.erase(new_id_round_);
+        bp_.erase(new_id_round_.first);
         bp_.erase(4);
 
 

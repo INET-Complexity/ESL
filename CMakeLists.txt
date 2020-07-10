@@ -100,14 +100,14 @@ LIST(APPEND Boost_LIBRARIES
     )
 
 IF(WITH_PYTHON)
-    LIST(APPEND Boost_LIBRARIES python3)
+    LIST(APPEND Boost_LIBRARIES python38)
 ELSE()
 ENDIF()
 
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES mpi)
     IF(WITH_PYTHON)
-        LIST(APPEND Boost_LIBRARIES mpi_python3)
+        LIST(APPEND Boost_LIBRARIES mpi_python38)
     ENDIF()
 ENDIF()
 
