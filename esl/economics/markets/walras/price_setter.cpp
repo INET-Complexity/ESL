@@ -73,6 +73,11 @@ namespace esl::economics::markets::walras {
         output_clearing_prices_ =
             create_output<std::vector<price>>("clearing_prices");
 
+
+        output_volumes_ =
+            create_output<std::vector<uint64_t>>("volumes");
+
+
         register_callback<walras::differentiable_order_message>(
             [this](auto msg, simulation::time_interval ti,
                    std::seed_seq &seed) {
@@ -297,6 +302,8 @@ namespace esl::economics::markets::walras {
             quotes_.emplace(k->identifier, v);
         }
 
+        //std::cout << "---------------------------------------------" << std::endl;
+
         tatonnement::excess_demand_model model_(quotes_);
         for(auto [key, function_] : orders) {
             (void)key;
@@ -319,6 +326,57 @@ namespace esl::economics::markets::walras {
         ////////////////////////////////////////////////////////////////////////
         map<identity<property>, double> volumes_;
         map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> orders_;
+
+        //  this is to normalize positive demand, so that we dont create
+        //  naked short positions by inventing new property
+        map<identity<property>, double> scales_;
+
+        map<identity<property>, double> existingdemand_;
+
+        // total supply is the maximum number of properties
+        map<identity<property>, double> total_supply_;
+
+
+        for(const auto &[participant, order_] : orders) {
+            auto demand_ = order_->excess_demand(solution_);
+            for(const auto &[property_, excess_] : demand_) {
+                auto i = scales_.emplace(property_, 0.).first;
+                auto j = total_supply_.emplace(property_, 0.).first;
+                auto h = existingdemand_.emplace(property_, 0.).first;
+
+                if(excess_ >= -0.00001 && excess_ <= 0.00001) {
+                    continue;
+                }
+                auto quote_ = solution_.find(property_)->second;
+                auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
+                auto units_with_existing_ = units_;
+
+                auto k = order_->supply.find(property_);
+                if(order_->supply.end() != k){
+                    // TODO: there is the excess, and this is the reserve
+                    units_with_existing_ -= double(std::get<0>(k->second));
+                    units_with_existing_ -= double(std::get<1>(k->second));
+
+                    j->second += double(std::get<0>(k->second)) - double(std::get<1>(k->second)) ;
+                }
+
+                if(units_with_existing_ > 0.) {
+                    h->second += units_with_existing_;
+                }
+
+                if(units_ > 0.){
+                    i->second += units_;
+                }
+            }
+        }
+
+        // TODO: check to make sure we use supply properly
+        //std::cout << " total_supply_ = " << total_supply_ << std::endl;
+        //std::cout << " existing_demand_ = " << existingdemand_ << std::endl;
+        //std::cout << " demand(scale) = " << scales_ << std::endl;
+
+
+
         for(const auto &[participant, order_]: orders) {
             auto demand_ = order_->excess_demand(solution_);
             for(const auto &[property_, excess_]: demand_) {
@@ -327,7 +385,8 @@ namespace esl::economics::markets::walras {
                 }
 
                 auto quote_ = solution_.find(property_)->second;
-                auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
+
+                auto units_ = (excess_ ) / (double(std::get<0>(quote_)) * std::get<1>(quote_));
 
                 auto i = volumes_.find(property_);
                 if(volumes_.end() == i){
@@ -340,8 +399,7 @@ namespace esl::economics::markets::walras {
 
                 auto j = order_->supply.find(property_);
                 if(order_->supply.end() == j){
-                    orders_.find(property_)->second.emplace( participant
-                                                           , std::make_tuple(units_, 0, 0));
+                    orders_.find(property_)->second.emplace( participant, std::make_tuple(units_, 0, 0));
 
                     //LOG(trace) << participant << " demands {" << property_ << ", "
                     //           << units_ << "}" << std::endl;
@@ -350,15 +408,15 @@ namespace esl::economics::markets::walras {
                     //           << std::setprecision(5) << units_
                     //           << "}" << std::endl;
 
-                    orders_.find(property_)->second.emplace(
-                        participant,
-                        std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
+                    orders_.find(property_)->second.emplace(participant, std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
                 }
             }
         }
 
         ////////////////////////////////////////////////////////////////////////
         auto transfers_ = compute_transfers(traded_properties, volumes_, orders_);
+        output_volumes_->put(step.lower, { std::uint64_t(volumes_.begin()->second )} );
+
 
         //  send_: we, the market maker, send items to participant
         //  receive_: we, the market maker, receive items from participant
@@ -490,8 +548,8 @@ namespace esl::economics::markets::walras {
 
 
         for(auto [p, i] : send_) {
-            //LOG(trace) << "market sends to " << p << " items " << i
-            //           << std::endl;
+            LOG(trace) << "market sends to " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, identifier, p,
                 reinterpret_identity_cast<law::owner<law::property>>(
@@ -500,8 +558,8 @@ namespace esl::economics::markets::walras {
         }
 
         for(auto [p, i]: receive_) {
-            //LOG(trace) << "market receives from " << p << " items " << i
-            //           << std::endl;
+            LOG(trace) << "market receives from " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, p, identifier,
                 reinterpret_identity_cast<law::owner<law::property>>(p),

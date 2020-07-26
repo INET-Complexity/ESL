@@ -35,7 +35,7 @@ namespace esl::economics::accounting {
     {
     public:
 
-        balance_sheet(const law::owner<law::property> &)
+        explicit balance_sheet(const law::owner<law::property> &)
         {
 
         }

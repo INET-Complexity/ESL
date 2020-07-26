@@ -98,7 +98,7 @@ namespace esl::simulation::parameter {
         {
             auto iterator_ = values.find(name);
             if(values.end() == iterator_) {
-                throw std::exception();
+                throw std::out_of_range("parametrization[" + name + "]");
             }
             auto value_ =
                 std::dynamic_pointer_cast<constant<parameter_t_>>(iterator_->second);

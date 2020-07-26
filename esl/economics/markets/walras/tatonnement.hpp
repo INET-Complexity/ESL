@@ -40,6 +40,7 @@
 
 #include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 #include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/walras/differentiable_order_message.hpp>
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -73,7 +74,7 @@ namespace esl::economics::markets::tatonnement {
     class excess_demand_model
     {
     public:
-        std::vector<std::shared_ptr<differentiable_demand_supply_function>> excess_demand_functions_;
+        std::vector<std::shared_ptr<walras::differentiable_order_message>> excess_demand_functions_;
 
         explicit excess_demand_model(std::map<identity<law::property>, quote> initial_quotes);
 
