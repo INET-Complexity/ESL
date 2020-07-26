@@ -68,9 +68,12 @@ namespace esl::data {
         {
             if(source_file) {
                 std::stringstream library_root_;
+
+                constexpr wchar_t separator_ = L'/'; // Windows MINGW workaround for std::filesystem::path::preferred_separator
+
                 library_root_
                     << "esl"
-                    << char(std::filesystem::path::preferred_separator);
+                    << char(separator_);
                 const std::string root_ = library_root_.str();
 
                 auto source_file_ = std::string(source_file);
@@ -78,7 +81,7 @@ namespace esl::data {
                 size_t common_part_ = source_file_.rfind(root_);
                 if(std::string::npos == common_part_) {
                     common_part_ = 1 + source_file_.rfind(
-                        char(std::filesystem::path::preferred_separator));
+                        char(separator_));
                     if(std::string::npos == common_part_) {
                         common_part_ = 0;
                     }

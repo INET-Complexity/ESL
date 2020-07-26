@@ -74,7 +74,7 @@ namespace esl {
             ///
             /// \brief
             ///
-            const message_code type;
+            message_code type;
 
             ///
             ///
@@ -117,13 +117,13 @@ namespace esl {
             ///
             /// \param h
             /// \return
-            header &operator=(const header &h)
+            header &operator = (const header &h)
             {
-                const_cast<message_code &>(type) = h.type;
-                sender                           = h.sender;
-                recipient                        = h.recipient;
-                sent                             = h.sent;
-                received                         = h.received;
+                type       = h.type;
+                sender     = h.sender;
+                recipient  = h.recipient;
+                sent       = h.sent;
+                received   = h.received;
                 return *this;
             }
 

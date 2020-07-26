@@ -52,6 +52,21 @@ namespace esl::economics {
 
         }
 
+
+        ///
+        /// \brief  Constructs an exchange rate similar to the provided exchange
+        ///         rate, meaning with the same precision.
+        ///
+        /// \param r
+         exchange_rate(double f, const exchange_rate &similar)
+        : exchange_rate(uint64_t( f * similar.denominator()), similar.denominator())
+        {
+
+        }
+
+
+
+
         ///
         /// \param o
         /// \return

@@ -27,47 +27,44 @@
 #ifndef ME_MATCHING_ENGINE_HPP
 #define ME_MATCHING_ENGINE_HPP
 
-
 #include <iostream>
 #include <map>
 
-#include <esl/economics/markets/order_book/book.hpp>
+#include <esl/economics/markets/order_book/order.hpp>
+#include <esl/economics/markets/ticker.hpp>
+#include <queue>
 
 
 namespace esl::economics::markets::order_book {
 
-
+    template<typename orderbook_t_>
     class matching_engine
     {
     public:
-
-        typedef std::map<ticker, book> books_t;
+        typedef std::map<ticker, orderbook_t_> books_t;
 
         books_t books;
 
         ///
-        ///
+        /// \brief
         ///
         /// \param order
         /// \return
-        bool insert(const order &order)
+        bool insert(const limit_order_message &order)
         {
-            auto i = books.find(order.m_symbol);
-
+            auto i = books.find(order.symbol);
 
             if(i == books.end()) {
-                i = books.emplace(order.m_symbol, book()).first;
-                //i = books.insert(std::make_pair(order.m_symbol, book()))
-                //        .first;
+                i = books.emplace(order.symbol, orderbook_t_()).first;
             }
 
             return i->second.insert(order);
         }
 
-        void erase(const order &order)
+        void erase(const limit_order_message &order)
         {
-            books_t::iterator i = books.find(order.m_symbol);
-            if(books.end() != i) {
+            auto i = books.find(order.symbol);
+            if(books.end() != i){
                 i->second.erase(order);
             }
         }
@@ -77,17 +74,18 @@ namespace esl::economics::markets::order_book {
         /// \param side
         /// \param id
         /// \return
-        order &find(const ticker& symbol, order::side_t side, const esl::identity<esl::law::property>& identifier)
+        limit_order_message &find( const ticker& symbol
+                   , limit_order_message::side_t side
+                   , const esl::identity<esl::law::property>& identifier)
         {
             auto i = books.find(symbol);
             if(books.end() == i) {
-                // todo: esl exception
                 throw std::exception();
             }
             return i->second.find(side, identifier);
         }
 
-        bool match(const ticker& symbol, std::queue<order> &orders)
+        bool match(const ticker &symbol, std::queue<limit_order_message> &orders)
         {
             auto i = books.find(symbol);
             if(i == books.end()) {
@@ -96,7 +94,7 @@ namespace esl::economics::markets::order_book {
             return i->second.match(orders);
         }
 
-        bool match(std::queue<order> &orders)
+        bool match(std::queue<limit_order_message> &orders)
         {
             for(auto & book : books) {
                 book.second.match(orders);
