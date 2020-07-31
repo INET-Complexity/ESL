@@ -12,14 +12,12 @@ The library is developed to be used from Python, and is written in C++.
 
 ### Agents
 
-We aim to provide an extensive collection of agent classes that are commonly used in the literature.
-
-* markets and market makers
-* governments and central banks
-* banks 
-* investment funds
-* pension funds
-* households
+We aim to provide an extensive collection of agent classes that are commonly used in the literature. 
+For financial markets, we provide examples of common investment and trading strategies
+* noise traders
+* fundamental value investors
+* trend followers, momentum portfolios and other technical trading strategies
+* market makers (naive, inventory based, ...)
 
 
 
@@ -55,9 +53,6 @@ cmake ../
 make -jN
 make test
 ```
-
-
-
 
 
 ## Examples
