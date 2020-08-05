@@ -406,47 +406,6 @@ namespace esl::economics::markets::tatonnement {
             throw std::domain_error(error_no_solvers_);
         }
 
-        constexpr bool debug_market_excess = false;
-        if(debug_market_excess){
-            for(auto e: range(0.01, 2.00, 0.01)){
-                size_t n = std::max(size_t(1), quotes_.size());
-                std::vector<double> variables_;
-                for(size_t i = 0; i < n; ++i) {
-                    variables_.push_back(e);
-                }
-                ////////////////////////////////////////////////////////////////
-                std::map<identity<law::property>,
-                    std::tuple<quote, double>>
-                    quote_scalars_;
-                std::map<identity<law::property>,
-                    double>
-                    price_render_;
-                size_t i = 0;
-                for(auto [k, v]: quotes_) {
-                    price_render_.emplace(k, double(v) * variables_[i]);
-                    quote_scalars_.emplace(k, std::make_tuple(v, variables_[i]));
-                    ++i;
-                }
-                std::map<identity<law::property>, std::vector<double>> terms_map;
-                for(const auto &f : excess_demand_functions_) {
-                    auto demand_per_property_ = f->excess_demand(quote_scalars_);
-                    for(auto [k, v]: demand_per_property_) {
-                        if(terms_map.find(k) == terms_map.end()){
-                            terms_map.emplace(k, std::vector<double>());
-                        }//else{
-                            terms_map.find(k)->second.push_back(v);
-                        //}
-                    }
-                }
-                std::vector<double> result_;
-                for(auto [k, v]: quotes_){
-                    //assert(terms_map.end() != terms_map.find(k));
-                    //result_.push_back(terms_map.find(k)->second);
-                }
-                ////////////////////////////////////////////////////////////////
-                //std::cout << price_render_ << ", " << terms_map << std::endl;
-            }
-        }
 
         for(auto method_ : methods){
             active_.clear();
@@ -504,15 +463,10 @@ namespace esl::economics::markets::tatonnement {
                         return result_;
                     }
 
-
-
-
-
-
                 /*/
                     int status;
                     int iter = 0;
-                    int max_iter = 100;
+                    int max_iter = 32;
                     const gsl_root_fdfsolver_type *T;
                     gsl_root_fdfsolver *s;
                     double xt = 1.00007858;
@@ -572,7 +526,7 @@ namespace esl::economics::markets::tatonnement {
                     gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc(solver_t_, active_.size());
                     gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
 
-                    size_t max_iterations_ = size_t(std::pow(10, active_.size()));
+                    auto max_iterations_ = size_t(std::pow(10, active_.size()));
 
                     int status = GSL_CONTINUE;
                     for (size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i) {

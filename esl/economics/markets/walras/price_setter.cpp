@@ -48,7 +48,7 @@ struct always_false<> : std::true_type
 
 namespace esl::economics::markets::walras {
     price_setter::price_setter()
-    : price_setter(identity<price_setter>())
+        : price_setter(identity<price_setter>())
     {
 
     }
@@ -63,15 +63,20 @@ namespace esl::economics::markets::walras {
     /// \param traded_assets
     price_setter::price_setter(const identity<price_setter> &i,
                                law::property_map<quote>
-                                   traded_properties)
+                               traded_properties)
 
-    : agent(i)
-    , market(i, traded_properties)
-    , state(sending_quotes)
+        : agent(i)
+        , market(i, traded_properties)
+        , state(sending_quotes)
     {
 
         output_clearing_prices_ =
             create_output<std::vector<price>>("clearing_prices");
+
+
+        output_volumes_ =
+            create_output<std::vector<uint64_t>>("volumes");
+
 
         register_callback<walras::differentiable_order_message>(
             [this](auto msg, simulation::time_interval ti,
@@ -173,9 +178,9 @@ namespace esl::economics::markets::walras {
     /// \param traded_properties
     /// \return
     std::map<identity<law::property>, std::tuple<quote, double>> apply_results(
-            std::map<identity<law::property>, double> result_
-            , law::property_map<quote> &traded_properties
-            )
+        std::map<identity<law::property>, double> result_
+        , law::property_map<quote> &traded_properties
+    )
     {
         std::map<identity<law::property>, std::tuple<quote, double>> solution_;
         for(auto [p, q]: traded_properties) {
@@ -184,29 +189,29 @@ namespace esl::economics::markets::walras {
             solution_.emplace(p->identifier, part_);
 
             std::visit(
-                    [&, result_, p = p](auto &quote) {
-                        using type_ = std::decay_t<decltype(quote)>;
-                        if constexpr(std::is_same_v<type_, price>) {
-                            auto value_ = int64_t(quote.value
-                                                 * result_.find(p->identifier)->second);
-                            if(0 == value_){//} && POSITIVE){
-                                value_ = 1;
-                            }
-                            std::get<price>(traded_properties[p].type).value =value_
-                                    ;
-
-                        } else if constexpr(std::is_same_v<type_, exchange_rate>) {
-                            quote = exchange_rate(
-                                    uint64_t(quote.numerator()
-                                             * result_.find(p->identifier)->second),
-                                    quote.denominator());
-                            traded_properties[p].type = quote;
-                        } else {
-                            static_assert(always_false<type_>::value,
-                                          "non-exhaustive handling of quote types");
+                [&, result_, p = p](auto &quote) {
+                    using type_ = std::decay_t<decltype(quote)>;
+                    if constexpr(std::is_same_v<type_, price>) {
+                        auto value_ = int64_t(quote.value
+                                              * result_.find(p->identifier)->second);
+                        if(0 == value_){//} && POSITIVE){
+                            value_ = 1;
                         }
-                    },
-                    q.type);
+                        std::get<price>(traded_properties[p].type).value =value_
+                            ;
+
+                    } else if constexpr(std::is_same_v<type_, exchange_rate>) {
+                        quote = exchange_rate(
+                            uint64_t(quote.numerator()
+                                     * result_.find(p->identifier)->second),
+                            quote.denominator());
+                        traded_properties[p].type = quote;
+                    } else {
+                        static_assert(always_false<type_>::value,
+                                      "non-exhaustive handling of quote types");
+                    }
+                },
+                q.type);
         }
         return solution_;
     }
@@ -221,8 +226,8 @@ namespace esl::economics::markets::walras {
     /// \return
     map<identity<property>, map<identity<agent>, int64_t>> compute_transfers
         ( const law::property_map<quote> &traded_properties
-        , const map<identity<property>, double> &volumes_
-        , const map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> &orders_
+            , const map<identity<property>, double> &volumes_
+            , const map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> &orders_
         )
     {
         map<identity<property>, map<identity<agent>, int64_t>> transfers_;
@@ -297,6 +302,8 @@ namespace esl::economics::markets::walras {
             quotes_.emplace(k->identifier, v);
         }
 
+        //std::cout << "---------------------------------------------" << std::endl;
+
         tatonnement::excess_demand_model model_(quotes_);
         for(auto [key, function_] : orders) {
             (void)key;
@@ -319,6 +326,57 @@ namespace esl::economics::markets::walras {
         ////////////////////////////////////////////////////////////////////////
         map<identity<property>, double> volumes_;
         map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> orders_;
+
+        //  this is to normalize positive demand, so that we dont create
+        //  naked short positions by inventing new property
+        map<identity<property>, double> scales_;
+
+        map<identity<property>, double> existingdemand_;
+
+        // total supply is the maximum number of properties
+        map<identity<property>, double> total_supply_;
+
+
+        for(const auto &[participant, order_] : orders) {
+            auto demand_ = order_->excess_demand(solution_);
+            for(const auto &[property_, excess_] : demand_) {
+                auto i = scales_.emplace(property_, 0.).first;
+                auto j = total_supply_.emplace(property_, 0.).first;
+                auto h = existingdemand_.emplace(property_, 0.).first;
+
+                if(excess_ >= -0.00001 && excess_ <= 0.00001) {
+                    continue;
+                }
+                auto quote_ = solution_.find(property_)->second;
+                auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
+                auto units_with_existing_ = units_;
+
+                auto k = order_->supply.find(property_);
+                if(order_->supply.end() != k){
+                    // TODO: there is the excess, and this is the reserve
+                    units_with_existing_ -= double(std::get<0>(k->second));
+                    units_with_existing_ -= double(std::get<1>(k->second));
+
+                    j->second += double(std::get<0>(k->second)) - double(std::get<1>(k->second)) ;
+                }
+
+                if(units_with_existing_ > 0.) {
+                    h->second += units_with_existing_;
+                }
+
+                if(units_ > 0.){
+                    i->second += units_;
+                }
+            }
+        }
+
+        // TODO: check to make sure we use supply properly
+        //std::cout << " total_supply_ = " << total_supply_ << std::endl;
+        //std::cout << " existing_demand_ = " << existingdemand_ << std::endl;
+        //std::cout << " demand(scale) = " << scales_ << std::endl;
+
+
+
         for(const auto &[participant, order_]: orders) {
             auto demand_ = order_->excess_demand(solution_);
             for(const auto &[property_, excess_]: demand_) {
@@ -327,21 +385,21 @@ namespace esl::economics::markets::walras {
                 }
 
                 auto quote_ = solution_.find(property_)->second;
-                auto units_ = excess_ / (double(std::get<0>(quote_)) * std::get<1>(quote_));
+
+                auto units_ = (excess_ ) / (double(std::get<0>(quote_)) * std::get<1>(quote_));
 
                 auto i = volumes_.find(property_);
                 if(volumes_.end() == i){
                     i = volumes_.emplace(property_, 0).first;
                     orders_.emplace( property_
-                                   , map<identity<agent>, std::tuple<double, quantity, quantity>>()
-                                   );
+                        , map<identity<agent>, std::tuple<double, quantity, quantity>>()
+                    );
                 }
                 i->second += abs(units_);
 
                 auto j = order_->supply.find(property_);
                 if(order_->supply.end() == j){
-                    orders_.find(property_)->second.emplace( participant
-                                                           , std::make_tuple(units_, 0, 0));
+                    orders_.find(property_)->second.emplace( participant, std::make_tuple(units_, 0, 0));
 
                     //LOG(trace) << participant << " demands {" << property_ << ", "
                     //           << units_ << "}" << std::endl;
@@ -350,15 +408,15 @@ namespace esl::economics::markets::walras {
                     //           << std::setprecision(5) << units_
                     //           << "}" << std::endl;
 
-                    orders_.find(property_)->second.emplace(
-                        participant,
-                        std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
+                    orders_.find(property_)->second.emplace(participant, std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
                 }
             }
         }
 
         ////////////////////////////////////////////////////////////////////////
         auto transfers_ = compute_transfers(traded_properties, volumes_, orders_);
+        output_volumes_->put(step.lower, { std::uint64_t(volumes_.begin()->second )} );
+
 
         //  send_: we, the market maker, send items to participant
         //  receive_: we, the market maker, receive items from participant
@@ -379,8 +437,8 @@ namespace esl::economics::markets::walras {
                 auto i = orders.find(p)->second->supply.find(*property_);
                 if(orders.find(p)->second->supply.end() == i) {
                     auto [ii,b] = orders.find(p)->second->supply.insert({property_->identifier
-                                                                         , std::make_tuple(quantity(0,1)
-                                                                         ,quantity(0,1))});
+                                                                            , std::make_tuple(quantity(0,1)
+                            ,quantity(0,1))});
                     i = ii;
                 }
                 uint64_t &long_  = std::get<0>(i->second).amount;
@@ -490,8 +548,8 @@ namespace esl::economics::markets::walras {
 
 
         for(auto [p, i] : send_) {
-            //LOG(trace) << "market sends to " << p << " items " << i
-            //           << std::endl;
+            LOG(trace) << "market sends to " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, identifier, p,
                 reinterpret_identity_cast<law::owner<law::property>>(
@@ -500,8 +558,8 @@ namespace esl::economics::markets::walras {
         }
 
         for(auto [p, i]: receive_) {
-            //LOG(trace) << "market receives from " << p << " items " << i
-            //           << std::endl;
+            LOG(trace) << "market receives from " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, p, identifier,
                 reinterpret_identity_cast<law::owner<law::property>>(p),
@@ -523,7 +581,7 @@ namespace esl::economics::markets::walras {
 
 BOOST_CLASS_EXPORT(std::vector<esl::economics::price>);
 typedef std::tuple<esl::simulation::time_point,
-                   std::vector<esl::economics::price>>
+    std::vector<esl::economics::price>>
     tuple_time_point_price_vector;
 BOOST_CLASS_EXPORT(tuple_time_point_price_vector);
 typedef std::vector<
