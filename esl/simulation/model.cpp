@@ -89,20 +89,20 @@ namespace esl::simulation {
                     sample
                 };
 
-                try {
+                //try {
                     first_event_ = std::min(first_event_, a->process_messages(step, seed_));
                     //agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count());
                     //agent_act_ = high_resolution_clock::now();
                     first_event_ = std::min(first_event_, a->act(step, seed_));
-                } catch(const std::runtime_error &e) {
-                    LOG(errorlog) << e.what() << std::endl;
-                    throw e;
-                } catch(const std::exception &e) {
-                    LOG(errorlog) <<  e.what() << std::endl;
-                    throw e;
-                } catch(...) {
-                    throw;
-                }
+                //} catch(const std::runtime_error &e) {
+                //    LOG(errorlog) << e.what() << std::endl;
+                //    throw e;
+                //} catch(const std::exception &e) {
+                //    LOG(errorlog) <<  e.what() << std::endl;
+                //    throw e;
+                //} catch(...) {
+                //    throw;
+                //}
                 a->inbox.clear(); 
                 //auto agent_end_ = high_resolution_clock::now() - agent_start_;
 

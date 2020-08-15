@@ -466,10 +466,10 @@ namespace esl::economics::markets::tatonnement {
                 /*/
                     int status;
                     int iter = 0;
-                    int max_iter = 32;
+                    int max_iter = 4096;
                     const gsl_root_fdfsolver_type *T;
                     gsl_root_fdfsolver *s;
-                    double xt = 1.00007858;
+                    double xt = 1.;//00007858;
 
                     gsl_function_fdf FDF;
 
@@ -477,25 +477,25 @@ namespace esl::economics::markets::tatonnement {
                     FDF.df = &uniroot_function_value_and_gradient;
                     FDF.fdf = &uniroot_function_jacobian_cb;
                     FDF.params = static_cast<void *>(this);
-
                     T = gsl_root_fdfsolver_steffenson;
                      s = gsl_root_fdfsolver_alloc (T);
-
-
                     gsl_root_fdfsolver_set (s, &FDF, xt);
-
                     do  {
                         ++iter;
                         status = gsl_root_fdfsolver_iterate(s);
                         double x0 = xt;
                         xt = gsl_root_fdfsolver_root (s);
-                        status = gsl_root_test_delta (xt, x0, 0.001, 0.00001);
+                        status = gsl_root_test_delta (xt, x0, 0.0000001, 0.000000001);
                     }
                     while (status == GSL_CONTINUE && iter < max_iter);
 
                     if (GSL_SUCCESS == status) {
                         std::map<esl::identity<esl::law::property>, double> result_;
                         auto solver_best_ = gsl_root_fdfsolver_root(s);
+
+                        solver_best_ = std::min(solver_best_, 1.1);
+                        solver_best_ = std::max(solver_best_, 1. / 1.1);
+
                         result_.emplace(mapping_index_[0], solver_best_);
                         gsl_root_fdfsolver_free (s);
                         return result_;
