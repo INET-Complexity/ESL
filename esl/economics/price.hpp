@@ -135,7 +135,7 @@ namespace esl::economics {
             return price(value + operand.value, valuation);
         }
 
-        constexpr price &operator+=(const price &operand)
+        constexpr price &operator += (const price &operand)
         {
             assert(valuation == operand.valuation);
             value += operand.value;

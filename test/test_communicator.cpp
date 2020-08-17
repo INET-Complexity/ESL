@@ -22,6 +22,10 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+
+
+/*
+
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE communicator
 
@@ -171,3 +175,4 @@ BOOST_AUTO_TEST_CASE(communicator_process_queue)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
+ */
