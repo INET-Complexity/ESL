@@ -98,7 +98,6 @@ namespace esl::economics::markets::tatonnement {
         ///         solution.
         ///
         std::vector<solver> methods = {root, minimization};
-
         law::property_map<quote> quotes;
 
     public:

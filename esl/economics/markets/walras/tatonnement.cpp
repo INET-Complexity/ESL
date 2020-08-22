@@ -199,12 +199,11 @@ extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * 
 #endif
 
 
-void handler (const char * reason,
-              const char * file,
-              int line,
-              int gsl_errno)
+void handler ([[maybe_unused]] const char * reason,
+              [[maybe_unused]] const char * file,
+              [[maybe_unused]] int line,
+              [[maybe_unused]] int gsl_errno)
 {
-
 }
 
 template<typename number_t_>
@@ -310,54 +309,49 @@ namespace esl::economics::markets::tatonnement {
         return result_;
     }
 
-
-#if !defined(ADEPT_VERSION) || defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-    ///
-     /// compute the function value without differentiation
-     /// \param x
-     /// \return
     double excess_demand_model::calc_function_value(const double *x)
-     {
-         stack_.pause_recording();
-         for(unsigned int i = 0; i < active_.size(); ++i) {
-             active_[i] = x[i];
-         }
-         double result = adept::value(calc_function_value(&active_[0]));
-         stack_.continue_recording();
-         return result;
-     }
+    {
+        stack_.pause_recording();
+        for(unsigned int i = 0; i < active_.size(); ++i) {
+            active_[i] = x[i];
+        }
+        double result = adept::value(demand_supply_mismatch(&active_[0]));
+        stack_.continue_recording();
+        return result;
+    }
 
-     std::vector<double> excess_demand_model::multiroot_function_value(const double *x)
-     {
-         stack_.pause_recording();
-         for(unsigned int i = 0; i < active_.size(); ++i) {
-             active_[i] = x[i];
-         }
-         auto intermediate_ = multiroot_function_value(&active_[0]);
-         std::vector<double> result;
-         for(const auto &v: intermediate_){
-             result.push_back(adept::value(v));
-         }
-         stack_.continue_recording();
-         return result;
-     }
 
-     double
-     excess_demand_model::minimizer_function_value_and_gradient(const double *x, double *dJ_dx)
-     {
-         for(unsigned int i = 0; i < active_.size(); ++i) {
-             active_[i] = x[i];
-         }
+    std::vector<double> excess_demand_model::multiroot_function_value(const double *x)
+    {
+        stack_.pause_recording();
+        for(unsigned int i = 0; i < active_.size(); ++i) {
+            active_[i] = x[i];
+        }
+        auto intermediate_ = this->excess_demand(&active_[0]);
+        std::vector<double> result;
+        for(const auto &v: intermediate_){
+            result.push_back(adept::value(v));
+        }
+        stack_.continue_recording();
+        return result;
+    }
 
-         stack_.new_recording();
-         adept::adouble J = calc_function_value(&active_[0]);
+    double
+    excess_demand_model::minimizer_function_value_and_gradient(const double *x, double *dJ_dx)
+    {
+        for(unsigned int i = 0; i < active_.size(); ++i) {
+            active_[i] = x[i];
+        }
 
-         J.set_gradient(1.0);
+        stack_.new_recording();
+        adept::adouble J = this->demand_supply_mismatch(&active_[0]);
 
-         stack_.compute_adjoint();
-         adept::get_gradients(&active_[0], active_.size(), dJ_dx);
-         return adept::value(J);
-     }
+        J.set_gradient(1.0);
+
+        stack_.compute_adjoint();
+        adept::get_gradients(&active_[0], active_.size(), dJ_dx);
+        return adept::value(J);
+    }
 
     std::vector<double>
     excess_demand_model::multiroot_function_value_and_gradient(const double *x, double *jacobian)
@@ -367,7 +361,7 @@ namespace esl::economics::markets::tatonnement {
         }
 
         stack_.new_recording();
-        std::vector<adept::adouble> values_ = multiroot_function_value(&active_[0]);
+        auto values_ = this->excess_demand(&active_[0]);
 
         stack_.independent(&active_[0], active_.size());
         stack_.dependent(&values_[0], values_.size());
@@ -379,7 +373,7 @@ namespace esl::economics::markets::tatonnement {
         }
         return result_;
     }
-#endif
+
 
     ///
     /// \brief  Goes through the selected solution methods and

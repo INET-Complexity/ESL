@@ -297,9 +297,6 @@ namespace esl::economics::markets::walras {
     {
         law::property_map<quote> old_quotes_ = traded_properties;
 
-
-        //std::cout << "---------------------------------------------" << std::endl;
-
         tatonnement::excess_demand_model model_(traded_properties);
         for(auto [key, function_] : orders) {
             (void)key;
