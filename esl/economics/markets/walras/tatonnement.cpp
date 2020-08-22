@@ -479,8 +479,9 @@ namespace esl::economics::markets::tatonnement {
                         std::map<esl::identity<esl::law::property>, double> result_;
                         auto solver_best_ = gsl_root_fdfsolver_root(s);
 
-                        solver_best_ = std::min(solver_best_, 1.1);
-                        solver_best_ = std::max(solver_best_, 1. / 1.1);
+                        solver_best_ = std::max(solver_best_, circuit_breaker.first);
+                        solver_best_ = std::min(solver_best_, circuit_breaker.second);
+
 
                         result_.emplace(mapping_index_[0], solver_best_);
                         gsl_root_fdfsolver_free (s);
