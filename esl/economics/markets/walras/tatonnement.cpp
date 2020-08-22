@@ -304,12 +304,14 @@ namespace esl::economics::markets::tatonnement {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
 
             //LOG(trace) << demand_per_property_ << std::endl;
-            for(auto [k, v]: demand_per_property_) {
-                if(terms_map.find(k) == terms_map.end()){
-                    terms_map.emplace(k, v);
-                }else{
-                    (terms_map.find(k)->second) += v;
-                }
+            for(auto [k, ed]: demand_per_property_) {
+                auto i = terms_map.emplace(k, adept::adouble(0.));
+
+                auto long_ = double(std::get<0>(f->supply[k]));
+
+                auto short_ = double(std::get<1>(f->supply[k]));
+
+                i.first->second += long_ + ed - short_;
             }
         }
 
@@ -466,7 +468,9 @@ namespace esl::economics::markets::tatonnement {
                 /*/
                     int status;
                     int iter = 0;
+
                     int max_iter = 4096;
+
                     const gsl_root_fdfsolver_type *T;
                     gsl_root_fdfsolver *s;
                     double xt = 1.;//00007858;
@@ -485,7 +489,9 @@ namespace esl::economics::markets::tatonnement {
                         status = gsl_root_fdfsolver_iterate(s);
                         double x0 = xt;
                         xt = gsl_root_fdfsolver_root (s);
+
                         status = gsl_root_test_delta (xt, x0, 0.0000001, 0.000000001);
+
                     }
                     while (status == GSL_CONTINUE && iter < max_iter);
 

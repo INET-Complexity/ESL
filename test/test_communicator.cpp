@@ -45,12 +45,16 @@
 BOOST_AUTO_TEST_SUITE(ESL)
 
 struct dummy_message
-: public esl::interaction::message<dummy_message, (0x1ul << 62u) | 0>
-{};
+: public esl::interaction::message<dummy_message, (std::uint64_t(0x1) << 62u) | 0>
+{
+
+};
 
 struct dummy_message_2
-: public esl::interaction::message<dummy_message_2, (0x1ul << 62u) | 1>
-{};
+: public esl::interaction::message<dummy_message_2, (std::uint64_t(0x1) << 62u) | 1>
+{
+
+};
 
 ///
 /// \brief  This testing class defines some callbacks and tracks the order in
@@ -128,8 +132,8 @@ BOOST_AUTO_TEST_CASE(communicator_constructor)
     initializes_callbacks ic;
 
     BOOST_CHECK_EQUAL(ic.callbacks_.size(), 2);
-    BOOST_CHECK_EQUAL(ic.callbacks_.find((0x1ul << 62u) | 0)->second.size(), 2);
-    BOOST_CHECK_EQUAL(ic.callbacks_.find((0x1ul << 62u) | 1)->second.size(), 1);
+    BOOST_CHECK_EQUAL(ic.callbacks_.find((std::uint64_t(0x1) << 62u) | 0)->second.size(), 2);
+    BOOST_CHECK_EQUAL(ic.callbacks_.find((std::uint64_t(0x1) << 62u) | 1)->second.size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(communicator_process_single_message)

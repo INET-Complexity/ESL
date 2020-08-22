@@ -40,9 +40,12 @@
 
 #include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 #include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/walras/differentiable_order_message.hpp>
+
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#include <esl/law/property_collection.hpp>
 
 ///
 /// The following functions defined callbacks for various optimisers used to
@@ -62,7 +65,7 @@ extern "C" int multiroot_function_value_and_gradient_cb(const gsl_vector * x, vo
 
 extern "C" double uniroot_function_value (double x, void *params);
 extern "C" double uniroot_function_value_and_gradient (double x, void *params);
-extern "C" void   uniroot_function_jacobian_cb (double x, void *params, double *y, double *dy);
+extern "C" void   uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
 
 
 
@@ -73,9 +76,9 @@ namespace esl::economics::markets::tatonnement {
     class excess_demand_model
     {
     public:
-        std::vector<std::shared_ptr<differentiable_demand_supply_function>> excess_demand_functions_;
+        std::vector<std::shared_ptr<walras::differentiable_order_message>> excess_demand_functions_;
 
-        explicit excess_demand_model(std::map<identity<law::property>, quote> initial_quotes);
+        explicit excess_demand_model(law::property_map<quote> initial_quotes);
 
         virtual ~excess_demand_model();
 
@@ -86,6 +89,8 @@ namespace esl::economics::markets::tatonnement {
                     , root
         };
 
+        std::pair<double, double> circuit_breaker = {0.5, 2.0};
+
         ///
         /// \brief  The default approach is to try the root-finding approach
         ///         first, followed by the minimization approach if the
@@ -94,14 +99,15 @@ namespace esl::economics::markets::tatonnement {
         ///
         std::vector<solver> methods = {root, minimization};
 
-    protected:
-        std::map<identity<law::property>, quote> quotes_;
+        law::property_map<quote> quotes;
 
+    public:
         adept::Stack stack_;
         std::vector<adept::adouble> active_;
 
-        adept::adouble calc_function_value(const adept::adouble *x);
-        std::vector<adept::adouble> multiroot_function_value(const adept::adouble *x);
+        adept::adouble demand_supply_mismatch(const adept::adouble *x);
+        std::vector<adept::adouble> excess_demand(const adept::adouble *x);
+
 
 #if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
         double         calc_function_value(const double *x);
@@ -114,7 +120,7 @@ namespace esl::economics::markets::tatonnement {
 
         friend double ::uniroot_function_value (double x, void *params);
         friend double ::uniroot_function_value_and_gradient (double x, void *params);
-        friend void   ::uniroot_function_jacobian_cb (double x, void *params, double *y, double *dy);
+        friend void   ::uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
 
 
 #if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)

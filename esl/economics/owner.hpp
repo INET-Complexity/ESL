@@ -190,7 +190,7 @@ namespace esl::law {
                         if(!d) {
                             continue;
                         }
-                        LOG(trace) << typeid(property_t_).name() << " (" << i->identifier << ") " <<  identifier << " is sending "<< msg->transferred.items << " to " << msg->transferee << std::endl;
+                        //LOG(trace) << typeid(property_t_).name() << " (" << i->identifier << ") " <<  identifier << " is sending "<< msg->transferred.items << " to " << msg->transferee << std::endl;
 
                         try {
                             detail::filter_inserter<
@@ -218,7 +218,7 @@ namespace esl::law {
                             .insert(properties, d, q);
                     }
                 }else{
-                    LOG(notice) << "message recipient is not a party to the transfer" << std::endl;
+                    //LOG(notice) << "message recipient is not a party to the transfer" << std::endl;
                 }
                 return ti.upper;
             };

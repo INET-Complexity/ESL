@@ -100,14 +100,14 @@ LIST(APPEND Boost_LIBRARIES
     )
 
 IF(WITH_PYTHON)
-    LIST(APPEND Boost_LIBRARIES python3)
+    LIST(APPEND Boost_LIBRARIES python38)
 ELSE()
 ENDIF()
 
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES mpi)
     IF(WITH_PYTHON)
-        LIST(APPEND Boost_LIBRARIES mpi_python3)
+        LIST(APPEND Boost_LIBRARIES mpi_python38)
     ENDIF()
 ENDIF()
 
@@ -149,8 +149,8 @@ ADD_COMPILE_OPTIONS(-m64)
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g -Og ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og ")#    --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
+SET(CMAKE_CXX_FLAGS_DEBUG "-g   ")#    --coverage -fprofile-arcs -ftest-coverage")
 
 SET(CMAKE_C_FLAGS_RELEASE "-O3 ")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
@@ -173,7 +173,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 
 ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
-ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE) # ADD_DEFINITIONS(-DADEPT_STACK_THREAD_UNSAFE)
+ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE)
 #ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
 # Used to benchmark improvements using automatic differentiation
@@ -469,11 +469,17 @@ SET(SOURCE_FILES
 
         esl/economics/markets/order_book/order.cpp
         esl/economics/markets/order_book/order.hpp
-        esl/economics/markets/ticker.cpp esl/economics/markets/ticker.hpp)
+        esl/economics/markets/ticker.cpp
+        esl/economics/markets/ticker.hpp
+
+        esl/economics/markets/order_book/avellaneda_stoikov.hpp
+
+        esl/economics/markets/order_book/exchange.cpp
+        esl/economics/markets/order_book/exchange.hpp
+        esl/computation/block_pool.hpp)
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
-
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
@@ -481,9 +487,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
 endif()
 
-
 IF(WIN32)
-
     LINK_DIRECTORIES("C:/msys64/usr/lib")
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)

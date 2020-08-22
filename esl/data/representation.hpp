@@ -35,14 +35,18 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <queue>
 #include <list>
 #include <forward_list>
 
 namespace std {
     ///
-    /// \tparam element_t_
-    /// \param os
-    /// \param vector
+    /// \tparam key_t_
+    /// \tparam value_t_
+    /// \tparam comparator_
+    /// \tparam allocator_
+    /// \param stream
+    /// \param associative
     /// \return
     template<typename key_t_, typename value_t_, typename comparator_,
              typename allocator_>
@@ -63,11 +67,10 @@ namespace std {
         return stream;
     }
 
-
     ///
     /// \tparam element_t_
-    /// \param os
-    /// \param vector
+    /// \param stream
+    /// \param set
     /// \return
     template<typename element_t_>
     constexpr std::ostream &operator<<(std::ostream &stream,
@@ -90,7 +93,7 @@ namespace std {
     /// \tparam value_t_
     /// \tparam hash_
     /// \tparam equality_
-    /// \tparam allocator_t_
+    /// \tparam allocator_
     /// \param stream
     /// \param associative
     /// \return
@@ -192,6 +195,28 @@ namespace std {
         stream << ']';
         return stream;
     }
+
+    ///
+    /// \tparam element_t_
+    /// \param stream
+    /// \param queue
+    /// \return
+    template<typename element_t_>
+    constexpr std::ostream &operator<<(std::ostream &stream, std::queue<element_t_> queue)
+    {
+        stream << '[';
+        if(!queue.empty()){
+            stream << queue.front();
+            queue.pop();
+            for(size_t c = 0; c < queue.size(); ++c){
+                stream << ", " << queue.front();
+                queue.pop();
+            }
+        }
+        stream << ']';
+        return stream;
+    }
+
     ///
     ///  \brief  Formats std::forward_list, a single linked list data structure.
     ///

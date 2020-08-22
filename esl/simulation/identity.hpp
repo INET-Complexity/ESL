@@ -87,7 +87,7 @@ namespace esl {
         /// \param digits   vector of digits for the identifier, from most
         /// significant to least significant
         ///
-        explicit identity(const std::vector<digit_t> &digits)
+        constexpr explicit identity(const std::vector<digit_t> &digits)
         : identity(std::vector<digit_t>(digits))
         {
 

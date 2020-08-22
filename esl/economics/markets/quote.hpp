@@ -45,6 +45,14 @@ namespace esl::economics {
     ///
     struct quote
     {
+    private:
+        void assert_equal_type_(const quote& other) const
+        {
+            if(type.index() != other.type.index()){
+                throw std::logic_error("comparing quotes of different types");
+            }
+        }
+    public:
         std::variant<exchange_rate, price> type;
 
         uint64_t lot;
@@ -62,10 +70,19 @@ namespace esl::economics {
         /// \param lot
         explicit quote(const price &p, uint64_t lot = 1)
         : type(p)
-        , lot(lot)
+        , lot(lot )
         {
             assert(lot > 0);
         }
+
+        explicit quote(double f, const quote &similar)
+        {
+            *this = std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return quote(variant_(f, k), similar.lot);
+                }, similar.type);
+        }
+
 
         quote(const quote &q)
         : type(q.type)
@@ -88,22 +105,67 @@ namespace esl::economics {
                 type);
         }
 
-        quote &operator=(const quote &o)
-        {
-            lot = o.lot;
-            type = o.type;
-            /*std::visit([&](const auto &quote)
-                       {
-                           using type_ = std::decay_t<decltype(quote)>;
-                           if constexpr(std::is_same_v<type_, price>) {
-                               this->type.emplace<price>(quote) ;
-                           }else if constexpr(std::is_same_v<type_, exchange_rate>) {
-                               this->type.emplace<exchange_rate>(quote) ;
-                           }
-                       },
-                       o.type);*/
+        quote &operator = (const quote &o) = default;
 
-            return *this;
+        [[nodiscard]] bool operator == (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) == (std::get<variant_>(other.type) * other.lot );
+            }, type);
+        }
+
+        [[nodiscard]] bool operator != (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) != (std::get<variant_>(other.type) * other.lot );
+            }, type);
+        }
+
+
+        [[nodiscard]] bool operator < (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) < (std::get<variant_>(other.type) * other.lot );
+            }, type);
+        }
+
+        [[nodiscard]] bool operator > (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) > (std::get<variant_>(other.type) * other.lot );
+            }, type);
+        }
+
+        [[nodiscard]] bool operator <= (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) <= (std::get<variant_>(other.type) * other.lot );
+            }, type);
+        }
+
+        [[nodiscard]] bool operator >= (const quote &other) const
+        {
+            assert_equal_type_(other);
+
+            return std::visit([&] (const auto& k) {
+                using variant_ = std::decay_t<decltype(k)>;
+                return (lot * k) >= (std::get<variant_>(other.type) * other.lot );
+            }, type);
         }
 
 
@@ -124,6 +186,9 @@ namespace esl::economics {
                 archive << boost::serialization::make_nvp(
                     "price", std::get<price>(type));
                 break;
+
+            default:
+                throw std::logic_error("variant quote not supported");
             }
         }
 
