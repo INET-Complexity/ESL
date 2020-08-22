@@ -66,7 +66,7 @@ namespace esl::economics::markets::walras {
                                traded_properties)
 
         : agent(i)
-        , market(i, traded_properties)
+        , market(i)
         , state(sending_quotes)
     {
 
@@ -140,7 +140,7 @@ namespace esl::economics::markets::walras {
                     quotes_.emplace_back(quote(v));
                 }
                 output_clearing_prices_->put(step.lower, prices_);
-                latest = step.lower;
+
             }else{  // restore previous prices
                 for(const auto &[k, v]: traded_properties){
                     (void)k;
@@ -296,15 +296,11 @@ namespace esl::economics::markets::walras {
         const simulation::time_interval &step)
     {
         law::property_map<quote> old_quotes_ = traded_properties;
-        std::map<identity<law::property>, quote> quotes_;
-        for(const auto &[k, v]: traded_properties) {
-            (void)k;
-            quotes_.emplace(k->identifier, v);
-        }
+
 
         //std::cout << "---------------------------------------------" << std::endl;
 
-        tatonnement::excess_demand_model model_(quotes_);
+        tatonnement::excess_demand_model model_(traded_properties);
         for(auto [key, function_] : orders) {
             (void)key;
             model_.excess_demand_functions_.push_back(function_);

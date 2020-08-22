@@ -199,24 +199,13 @@ extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * 
 #endif
 
 
-
-
-
 void handler (const char * reason,
               const char * file,
               int line,
               int gsl_errno)
 {
 
-
 }
-
-
-
-
-
-
-
 
 template<typename number_t_>
 std::vector<number_t_> range(number_t_ start, number_t_ stop,
@@ -227,13 +216,11 @@ std::vector<number_t_> range(number_t_ start, number_t_ stop,
     return result_;
 }
 
-
 namespace esl::economics::markets::tatonnement {
 
     excess_demand_model::excess_demand_model(
-        std::map<identity<law::property>, quote>
-            initial_quotes)
-    : quotes_(initial_quotes)
+        law::property_map<quote> initial_quotes)
+    : quotes(initial_quotes)
     , stack_()
     {
 
@@ -246,16 +233,15 @@ namespace esl::economics::markets::tatonnement {
     ///
     /// \param x
     /// \return
-    adept::adouble
-    excess_demand_model::calc_function_value(const adept::adouble *x)
+    adept::adouble excess_demand_model::demand_supply_mismatch(const adept::adouble *x)
     {
         std::map<esl::identity<esl::law::property>,
                  std::tuple<esl::economics::quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
-        for(auto [k, v]: quotes_) {
-            quote_scalars_.insert({k, std::make_tuple(v, x[n])});
+        for(auto [k, v]: quotes) {
+            quote_scalars_.emplace(*k, std::make_tuple(v, x[n]));
             ++n;
         }
 
@@ -286,15 +272,15 @@ namespace esl::economics::markets::tatonnement {
     /// \param x
     /// \return
     std::vector<adept::adouble>
-    excess_demand_model::multiroot_function_value(const adept::adouble *x)
+    excess_demand_model::excess_demand(const adept::adouble *x)
     {
         std::map<identity<law::property>,
             std::tuple<quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
-        for(auto [k, v]: quotes_) {
-            quote_scalars_.emplace(k, std::make_tuple(v, x[n]));
+        for(auto [k, v]: quotes) {
+            quote_scalars_.emplace(*k, std::make_tuple(v, x[n]));
             ++n;
         }
 
@@ -317,15 +303,15 @@ namespace esl::economics::markets::tatonnement {
 
         std::vector<adept::adouble> result_;
 
-        for(auto [k, v]: quotes_) {
-            assert(terms_map.end() != terms_map.find(k));
-            result_.push_back(terms_map.find(k)->second);
+        for(auto [k, v]: quotes) {
+            assert(terms_map.end() != terms_map.find(*k));
+            result_.push_back(terms_map.find(*k)->second);
         }
         return result_;
     }
 
 
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+#if !defined(ADEPT_VERSION) || defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
     ///
      /// compute the function value without differentiation
      /// \param x
@@ -412,18 +398,18 @@ namespace esl::economics::markets::tatonnement {
         for(auto method_ : methods){
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
-            mapping_index_.reserve(quotes_.size());
+            mapping_index_.reserve(quotes.size());
             {
-                for(auto [k, v] : quotes_) {
+                for(auto [k, v] : quotes) {
                     (void) v;
-                    mapping_index_.emplace_back(k);
+                    mapping_index_.emplace_back(*k);
                     active_.emplace_back(1.0 );
                 }
             }
 
             if (method_ == root){
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-                if(1 == quotes_.size()){
+                if(1 == quotes.size()){
 
                     auto old_handler = gsl_set_error_handler (&handler);
 /*

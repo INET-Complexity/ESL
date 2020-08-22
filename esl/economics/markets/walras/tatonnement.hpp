@@ -109,31 +109,24 @@ namespace esl::economics::markets::tatonnement {
         std::vector<adept::adouble> excess_demand(const adept::adouble *x);
 
 
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-        double         calc_function_value(const double *x);
+
+        double calc_function_value(const double *x);
         std::vector<double> multiroot_function_value(const double *x);
 
         double minimizer_function_value_and_gradient(const double *x, double *dJ_dx) ;
         std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
-#endif
-        friend double ::my_function_value(const gsl_vector *variables, void *params);
 
+        friend void ::my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
+        friend void ::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
+        friend int ::multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
+        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
+
+
+        friend double ::my_function_value(const gsl_vector *variables, void *params);
         friend double ::uniroot_function_value (double x, void *params);
         friend double ::uniroot_function_value_and_gradient (double x, void *params);
         friend void   ::uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
-
-
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-        friend void ::my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
-        friend void ::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
-#endif
-
         friend int ::multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
-
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-        friend int ::multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
-        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
-#endif
 
     public:
         std::optional<std::map<identity<law::property>, double>>

@@ -53,8 +53,6 @@ namespace esl::economics::markets::walras {
         std::shared_ptr<data::output<std::vector<price>>> output_clearing_prices_;
         std::shared_ptr<data::output<std::vector<uint64_t>>> output_volumes_;
 
-        std::shared_ptr<data::output<std::vector<uint64_t>>> output_volumes_;
-
     protected:
         friend class boost::serialization::access;
 
