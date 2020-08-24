@@ -431,8 +431,6 @@ namespace esl::economics::markets::tatonnement {
                         x_hi = gsl_root_fsolver_x_upper (s);
                         status = gsl_root_test_interval (x_lo, x_hi,
                                                          0, 0.0001);
-
-
                     }
                     while (status == GSL_CONTINUE && iter < max_iter);
 
@@ -488,13 +486,8 @@ namespace esl::economics::markets::tatonnement {
                         return result_;
                     }
                     gsl_root_fdfsolver_free (s);
-
                     ////*/
-
-
                     gsl_set_error_handler (old_handler);
-
-
                 } else {
                     gsl_multiroot_function_fdf root_function;
 
@@ -663,3 +656,18 @@ namespace esl::economics::markets::tatonnement {
         return std::nullopt;
     }
 }  // namespace tatonnement
+
+
+
+#ifdef WITH_PYTHON
+#include <boost/python.hpp>
+
+using namespace boost::python;
+BOOST_PYTHON_MODULE(walras)
+{
+
+
+}
+
+#endif
+
