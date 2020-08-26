@@ -663,9 +663,9 @@ namespace esl::economics::markets::tatonnement {
 #include <boost/python.hpp>
 
 using namespace boost::python;
-BOOST_PYTHON_MODULE(walras)
+BOOST_PYTHON_MODULE(walras2)
 {
-
+  class_<excess_demand_model>("excess_demand_model", init<esl::law::property_map<esl::economics::quote>>());
 
 }
 

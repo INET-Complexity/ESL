@@ -73,9 +73,10 @@ IF(WITH_MPI)
     ADD_DEFINITIONS(-DWITH_MPI)
 ENDIF()
 
-OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" OFF)
+OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)
+    ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
 ENDIF()
 
 OPTION(WITH_QL  "Enables QuantLib" OFF)
@@ -120,12 +121,21 @@ LIST(APPEND Boost_LIBRARIES
         serialization
         unit_test_framework
         thread
-        #log
-        #log_setup
+        python38
         )
 #ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-#ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
+
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(${Boost_LIBRARIES})
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(" ")
+
+
+
 ################################################################################
 
 # optional accelerators for scientific computing
@@ -155,7 +165,6 @@ SET(CMAKE_CXX_FLAGS_DEBUG "-g   ")#    --coverage -fprofile-arcs -ftest-coverage
 SET(CMAKE_C_FLAGS_RELEASE "-O3 ")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
 
-
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
@@ -169,17 +178,12 @@ ELSE()
 
 ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
-
-
-
 ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
 ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE)
 #ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
 # Used to benchmark improvements using automatic differentiation
 #ADD_DEFINITIONS(-DADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-
-
 
 ENABLE_TESTING()
 ################################################################################
@@ -223,6 +227,11 @@ IF(WITH_QL)
     LIST(APPEND ALL_LINKED_LIBRARIES QuantLib ${QuantLib_LIBRARIES})
 ENDIF()
 
+message(" ")
+message("Include dirs of Python 3.8: " ${PYTHON_INCLUDE_DIRS} )
+message("Libs of Python 3.8: " ${PYTHON_LIBRARIES} )
+message(" ")
+
 
 IF(BLAS_FOUND)
     LIST(APPEND ALL_LINKED_LIBRARIES ${BLAS_LIBRARIES} GSL::gslcblas)
@@ -237,6 +246,21 @@ IF(WIN32)
 ELSE()
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
 ENDIF()
+
+
+
+
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(${ALL_INCLUDE_DIRECTORIES})
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(${ALL_LINKED_LIBRARIES})
+MESSAGE(" ")
+MESSAGE(" ")
+MESSAGE(" ")
+
 ################################################################################
 
 SET(SOURCE_FILES
