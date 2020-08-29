@@ -61,7 +61,7 @@ namespace esl::economics::accounting {
         ///
         /// \brief  A set of properties that are to be marked to market.
         ///
-        std::map<identity<law::property>, quote> mark_to_market;
+        std::map<identity<law::property>, markets::quote> mark_to_market;
 
         explicit standard(iso_4217 reporting_currency);
 

@@ -33,7 +33,7 @@
 #include <esl/economics/price.hpp>
 
 
-namespace esl::economics {
+namespace esl::economics::markets {
 
     ///
     /// \brief  A quote is a numerical value around which the market is

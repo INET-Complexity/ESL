@@ -60,9 +60,9 @@ namespace esl::economics::markets {
         ///
         /// \param quotes
         /// \return
-        virtual std::map<esl::identity<esl::law::property>, double>
-        excess_demand(const std::map<esl::identity<esl::law::property>,
-                                     std::tuple<esl::economics::quote, double>>
+        virtual std::map<identity<law::property>, double>
+        excess_demand(const std::map<identity<law::property>,
+                                     std::tuple<quote, double>>
                           &quotes) const = 0;
 
         ///

@@ -110,8 +110,6 @@ namespace esl::economics::markets::tatonnement {
         adept::adouble demand_supply_mismatch(const adept::adouble *x);
         std::vector<adept::adouble> excess_demand(const adept::adouble *x);
 
-
-
         double calc_function_value(const double *x);
         std::vector<double> multiroot_function_value(const double *x);
 
@@ -122,7 +120,6 @@ namespace esl::economics::markets::tatonnement {
         friend void ::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
         friend int ::multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
         friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
-
 
         friend double ::my_function_value(const gsl_vector *variables, void *params);
         friend double ::uniroot_function_value (double x, void *params);

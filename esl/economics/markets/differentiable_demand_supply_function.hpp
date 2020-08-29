@@ -41,7 +41,7 @@ namespace esl::economics::markets {
 
         virtual std::map<identity<law::property>, variable> excess_demand(
             const std::map<identity<law::property>,
-                           std::tuple<economics::quote, variable>> &quotes)
+                           std::tuple<quote, variable>> &quotes)
             const = 0;
 
 #ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
@@ -52,11 +52,11 @@ namespace esl::economics::markets {
         /// \return
         virtual std::map<identity<law::property>, double> excess_demand(
             const std::map<identity<law::property>,
-                           std::tuple<economics::quote, double>> &quotes)
+                           std::tuple<quote, double>> &quotes)
             const override
         {
             std::map<identity<law::property>,
-                     std::tuple<economics::quote, variable>>
+                     std::tuple<quote, variable>>
                 quotes_;
             for(auto [k, v] : quotes) {
                 auto differential_ =

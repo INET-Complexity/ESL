@@ -30,8 +30,6 @@
 using namespace boost::python;
 
 
-
-
 BOOST_PYTHON_MODULE(isin)
 {
     class_<esl::economics::finance::isin>(

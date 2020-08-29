@@ -234,8 +234,8 @@ namespace esl::economics::markets::tatonnement {
     /// \return
     adept::adouble excess_demand_model::demand_supply_mismatch(const adept::adouble *x)
     {
-        std::map<esl::identity<esl::law::property>,
-                 std::tuple<esl::economics::quote, adept::adouble>>
+        std::map<identity<law::property>,
+                 std::tuple<quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
@@ -663,9 +663,21 @@ namespace esl::economics::markets::tatonnement {
 #include <boost/python.hpp>
 
 using namespace boost::python;
-BOOST_PYTHON_MODULE(walras2)
+using namespace esl::economics::markets;
+BOOST_PYTHON_MODULE(walras)
 {
-  class_<excess_demand_model>("excess_demand_model", init<esl::law::property_map<esl::economics::quote>>());
+    enum_<excess_demand_model::solver>("solver")
+        .value("root", excess_demand_model::root)
+        .value("minimization", excess_demand_model::minimization)
+        .export_values()
+        ;
+
+    class_<excess_demand_model>("excess_demand_model", init<esl::law::property_map<quote>>())
+        .def_readwrite("circuit_breaker", &excess_demand_model::circuit_breaker)
+        .def_readwrite("methods", &excess_demand_model::methods)
+        .def_readwrite("quotes", &excess_demand_model::quotes)
+        .def("compute_clearing_quotes", &excess_demand_model::compute_clearing_quotes)
+      ;
 
 }
 
