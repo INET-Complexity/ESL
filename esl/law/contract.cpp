@@ -24,6 +24,8 @@
 ///
 #include <esl/law/contract.hpp>
 
+#include <esl/agent.hpp>
+
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
@@ -33,7 +35,7 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE(contract)
 {
     class_<esl::law::contract>
-        ( "contract", init<std::vector<esl::identity<agent>>>())
+        ( "contract", init<std::vector<esl::identity<esl::agent>>>())
         .def_readwrite("parties", &esl::law::contract::parties)
         ;
 
