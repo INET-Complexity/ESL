@@ -46,7 +46,6 @@ ENDIF()
 
 ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 
-
 ################################################################################
 
 INCLUDE(cotire)
@@ -87,9 +86,16 @@ ENDIF()
 ################################################################################
 
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3)  # for building bindings
-    FIND_PACKAGE(PythonInterp 3)# for running tests
+    FIND_PACKAGE(PythonLibs 3 REQUIRED)  # for building bindings
+    FIND_PACKAGE(PythonInterp 3) # for running tests, not required
 ENDIF()
+
+string(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+list(GET VERSION_LIST 0 ESL_PYTHON_BINDINGS_VERSION_MAJOR)
+list(GET VERSION_LIST 1 ESL_PYTHON_BINDINGS_VERSION_MINOR)
+list(GET VERSION_LIST 2 ESL_PYTHON_BINDINGS_VERSION_PATCH)
+
+
 
 ################################################################################
 LIST(APPEND Boost_LIBRARIES
@@ -97,32 +103,21 @@ LIST(APPEND Boost_LIBRARIES
             date_time 
             serialization 
             unit_test_framework
-            log
+        thread
     )
 
 IF(WITH_PYTHON)
-    LIST(APPEND Boost_LIBRARIES python38)
+    LIST(APPEND Boost_LIBRARIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
 ELSE()
 ENDIF()
 
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES mpi)
     IF(WITH_PYTHON)
-        LIST(APPEND Boost_LIBRARIES mpi_python38)
+        LIST(APPEND Boost_LIBRARIES mpi_python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     ENDIF()
 ENDIF()
 
-
-################################################################################
-#SET(Boost_USE_STATIC_LIBS ON)
-LIST(APPEND Boost_LIBRARIES
-        program_options
-        date_time
-        serialization
-        unit_test_framework
-        thread
-        python38
-        )
 #ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 
@@ -134,7 +129,6 @@ IF(WIN32)
 ENDIF()
 FIND_PACKAGE(BLAS)
 FIND_PACKAGE(LAPACK)
-
 
 # GSL is required for optimisation routines
 FIND_PACKAGE(GSL REQUIRED)
@@ -452,7 +446,18 @@ SET(SOURCE_FILES
         esl/economics/money.cpp
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
-        esl/data/format/numpy.cpp esl/data/format/numpy.hpp esl/data/format/xml.cpp esl/data/format/xml.hpp esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp esl/data/terminal.cpp esl/data/terminal.hpp esl/computation/allocator.cpp esl/computation/allocator.hpp
+
+        esl/data/format/numpy.cpp esl/data/format/numpy.hpp
+
+        esl/data/format/xml.cpp esl/data/format/xml.hpp
+
+        esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp
+
+        esl/data/terminal.cpp
+        esl/data/terminal.hpp
+
+        esl/computation/allocator.cpp
+        esl/computation/allocator.hpp
 
 
         esl/economics/markets/order_book/matching_engine.cpp
