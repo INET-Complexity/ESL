@@ -256,11 +256,11 @@ BOOST_AUTO_TEST_SUITE(ESL)
         return bid_;
     }
 
-#if ESL_RELEASE == 1
+#ifdef ESL_RELEASE
     BOOST_AUTO_TEST_CASE(statically_allocated_book_performance)
     {
-        auto  min_ = quote(price( 80.00, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = quote(price(120.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = markets::quote(price( 80.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = markets::quote(price(120.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = new book<1024*1024>(min_, max_);
 
         std::vector<limit_order_message> messages_;
