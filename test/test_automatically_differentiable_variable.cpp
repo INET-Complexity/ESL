@@ -54,7 +54,7 @@ using namespace esl::simulation;
 #include <esl/economics/price.hpp>
 using esl::economics::price;
 #include <esl/economics/markets/quote.hpp>
-using esl::economics::quote;
+using esl::economics::markets::quote;
 #include <esl/economics/finance/company.hpp>
 using esl::economics::company;
 using esl::economics::cash;

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(quantity_arithmetic_guards)
     // test exception on adding incompatible quantities
     esl::quantity threefifty_(350, 100);
 #if EXCEPTION_ON_BASIS_CHANGE
-    BOOST_CHECK_THROW(threefifty_ + esl::quantity(1, 42), std::logic_error);
+    BOOST_CHECK_THROW((void)(threefifty_ + esl::quantity(1, 42)), std::logic_error);
 #else
     BOOST_CHECK_EQUAL(threefifty_ + esl::quantity(1, 42),
                       esl::quantity(148, 42));
@@ -77,13 +77,13 @@ BOOST_AUTO_TEST_CASE(quantity_arithmetic_guards)
 
 
     // test exception on subtracting with negative result
-    BOOST_CHECK_THROW(threefifty_ - esl::quantity(351, 100), std::logic_error);
-    BOOST_CHECK_THROW(threefifty_ - esl::quantity(176, 50), std::logic_error);
-    BOOST_CHECK_THROW(threefifty_ - esl::quantity(701, 200), std::logic_error);
+    BOOST_CHECK_THROW((void)(threefifty_ - esl::quantity(351, 100)), std::logic_error);
+    BOOST_CHECK_THROW((void)(threefifty_ - esl::quantity(176, 50)), std::logic_error);
+    BOOST_CHECK_THROW((void)(threefifty_ - esl::quantity(701, 200)), std::logic_error);
 
     // test conversion on subtraction
 #if EXCEPTION_ON_BASIS_CHANGE
-    BOOST_CHECK_THROW(threefifty_ - esl::quantity(1, 42), std::logic_error);
+    BOOST_CHECK_THROW((void)(threefifty_ - esl::quantity(1, 42)), std::logic_error);
 #else
     BOOST_CHECK_EQUAL(threefifty_ - esl::quantity(1, 42),
                       esl::quantity(146, 42));

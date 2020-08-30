@@ -266,8 +266,8 @@ namespace esl::economics::markets::order_book {
                 //, std::function<quote(const limit &limit)> decode = default_decode
                 )
             : basic_book( )
-            , valid_limits(minimum, maximum)
             , pool_()
+            , valid_limits(minimum, maximum)
             //, encode(encode)
             //, decode(decode)
             , ticks(minimum.lot)
@@ -347,7 +347,7 @@ namespace esl::economics::markets::order_book {
                 for( auto ao = level->first
                    ; 0 < remainder_
                    ; ao = ao->data.successor){
-                    uint64_t execution_size_ = 0;
+                    uint32_t execution_size_ = 0;
 
                     if(ao->data.quantity > remainder_){
                         execution_size_ = remainder_;
@@ -435,7 +435,9 @@ namespace esl::economics::markets::order_book {
                 std::uint32_t remainder_ = order.quantity;
                 limit limit_index_;
                 auto encode_success_ = encode(order.limit, limit_index_);
-                assert(encode_success_ && limits_.size() > limit_index_);
+                assert( encode_success_
+                      && limit_index_ >= 0
+                      && limits_.size() > static_cast<uint64_t>(limit_index_));
                 limit_type *limit_level_ = &limits_[limit_index_];
 
                 if( order.side == limit_order_message::buy

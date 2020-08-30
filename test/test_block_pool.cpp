@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         auto new_id_round_ = bp_.emplace(6);
 
-        BOOST_CHECK_LT(5, new_id_round_);
+        BOOST_CHECK_LT(5, new_id_round_.first);
 
         bp_.erase(0);
         bp_.erase(1);

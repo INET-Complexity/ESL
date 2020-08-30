@@ -84,7 +84,7 @@ struct test_trader_order
 
     std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(
     const std::map<esl::identity<esl::law::property>,
-                   std::tuple<esl::economics::quote, esl::variable>> &quotes)
+                   std::tuple<esl::economics::markets::quote, esl::variable>> &quotes)
     const  override
     {
         std::map<esl::identity<esl::law::property>, esl::variable> signals_;
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
              esl::identity<esl::law::property>>
         stocks_;
 
-    esl::law::property_map<esl::economics::quote> traded_assets_;
+    esl::law::property_map<esl::economics::markets::quote> traded_assets_;
     size_t assets = 2;
 
     for(size_t a = 0; a < assets; ++a) {
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
             auto stock_ = std::make_shared<esl::economics::finance::stock>(
                 *company_, share_);
             traded_assets_.insert(
-                {stock_, esl::economics::quote(esl::economics::price(
+                {stock_, esl::economics::markets::quote(esl::economics::price(
                              1.00, esl::economics::currencies::USD))});
             shares_.emplace_back(make_tuple(company_, share_));
 
