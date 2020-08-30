@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         for(std::uint64_t i = 0; i < 5; ++i){
             auto a = bp_.emplace(i);
-            BOOST_CHECK_EQUAL(a,i);
+            BOOST_CHECK_EQUAL(a.first,i);
         }
 
         BOOST_CHECK_THROW( bp_.emplace(5), std::exception );
@@ -65,6 +65,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         for(std::uint64_t i = 0; i < 5; ++i){
             auto a = bp_.emplace(i);
+            (void)a;
             BOOST_CHECK_EQUAL(bp_.size(),i);
         }
     }
