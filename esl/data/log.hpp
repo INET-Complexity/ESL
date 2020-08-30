@@ -156,8 +156,11 @@ namespace esl::data {
     ///
     /// \brief  The main log is always instantiated.
     ///
+#ifdef ESL_RELEASE
     static data::log<(ESL_RELEASE > 0?warning:trace) >main_log("main");
-
+#else
+    static data::log<trace>main_log("main");
+#endif
 }  // namespace esl::data
 
 #define LOG(level) \
