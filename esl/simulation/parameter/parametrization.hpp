@@ -84,7 +84,11 @@ namespace esl::simulation::parameter {
         parametrization( std::uint64_t sample       = 0
                        , time_point start           = time_point()
                        , time_point end             = time_point() + 1
-                       , std::uint64_t verbosity    = ESL_RELEASE ? 1000 : 100 )
+#ifdef ESL_RELEASE
+                       , std::uint64_t verbosity    = 1==ESL_RELEASE ? 1000 : 100 )
+#else
+                       , std::uint64_t verbosity    = 100 )
+#endif
         {
             values["sample"] = std::make_shared<constant<std::uint64_t>>(sample);
             values["start"]  = std::make_shared<constant<time_point>>(start);
