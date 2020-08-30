@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cassert>
 #include <iterator>
 #include <vector>
 #include <numeric>
