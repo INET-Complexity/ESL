@@ -126,16 +126,6 @@ LIST(APPEND Boost_LIBRARIES
 #ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(${Boost_LIBRARIES})
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(" ")
-
-
-
 ################################################################################
 
 # optional accelerators for scientific computing
@@ -227,11 +217,6 @@ IF(WITH_QL)
     LIST(APPEND ALL_LINKED_LIBRARIES QuantLib ${QuantLib_LIBRARIES})
 ENDIF()
 
-message(" ")
-message("Include dirs of Python 3.8: " ${PYTHON_INCLUDE_DIRS} )
-message("Libs of Python 3.8: " ${PYTHON_LIBRARIES} )
-message(" ")
-
 
 IF(BLAS_FOUND)
     LIST(APPEND ALL_LINKED_LIBRARIES ${BLAS_LIBRARIES} GSL::gslcblas)
@@ -246,20 +231,6 @@ IF(WIN32)
 ELSE()
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
 ENDIF()
-
-
-
-
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(${ALL_INCLUDE_DIRECTORIES})
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(${ALL_LINKED_LIBRARIES})
-MESSAGE(" ")
-MESSAGE(" ")
-MESSAGE(" ")
 
 ################################################################################
 
