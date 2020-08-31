@@ -41,7 +41,6 @@ namespace esl::data {
         ///
         std::unordered_map<std::string, std::shared_ptr<output_base>> outputs;
 
-
         void add_output_stream(const std::string &name, std::shared_ptr<stream> s)
         {
             auto i = outputs.find(name);

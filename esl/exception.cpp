@@ -22,14 +22,6 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifdef WITH_PYTHON
-///
-/// https://docs.python.org/3.7/c-api/intro.html#include-files
-///
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#endif
-
 #include <esl/exception.hpp>
 
 
@@ -45,29 +37,3 @@ namespace esl {
         return message_.c_str();
     }
 }
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-///
-/// \brief
-///
-/// \param e
-void translate_exception(const esl::exception &e)
-{
-PyErr_SetString(PyExc_UserWarning, e.what());
-}
-
-
-    using namespace boost::python;
-    BOOST_PYTHON_MODULE(exception)
-    {
-        class_<esl::exception>("exception", init<std::string>())
-        .def("message", &esl::exception::what)
-        ;
-
-        register_exception_translator<esl::exception>(translate_exception);
-    }
-
-#endif

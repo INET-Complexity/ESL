@@ -28,7 +28,7 @@
 
 #include <cstdint>
 #include <utility>
-
+#include <stdexcept>
 #include <array>
 
 

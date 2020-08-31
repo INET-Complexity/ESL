@@ -25,23 +25,9 @@
 #include <esl/simulation/world.hpp>
 
 namespace esl::simulation{
-
     world::world()
     : entity<world>(identity<world>{} )
     {
 
     }
 }
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-using namespace boost::python;
-
-using namespace esl::simulation;
-
-BOOST_PYTHON_MODULE(world)
-{
-    class_<world>("world");
-}
-
-#endif

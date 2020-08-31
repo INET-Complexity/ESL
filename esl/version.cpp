@@ -37,16 +37,3 @@ namespace esl {
         return stream_.str();
     }
 }  // namespace esl
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-namespace esl {
-    using namespace boost::python;
-    BOOST_PYTHON_MODULE(version)
-    {
-        def("version", version);
-    }
-
-}  // namespace esl
-#endif

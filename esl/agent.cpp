@@ -36,8 +36,13 @@ namespace esl {
     : entity<agent>(std::move(i)), communicator()
     {}
 
-    agent::agent(const agent &o) : agent(o.identifier)
-    {}
+    agent::agent(const agent &o)
+    : entity<agent>(o.identifier)
+    , interaction::communicator(o.schedule_)
+    , data::producer()
+    {
+
+    }
 
     simulation::time_point agent::act(simulation::time_interval step,
                                       std::seed_seq &seed)
@@ -52,20 +57,3 @@ BOOST_CLASS_TRACKING(esl::agent, boost::serialization::track_always)
 BOOST_CLASS_EXPORT(esl::identity<esl::agent>);
 
 BOOST_CLASS_EXPORT(esl::agent);
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-#include <boost/python/enum.hpp>
-#include <esl/interaction/message.hpp>
-
-namespace esl {
-    using namespace boost::python;
-
-    BOOST_PYTHON_MODULE(agent)
-    {
-        class_<agent, bases<entity<agent>, interaction::communicator>>(
-            "agent", init<identity<agent>>());
-    }
-}  // namespace esl
-
-#endif  // WITH_PYTHON

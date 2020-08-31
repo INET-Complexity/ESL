@@ -134,8 +134,10 @@ namespace esl {
     {
         static_assert(end_ <= original_s_);
         std::array<element_t_, (end_ - start_)> result_ = {};
-        for(size_t i = start_; i < end_; ++i) {
-            result_[i - start_] = a[i];
+        if constexpr(end_ > start_) { // supress warning of always-true expr
+            for(size_t i = start_; i < end_; ++i) {
+                result_[i - start_] = a[i];
+            }
         }
         return result_;
     }

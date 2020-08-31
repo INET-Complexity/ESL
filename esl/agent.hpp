@@ -25,7 +25,6 @@
 #ifndef ESL_AGENT_HPP
 #define ESL_AGENT_HPP
 
-
 #include <utility>
 
 #include <boost/serialization/nvp.hpp>
@@ -34,6 +33,7 @@
 #include <esl/data/producer.hpp>
 #include <esl/interaction/communicator.hpp>
 #include <esl/simulation/entity.hpp>
+#include <esl/simulation/identity.hpp>
 
 
 namespace esl {
@@ -50,7 +50,7 @@ namespace esl {
     public:
         agent();
 
-        explicit agent(identity<agent> i);
+        explicit agent(esl::identity<agent> i);
 
         ///
         /// \brief  Copy constructor

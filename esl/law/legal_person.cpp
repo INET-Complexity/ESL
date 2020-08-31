@@ -22,29 +22,3 @@
 ///             You may obtain instructions to fulfill the attribution
 ///
 #include <esl/law/legal_person.hpp>
-using namespace esl::law;
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(legal_person)
-{
-    class_<esl::law::legal_person>(
-        "legal_person",
-        init<esl::identity<esl::agent>, esl::law::jurisdiction>())
-        .def(init<esl::identity<esl::agent>,
-                  legal_entity,
-                  esl::law::jurisdiction>())
-        .def(init<esl::identity<esl::agent>,
-                  natural_person,
-                  esl::law::jurisdiction>())
-        .def(init<esl::identity<esl::agent>,
-                  government,
-                  esl::law::jurisdiction>())
-        .def_readonly("primary_jurisdiction",
-             &esl::law::legal_person::primary_jurisdiction);
-}
-
-#endif  // WITH_PYTHON

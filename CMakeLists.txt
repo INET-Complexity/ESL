@@ -447,11 +447,14 @@ SET(SOURCE_FILES
         esl/economics/finance/securities_lending_contract.cpp
         esl/economics/finance/securities_lending_contract.hpp
 
-        esl/data/format/numpy.cpp esl/data/format/numpy.hpp
+        esl/data/format/numpy.cpp
+        esl/data/format/numpy.hpp
 
-        esl/data/format/xml.cpp esl/data/format/xml.hpp
+        esl/data/format/xml.cpp
+        esl/data/format/xml.hpp
 
-        esl/computation/thread_pool.cpp esl/computation/thread_pool.hpp
+        esl/computation/thread_pool.cpp
+        esl/computation/thread_pool.hpp
 
         esl/data/terminal.cpp
         esl/data/terminal.hpp
@@ -476,9 +479,26 @@ SET(SOURCE_FILES
 
         esl/economics/markets/order_book/exchange.cpp
         esl/economics/markets/order_book/exchange.hpp
-        esl/computation/block_pool.hpp)
 
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} esl/data/format/numpy.cpp esl/data/format/numpy.hpp)
+        esl/computation/block_pool.cpp
+        esl/computation/block_pool.hpp
+
+        esl/python_module.cpp
+        esl/python_module.hpp
+
+        esl/law/python_module.cpp
+        esl/law/python_module.hpp
+
+        esl/mathematics/python_module.cpp
+        esl/mathematics/python_module.hpp
+
+        esl/simulation/python_module.cpp
+        esl/simulation/python_module.hpp
+
+
+        )
+
+ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -508,7 +528,7 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
 
 FOREACH(test_src ${TEST_SRCS})
-    MESSAGE("TEST " ${test_src})
+    #MESSAGE("TEST " ${test_src})
     GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
 
     ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
@@ -534,24 +554,33 @@ ENDFOREACH(test_src)
 ################################################################################
 
 IF(WITH_PYTHON)
-    # create a python module for all .ccp files
-    # TODO: make this a separate set, as some unwanted .cpp files may be swept
-    #       up in this
-    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**.cpp)
+    ####################################################################################################################
+    # create python modules
+    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module.cpp)
     FOREACH (source ${ESL_PYTHON_SOURCE})
         GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
-        MESSAGE("PYTHON MODULE " ${module_path}/${module_name} "\t" ${source})
-        PYTHON_ADD_MODULE(${module_name} ${source})
+        GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
 
-        ADD_CUSTOM_COMMAND(TARGET ${module_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:${module_name}>
-                ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${module_name}>)
+        MESSAGE("PYTHON MODULE " ${module_path}/${python_module_name}_ "\t" ${source})
+        PYTHON_ADD_MODULE(${python_module_name}_ ${source} ${SOURCE_FILES})
+
+        ADD_CUSTOM_COMMAND(TARGET ${python_module_name}_
+                POST_BUILD COMMAND
+                ${CMAKE_COMMAND} -E copy_if_different#rename #copy_if_different
+                $<TARGET_FILE:${python_module_name}_>
+                ${CMAKE_BINARY_DIR}/python/${module_path}/$<TARGET_FILE_NAME:${python_module_name}_>)
+
+        #ADD_CUSTOM_COMMAND(TARGET ${python_module_name}_
+        #        POST_BUILD
+        #        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        #        $<TARGET_FILE:${python_module_name}_>
+        #        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${python_module_name}_>)
     ENDFOREACH ()
 
-
+    ####################################################################################################################
+    # create python tests
     FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
     FOREACH(test_src ${TEST_SRCS})
         GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
@@ -564,17 +593,17 @@ IF(WITH_PYTHON)
 
     SET_TARGET_PROPERTIES(pytest PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
-        
+
     IF(PYTHONINTERP_FOUND)
         MESSAGE(${PYTHON_EXECUTABLE})
         ADD_CUSTOM_TARGET(make_module ALL
-              COMMAND ${CMAKE_COMMAND} -E make_directory test/esl/ && ${CMAKE_COMMAND} -E touch ./test/esl/__init__.py)
+              COMMAND ${CMAKE_COMMAND} -E make_directory python/test/esl/ && ${CMAKE_COMMAND} -E touch ./python/test/esl/__init__.py)
 
         ADD_TEST(NAME pytest
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/test/)
-    ENDIF()
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
 
+    ENDIF()
 ENDIF()
 
 IF(WITH_MPI)

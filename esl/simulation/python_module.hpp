@@ -1,10 +1,10 @@
-/// \file   time.cpp
+/// \file   python_module.hpp
 ///
 /// \brief
 ///
-/// \authors    Maarten P. Scholl
-/// \date       2017-12-07
-/// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
+/// \authors    maarten
+/// \date       2020-08-30
+/// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,3 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#ifndef ESL_SIMULATION_PYTHON_MODULE_HPP
+#define ESL_SIMULATION_PYTHON_MODULE_HPP
+
+
+#endif  // ESL_SIMULATION_PYTHON_MODULE_HPP

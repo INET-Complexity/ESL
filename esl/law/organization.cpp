@@ -23,19 +23,3 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/law/organization.hpp>
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(organization)
-{
-    class_<esl::law::organization, bases<esl::law::legal_person>>(
-        "organization",
-        init<const esl::identity<esl::agent> &,
-             const esl::law::jurisdiction &>());
-}
-
-#endif  // WITH_PYTHON

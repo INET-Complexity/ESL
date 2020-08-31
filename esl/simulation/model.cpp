@@ -131,24 +131,3 @@ namespace esl::simulation {
     }
 
 }  // namespace esl::simulation
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-using namespace boost::python;
-
-using namespace esl::simulation;
-
-BOOST_PYTHON_MODULE(model)
-{
-    class_<model>(
-        "model",
-        init< esl::computation::environment &
-                , parameter::parametrization>())
-        .def_readonly("start", &model::start)
-        .def_readwrite("end", &model::end)
-        .def_readwrite("time", &model::time)
-        ;
-}
-
-#endif
