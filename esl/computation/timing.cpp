@@ -23,17 +23,3 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/computation/timing.hpp>
-using esl::computation::agent_timing;
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(timing)
-{
-    class_<agent_timing>("agent_timing")
-        .def_readwrite("messaging", &agent_timing::messaging)
-        .def_readwrite("acting", &agent_timing::acting);
-}
-
-#endif

@@ -33,8 +33,6 @@
 
 
 namespace esl::computation::block_pool {
-
-
     ///
     /// \brief  A block containing a single value of the container.
     ///
@@ -151,11 +149,11 @@ namespace esl::computation::block_pool {
 #endif
             auto i        = end;
             i->data       = e;
-            size_t offset = i - blocks.data();
+            size_t offset_ = i - blocks.data();
 
-            if(back_ > offset) {
+            if(back_ > offset_) {
                 ++round_;
-                back_ = offset;
+                back_ = offset_;
             }else{
                 ++back_;
             }
@@ -168,7 +166,7 @@ namespace esl::computation::block_pool {
             end = end->empty;
             ++size_;
 
-            return {round_ * capacity_ + offset, i};
+            return {round_ * capacity_ + offset_, i};
         }
 
         ///

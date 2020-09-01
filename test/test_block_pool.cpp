@@ -44,29 +44,28 @@ BOOST_AUTO_TEST_SUITE(ESL)
             auto a = bp_.emplace(i);
             BOOST_CHECK_EQUAL(a.first,i);
         }
-
         BOOST_CHECK_THROW( bp_.emplace(5), std::exception );
 
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(3);
-
-        BOOST_CHECK_EQUAL(bp_.size(), 4);
-
-
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         auto new_id_round_ = bp_.emplace(6);
-
         BOOST_CHECK_LT(5, new_id_round_.first);
-
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(0);
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(1);
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(2);
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(new_id_round_.first);
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         bp_.erase(4);
-
-
+        std::cout << "bp_.size() " << bp_.size() << std::endl;
         for(std::uint64_t i = 0; i < 5; ++i){
             auto a = bp_.emplace(i);
             (void)a;
-            BOOST_CHECK_EQUAL(bp_.size(),i);
+            BOOST_CHECK_EQUAL(bp_.size(),i+1);
         }
     }
 

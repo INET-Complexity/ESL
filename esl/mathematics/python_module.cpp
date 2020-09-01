@@ -35,7 +35,7 @@ using namespace boost::python;
 
 
 namespace esl::mathematics {
-    BOOST_PYTHON_MODULE(mathematics)
+    BOOST_PYTHON_MODULE(mathematics_)
     {
         class_<variable>( "variable",init<>())
             .def(init<std::uint64_t>())

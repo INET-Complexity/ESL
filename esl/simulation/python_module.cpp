@@ -81,7 +81,7 @@ namespace esl::simulation {
         return extract<time_duration>(o);
     }
 
-    BOOST_PYTHON_MODULE(simulation)
+    BOOST_PYTHON_MODULE(simulation_)
     {
         ////////////////////////////////////////////////////////////////////////
 

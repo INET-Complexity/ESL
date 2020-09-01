@@ -22,18 +22,37 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/computation//python_module.hpp>
+#include <esl/computation/python_module.hpp>
 
 
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 using namespace boost::python;
 
+#include <esl/simulation/model.hpp>
+
+#include <esl/computation/block_pool.hpp>
+#include <esl/computation/environment.hpp>
+#include <esl/computation/timing.hpp>
+using esl::computation::agent_timing;
+
+
 namespace esl::computation {
-    BOOST_PYTHON_MODULE(computation)
+    BOOST_PYTHON_MODULE(computation_)
     {
         ////////////////////////////////////////////////////////////////////////
 
+        class_<block_pool::block<object>>("block");
+
+        ////////////////////////////////////////////////////////////////////////
+        class_<environment>("environment")
+            .def("step", &environment::step)
+            .def("run", &environment::run);
+
+        ////////////////////////////////////////////////////////////////////////
+        class_<agent_timing>("agent_timing")
+            .def_readwrite("messaging", &agent_timing::messaging)
+            .def_readwrite("acting", &agent_timing::acting);
     }
 
 }

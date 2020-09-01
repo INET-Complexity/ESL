@@ -43,13 +43,24 @@ using namespace boost::python;
 
 
 namespace esl {
-
+    ///
+    /// \brief  Translates C++ exceptions to Python errors, by setting the
+    ///         Python error text equal to the C++ exception message.
+    ///
+    /// \param e
     void translate_exception(const exception &e)
     {
         PyErr_SetString(PyExc_UserWarning, e.what());
     }
 
-    BOOST_PYTHON_MODULE(esl)
+    ///
+    /// \brief  Python module structure follows directory structure and
+    ///         C++ namespaces. We use __init__.py for submodules, so we can mix
+    ///         native code and Python-binding specific Python code. Thus, we
+    ///         protect the name of the module with an underscore, and import it
+    ///         from __init__.py
+    ///
+    BOOST_PYTHON_MODULE(esl_)
     {
         ////////////////////////////////////////////////////////////////////////
         class_< agent

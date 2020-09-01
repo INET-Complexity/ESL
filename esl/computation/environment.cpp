@@ -206,21 +206,3 @@ namespace esl::computation {
                     << " seconds" << std::endl;
     }
 }// namespace esl::computation
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-#include <boost/python/enum.hpp>
-#include <esl/interaction/message.hpp>
-
-
-namespace esl::computation {
-    using namespace boost::python;
-    BOOST_PYTHON_MODULE(environment)
-    {
-        class_<environment>("environment")
-            .def("step", &environment::step)
-            .def("run", &environment::run);
-    }
-}  // namespace esl::computation
-#endif
