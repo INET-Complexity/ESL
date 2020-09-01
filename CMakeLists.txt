@@ -539,12 +539,25 @@ FOREACH(test_src ${TEST_SRCS})
     # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
     IF(${test_name} MATCHES "^(test_mpi_)")
         IF(WITH_MPI)
-            MESSAGE("\t MPI TEST")
-            ADD_TEST(NAME ${test_name}
-                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                    COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
+            IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
+                MESSAGE("\t MPI PYTHON TEST")
+                ADD_TEST(NAME ${test_name}
+                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+                        COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
+            ELSE()
+                MESSAGE("\t MPI TEST")
+                ADD_TEST(NAME ${test_name}
+                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                        COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
+            ENDIF()
         ENDIF()
+    ELSEIF(${test_name} MATCHES "^(test_python_)")
+        MESSAGE("\t PYTHON TEST")
+        ADD_TEST(NAME ${test_name}
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+                COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
     ELSE()
+        MESSAGE("\t C++ TEST " ${test_name})
         ADD_TEST(NAME ${test_name}
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                 COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
@@ -572,6 +585,27 @@ IF(WITH_PYTHON)
                 $<TARGET_FILE:${python_module_name}_>
                 ${CMAKE_BINARY_DIR}/python/${module_path}/$<TARGET_FILE_NAME:${python_module_name}_>)
 
+        MESSAGE("________________________________________")
+        MESSAGE(${CMAKE_SOURCE_DIR}/${module_path})
+
+        IF(EXISTS ${CMAKE_SOURCE_DIR}/${module_path}/__init__.py)
+            FILE(COPY
+                    ${CMAKE_SOURCE_DIR}/${module_path}/__init__.py
+                    DESTINATION
+                    ${CMAKE_BINARY_DIR}/python/${module_path}/
+                    )
+
+        ELSE()
+
+        ENDIF()
+
+
+
+
+
+
+
+
         #ADD_CUSTOM_COMMAND(TARGET ${python_module_name}_
         #        POST_BUILD
         #        COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -586,18 +620,15 @@ IF(WITH_PYTHON)
         GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
         SET(pytest_name "${pytest_name}_python")
         MESSAGE("PYTEST " ${pytest_name})
-        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/test/)
+        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
     ENDFOREACH(test_src)
 
     ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
 
     SET_TARGET_PROPERTIES(pytest PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
 
     IF(PYTHONINTERP_FOUND)
-        MESSAGE(${PYTHON_EXECUTABLE})
-        ADD_CUSTOM_TARGET(make_module ALL
-              COMMAND ${CMAKE_COMMAND} -E make_directory python/test/esl/ && ${CMAKE_COMMAND} -E touch ./python/test/esl/__init__.py)
 
         ADD_TEST(NAME pytest
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
