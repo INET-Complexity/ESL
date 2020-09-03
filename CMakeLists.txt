@@ -599,13 +599,6 @@ IF(WITH_PYTHON)
 
         ENDIF()
 
-
-
-
-
-
-
-
         #ADD_CUSTOM_COMMAND(TARGET ${python_module_name}_
         #        POST_BUILD
         #        COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -615,26 +608,26 @@ IF(WITH_PYTHON)
 
     ####################################################################################################################
     # create python tests
-    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
-    FOREACH(test_src ${TEST_SRCS})
-        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
-        SET(pytest_name "${pytest_name}_python")
-        MESSAGE("PYTEST " ${pytest_name})
-        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
-    ENDFOREACH(test_src)
-
-    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
-
-    SET_TARGET_PROPERTIES(pytest PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
-
-    IF(PYTHONINTERP_FOUND)
-
-        ADD_TEST(NAME pytest
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
-
-    ENDIF()
+#    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+#    FOREACH(test_src ${TEST_SRCS})
+#        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
+#        SET(pytest_name "${pytest_name}_python")
+#        MESSAGE("PYTEST " ${pytest_name})
+#        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
+#    ENDFOREACH(test_src)
+#
+#    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+#
+#    SET_TARGET_PROPERTIES(pytest PROPERTIES
+#        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+#
+#    IF(PYTHONINTERP_FOUND)
+#
+#        ADD_TEST(NAME pytest
+#                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+#                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
+#
+#    ENDIF()
 ENDIF()
 
 IF(WITH_MPI)
