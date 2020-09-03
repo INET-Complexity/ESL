@@ -1,6 +1,7 @@
 /// \file   book.hpp
 ///
-/// \brief
+/// \brief  Multiple implementations of limit order books, separated by
+///         namespace.
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2020-04-05
@@ -41,14 +42,13 @@
 
 namespace esl::economics::markets::order_book {
 
-
-
-
+    ///
+    /// \todo:  once the functionality is stable between different LOB
+    ///         implementations, we provide a stable API through this base class
+    ///
     struct basic_book
     {
-
         basic_book( )
-
         {
 
         }
@@ -56,56 +56,6 @@ namespace esl::economics::markets::order_book {
         virtual ~basic_book() = default;
     };
 
-
-    namespace dynamically_allocated {
-
-        /*
-        class book
-        {
-        public:
-            typedef std::uint64_t index;
-
-        private:
-            index next_;
-
-        public:
-            book()
-            :next_(0)
-            {
-
-            }
-
-            bool insert(const limit_order_message &order);
-
-            void erase(index identifier);
-
-            limit_order_message &find( limit_order_message::side_t side
-                                     , index identifier);
-
-            bool match(std::queue<limit_order_message> &);
-
-            [[nodiscard]] price spread() const
-            {
-                return orders_ask.cbegin()->first - orders_bid.cbegin()->first;
-            }
-
-            void match(limit_order_message &bid, limit_order_message &ask);
-
-            typedef std::multimap< price
-                                 , std::pair<index, limit_order_message>
-                                 , std::greater<>
-                                 > bid_t;
-
-            typedef std::multimap< price
-                                 , std::pair<index, limit_order_message>
-                                 , std::less<>
-                                 > ask_t;
-
-            bid_t orders_bid;
-            ask_t orders_ask;
-        };
-         */
-    }//dynamically_allocated
 
     ///
     ///
@@ -296,11 +246,19 @@ namespace esl::economics::markets::order_book {
             }
 
             ///
-            /// \brief
+            /// \brief  Resize the order book when market prices move outside of
+            ///         the allowed range.
+            ///
+            /// \details    This operation is costly, and must be avoided by
+            ///             choosing sensible limits for minimum and maximum
+            ///             allowed prices.
+            ///
             ///
             /// \param new_limits
             void resize(mathematics::interval<quote> new_limits)
             {
+                throw std::logic_error("Not implemented");
+
                 if(new_limits.lower > valid_limits.lower && new_limits.lower <= valid_limits.upper){
                     // safely encode and erase orders in between
                     limit lower_;
@@ -308,19 +266,24 @@ namespace esl::economics::markets::order_book {
 
                     for(auto i = &limits_[0]; i < lower_; ++i){
                         for(auto j = i->first; nullptr != j; j = j->data.successor){
-
+                            // TODO: investigate fast memcpy
                         }
                     }
 
                 }
 
+                // other cases
                 if(new_limits.upper < valid_limits.upper && new_limits.upper > valid_limits.lower) {
-
+                    // TODO:
                 }
 
                 valid_limits = new_limits;
             }
 
+            ///
+            /// \brief  Returns the best bid, the highest bid price, if any
+            ///
+            /// \return
             [[nodiscard]] std::optional<quote> bid() const
             {
                 if(!best_bid_->first){
@@ -330,6 +293,10 @@ namespace esl::economics::markets::order_book {
                 return decode(limit_);
             }
 
+            ///
+            /// \brief  Returns the best ask, meaning lowest ask price, if any
+            ///
+            /// \return
             [[nodiscard]] std::optional<quote> ask() const
             {
                 if(!best_ask_->first){
@@ -340,6 +307,14 @@ namespace esl::economics::markets::order_book {
                 return decode(limit_);
             }
 
+            ///
+            /// \brief  Matches an order, partially or fully, agains resting
+            ///         orders at a given level in the book
+            ///
+            /// \param order
+            /// \param remainder_
+            /// \param level
+            /// \return
             inline uint32_t match_at_level( const limit_order_message &order
                                           , std::uint32_t &remainder_
                                           , limit_type *level)
@@ -385,6 +360,7 @@ namespace esl::economics::markets::order_book {
                     if(!ao->data.successor){
                         if(0 == ao->data.quantity){
                             // special case where level is emptied entirely
+                            // we need to reset the pointers in the memory pool
                             level->first = nullptr;
                             level->second = nullptr;
 
@@ -392,7 +368,6 @@ namespace esl::economics::markets::order_book {
                             // the best ask
                             if(order.side == limit_order_message::buy){
                                 LOG(trace) << quote_ << " ask level depleted" << std::endl;
-
                                 for(++best_ask_; best_ask_ <= &limits_.back(); ++best_ask_){
                                     if(best_ask_->first || best_ask_ == &limits_.back()){
                                         break;
@@ -400,7 +375,6 @@ namespace esl::economics::markets::order_book {
                                 }
                             }else{
                                 LOG(trace) << quote_ << " bid level depleted" << std::endl;
-
                                 for(--best_bid_; best_bid_ >= &limits_[0]; --best_bid_){
                                     if(best_bid_->first || best_bid_ == &limits_[0]){
                                         break;
@@ -532,14 +506,13 @@ namespace esl::economics::markets::order_book {
 
 
             ///
-            /// \brief  Cancels an order by the order identifier returned from the order book.
+            /// \brief  Cancels an order by the order identifier returned from
+            ///         the order book.
             ///
             /// \param order
             void cancel(typename computation::block_pool::block<record>::index_t order)
             {
                 const record &order_ = pool_[order];
-
-                //auto side = (!bid() || order_.limit)
 
                 reports.emplace_back(execution_report
                  { .state        = execution_report::cancel
@@ -626,6 +599,60 @@ namespace esl::economics::markets::order_book {
 
         };
     }//namespace static_allocated
+
+    namespace dynamically_allocated {
+        ///
+        /// \brief  Memory-efficient, dynamically allocated order book
+        ///
+        /// \todo:
+        ///
+        class book_binary_tree
+        {
+        public:
+            typedef std::uint64_t index;
+
+        private:
+            index next_;
+
+        public:
+            book_binary_tree()
+            :   next_(0)
+            {
+                throw std::logic_error("Not implemented");
+            }
+
+            bool insert(const limit_order_message &order);
+
+            void erase(index identifier);
+
+            limit_order_message &find( limit_order_message::side_t side
+                                     , index identifier);
+
+            bool match(std::queue<limit_order_message> &);
+
+            [[nodiscard]] price spread() const
+            {
+                return orders_ask.cbegin()->first - orders_bid.cbegin()->first;
+            }
+
+            void match(limit_order_message &bid, limit_order_message &ask);
+
+            typedef std::multimap< price
+                                 , std::pair<index, limit_order_message>
+                                 , std::greater<>
+                                 > bid_t;
+
+            typedef std::multimap< price
+                                 , std::pair<index, limit_order_message>
+                                 , std::less<>
+                                 > ask_t;
+
+            bid_t orders_bid;
+            ask_t orders_ask;
+        };
+
+    }//dynamically_allocated
+
 }  // namespace esl::economics::markets::order_book
 
 #endif  // ME_ORDER_BOOK_HPP

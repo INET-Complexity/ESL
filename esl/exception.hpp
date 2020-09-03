@@ -32,8 +32,9 @@ namespace esl {
     /// \brief  The base exception class for the library.
     ///
     /// \details    This class is implemented to allow filtering out library
-    ///             exceptions from other exceptions. Additionally, exceptions
-    ///             can be translated to specific Python exceptions.
+    ///             exceptions from other exceptions. Additionally, this allows
+    ///             us to translate library exceptions to exceptions or error
+    ///             codes in language bindings, such as Python exceptions.
     ///
     class exception
     : public std::exception
