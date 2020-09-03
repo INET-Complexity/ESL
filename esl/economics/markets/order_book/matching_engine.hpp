@@ -1,6 +1,7 @@
 /// \file   matching_engine.h
 ///
-/// \brief
+/// \brief  A matching engine matches order messages with tickers, and directs
+///         the matching process in the order book
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2020-03-27
