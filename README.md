@@ -48,7 +48,6 @@ Before releasing a first version, we do not maintain detailed documentation. Usa
 
 
 ```C++
-
 // import the order book
 #include <esl/economics/markets/order_book/book.hpp>
 
@@ -68,8 +67,12 @@ using namespace esl::economics::markets::order_book::statically_allocated;
 constexpr size_t lot_size = 100;
 
 // helper function to create limit orders submitted to an exchange.
-// note that ESL uses fixed-precision
-limit_order_message create(double p, size_t q = 1000, limit_order_message::side_t side = limit_order_message::side_t::sell)
+// note that ESL uses fixed-precision for prices internally, and that the use of
+// a floating point type here relies on the developer understanding the
+// conversion.
+limit_order_message create( double p
+                          , size_t q = 1000
+                          , limit_order_message::side_t side = limit_order_message::side_t::sell)
 {
     // substitute your own stock ticker type here
     esl::economics::markets::ticker ticker_dummy_;
@@ -90,6 +93,7 @@ limit_order_message create(double p, size_t q = 1000, limit_order_message::side_
 //
 int main(int argc, char** argv) {
     // create the range of valid prices for the order book (inclusive)
+    // quote is a generic type which can be a price, interest rate, etc
     auto  min_ = markets::quote(price( 0.01, currencies::USD), lot_size * currencies::USD.denominator);
     auto  max_ = markets::quote(price(10.00, currencies::USD), lot_size * currencies::USD.denominator);
 
@@ -117,7 +121,7 @@ The library uses unit testing on both the native library (Boost.Test) and the Py
 
 ## Acknowledgements
 This open-source project is organized by the Institute for New Economic Thinking at the Oxford Martin School.
-Work on this open-source project is in part funded by the J.P. Morgan AI Faculty Awards.
+Work on this open-source project is in part funded by the J.P. Morgan AI Faculty Awards 2019 and 2020.
 
 
 
