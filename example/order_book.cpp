@@ -1,3 +1,28 @@
+/// \file   order_book.cpp
+///
+/// \brief
+///
+/// \authors    Maarten P. Scholl
+/// \date       2020-09-04
+/// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
+///             Oxford Martin School, University of Oxford
+///
+///             Licensed under the Apache License, Version 2.0 (the "License");
+///             you may not use this file except in compliance with the License.
+///             You may obtain a copy of the License at
+///
+///                 http://www.apache.org/licenses/LICENSE-2.0
+///
+///             Unless required by applicable law or agreed to in writing,
+///             software distributed under the License is distributed on an "AS
+///             IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+///             express or implied. See the License for the specific language
+///             governing permissions and limitations under the License.
+///
+///             You may obtain instructions to fulfill the attribution
+///             requirements in CITATION.cff
+///
+
 
 // import the order book
 #include <esl/economics/markets/order_book/book.hpp>
@@ -18,7 +43,9 @@ using namespace esl::economics::markets::order_book::statically_allocated;
 constexpr size_t lot_size = 100;
 
 // helper function to create limit orders submitted to an exchange.
-// note that ESL uses fixed-precision
+// note that ESL uses fixed-precision for prices internally, and that the use of
+// a floating point type here relies on the developer understanding the
+// conversion.
 limit_order_message create(double p, size_t q = 1000, limit_order_message::side_t side = limit_order_message::side_t::sell)
 {
     // substitute your own stock ticker type here
@@ -40,6 +67,7 @@ limit_order_message create(double p, size_t q = 1000, limit_order_message::side_
 //
 int main(int argc, char** argv) {
     // create the range of valid prices for the order book (inclusive)
+    // quote is a generic type which can be a price, interest rate, etc
     auto  min_ = markets::quote(price( 0.01, currencies::USD), lot_size * currencies::USD.denominator);
     auto  max_ = markets::quote(price(10.00, currencies::USD), lot_size * currencies::USD.denominator);
 

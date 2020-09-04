@@ -125,7 +125,7 @@ namespace esl::economics::markets::order_book {
             bid.quantity -= quantity_;
             ask.quantity -= quantity_;
 
-            // TODO: 1 tradereport to all participants
+            // TODO: 1 trade report to all participants
             //       2 executionreports to buyer/seller
         }*/
     }

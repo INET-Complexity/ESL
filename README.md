@@ -2,7 +2,7 @@
 
 
 # ESL
-The Economic Simulation Library (ESL) provides an extensive collection of high-performance algorithms and data structures used to develop agent-based models for economic and financial simulation. The library is designed to take advantage of different computer architectures. In order to facilitate rapid iteration during model development the library  is developed to be used from Python, and is written in C++ in order to best use parallel 
+The Economic Simulation Library (ESL) provides an extensive collection of high-performance algorithms and data structures used to develop agent-based models for economic and financial simulation. The library is designed to take advantage of different computer architectures. In order to facilitate rapid iteration during model development the library  is developed to be used from Python, and is written in C++. 
 
 # Features
 

@@ -35,7 +35,7 @@ using namespace esl::geography;
 BOOST_AUTO_TEST_SUITE(ESL)
 
 
-    BOOST_AUTO_TEST_CASE(identity_equality_different_types)
+    BOOST_AUTO_TEST_CASE(isin_test_checksum)
     {
         {
             // us0378331005 apple inc

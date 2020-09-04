@@ -423,7 +423,6 @@ namespace esl::economics::markets::order_book {
                         if(!al->first){
                             continue;
                         }
-
                         remainder_ = match_at_level(order, remainder_, al);
                     }
 
@@ -436,9 +435,7 @@ namespace esl::economics::markets::order_book {
                         if(!bl->first){
                             continue;
                         }
-
                         LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(bl - &limits_[0])) << std::endl;
-
                         remainder_ = match_at_level(order, remainder_, bl);
                     }
 
@@ -527,7 +524,8 @@ namespace esl::economics::markets::order_book {
             }
 
             ///
-            /// \brief
+            /// \brief  Displays a debugging view for the order book,
+            ///         for use in a terminal/IDE.
             ///
             /// \param levels
             void display(std::uint64_t levels = 5) const
@@ -550,7 +548,7 @@ namespace esl::economics::markets::order_book {
                         continue;
                     }
 
-                    ask_displayed_.push_back({quantity_,double(decode(i - &limits_[0]))*100*100});
+                    ask_displayed_.emplace_back(quantity_,double(decode(i - &limits_[0]))*100*100);
                     /*std::cout << "                | "
                               << std::left << std::setw(14)
                               << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << double(decode(i - &limits_[0]))*100*100
@@ -652,6 +650,12 @@ namespace esl::economics::markets::order_book {
         };
 
     }//dynamically_allocated
+
+
+    namespace four_heap {
+        // TODO: Wellman's 4-heap data structure
+    }
+
 
 }  // namespace esl::economics::markets::order_book
 

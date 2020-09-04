@@ -54,7 +54,6 @@ namespace esl::economics::markets::order_book {
         , sell
         } side;
 
-
         ticker symbol;
 
         identity<agent> owner;
@@ -93,7 +92,6 @@ namespace esl::economics::markets::order_book {
     protected:
         friend std::ostream &operator << (std::ostream &, const limit_order_message &);
     };
-
 
     inline std::ostream &operator << (std::ostream &ostream, const limit_order_message &order)
     {
