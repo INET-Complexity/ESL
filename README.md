@@ -45,7 +45,9 @@ make test
 ## Examples
 
 Before releasing a first version, we do not maintain detailed documentation. Usage examples can be found in the test cases.
+Python examples to follow.
 
+Example taken from: https://github.com/INET-Complexity/ESL/blob/master/example/order_book.cpp
 
 ```C++
 // import the order book
