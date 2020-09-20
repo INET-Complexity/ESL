@@ -26,7 +26,7 @@ import sys
 
 # main module
 try:
-    from esl_ import *
+    from esl._esl import *
 except ImportError:
     raise ModuleNotFoundError("Can't find ESL native module, did the compilation succeed?")
 

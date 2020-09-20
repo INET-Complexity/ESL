@@ -41,7 +41,6 @@
 #include <boost/python.hpp>
 using namespace boost::python;
 
-
 namespace esl {
     ///
     /// \brief  Translates C++ exceptions to Python errors, by setting the
@@ -60,7 +59,7 @@ namespace esl {
     ///         protect the name of the module with an underscore, and import it
     ///         from __init__.py
     ///
-    BOOST_PYTHON_MODULE(esl_)
+    BOOST_PYTHON_MODULE(_esl)
     {
         ////////////////////////////////////////////////////////////////////////
         class_< agent
