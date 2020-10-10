@@ -1,6 +1,7 @@
 /// \file   block_pool.hpp
 ///
-/// \brief
+/// \brief  Block memory allocators.
+///
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2014-08-27
@@ -131,7 +132,7 @@ namespace esl::computation::block_pool {
 
         ~static_block_pool() = default;
 
-        size_type size()
+        size_type size() const
         {
             return size_;
         }
@@ -149,6 +150,7 @@ namespace esl::computation::block_pool {
 #endif
             auto i        = end;
             i->data       = e;
+            // the offset is the number of positions since the start of the pool
             size_t offset_ = i - blocks.data();
 
             if(back_ > offset_) {

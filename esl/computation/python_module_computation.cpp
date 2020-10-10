@@ -22,7 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/computation/python_module.hpp>
+#include <esl/computation/python_module_computation.hpp>
 
 
 #ifdef WITH_PYTHON

@@ -69,7 +69,15 @@ namespace esl::economics::markets::order_book{
         double spread_ = gamma * (sigma * sigma) * (1. - theta) + 2./gamma * std::log(1+gamma/k);
         auto bid_ = static_cast<std::int64_t>(std::floor( (reservation_ - spread_/2) * mid.valuation.denominator));
         auto ask_ = static_cast<std::int64_t>(std::ceil( (reservation_ + spread_/2) * mid.valuation.denominator));
-        assert(bid_ <= ask_);
+
+        // when quote spread is zero and reservation price is integer.
+        // possible solution: do not introduce bias, move both
+        if(bid_ == ask_){
+            ask_ += 1;
+            bid_ -= 1;
+        }
+        assert(bid_ < ask_);
+
         return {price(bid_, mid.valuation), price(ask_, mid.valuation)};
     }
 };

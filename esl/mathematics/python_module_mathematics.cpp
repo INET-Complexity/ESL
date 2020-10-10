@@ -22,7 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/mathematics/python_module.hpp>
+#include <esl/mathematics/python_module_mathematics.hpp>
 
 
 #ifdef WITH_PYTHON
@@ -37,6 +37,10 @@ using namespace boost::python;
 namespace esl::mathematics {
     BOOST_PYTHON_MODULE(mathematics_)
     {
+        /**
+         * @TODO 2020-10-01: exposing this to python leads to issues with
+         *                   linking and thread local storage.
+
         class_<variable>( "variable",init<>())
             .def(init<std::uint64_t>())
             .def(init<double>())
@@ -59,6 +63,7 @@ namespace esl::mathematics {
         /// a cast and we can do that in Python also.
         ///
         def("value", value<variable>);
+         */
     }
 }
 

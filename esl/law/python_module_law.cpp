@@ -22,7 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/law/python_module.hpp>
+#include <esl/law/python_module_law.hpp>
 
 
 #ifdef WITH_PYTHON

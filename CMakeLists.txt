@@ -14,6 +14,8 @@ STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
         _ ${version_header})
 SET(version_revision ${CMAKE_MATCH_1})
 
+# Enable new behaviour on this policy so we can set the version automatically.
+# enables compatibility with older versions of cmake
 CMAKE_POLICY(SET CMP0048 NEW)
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
@@ -35,20 +37,21 @@ SET(CMAKE_CXX_STANDARD              17)
 SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
-#IF(NOT ESL_TARGET_NAME)
+# this target is the main library
+IF(NOT ESL_TARGET_NAME)
     SET(ESL_TARGET_NAME     "esl")
-#ENDIF()
+ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)
     MESSAGE("Build type (CMAKE_BUILD_TYPE) not set, defaulting to Release build.")
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
 
+
 ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 
 ################################################################################
-
-INCLUDE(cotire)
+#INCLUDE(cotire)
 
 FIND_PROGRAM(CCACHE_FOUND ccache)
 IF(CCACHE_FOUND)
@@ -72,11 +75,13 @@ IF(WITH_MPI)
     ADD_DEFINITIONS(-DWITH_MPI)
 ENDIF()
 
+
 OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
 ENDIF()
+
 
 OPTION(WITH_QL  "Enables QuantLib" OFF)
 IF(WITH_QL)
@@ -84,16 +89,22 @@ IF(WITH_QL)
 ENDIF()
 
 ################################################################################
-
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3 REQUIRED)  # for building bindings
+    FIND_PACKAGE(PythonLibs 3.7 REQUIRED)  # for building bindings
     FIND_PACKAGE(PythonInterp 3) # for running tests, not required
+
+    IF(SKBUILD)
+        MESSAGE(STATUS "The project is built using scikit-build")
+    ELSE()
+        #MESSAGE(STATUS "scikit-build disabled")
+    ENDIF()
+
+    STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+    LIST(GET VERSION_LIST 0 ESL_PYTHON_BINDINGS_VERSION_MAJOR)
+    LIST(GET VERSION_LIST 1 ESL_PYTHON_BINDINGS_VERSION_MINOR)
+    LIST(GET VERSION_LIST 2 ESL_PYTHON_BINDINGS_VERSION_PATCH)
 ENDIF()
 
-string(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-list(GET VERSION_LIST 0 ESL_PYTHON_BINDINGS_VERSION_MAJOR)
-list(GET VERSION_LIST 1 ESL_PYTHON_BINDINGS_VERSION_MINOR)
-list(GET VERSION_LIST 2 ESL_PYTHON_BINDINGS_VERSION_PATCH)
 
 
 
@@ -103,11 +114,13 @@ LIST(APPEND Boost_LIBRARIES
             date_time 
             serialization 
             unit_test_framework
-        thread
+            thread
     )
 
 IF(WITH_PYTHON)
     LIST(APPEND Boost_LIBRARIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    MESSAGE(${PYTHON_LIBRARIES})
+    MESSAGE(${PYTHON_INCLUDE_DIRS})
 ELSE()
 ENDIF()
 
@@ -119,7 +132,22 @@ IF(WITH_MPI)
 ENDIF()
 
 #ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+
+#INCLUDE_DIRECTORIES("C:/Users/Maarten/Downloads/boost_1_74_0")
+
+
+SET(Boost_FOUND TRUE)
+SET(Boost_INCLUDE_DIRS "C:/Users/Maarten/Downloads/boost_1_74_0")
+SET(Boost_LIBRARY_DIRS "C:/Users/Maarten/Downloads/boost_1_74_0/stage/lib")
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
+
+
+
+
+
+
+
+
 
 ################################################################################
 
@@ -143,11 +171,11 @@ ADD_COMPILE_OPTIONS(-m64)
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-SET(CMAKE_C_FLAGS_DEBUG "-g ")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-SET(CMAKE_CXX_FLAGS_DEBUG "-g   ")#    --coverage -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS_DEBUG "-g")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
+SET(CMAKE_CXX_FLAGS_DEBUG "-g")#    --coverage -fprofile-arcs -ftest-coverage")
 
-SET(CMAKE_C_FLAGS_RELEASE "-O3 ")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 ")
+SET(CMAKE_C_FLAGS_RELEASE "-O3")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -164,6 +192,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 
 ADD_DEFINITIONS(-DADEPT_RECORDING_PAUSABLE)
 ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE)
+
 #ADD_DEFINITIONS(-DADEPT_TRACK_NON_FINITE_GRADIENTS)
 
 # Used to benchmark improvements using automatic differentiation
@@ -483,23 +512,22 @@ SET(SOURCE_FILES
         esl/computation/block_pool.cpp
         esl/computation/block_pool.hpp
 
-        esl/python_module.cpp
-        esl/python_module.hpp
+        esl/python_module_esl.cpp
+        esl/python_module_esl.hpp
 
-        esl/law/python_module.cpp
-        esl/law/python_module.hpp
+        esl/law/python_module_law.cpp
+        esl/law/python_module_law.hpp
 
-        esl/mathematics/python_module.cpp
-        esl/mathematics/python_module.hpp
+        esl/mathematics/python_module_mathematics.cpp
+        esl/mathematics/python_module_mathematics.hpp
 
-        esl/simulation/python_module.cpp
-        esl/simulation/python_module.hpp
-
-
+        esl/simulation/python_module_simulation.cpp
+        esl/simulation/python_module_simulation.hpp
         )
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
+
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
@@ -510,6 +538,7 @@ endif()
 IF(WIN32)
     LINK_DIRECTORIES("C:/msys64/usr/lib")
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 ELSE()
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
@@ -576,14 +605,14 @@ IF(WITH_PYTHON)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
 
-        MESSAGE("PYTHON MODULE " ${module_path}/${python_module_name}_ "\t" ${source})
-        PYTHON_ADD_MODULE(${python_module_name}_ ${source} ${SOURCE_FILES})
+        MESSAGE("PYTHON MODULE " ${module_path}/_${python_module_name} "\t" ${source})
+        PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
 
-        ADD_CUSTOM_COMMAND(TARGET ${python_module_name}_
+        ADD_CUSTOM_COMMAND(TARGET _${python_module_name}
                 POST_BUILD COMMAND
                 ${CMAKE_COMMAND} -E copy_if_different#rename #copy_if_different
-                $<TARGET_FILE:${python_module_name}_>
-                ${CMAKE_BINARY_DIR}/python/${module_path}/$<TARGET_FILE_NAME:${python_module_name}_>)
+                $<TARGET_FILE:_${python_module_name}>
+                ${CMAKE_BINARY_DIR}/python/${module_path}/$<TARGET_FILE_NAME:_${python_module_name}>)
 
         MESSAGE("________________________________________")
         MESSAGE(${CMAKE_SOURCE_DIR}/${module_path})

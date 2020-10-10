@@ -22,8 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_PYTHON_MODULE_HPP
-#define ESL_PYTHON_MODULE_HPP
+#ifndef ESL_PYTHON_MODULE_ESL_HPP
+#define ESL_PYTHON_MODULE_ESL_HPP
 
 
-#endif  // ESL_PYTHON_MODULE_HPP
+#endif  // ESL_PYTHON_MODULE_ESL_HPP

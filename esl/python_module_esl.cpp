@@ -22,7 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/python_module.hpp>
+#include <esl/python_module_esl.hpp>
 
 
 #ifdef WITH_PYTHON
@@ -30,7 +30,8 @@
 /// https://docs.python.org/3.7/c-api/intro.html#include-files
 ///
 #define PY_SSIZE_T_CLEAN
-#include <Python.h>
+///// #include <Python.h>
+///// #Include <boost/python/detail/wrap_python.hpp>
 
 #include <esl/agent.hpp>
 #include <esl/exception.hpp>
@@ -61,6 +62,11 @@ namespace esl {
     ///
     BOOST_PYTHON_MODULE(_esl)
     {
+        /*
+
+
+
+
         ////////////////////////////////////////////////////////////////////////
         class_< agent
               , bases< entity<agent>
@@ -104,6 +110,10 @@ namespace esl {
         def("version", version);
 
         ////////////////////////////////////////////////////////////////////////
+
+
+         */
+
     }
 
 }
