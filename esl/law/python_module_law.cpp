@@ -31,7 +31,10 @@
 #include <esl/law/natural_person.hpp>
 #include <esl/law/property.hpp>
 #include <esl/law/organization.hpp>
+#include <esl/law/government.hpp>
 
+
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 using namespace boost::python;
 
@@ -40,6 +43,12 @@ namespace esl::law {
     BOOST_PYTHON_MODULE(law)
     {
         ////////////////////////////////////////////////////////////////////////
+
+        class_<esl::law::government>
+        ( "government", init<std::string>())
+        .def_readwrite("title", &esl::law::government::title)
+        ;
+
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -76,6 +85,9 @@ namespace esl::law {
         class_<property, bases<entity<property>>>( "property"
                                                  , init<identity<property>>())
             .def("name", &property::name);
+
+
+
     }
 }
 

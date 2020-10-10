@@ -63,10 +63,6 @@ namespace esl {
     BOOST_PYTHON_MODULE(_esl)
     {
         /*
-
-
-
-
         ////////////////////////////////////////////////////////////////////////
         class_< agent
               , bases< entity<agent>

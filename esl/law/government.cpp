@@ -23,20 +23,3 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/law/government.hpp>
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(government)
-{
-    class_<esl::law::government>
-        ( "government", init<std::string>())
-        .def_readwrite("title", &esl::law::government::title)
-        ;
-
-}
-
-#endif  // WITH_PYTHON

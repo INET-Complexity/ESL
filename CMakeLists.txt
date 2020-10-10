@@ -78,6 +78,7 @@ ENDIF()
 
 OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
+    MESSAGE("WITH_PYTHON")
     ADD_DEFINITIONS(-DWITH_PYTHON)
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
 ENDIF()
@@ -130,24 +131,8 @@ IF(WITH_MPI)
         LIST(APPEND Boost_LIBRARIES mpi_python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     ENDIF()
 ENDIF()
-
 #ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-
-#INCLUDE_DIRECTORIES("C:/Users/Maarten/Downloads/boost_1_74_0")
-
-
-SET(Boost_FOUND TRUE)
-SET(Boost_INCLUDE_DIRS "C:/Users/Maarten/Downloads/boost_1_74_0")
-SET(Boost_LIBRARY_DIRS "C:/Users/Maarten/Downloads/boost_1_74_0/stage/lib")
 FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
-
-
-
-
-
-
-
-
 
 ################################################################################
 
@@ -598,7 +583,9 @@ ENDFOREACH(test_src)
 IF(WITH_PYTHON)
     ####################################################################################################################
     # create python modules
-    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module.cpp)
+    # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
+    # with python_module as part of the filename
+    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
     FOREACH (source ${ESL_PYTHON_SOURCE})
         GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)

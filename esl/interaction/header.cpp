@@ -52,6 +52,7 @@ BOOST_CLASS_EXPORT(esl::interaction::header)
 
 
 #ifdef WITH_PYTHON
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 namespace esl::interaction {
     using namespace boost::python;

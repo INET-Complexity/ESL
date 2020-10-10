@@ -27,6 +27,7 @@
 #include <boost/serialization/export.hpp>
 
 #ifdef WITH_PYTHON
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 
 BOOST_CLASS_EXPORT(esl::interaction::python_message)

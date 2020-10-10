@@ -28,8 +28,6 @@
 
 #include <initializer_list>
 
-#include <boost/serialization/unordered_map.hpp>
-
 #include <esl/economics/accounting/standard.hpp>
 #include <esl/economics/cash.hpp>
 #include <esl/economics/currencies.hpp>

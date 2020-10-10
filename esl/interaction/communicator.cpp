@@ -168,6 +168,7 @@ namespace esl::interaction {
 
 
 #ifdef WITH_PYTHON
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp>
 #include <esl/interaction/message.hpp>

@@ -37,6 +37,7 @@
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
+#include <boost/make_shared.hpp>
 using namespace boost::python;
 
 #include <vector>
