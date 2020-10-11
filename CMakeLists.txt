@@ -542,7 +542,6 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test*/test_*.cpp)
 
 FOREACH(test_src ${TEST_SRCS})
-    #MESSAGE("TEST " ${test_src})
     GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
 
     ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
@@ -592,7 +591,7 @@ IF(WITH_PYTHON)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
 
-        MESSAGE("PYTHON MODULE " ${module_path}/_${python_module_name} "\t" ${source})
+        MESSAGE("PYTHON MODULE " _${python_module_name} ": " ${module_path}/_${python_module_name} "\t" ${source})
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
 
         ADD_CUSTOM_COMMAND(TARGET _${python_module_name}
@@ -601,16 +600,12 @@ IF(WITH_PYTHON)
                 $<TARGET_FILE:_${python_module_name}>
                 ${CMAKE_BINARY_DIR}/python/${module_path}/$<TARGET_FILE_NAME:_${python_module_name}>)
 
-        MESSAGE("________________________________________")
-        MESSAGE(${CMAKE_SOURCE_DIR}/${module_path})
-
         IF(EXISTS ${CMAKE_SOURCE_DIR}/${module_path}/__init__.py)
             FILE(COPY
                     ${CMAKE_SOURCE_DIR}/${module_path}/__init__.py
                     DESTINATION
                     ${CMAKE_BINARY_DIR}/python/${module_path}/
                     )
-
         ELSE()
 
         ENDIF()

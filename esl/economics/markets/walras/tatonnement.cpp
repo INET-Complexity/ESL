@@ -33,6 +33,10 @@
 #include <esl/economics/markets/quote.hpp>
 #include <esl/data/log.hpp>
 
+
+#include <boost/math/tools/roots.hpp>
+
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_roots.h>

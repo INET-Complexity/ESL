@@ -40,7 +40,7 @@ using namespace boost::python;
 
 
 namespace esl::law {
-    BOOST_PYTHON_MODULE(law)
+    BOOST_PYTHON_MODULE(_law)
     {
         ////////////////////////////////////////////////////////////////////////
 

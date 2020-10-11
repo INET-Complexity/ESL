@@ -38,7 +38,7 @@ using esl::computation::agent_timing;
 
 
 namespace esl::computation {
-    BOOST_PYTHON_MODULE(computation_)
+    BOOST_PYTHON_MODULE(_computation)
     {
         ////////////////////////////////////////////////////////////////////////
         // export block_pool memory block

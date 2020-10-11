@@ -1,0 +1,1 @@
+from _law import *

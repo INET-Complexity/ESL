@@ -35,7 +35,7 @@ using namespace boost::python;
 
 
 namespace esl::mathematics {
-    BOOST_PYTHON_MODULE(mathematics_)
+    BOOST_PYTHON_MODULE(_mathematics)
     {
         /**
          * @TODO 2020-10-01: exposing this to python leads to issues with
