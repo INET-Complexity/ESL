@@ -103,7 +103,7 @@ namespace esl::economics::markets::tatonnement {
 
         law::property_map<quote> quotes;
 
-    protected
+    protected:
         ///
         /// \brief  Adept data structure to track expressions
         ///

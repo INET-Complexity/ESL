@@ -29,13 +29,10 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/economics/markets/walras/tatonnement.hpp>
-
 #include <esl/economics/markets/quote.hpp>
 #include <esl/data/log.hpp>
 #include <esl/mathematics/variable.hpp>
 #include <esl/invalid_parameters.hpp>
-
-#include <boost/math/tools/roots.hpp>
 
 
 #include <gsl/gsl_vector.h>

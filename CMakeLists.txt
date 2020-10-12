@@ -62,7 +62,7 @@ ENDIF(CCACHE_FOUND)
 ################################################################################
 # Library optional add-ons
 ################################################################################
-IF(WIN32)
+IF(MSVC)
     SET(Boost_USE_STATIC_LIBS   ON)
     SET(CMAKE_EXE_LINKER_FLAGS " -static")
 ENDIF()
@@ -136,10 +136,11 @@ FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES} REQUIRED)
 
 ################################################################################
 
-# optional accelerators for scientific computing
-IF(WIN32)
+IF(MSVC)
     SET(BLA_STATIC ON)
+    SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY VS_PACKAGE_REFERENCES "gsl-msvc-x64_2.4.0.8788")
 ENDIF()
+
 FIND_PACKAGE(BLAS)
 FIND_PACKAGE(LAPACK)
 
@@ -193,7 +194,7 @@ IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
 
-IF(WIN32) # for now, assume all builds on windows are done using MSYS2 64 bit
+IF(MSVC) # for now, assume all builds on windows are done using MSYS2 64 bit
     LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/msys64/usr/include")
 ENDIF()
 
@@ -201,13 +202,13 @@ ENDIF()
 INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
-IF(WIN32)
+IF(MSVC)
     LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl) #)
 ENDIF()
 
-IF(WIN32)
+IF(MSVC)
     LIST(APPEND ALL_LINKED_LIBRARIES)
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES dl util)
@@ -234,7 +235,7 @@ IF(BLAS_FOUND)
 ENDIF()
 
 
-IF(WIN32)
+IF(MSVC)
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 ELSE()
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
@@ -523,7 +524,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
 endif()
 
-IF(WIN32)
+IF(MSVC)
     LINK_DIRECTORIES("C:/msys64/usr/lib")
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 
