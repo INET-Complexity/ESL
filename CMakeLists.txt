@@ -508,6 +508,9 @@ SET(SOURCE_FILES
 
         esl/simulation/python_module_simulation.cpp
         esl/simulation/python_module_simulation.hpp
+
+        esl/invalid_parameters.cpp
+        esl/invalid_parameters.hpp
         )
 
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )

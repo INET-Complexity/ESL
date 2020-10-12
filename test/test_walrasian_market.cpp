@@ -37,43 +37,31 @@
 
 #include <esl/economics/markets/walras/quote_message.hpp>
 
-
-
-struct test_share_issuing_company
-: public esl::economics::company
-{
-public:
-    test_share_issuing_company(const esl::identity<esl::economics::company> &i)
-    : esl::economics::company(i, esl::law::jurisdictions::US)
-    {
-        auto main_issue_                = esl::economics::finance::share_class();
-        shares_outstanding[main_issue_] = 1'000'000;
-    }
-};
+using namespace esl;
 
 
 struct test_trader_order
-: public esl::economics::markets::walras::differentiable_order_message
+: public economics::markets::walras::differentiable_order_message
 {
     double capital;
     const std::vector<double> allocation;
-    std::map<esl::identity<esl::law::property>, esl::quantity> supply;
-    std::map<esl::identity<esl::law::property>, esl::economics::price>
+    std::map<identity<law::property>, quantity> supply;
+    std::map<identity<law::property>, economics::price>
         valuations;
 
-    using esl::economics::markets::walras::differentiable_order_message::
+    using economics::markets::walras::differentiable_order_message::
         differentiable_order_message;
 
     test_trader_order(
         double capital = 0.0, std::vector<double> allocation = {},
-        std::map<esl::identity<esl::law::property>, esl::quantity> supply = {},
-        std::map<esl::identity<esl::law::property>, esl::economics::price>
+        std::map<identity<law::property>, quantity> supply = {},
+        std::map<identity<law::property>, economics::price>
             valuations = {}
         ,
-        const esl::economics::markets::walras::quote_message &q =
-            esl::economics::markets::walras::quote_message())
+        const economics::markets::walras::quote_message &q =
+            economics::markets::walras::quote_message())
 
-    : esl::economics::markets::walras::differentiable_order_message(q.sender, q.recipient)
+    : economics::markets::walras::differentiable_order_message(q.sender, q.recipient)
     , capital(capital)
     , allocation(move(allocation))
     , supply(move(supply))
@@ -82,17 +70,17 @@ struct test_trader_order
 
     }
 
-    std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(
-    const std::map<esl::identity<esl::law::property>,
-                   std::tuple<esl::economics::markets::quote, esl::variable>> &quotes)
+    std::map<identity<law::property>, variable> excess_demand(
+    const std::map<identity<law::property>,
+                   std::tuple<economics::markets::quote, variable>> &quotes)
     const  override
     {
-        std::map<esl::identity<esl::law::property>, esl::variable> signals_;
+        std::map<identity<law::property>, variable> signals_;
         if(valuations.empty()) {
             return signals_;
         }
-        esl::variable position_        = 0;
-        esl::variable abs_sensitivity_ = 0;
+        variable position_        = 0;
+        variable abs_sensitivity_ = 0;
         for(const auto &[k, v] : valuations) {
             
             auto subjective_  = double(v);
@@ -104,7 +92,7 @@ struct test_trader_order
             abs_sensitivity_ += abs(signal_);
         }
 
-        std::map<esl::identity<esl::law::property>, esl::variable> excess_demand_;
+        std::map<identity<law::property>, variable> excess_demand_;
         for(const auto &[k, v] : signals_) {
             auto quote_price_ = static_cast<double>(std::get<0>(quotes.find(k)->second));
             auto proposed_    = quote_price_ * std::get<1>(quotes.find(k)->second);
@@ -139,25 +127,25 @@ struct test_trader_order
 
 
 struct test_constant_demand_trader
-: public esl::economics::finance::shareholder
+: public economics::finance::shareholder
 {
     test_constant_demand_trader(
-        const esl::identity<esl::economics::finance::shareholder> &i)
-    : esl::economics::finance::shareholder(i)
+        const identity<economics::finance::shareholder> &i)
+    : economics::finance::shareholder(i)
     {}
 
-    esl::simulation::time_point act(esl::simulation::time_interval step,
+    simulation::time_point act(simulation::time_interval step,
                                     std::seed_seq &seed) override
     {
         (void) seed;
-        esl::economics::accounting::standard a(esl::economics::currencies::USD);
+        economics::accounting::standard a(economics::currencies::USD);
 
         for(auto [k, message_] : inbox) {
             switch(k) {
-            case esl::economics::markets::walras::quote_message::code
+            case economics::markets::walras::quote_message::code
                 :
                 auto quote_ = std::dynamic_pointer_cast<
-                    esl::economics::markets::walras::quote_message>(message_);
+                    economics::markets::walras::quote_message>(message_);
 
                 size_t assets = quote_->proposed.size();
 
@@ -192,59 +180,59 @@ BOOST_AUTO_TEST_SUITE(ESL)
 ///
 BOOST_AUTO_TEST_CASE(walras_market_quote)
 {
-    esl::computation::environment e;
-    esl::simulation::model model_(e, esl::simulation::parameter::parametrization(0, 0, 10));
+    computation::environment e;
+    simulation::model model_(e, simulation::parameter::parametrization(0, 0, 10));
 
 
-    std::vector<std::tuple<std::shared_ptr<esl::economics::company>,
-                           esl::economics::finance::share_class>>
+    std::vector<std::tuple<std::shared_ptr<economics::company>,
+                           economics::finance::share_class>>
         shares_;
 
-    std::map<std::tuple<esl::identity<esl::economics::company>,
-                        esl::economics::finance::share_class>,
-             esl::identity<esl::law::property>>
+    std::map<std::tuple<identity<economics::company>,
+                        economics::finance::share_class>,
+             identity<law::property>>
         stocks_;
 
-    esl::law::property_map<esl::economics::markets::quote> traded_assets_;
+    law::property_map<economics::markets::quote> traded_assets_;
     size_t assets = 2;
 
     for(size_t a = 0; a < assets; ++a) {
         auto company_identifier_ =
-            model_.template create_identifier<esl::economics::company>();
+            model_.template create_identifier<economics::company>();
 
-        auto company_ = std::make_shared<esl::economics::company>(
-            company_identifier_, esl::law::jurisdictions::US);
+        auto company_ = std::make_shared<economics::company>(
+            company_identifier_, law::jurisdictions::US);
 
-        auto main_issue_ = esl::economics::finance::share_class();
+        auto main_issue_ = economics::finance::share_class();
         //company_->dividend_payouts = create_output<price>("dividend");
         company_->shares_outstanding[main_issue_] = 1'000'000;
 
         for(const auto &[share_, quantity] : company_->shares_outstanding) {
             (void) quantity;
-            auto stock_ = std::make_shared<esl::economics::finance::stock>(
+            auto stock_ = std::make_shared<economics::finance::stock>(
                 *company_, share_);
             traded_assets_.insert(
-                {stock_, esl::economics::markets::quote(esl::economics::price(
-                             1.00, esl::economics::currencies::USD))});
+                {stock_, economics::markets::quote(economics::price(
+                             1.00, economics::currencies::USD))});
             shares_.emplace_back(make_tuple(company_, share_));
 
-            auto key_ = std::make_tuple<esl::identity<esl::economics::company>,
-                                        esl::economics::finance::share_class>(
-                *company_, esl::economics::finance::share_class(share_));
+            auto key_ = std::make_tuple<identity<economics::company>,
+                                        economics::finance::share_class>(
+                *company_, economics::finance::share_class(share_));
             stocks_.insert({key_, stock_->identifier});
         }
     }
 
 
     auto market_ =
-        model_.template create<esl::economics::markets::walras::price_setter>();
+        model_.template create<economics::markets::walras::price_setter>();
 
     market_->traded_properties = traded_assets_;
 
 
     auto participants_ =
-        std::vector<std::shared_ptr<esl::economics::finance::shareholder>>(
-            {model_.template create<esl::economics::finance::shareholder>()});
+        std::vector<std::shared_ptr<economics::finance::shareholder>>(
+            {model_.template create<economics::finance::shareholder>()});
 
 
     for(auto &p : participants_) {
@@ -256,11 +244,11 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
 
         for(const auto &[k, v] : traded_assets_) {
             (void)v;
-            (*p).esl::economics::finance::shareholder::
-                owner<esl::economics::finance::stock>::properties.insert(
-                    std::dynamic_pointer_cast<esl::economics::finance::stock>(
+            (*p).economics::finance::shareholder::
+                owner<economics::finance::stock>::properties.insert(
+                    std::dynamic_pointer_cast<economics::finance::stock>(
                         k),
-                    esl::quantity(100'000'000));
+                    quantity(100'000'000));
         }
 
         std::cout << shares_.size() << std::endl;
@@ -276,6 +264,8 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
     model_.step({1, 2});
     model_.step({1, 3});
     BOOST_CHECK_EQUAL(participants_[0]->prices.size(), 2);
+
+    std::cout << participants_[0]->prices << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

@@ -1,10 +1,10 @@
-/// \file   exception.cpp
+/// \file   python_module_walras.hpp
 ///
 /// \brief
 ///
-/// \authors    Maarten P. Scholl
-/// \date       2019-09-24
-/// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
+/// \authors    maarten
+/// \date       2020-10-11
+/// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
 ///             Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,4 +22,12 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/exception.hpp>
+#ifndef ESL_PYTHON_MODULE_WALRAS_HPP
+#define ESL_PYTHON_MODULE_WALRAS_HPP
+
+
+class python_module_walras
+{ };
+
+
+#endif  // ESL_PYTHON_MODULE_WALRAS_HPP

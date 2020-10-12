@@ -32,7 +32,8 @@
 
 #include <esl/economics/markets/quote.hpp>
 #include <esl/data/log.hpp>
-
+#include <esl/mathematics/variable.hpp>
+#include <esl/invalid_parameters.hpp>
 
 #include <boost/math/tools/roots.hpp>
 
@@ -42,27 +43,24 @@
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_multiroots.h>
 
-
 #include <adept_source.h>
-
 
 using esl::economics::markets::tatonnement::excess_demand_model;
 
 ///
-/// \brief  C compatible callback for the minimiser to find the function
-///         value.
+/// \brief  C compatible callback for the minimizer to find the function value.
 ///
 /// \param variables
-/// \param params       Pointer to the tatonnement instance
+/// \param params       Pointer to the excess_demand_model instance
 ///
-extern "C" double
-my_function_value(const gsl_vector *variables, void *params)
+extern "C" double c_minimizer_function_value
+    ( const gsl_vector *variables
+    , void *model)
 {
-    auto *model_ = static_cast<excess_demand_model *>(params);
+    auto *model_ = static_cast<excess_demand_model *>(model);
     assert(model_ && "parameter must be (excess_demand_model *)");
-    return model_->calc_function_value(variables->data);
+    return model_->excess_demand_function_value(variables->data);
 }
-
 
 ///
 /// \req    this function should store the vector result f(x,params)
@@ -84,10 +82,13 @@ multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f)
     return GSL_SUCCESS;
 }
 
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
-// Return gradient of function with respect to each state variable x
-extern "C" void
-my_function_gradient(const gsl_vector *x, void *params,
+#if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+
+///
+/// \brief  C wrapper for minimization problem, gsl callback
+///         Return gradient of function with respect to each state variable x
+///
+extern "C" void c_minimizer_function_gradient(const gsl_vector *x, void *params,
                      gsl_vector *gradJ)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
@@ -102,7 +103,6 @@ my_function_gradient(const gsl_vector *x, void *params,
 ///         error code if the function cannot be computed.
 ///
 ///
-///
 extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
@@ -112,23 +112,20 @@ extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * param
     return GSL_SUCCESS;
 }
 
-
-
-
-
-
-
 ///
-/// \brief
+/// \brief C wrapper for minimization problem
 ///
-extern "C" void my_function_value_and_gradient(
-    const gsl_vector *x, void *params, double *J, gsl_vector *gradJ)
+extern "C" void c_minimizer_function_value_and_gradient
+    ( const gsl_vector *x
+    , void *params
+    , double *J
+    , gsl_vector *gradJ
+    )
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
     *J = model_->minimizer_function_value_and_gradient(x->data, gradJ->data);
 }
-
 
 ///
 /// \brief
@@ -202,29 +199,34 @@ extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * 
 
 #endif
 
-
+///
+/// \brief  Callback for errors from the optimizer.
+///
+/// \param reason
+/// \param file
+/// \param line
+/// \param gsl_errno
 void handler ([[maybe_unused]] const char * reason,
               [[maybe_unused]] const char * file,
               [[maybe_unused]] int line,
               [[maybe_unused]] int gsl_errno)
 {
+
 }
 
-template<typename number_t_>
-std::vector<number_t_> range(number_t_ start, number_t_ stop,
-                             number_t_ step = 1) {
-    std::vector<number_t_> result_;
-    for (number_t_ value = start; value < stop; value += step)
-        result_.push_back(value);
-    return result_;
-}
 
 namespace esl::economics::markets::tatonnement {
 
+    ///
+    /// \brief  Initializes a stack for automatic differentiation
+    ///
+    /// \param initial_quotes
     excess_demand_model::excess_demand_model(
         law::property_map<quote> initial_quotes)
     : quotes(initial_quotes)
+#if defined(ADEPT_VERSION)
     , stack_()
+#endif
     {
 
     }
@@ -232,7 +234,8 @@ namespace esl::economics::markets::tatonnement {
     excess_demand_model::~excess_demand_model() = default;
 
     ///
-    /// \brief the optimisation problem
+    /// \brief The optimisation version of the market clearing problem,
+    ///         with automatic differentiation
     ///
     /// \param x
     /// \return
@@ -248,7 +251,7 @@ namespace esl::economics::markets::tatonnement {
             ++n;
         }
 
-        std::map<esl::identity<esl::law::property>, adept::adouble> terms_map;
+        std::map<identity<law::property>, adept::adouble> terms_map;
 
         for(const auto &f : excess_demand_functions_) {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
@@ -272,6 +275,10 @@ namespace esl::economics::markets::tatonnement {
     }
 
     ///
+    /// \brief  Root-finding version of the market clearing problem.
+    ///
+    /// \details    Tries to set excess demand for all goods to zero, for all
+    ///             goods individually.
     /// \param x
     /// \return
     std::vector<adept::adouble>
@@ -295,11 +302,8 @@ namespace esl::economics::markets::tatonnement {
             //LOG(trace) << demand_per_property_ << std::endl;
             for(auto [k, ed]: demand_per_property_) {
                 auto i = terms_map.emplace(k, adept::adouble(0.));
-
                 auto long_ = double(std::get<0>(f->supply[k]));
-
                 auto short_ = double(std::get<1>(f->supply[k]));
-
                 i.first->second += long_ + ed - short_;
             }
         }
@@ -313,25 +317,36 @@ namespace esl::economics::markets::tatonnement {
         return result_;
     }
 
-    double excess_demand_model::calc_function_value(const double *x)
+    ///
+    /// \brief  Used to convert the optimization version of the problem back to
+    ///         machine double precision floats.
+    ///         Also uused when not using automatic differentiation.
+    ///
+    /// \param multipliers  Price multipliers
+    /// \return
+    double excess_demand_model::excess_demand_function_value(const double *multipliers)
     {
         stack_.pause_recording();
         for(unsigned int i = 0; i < active_.size(); ++i) {
-            active_[i] = x[i];
+            active_[i] = multipliers[i];
         }
         double result = adept::value(demand_supply_mismatch(&active_[0]));
         stack_.continue_recording();
         return result;
     }
 
-
-    std::vector<double> excess_demand_model::multiroot_function_value(const double *x)
+    ///
+    /// \brief  Wraps the root finding problem (value only)
+    ///
+    /// \param x
+    /// \return
+    std::vector<double> excess_demand_model::multiroot_function_value(const double *multipliers)
     {
         stack_.pause_recording();
         for(unsigned int i = 0; i < active_.size(); ++i) {
-            active_[i] = x[i];
+            active_[i] = multipliers[i];
         }
-        auto intermediate_ = this->excess_demand(&active_[0]);
+        auto intermediate_ = excess_demand(&active_[0]);
         std::vector<double> result;
         for(const auto &v: intermediate_){
             result.push_back(adept::value(v));
@@ -340,32 +355,47 @@ namespace esl::economics::markets::tatonnement {
         return result;
     }
 
+    ///
+    /// \brief wrapper for minimization problem, value and gradient
+    ///
+    /// \param x
+    /// \param dJ_dx
+    /// \return
     double
-    excess_demand_model::minimizer_function_value_and_gradient(const double *x, double *dJ_dx)
+    excess_demand_model::minimizer_function_value_and_gradient(const double *multipliers, double *derivatives)
     {
         for(unsigned int i = 0; i < active_.size(); ++i) {
-            active_[i] = x[i];
+            active_[i] = multipliers[i];
         }
 
         stack_.new_recording();
-        adept::adouble J = this->demand_supply_mismatch(&active_[0]);
-
-        J.set_gradient(1.0);
+        adept::adouble derivative_ = demand_supply_mismatch(&active_[0]);
+        // in the minimization problem, the output is a single scalar
+        derivative_.set_gradient(1.0);
 
         stack_.compute_adjoint();
-        adept::get_gradients(&active_[0], active_.size(), dJ_dx);
-        return adept::value(J);
+        adept::get_gradients(&active_[0], active_.size(), derivatives);
+        return adept::value(derivative_);
     }
 
+    ///
+    /// \brief   Root-finding version, value and gradient wrapper.
+    ///
+    /// \param multipliers  Price multipliers
+    /// \param jacobian
+    /// \return
     std::vector<double>
-    excess_demand_model::multiroot_function_value_and_gradient(const double *x, double *jacobian)
+    excess_demand_model::multiroot_function_value_and_gradient
+        ( const double *multipliers
+        , double *jacobian
+        )
     {
         for(unsigned int i = 0; i < active_.size(); ++i) {
-            active_[i] = x[i];
+            active_[i] = multipliers[i];
         }
 
         stack_.new_recording();
-        auto values_ = this->excess_demand(&active_[0]);
+        auto values_ = excess_demand(&active_[0]);
 
         stack_.independent(&active_[0], active_.size());
         stack_.dependent(&values_[0], values_.size());
@@ -380,35 +410,39 @@ namespace esl::economics::markets::tatonnement {
 
 
     ///
-    /// \brief  Goes through the selected solution methods and
+    /// \brief  Goes through the selected solution methods and applies them.
     ///
     /// \return
+    ///
     std::optional<std::map<identity<law::property>, double>>
-    excess_demand_model::compute_clearing_quotes()
+    excess_demand_model::compute_clearing_quotes(size_t max_iterations)
     {
         if(methods.empty()){
             const auto error_no_solvers_ = "no solution method specified";
             LOG(errorlog) << error_no_solvers_ << std::endl;
-            throw std::domain_error(error_no_solvers_);
+            throw esl::invalid_parameters(error_no_solvers_);
         }
 
-
-        for(auto method_ : methods){
+        for(auto method_: methods){
+            // for every method we try, we need to reset our variables
             active_.clear();
             std::vector<identity<law::property>> mapping_index_;
             mapping_index_.reserve(quotes.size());
-            {
-                for(auto [k, v] : quotes) {
-                    (void) v;
-                    mapping_index_.emplace_back(*k);
-                    active_.emplace_back(1.0 );
-                }
+            // initial values are the solutions at the previous time step, or
+            // the initial values provided to the model if this is the first
+            for(auto [k, v] : quotes) {
+                (void) v;
+                mapping_index_.emplace_back(*k);
+                active_.emplace_back(1.0 );
             }
 
+            //  root finding methods try to set excess demand to zero for
+            //  all properties traded in the market
             if (method_ == root){
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+                // if there is only one property traded, we specialize with
+                // algorithms that do well on univariate root finding
                 if(1 == quotes.size()){
-
                     auto old_handler = gsl_set_error_handler (&handler);
 /*
                     int status;
@@ -451,11 +485,11 @@ namespace esl::economics::markets::tatonnement {
                     int status;
                     int iter = 0;
 
-                    int max_iter = 4096;
+                    int max_iter = max_iterations;
 
                     const gsl_root_fdfsolver_type *T;
                     gsl_root_fdfsolver *s;
-                    double xt = 1.;//00007858;
+                    double xt = 1.;
 
                     gsl_function_fdf FDF;
 
@@ -490,8 +524,11 @@ namespace esl::economics::markets::tatonnement {
                         return result_;
                     }
                     gsl_root_fdfsolver_free (s);
-                    ////*/
+
+                    // reset the old error handler.
                     gsl_set_error_handler (old_handler);
+
+                // else, we solve for multiple roots at once
                 } else {
                     gsl_multiroot_function_fdf root_function;
 
@@ -585,19 +622,21 @@ namespace esl::economics::markets::tatonnement {
                 //LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
                 continue;
             }else{
+// If Adept is absent, or
+#if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
                 const double initial_step_size       = 1.0e-5;
                 const double line_search_tolerance   = 1.0e-5;
                 const double converged_gradient_norm = 1.0e-4;
 
-#if !defined(ADEPT_VERSION) | !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+
                 const auto *minimizer_type = gsl_multimin_fdfminimizer_vector_bfgs2;
 
-                gsl_multimin_function_fdf my_function;
-                my_function.n      = active_.size();
-                my_function.f      = my_function_value;
-                my_function.df     = my_function_gradient;
-                my_function.fdf    = my_function_value_and_gradient;
-                my_function.params = static_cast<void *>(this);
+                gsl_multimin_function_fdf target_;
+                target_.n      = active_.size();
+                target_.f      = c_minimizer_function_value;
+                target_.df     = c_minimizer_function_gradient;
+                target_.fdf    = c_minimizer_function_value_and_gradient;
+                target_.params = static_cast<void *>(this);
 
                 gsl_vector *x = gsl_vector_alloc(active_.size());
                 for(size_t i = 0; i < active_.size(); ++i) {
@@ -607,7 +646,7 @@ namespace esl::economics::markets::tatonnement {
 
                 auto *minimizer =
                     gsl_multimin_fdfminimizer_alloc(minimizer_type, active_.size());
-                gsl_multimin_fdfminimizer_set(minimizer, &my_function, x,
+                gsl_multimin_fdfminimizer_set(minimizer, &target_, x,
                                               initial_step_size, line_search_tolerance);
 
                 size_t iter = 0;
@@ -620,7 +659,7 @@ namespace esl::economics::markets::tatonnement {
                     for(size_t param = 0; param < active_.size(); ++param){
                         solution_.push_back(gsl_vector_get (minimizer->x, param));
                     }
-                    auto checkval = calc_function_value(&solution_[0]);
+                    auto checkval = excess_demand_function_value(&solution_[0]);
                     if(checkval <= 0.0001){
                         status = GSL_SUCCESS;
                         break;
@@ -661,29 +700,4 @@ namespace esl::economics::markets::tatonnement {
     }
 }  // namespace tatonnement
 
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-using namespace boost::python;
-using namespace esl::economics::markets;
-BOOST_PYTHON_MODULE(walras)
-{
-    enum_<excess_demand_model::solver>("solver")
-        .value("root", excess_demand_model::root)
-        .value("minimization", excess_demand_model::minimization)
-        .export_values()
-        ;
-
-    class_<excess_demand_model>("excess_demand_model", init<esl::law::property_map<quote>>())
-        .def_readwrite("circuit_breaker", &excess_demand_model::circuit_breaker)
-        .def_readwrite("methods", &excess_demand_model::methods)
-        .def_readwrite("quotes", &excess_demand_model::quotes)
-        .def("compute_clearing_quotes", &excess_demand_model::compute_clearing_quotes)
-      ;
-
-}
-
-#endif
 

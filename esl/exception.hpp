@@ -27,9 +27,11 @@
 
 #include <exception>
 #include <string>
+
+
 namespace esl {
     ///
-    /// \brief  The base exception class for the library.
+    /// \brief  The base class for exception raised from the library.
     ///
     /// \details    This class is implemented to allow filtering out library
     ///             exceptions from other exceptions. Additionally, this allows
@@ -43,10 +45,18 @@ namespace esl {
         std::string message_;
 
     public:
-        exception(const std::string &message);
+        explicit exception(const std::string &message)
+        : message_(message)
+        {
 
-        const char *what() const noexcept override;
+        }
 
+        ~exception() override = default;
+
+        [[nodiscard]] const char *what() const noexcept override
+        {
+            return message_.c_str();
+        }
     };
 }
 

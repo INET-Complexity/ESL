@@ -31,4 +31,4 @@ except ImportError:
     raise ModuleNotFoundError("Can't find ESL native module, did the compilation succeed?")
 
 # submodules
-from simulation import *
+from esl.simulation import *

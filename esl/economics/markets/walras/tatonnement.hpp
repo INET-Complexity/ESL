@@ -53,15 +53,13 @@
 /// global namespace, because external "C" linkage doesn't deal with namespaces.
 ///
 
-extern "C" double my_function_value(const gsl_vector *variables, void *params);
-extern "C" void my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
-extern "C" void my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
+extern "C" double c_minimizer_function_value(const gsl_vector *variables, void *params);
+extern "C" void c_minimizer_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
+extern "C" void c_minimizer_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
 
 extern "C" int multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
 extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
 extern "C" int multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
-
-
 
 extern "C" double uniroot_function_value (double x, void *params);
 extern "C" double uniroot_function_value_and_gradient (double x, void *params);
@@ -100,36 +98,59 @@ namespace esl::economics::markets::tatonnement {
         ///         root finding solver does not make progress towards a
         ///         solution.
         ///
-        std::vector<solver> methods = {root, minimization};
+        std::vector<solver> methods = { root
+                                      , minimization};
+
         law::property_map<quote> quotes;
 
-    public:
+    protected
+        ///
+        /// \brief  Adept data structure to track expressions
+        ///
         adept::Stack stack_;
+
+        ///
+        /// \brief  Currently active differentiable variables. Stored in one place on the model, so that we can use
+        ///         external solvers that operate on a pointer or reference to these variables
+        ///
         std::vector<adept::adouble> active_;
 
-        adept::adouble demand_supply_mismatch(const adept::adouble *x);
-        std::vector<adept::adouble> excess_demand(const adept::adouble *x);
+        ///
+        /// \brief
+        ///
+        /// \param multipliers
+        /// \return
+        adept::adouble demand_supply_mismatch(const adept::adouble *multipliers);
 
-        double calc_function_value(const double *x);
-        std::vector<double> multiroot_function_value(const double *x);
+        ///
+        /// \brief
+        ///
+        /// \param multipliers
+        /// \return
+        std::vector<adept::adouble> excess_demand(const adept::adouble *multipliers);
 
-        double minimizer_function_value_and_gradient(const double *x, double *dJ_dx) ;
-        std::vector<double> multiroot_function_value_and_gradient(const double *x, double *dJ_dx) ;
+        double excess_demand_function_value(const double *multipliers);
 
-        friend void ::my_function_gradient(const gsl_vector *x, void *params, gsl_vector *gradJ);
-        friend void ::my_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
-        friend int ::multiroot_function_jacobian_cb(const gsl_vector * x, void * params, gsl_matrix * df);
-        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gsl_vector * f, gsl_matrix *df);
+        double minimizer_function_value_and_gradient(const double *multipliers, double *derivatives) ;
 
-        friend double ::my_function_value(const gsl_vector *variables, void *params);
+        friend void ::c_minimizer_function_gradient(const gsl_vector *multipliers, void *model, gsl_vector *derivatives);
+        friend void ::c_minimizer_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
+        friend double ::c_minimizer_function_value(const gsl_vector *variables, void *params);
+
+        friend int ::multiroot_function_jacobian_cb(const gsl_vector *multipliers, void * params, gsl_matrix *derivatives);
+        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector *multipliers, void * params, gsl_vector * f, gsl_matrix *derivatives);
+        std::vector<double> multiroot_function_value_and_gradient(const double *multipliers, double *derivatives) ;
+
+        std::vector<double> multiroot_function_value(const double *multipliers);
+        friend int ::multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
+
         friend double ::uniroot_function_value (double x, void *params);
         friend double ::uniroot_function_value_and_gradient (double x, void *params);
         friend void   ::uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
-        friend int ::multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
 
     public:
         std::optional<std::map<identity<law::property>, double>>
-        compute_clearing_quotes();
+        compute_clearing_quotes(size_t max_iterations = 1000);
     };  // model
 }  // namespace tatonnement
 

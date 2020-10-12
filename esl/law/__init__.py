@@ -1,1 +1,1 @@
-from _law import *
+from esl.law._law import *

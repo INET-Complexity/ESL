@@ -1,1 +1,1 @@
-from _mathematics import *
+from esl.mathematics._mathematics import *
