@@ -221,9 +221,9 @@ namespace esl::economics {
         constexpr size_t unique_hash(iso_4217 c)
         {
             // unique hash
-            return             size_t(c.code[0] - 'A')
-                        + 26 * size_t(c.code[1] - 'A')
-                   + 26 * 26 * size_t(c.code[2] - 'A');
+            return             size_t(c.code[0]) - size_t('A')
+                        + 26 * size_t(c.code[1]) - size_t('A')
+                   + 26 * 26 * size_t(c.code[2]) - size_t('A');
         }
     }  // namespace detail
 

@@ -26,12 +26,14 @@
 #ifndef ESL_RATIONAL_HPP
 #define ESL_RATIONAL_HPP
 
-
+#pragma warning(push, 0)  // supress warnings in MSVC from external code
 #include <boost/rational.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_free.hpp>
+#pragma warning(pop)
+
 
 namespace boost::serialization {
 

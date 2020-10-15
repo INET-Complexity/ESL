@@ -25,8 +25,9 @@
 #ifndef ESL_MATHEMATICS_VARIABLE_HPP
 #define ESL_MATHEMATICS_VARIABLE_HPP
 
+#pragma warning(push, 0) // supress warnings in MSVC from external code
 #include <adept.h>
-
+#pragma warning(pop)
 
 namespace esl {
     typedef adept::adouble variable;
@@ -40,7 +41,7 @@ namespace esl {
     template<>
     inline double value(variable value)
     {
-#ifndef ADEPT_NO_AUTOMATIC_DIFFERENTIATION
+#if defined(ADEPT_VERSION) &&  ! defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
         return value.value();
 #else
         return value;

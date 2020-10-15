@@ -40,7 +40,12 @@
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_multiroots.h>
 
+
+
+#pragma warning(push, 0)  // supress warnings in MSVC from external code
 #include <adept_source.h>
+#pragma warning(pop)
+
 
 using esl::economics::markets::tatonnement::excess_demand_model;
 

@@ -63,7 +63,7 @@ namespace esl::economics {
 
         explicit constexpr price(float value_untruncated,
                                  iso_4217 valuation = iso_4217())
-                : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
+                : price(static_cast<int64_t>(value_untruncated * static_cast<int64_t>(valuation.denominator)), valuation)
         {
 
         }
@@ -194,7 +194,7 @@ namespace esl::economics {
         std::ostream &operator << (std::ostream &o) const
         {
             std::ios_base::fmtflags flags_(o.flags());
-            int precision_ = ceil(log10(valuation.denominator));
+            int precision_ = static_cast<int>(ceil(log10(valuation.denominator)));
             o << this->valuation << '(' << std::fixed
               << std::setprecision(precision_) << double(*this) << ')';
             o.flags(flags_);

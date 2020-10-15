@@ -200,10 +200,10 @@ namespace esl::economics::finance {
 
                 if(0 != d) {
                     pairs_[++p & 0x1u] += d;
-                    carry_[p   & 0x1u] += difference(d);
+                    carry_[p & 0x1u] += uint_fast16_t(difference(d));
                 }
                 pairs_[++p & 0x1u] += r;
-                carry_[p   & 0x1u] += difference(r);
+                carry_[p   & 0x1u] += uint_fast16_t(difference(r));
             }
 
             pairs_[p & 0x1u] <<= 1u;

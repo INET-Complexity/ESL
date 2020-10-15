@@ -26,10 +26,14 @@
 
 
 #ifdef WITH_PYTHON
+
+
 ///
 /// https://docs.python.org/3.7/c-api/intro.html#include-files
 ///
-//#define PY_SSIZE_T_CLEAN
+#define PY_SSIZE_T_CLEAN
+
+
 ///// #include <Python.h>
 ///// #Include <boost/python/detail/wrap_python.hpp>
 
@@ -39,6 +43,7 @@
 #include <esl/version.hpp>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 #include <boost/python.hpp>
 using namespace boost::python;
 
@@ -74,7 +79,7 @@ namespace esl {
                      >>
             ( "agent", init<identity<agent>>());
         ////////////////////////////////////////////////////////////////////////
-        */
+        
 
         class_<esl::exception>("exception", init<std::string>())
             .def("message", &esl::exception::what)
@@ -106,7 +111,7 @@ namespace esl {
             .def(self / std::uint64_t())
             ;
         ////////////////////////////////////////////////////////////////////////
-
+        */
         def("version", version);
 
         ////////////////////////////////////////////////////////////////////////

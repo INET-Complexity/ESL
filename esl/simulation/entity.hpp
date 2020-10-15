@@ -77,7 +77,7 @@ namespace esl {
         const identity<entity_type_> identifier;
 
     private:
-        friend class identity<entity_type_>;
+        friend struct identity<entity_type_>;
         ///
         /// \brief  The number of children this entity has created
         ///

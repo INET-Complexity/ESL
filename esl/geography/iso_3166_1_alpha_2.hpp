@@ -87,7 +87,7 @@ namespace std {
     {
         constexpr size_t operator()(const esl::geography::iso_3166_1_alpha_2 &c) const
         {
-            return size_t(c.code[0] - 'A') + 26 * size_t(c.code[1] - 'A');
+            return size_t(c.code[0]) - size_t('A') + 26 * size_t(c.code[1]) - size_t('A');
         }
     };
 }  // namespace std

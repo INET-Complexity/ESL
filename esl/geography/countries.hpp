@@ -292,7 +292,7 @@ namespace esl::geography {
         constexpr size_t unique_hash(iso_3166_1_alpha_2 c)
         {
             // unique hash
-            return size_t(c.code[0] - 'A') + 26 * size_t(c.code[1] - 'A');
+            return size_t(c.code[0]) - size_t('A') + 26 * size_t(c.code[1]) - size_t('A');
         }
     }  // namespace detail
 

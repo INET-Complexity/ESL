@@ -34,13 +34,13 @@
 
 namespace esl {
     template<typename entity_t_>
-    class identity;
+    struct identity;
 }
 
 namespace esl::economics {
 
     namespace accounting {
-        class standard;
+        struct standard;
     }
 
     ///

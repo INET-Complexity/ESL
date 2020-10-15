@@ -22,9 +22,9 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include "python_module_walras.hpp"
-
-
+#include <esl/economics/markets/walras/python_module_walras.hpp>
+#include <esl/economics/markets/walras/price_setter.hpp>
+#include <esl/economics/markets/walras/tatonnement.hpp>
 
 
 #ifdef WITH_PYTHON
@@ -32,6 +32,8 @@
 
 using namespace boost::python;
 using namespace esl::economics::markets;
+using namespace esl::economics::markets::tatonnement;
+
 BOOST_PYTHON_MODULE(walras)
 {
     enum_<excess_demand_model::solver>("solver")

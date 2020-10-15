@@ -114,7 +114,7 @@ namespace esl::computation {
                     data::output_base *ptr = o.second.get();
                     oa << boost::serialization::make_nvp("output", ptr);
                 }catch(std::exception &e){
-                    
+                    (void)e;
                 }
             }
         }
