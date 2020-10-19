@@ -149,10 +149,10 @@ int main(int argc, char *argv[])
         auto pf = std::make_shared<test_property_fungible>(
             identity<test_property_fungible>({1}));
 
-        ivf_.insert(pf, quantity(234, 100));
+        ivf_.insert(pf, quantity(23400));
         auto pi = std::make_shared<test_property_infungible>(
             identity<test_property_infungible>({2}));
-        ivi_.insert(pi, quantity(1, 1));
+        ivi_.insert(pi, quantity(1));
 
 
         auto test_message_f = std::make_shared<interaction::transfer>(
@@ -166,10 +166,10 @@ int main(int argc, char *argv[])
         test_message_i->received = 4;
 
 
-        o_1->inventory.insert({pf, quantity(234, 100)});
-        o_1->inventory.insert({pi, quantity(1, 1)});
+        o_1->inventory.insert({pf, quantity(23400)});
+        o_1->inventory.insert({pi, quantity(1)});
         o_1->esl::law::owner<test_property_fungible>::properties.insert(
-            pf, quantity(234, 100));
+            pf, quantity(23400));
         o_1->esl::law::owner<test_property_infungible>::properties.insert(pi);
 
 

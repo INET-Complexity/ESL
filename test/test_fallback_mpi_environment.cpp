@@ -94,10 +94,10 @@ BOOST_AUTO_TEST_CASE(initialization)
     esl::economics::accounting::inventory_filter<esl::law::property> ivi_;
     auto pf = std::make_shared<test_property_fungible>(
         identity<test_property_fungible>({1}));
-    ivf_.insert(pf, quantity(234, 100));
+    ivf_.insert(pf, quantity(23400));
     auto pi = std::make_shared<test_property_infungible>(
         identity<test_property_infungible>({2}));
-    ivi_.insert(pi, quantity(1, 1));
+    ivi_.insert(pi, quantity(1));
 
     auto test_message_f =
         std::make_shared<interaction::transfer>(*o_1, *o_2, *o_1, *o_2, ivf_);
@@ -105,10 +105,10 @@ BOOST_AUTO_TEST_CASE(initialization)
     auto test_message_i =
         std::make_shared<interaction::transfer>(*o_1, *o_2, *o_1, *o_2, ivi_);
 
-    o_1->inventory.insert({pf, quantity(234, 100)});
-    o_1->inventory.insert({pi, quantity(1, 1)});
+    o_1->inventory.insert({pf, quantity(23400)});
+    o_1->inventory.insert({pi, quantity(1)});
     o_1->esl::law::owner<test_property_fungible>::properties.insert(
-        pf, quantity(234, 100));
+        pf, quantity(23400));
     o_1->esl::law::owner<test_property_infungible>::properties.insert(pi);
 
     o_1->inbox.insert({0, test_message_f});
@@ -117,14 +117,14 @@ BOOST_AUTO_TEST_CASE(initialization)
     o_1->outbox.emplace_back(test_message_i);
 
 
-    BOOST_CHECK_EQUAL(o_1->inventory[pf], quantity(234, 100));
-    BOOST_CHECK_EQUAL(o_1->inventory[pi], quantity(1, 1));
+    BOOST_CHECK_EQUAL(o_1->inventory[pf], quantity(23400));
+    BOOST_CHECK_EQUAL(o_1->inventory[pi], quantity(1));
     tm.step({0, 10});
     BOOST_CHECK_EQUAL(o_2->inventory.size(), 0);
     tm.step({0, 10});
     BOOST_CHECK_EQUAL(o_2->inventory.size(), 2);
-    BOOST_CHECK_EQUAL(o_2->inventory[pf], quantity(234, 100));
-    BOOST_CHECK_EQUAL(o_2->inventory[pi], quantity(1, 1));
+    BOOST_CHECK_EQUAL(o_2->inventory[pf], quantity(23400));
+    BOOST_CHECK_EQUAL(o_2->inventory[pi], quantity(1));
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
