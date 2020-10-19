@@ -115,7 +115,7 @@ namespace esl::law {
                             p,
                         const quantity &q)
             {
-                assert(q == quantity(1, 1));
+                assert(q == quantity(1));
                 (void)q;
                 properties.insert(p);
             }
@@ -126,7 +126,7 @@ namespace esl::law {
                            p,
                        const quantity &q)
             {
-                assert(q == quantity(1, 1));
+                assert(q == quantity(1));
                 (void)q;
                 properties.erase(p);
             }

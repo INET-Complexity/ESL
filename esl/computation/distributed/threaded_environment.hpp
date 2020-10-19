@@ -66,7 +66,6 @@ namespace esl::computation::distributed {
         std::mutex mutex_;
         std::condition_variable variable_;
 
-
         void task_()
         {
             for(size_t t = 0; !stopped_; ++t){
