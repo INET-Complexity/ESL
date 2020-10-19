@@ -67,7 +67,7 @@ IF(WITH_MPI)
     ADD_DEFINITIONS(-DWITH_MPI)
 ENDIF()
 
-OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
+OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" OFF)
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
