@@ -85,10 +85,9 @@ struct test_model
 
 BOOST_AUTO_TEST_SUITE(ESL)
 
-BOOST_AUTO_TEST_CASE(quantity_constructor)
+BOOST_AUTO_TEST_CASE(threaded_environment)
 {
     esl::computation::distributed::threaded_environment environment_;
-
 
 
 }
