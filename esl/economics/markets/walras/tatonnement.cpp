@@ -147,15 +147,6 @@ multiroot_function_value_and_gradient_cb(const gsl_vector * x, void * params, gs
 }
 
 
-
-
-
-
-
-
-
-
-
 extern "C"
 double
 uniroot_function_value (double x, void *params)
@@ -450,7 +441,7 @@ namespace esl::economics::markets::tatonnement {
                     int status;
                     int iter = 0;
                     int max_iter = 100;
-                    const gsl_root_fsolver_type *T;
+                    const gsl_root_fsolver_type *element_t_;
                     gsl_root_fsolver *s;
                     double x_lo = 0.01, x_hi = 100.0;
                     gsl_function F;
@@ -458,8 +449,8 @@ namespace esl::economics::markets::tatonnement {
                     F.function = &uniroot_function_value;
                     F.params =  static_cast<void *>(this);
 
-                    T = gsl_root_fsolver_brent;
-                    s = gsl_root_fsolver_alloc (T);
+                    element_t_ = gsl_root_fsolver_brent;
+                    s = gsl_root_fsolver_alloc (element_t_);
                     gsl_root_fsolver_set (s, &F, x_lo, x_hi);
 
                     do

@@ -33,6 +33,6 @@ namespace esl::law {
 }
 
 
-BOOST_CLASS_TRACKING(esl::law::owner<esl::law::property>, boost::serialization::track_always)
-;
-BOOST_CLASS_EXPORT(esl::law::owner<esl::law::property>);
+//BOOST_CLASS_TRACKING(esl::law::owner<esl::law::property>, boost::serialization::track_always)
+//;
+//BOOST_CLASS_EXPORT(esl::law::owner<esl::law::property>);

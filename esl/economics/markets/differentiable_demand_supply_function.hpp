@@ -89,7 +89,7 @@ namespace esl::economics::markets {
 namespace boost { namespace mpi {
 
         template<>
-        struct is_mpi_datatype<differentiable_demand_supply_function>
+        struct is_mpi_datatype<esl::economics::markets::differentiable_demand_supply_function>
             : public mpl::true_
         {};
 

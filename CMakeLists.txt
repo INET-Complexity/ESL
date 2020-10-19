@@ -28,7 +28,7 @@ MESSAGE("building binary in ${CMAKE_BINARY_DIR}")
 ################################################################################
 # cmake configuration
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.9.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.15) # 3.9.3)
 
 SET(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -42,13 +42,13 @@ IF(NOT ESL_TARGET_NAME)
 ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)
-    MESSAGE("Build type (CMAKE_BUILD_TYPE) not set, defaulting to Release build.")
+    MESSAGE("CMAKE_BUILD_TYPE not set, defaulting to Release build.")
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
 
-
-ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
-
+IF(MSVC OR MINGW)
+    ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
+ENDIF()
 ################################################################################
 #INCLUDE(cotire)
 
@@ -61,18 +61,11 @@ ENDIF(CCACHE_FOUND)
 ################################################################################
 # Library optional add-ons
 ################################################################################
-IF(MSVC)
-    SET(Boost_USE_STATIC_LIBS   ON)
-    SET(CMAKE_EXE_LINKER_FLAGS " -static")
-ENDIF()
-
-
 OPTION(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
     FIND_PACKAGE(MPI REQUIRED)
     ADD_DEFINITIONS(-DWITH_MPI)
 ENDIF()
-
 
 OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
@@ -80,13 +73,12 @@ IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
 ENDIF()
 
-
 OPTION(WITH_QL  "Enables QuantLib" OFF)
 IF(WITH_QL)
     ADD_DEFINITIONS(-DWITH_QL)
 ENDIF()
 
-########################################################################################################################
+################################################################################
 IF(WITH_PYTHON)
     FIND_PACKAGE(PythonLibs 3.7 REQUIRED)  # for building bindings
     FIND_PACKAGE(PythonInterp 3) # for running tests, not required
@@ -103,8 +95,9 @@ IF(WITH_PYTHON)
     LIST(GET VERSION_LIST 2 ESL_PYTHON_BINDINGS_VERSION_PATCH)
 ENDIF()
 
-########################################################################################################################
-# In this section we set up the Boost libraries, and inter-dependencies between Boost MPI and Python
+################################################################################
+# In this section we set up the Boost libraries,
+# and inter-dependencies between Boost MPI and Python
 LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
             program_options
             date_time 
@@ -116,325 +109,55 @@ LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
 IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
-    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
+            python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
     MESSAGE("library: \t" ${PYTHON_LIBRARIES})
-ELSE()
-
 ENDIF()
 
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi)
     IF(WITH_PYTHON)
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
+                mpi_python)#${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     ENDIF()
 ENDIF()
-#ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 
-SET(SOURCE_FILES
-        esl/version.hpp
-        esl/version.cpp
-
-        esl/simulation/identity.hpp
-        esl/simulation/identity.cpp
-        esl/simulation/identifiable_as.hpp
-
-        esl/simulation/entity.hpp
-        esl/simulation/entity.cpp
-
-        esl/mathematics/interval.cpp
-        esl/mathematics/interval.hpp
-
-        esl/agent.cpp
-        esl/agent.hpp
-
-        esl/interaction/communicator.cpp
-        esl/interaction/communicator.hpp
-
-        esl/interaction/header.cpp
-        esl/interaction/header.hpp
-
-        esl/interaction/message.cpp
-        esl/interaction/message.hpp
-
-        esl/computation/type_code.hpp
-        esl/computation/type_marker.hpp
-
-        esl/simulation/world.cpp
-        esl/simulation/world.hpp
-
-        esl/simulation/agent_collection.cpp
-        esl/simulation/agent_collection.hpp
-
-        esl/simulation/model.cpp
-        esl/simulation/model.hpp
-
-        esl/computation/environment.cpp
-        esl/computation/environment.hpp
-
-        esl/exception.cpp
-        esl/exception.hpp
-
-        esl/data/output_base.cpp
-        esl/data/output_base.hpp
-
-        esl/data/output.cpp
-        esl/data/output.hpp
-
-        esl/data/file.cpp
-        esl/data/file.hpp
-
-        esl/data/producer.cpp
-        esl/data/producer.hpp
-
-        esl/law/property.cpp
-        esl/law/property.hpp
-
-        esl/law/property_collection.cpp
-        esl/law/property_collection.hpp
-
-        esl/geography/iso_3166_1_alpha_2.cpp
-        esl/geography/iso_3166_1_alpha_2.hpp
-
-        esl/geography/countries.cpp
-        esl/geography/countries.hpp
-
-        esl/economics/iso_4217.cpp
-        esl/economics/iso_4217.hpp
-
-        esl/economics/accounting/standard.cpp
-        esl/economics/accounting/standard.hpp
-
-        esl/economics/currencies.cpp
-        esl/economics/currencies.hpp
-
-        esl/law/jurisdiction.cpp
-        esl/law/jurisdiction.hpp
-
-        esl/law/jurisdictions.cpp
-        esl/law/jurisdictions.hpp
-
-        esl/economics/asset.cpp
-        esl/economics/asset.hpp
-
-        esl/economics/cash.cpp
-        esl/economics/cash.hpp
-
-        esl/economics/fungibility.hpp
-        esl/economics/tangibility.hpp
-
-        esl/economics/money.cpp
-        esl/economics/money.hpp
-
-        esl/economics/owner.cpp
-        esl/economics/owner.hpp
-
-        esl/economics/price.cpp
-        esl/economics/price.hpp
-
-        esl/geography/location.cpp
-        esl/geography/location.hpp
-
-        esl/interaction/transfer.cpp
-        esl/interaction/transfer.hpp
-
-        esl/economics/accounting/inventory.cpp
-        esl/economics/accounting/inventory.hpp
-
-        esl/law/legal_person.cpp
-        esl/law/legal_person.hpp
-
-        esl/law/natural_person.cpp
-        esl/law/natural_person.hpp
-
-        esl/law/government.cpp
-        esl/law/government.hpp
-
-        esl/law/legal_entity.cpp
-        esl/law/legal_entity.hpp
-
-        esl/economics/finance/security.cpp
-        esl/economics/finance/security.hpp
-
-        esl/economics/finance/share_class.cpp
-        esl/economics/finance/share_class.hpp
-
-        esl/mathematics/rational.cpp
-        esl/mathematics/rational.hpp
-
-        esl/computation/distributed/mpi_environment.cpp
-        esl/computation/distributed/mpi_environment.hpp
-
-        esl/mathematics/variable.cpp
-        esl/mathematics/variable.hpp
-
-        test/shared_property_owner.cpp
-        test/shared_property_owner.hpp
-
-        test/shared_properties.cpp
-        test/shared_properties.hpp
-
-        esl/economics/markets/indication.cpp
-        esl/economics/markets/indication.hpp
-
-        esl/economics/finance/company.cpp
-        esl/economics/finance/company.hpp
-
-        esl/economics/markets/market.cpp
-        esl/economics/markets/market.hpp
-
-        esl/economics/markets/walras/price_setter.cpp
-        esl/economics/markets/walras/price_setter.hpp
-
-        esl/economics/markets/walras/differentiable_order_message.cpp
-        esl/economics/markets/walras/differentiable_order_message.hpp
-
-        esl/economics/markets/walras/tatonnement.cpp
-        esl/economics/markets/walras/tatonnement.hpp
-
-        esl/economics/finance/shareholder.cpp
-        esl/economics/finance/shareholder.hpp
-
-        esl/economics/finance/stock.cpp
-        esl/economics/finance/stock.hpp
-
-        esl/economics/finance/dividend.cpp
-        esl/economics/finance/dividend.hpp
-
-        esl/simulation/parameter/parametrization.cpp
-        esl/simulation/parameter/parametrization.hpp
-
-        esl/economics/finance/loan.cpp
-        esl/economics/finance/loan.hpp
-
-        esl/geography/country.cpp
-        esl/geography/country.hpp
-
-        esl/economics/currency.cpp
-        esl/economics/currency.hpp
-        esl/economics/accounting/balance_sheet.cpp
-        esl/economics/accounting/balance_sheet.hpp
-
-        esl/economics/accounting/cash_flow_statement.cpp
-        esl/economics/accounting/cash_flow_statement.hpp
-
-        esl/data/format/delimiter_separated_values.cpp
-        esl/data/format/delimiter_separated_values.hpp
-
-        esl/data/serialization.hpp
-
-        esl/economics/finance/bondholder.cpp
-        esl/economics/finance/bondholder.hpp
-
-        esl/data/log.cpp
-        esl/data/log.hpp
-
-        esl/data/stream.cpp
-        esl/data/stream.hpp
-
-        esl/data/severity.cpp
-        esl/data/severity.hpp
-        esl/data/representation.cpp
-        esl/data/representation.hpp
-
-        esl/economics/finance/debtor.cpp
-        esl/economics/finance/debtor.hpp
-
-        esl/data/null_streambuf.hpp
-        esl/data/null_ostream.hpp
-
-        esl/data/channel.cpp
-        esl/data/channel.hpp
-
-        esl/economics/money.cpp
-        esl/economics/finance/securities_lending_contract.cpp
-        esl/economics/finance/securities_lending_contract.hpp
-
-        esl/data/format/numpy.cpp
-        esl/data/format/numpy.hpp
-
-        esl/data/format/xml.cpp
-        esl/data/format/xml.hpp
-
-        esl/computation/thread_pool.cpp
-        esl/computation/thread_pool.hpp
-
-        esl/data/terminal.cpp
-        esl/data/terminal.hpp
-
-        esl/computation/allocator.cpp
-        esl/computation/allocator.hpp
-
-        esl/economics/markets/order_book/matching_engine.cpp
-        esl/economics/markets/order_book/matching_engine.hpp
-
-        esl/economics/markets/order_book/book.cpp
-        esl/economics/markets/order_book/book.hpp
-
-        esl/economics/markets/order_book/order.cpp
-        esl/economics/markets/order_book/order.hpp
-        esl/economics/markets/ticker.cpp
-        esl/economics/markets/ticker.hpp
-
-        esl/economics/markets/order_book/avellaneda_stoikov.hpp
-
-        esl/economics/markets/order_book/exchange.cpp
-        esl/economics/markets/order_book/exchange.hpp
-
-        esl/computation/block_pool.cpp
-        esl/computation/block_pool.hpp
-
-        esl/python_module_esl.cpp
-        esl/python_module_esl.hpp
-
-        esl/law/python_module_law.cpp
-        esl/law/python_module_law.hpp
-
-        esl/mathematics/python_module_mathematics.cpp
-        esl/mathematics/python_module_mathematics.hpp
-
-        esl/simulation/python_module_simulation.cpp
-        esl/simulation/python_module_simulation.hpp
-
-        esl/invalid_parameters.cpp
-        esl/invalid_parameters.hpp
-        )
+file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 
 ########################################################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
 
-set(Boost_USE_STATIC_LIBS        ON) # only find static libs
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME     ON)
 
+IF(MSVC)
+    SET(CMAKE_EXE_LINKER_FLAGS " -static")
+    SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux
+    SET(Boost_USE_STATIC_LIBS        ON)
+ELSE()
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
+ENDIF()
 
+SET(Boost_USE_MULTITHREADED      ON)
 
 
 IF(MSVC)
-    # Install-Package gsl-msvc-x64 -Version 2.4.0.8788
-    # Install-Package boost -Version 1.72.0
-    # Install-Package boost_program_options-vc140 -Version 1.72.0
-    #
-
     MESSAGE("################################################################################")
     MESSAGE("MSVC build detected, please use NuGet package manager to install dependencies if not yet satisfied: ")
     LIST(APPEND VS_DEPENDENCIES "")
 
-
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/adept")
-
-
+    # this is hardcoded until we can find a way to automate it
     SET(MSVC_GSL_VERSION "2.4.0.8788")
-    MESSAGE("\tInstall-Package gsl-msvc-x64 -Version ${MSVC_GSL_VERSION}")
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native")
-    LIST(APPEND VS_DEPENDENCIES "gsl-msvc-x64_${MSVC_GSL_VERSION}") #MESSAGE("gsl-msvc-x64_${MSVC_GSL_VERSION}")
-    LIST(APPEND GSL_LIBRARY_DIRS "${CMAKE_BINARY_DIR}/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native/lib/x64/Release")
-
-
     SET(MSVC_VERSION_PACKAGE_MANAGER "vc142")
     SET(MSVC_BOOST_VERSION "1.72.0")
+    SET(ESL_MSVC_ARCHITECTURE "x64")
+
+    MESSAGE("\tInstall-Package gsl-msvc-${ESL_MSVC_ARCHITECTURE} -Version ${MSVC_GSL_VERSION}")
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/packages/gsl-msvc-${ESL_MSVC_ARCHITECTURE}.${MSVC_GSL_VERSION}/build/native")
+    LIST(APPEND VS_DEPENDENCIES "gsl-msvc-${ESL_MSVC_ARCHITECTURE}_${MSVC_GSL_VERSION}")
+    LIST(APPEND GSL_LIBRARY_DIRS "${CMAKE_BINARY_DIR}/packages/gsl-msvc-${ESL_MSVC_ARCHITECTURE}.${MSVC_GSL_VERSION}/build/native/lib/${ESL_MSVC_ARCHITECTURE}/Release")
+
     LIST(APPEND VS_DEPENDENCIES "boost_${MSVC_BOOST_VERSION}")
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/packages/boost.1.72.0.0/lib/native/include")
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/packages/boost.${MSVC_BOOST_VERSION}.0/lib/native/include")
 
     # to be compliant, we need to set most of the following variables:
     # Boost_LIBRARIES
@@ -447,58 +170,42 @@ IF(MSVC)
 
     ENDFOREACH()
 
-    # Boost_FOUND
     SET(Boost_FOUND TRUE)
-    #Boost_INCLUDE_DIRS
     SET(Boost_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/packages/boost.1.72.0.0/lib/native/include/")
-    #Boost_LIBRARY_DIRS
     LIST(APPEND Boost_LIBRARY_DIRS)
-    #Boost_LIBRARIES
     FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
         LIST(APPEND Boost_LIBRARY_DIRS "${CMAKE_BINARY_DIR}/packages/boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}.${MSVC_BOOST_VERSION}.0/lib/native/")
-        # Boost_<C>_FOUND
         SET("Boost_${bll}_FOUND" TRUE)
     ENDFOREACH()
 
-    MESSAGE("add library gsl.lib cblas.lib")
-    #ADD_LIBRARY("${bll}-vc142-mt-x64-1_72.lib" ALIAS "Boost::${bll}")
+    MESSAGE("statically linking gsl.lib cblas.lib")
     LIST(APPEND Boost_LIBRARIES gsl.lib cblas.lib)
 
     FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
-        MESSAGE("add library libboost_${bll}-vc142-mt-s-x64-1_72.lib")
-        LIST(APPEND Boost_LIBRARIES "libboost_${bll}-vc142-mt-s-x64-1_72.lib")
+        MESSAGE("statically linking libboost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}-mt-s-${ESL_MSVC_ARCHITECTURE}-1_72.lib")
+        LIST(APPEND Boost_LIBRARIES "libboost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}-mt-s-${ESL_MSVC_ARCHITECTURE}-1_72.lib")
     ENDFOREACH()
-
-    #
-    #Boost_<C>_LIBRARY
-    #Boost_VERSION
-    #Boost_LIB_VERSION
-    #Boost_MAJOR_VERSION
-    #Boost_MINOR_VERSION
-    #Boost_SUBMINOR_VERSION
-    #Boost_LIB_DIAGNOSTIC_DEFINITIONS (Windows)
-
-
 ELSE()
     FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 ENDIF()
 
 ########################################################################################################################
-
+# Optimized linear algebra and scientific computing routines
 MESSAGE("################################################################################")
 
 IF(MSVC)
-    SET(BLA_STATIC ON)
+    SET(BLA_STATIC ON) # On windows, we will statically link a free blas package
 ENDIF()
 
-FIND_PACKAGE(BLAS)
+FIND_PACKAGE(BLAS) # not required
 IF(BLAS_FOUND)
-    FIND_PACKAGE(LAPACK)
+    FIND_PACKAGE(LAPACK) # also not required but nice to have
 ENDIF()
+
+
 # GSL is required for optimisation routines
-
 IF(MSVC)
-
+    # TODO: see GSL linking above
 ELSE()
     FIND_PACKAGE(GSL REQUIRED)
 ENDIF()
@@ -563,8 +270,7 @@ IF(MSVC) # for now, assume all builds on windows are done using MSYS2 64 bit
    # LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/msys64/usr/include")
 ENDIF()
 
-
-INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
+INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
 IF(MSVC)
@@ -572,10 +278,10 @@ IF(MSVC)
 ELSEIF(MINGW)
     LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
 ELSE()
-    LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl) #)
+    LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
 ENDIF()
 
-IF(MSVC)
+IF(MSVC OR MINGW)
     LIST(APPEND ALL_LINKED_LIBRARIES)
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES dl util)
@@ -614,28 +320,18 @@ ENDIF()
 
 ################################################################################
 
-
 IF(MSVC)
-    SET(CMAKE_SUPPRESS_REGENERATION true) # supress ZERO_CHECK target
-
+    SET(CMAKE_SUPPRESS_REGENERATION true) # supress ZERO_CHECK target for MSVC
     FOREACH(linkdir ${Boost_LIBRARY_DIRS})
         MESSAGE("adding library directory:" ${linkdir})
     ENDFOREACH()
-
-
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB) #
+    LIST(APPEND linked_libraries ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
-    LIST(APPEND asdfasdf ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-
-    FOREACH(aaa ${asdfasdf})
-        MESSAGE("BOOST LINK LIB:" ${aaa})
-    ENDFOREACH()
-
+#    FOREACH(linked ${linked_libraries})
+#        MESSAGE("BOOST LINK LIB:" ${linked})
+#    ENDFOREACH()
     LINK_DIRECTORIES(${GSL_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})
-
-
-
-
     LINK_LIBRARIES(                          ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
 ELSEIF(MINGW)
@@ -659,14 +355,18 @@ ENDIF()
 
 
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # This needs to be at this position, because for MSVC we need to issue a LINK_DIRECTORIES call before this to get it right
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
+
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 IF(MSVC)
+    # multi-processor compilation
     TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
+
+    #
+    SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+    SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
 ENDIF()
 
 

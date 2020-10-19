@@ -82,7 +82,7 @@ namespace esl::economics::markets {
 #ifdef WITH_MPI
 namespace boost::mpi {
     template<>
-    struct is_mpi_datatype<demand_supply_function>
+    struct is_mpi_datatype<esl::economics::markets::demand_supply_function>
     : public mpl::true_
     {
         

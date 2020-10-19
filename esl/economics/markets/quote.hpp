@@ -250,8 +250,9 @@ namespace esl::economics::markets {
 #include <boost/mpi.hpp>
 namespace boost { namespace mpi {
     template<>
-    struct is_mpi_datatype<esl::economics::quote>
-    : public is_mpi_datatype<std::variant<exchange_rate, price>>::value
+    struct is_mpi_datatype<esl::economics::markets::quote>
+    : public boost::mpl::true_//is_mpi_datatype<std::variant<esl::economics::exchange_rate
+             //                             , esl::economics::price>>::value
     { };
 }}      // namespace boost::mpi
 #endif  // WITH_MPI

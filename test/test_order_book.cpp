@@ -31,7 +31,8 @@ limit_order_message create(double p, size_t q = 1000, limit_order_message::side_
         ( ticker_dummy_
             , owner_dummy_
             , side
-            , markets::quote(price(p, currencies::USD), lot_size * currencies::USD.denominator)
+            , markets::quote(price(p, currencies::USD)
+                                , lot_size * currencies::USD.denominator)
             , q
             ,limit_order_message::lifetime_t::good_until_cancelled
         );

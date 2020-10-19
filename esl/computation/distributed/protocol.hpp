@@ -63,12 +63,25 @@ namespace esl::computation::distributed {
 
 
     ///
-    /// \brief Used to notify all nodes of an agent moving from one node to
-    /// another
+    /// \brief  Used to notify all nodes of an agent moving from one node to
+    ///         another
+    ///
     struct migration
     {
+        ///
+        /// \brief  The node where the agent is leaving
+        ///
         node_identifier source;
+
+        ///
+        /// \brief  The node the agent is being moved to
+        ///
         node_identifier target;
+
+        ///
+        /// \brief  The identifier of the agent, so that other nodes may update
+        ///         their address books
+        ///
         identity<agent> migrant;
 
         template<class archive_t>
@@ -104,17 +117,23 @@ namespace boost::mpi {
     template<>
     struct is_mpi_datatype<esl::computation::distributed::activation>
     : mpl::true_
-    {};
+    {
+
+    };
 
     template<>
     struct is_mpi_datatype<esl::computation::distributed::migration>
     : mpl::true_
-    {};
+    {
+
+    };
 
     template<>
     struct is_mpi_datatype<esl::computation::distributed::deactivation>
     : mpl::true_
-    {};
+    {
+
+    };
 }  // namespace boost::mpi
 #endif  // WITH_MPI
 

@@ -26,8 +26,6 @@
 
 
 #ifdef WITH_PYTHON
-
-
 ///
 /// https://docs.python.org/3.7/c-api/intro.html#include-files
 ///
@@ -70,7 +68,7 @@ namespace esl {
     ///
     BOOST_PYTHON_MODULE(_esl)
     {
-        /*
+        
         ////////////////////////////////////////////////////////////////////////
         class_< agent
               , bases< entity<agent>
@@ -111,7 +109,7 @@ namespace esl {
             .def(self / std::uint64_t())
             ;
         ////////////////////////////////////////////////////////////////////////
-        */
+        
         def("version", version);
 
         ////////////////////////////////////////////////////////////////////////

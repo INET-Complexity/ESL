@@ -43,17 +43,20 @@ namespace esl::computation {
 
 namespace esl::computation::distributed {
 
-
-    class mpi_environment : public environment
+    ///
+    /// \brief  Environment that uses MPI to accelerate message passing.
+    ///
+    class mpi_environment
+    : public environment
     {
     protected:
         ///
-        ///
+        /// \brief  Used to query the MPI environment
         ///
         boost::mpi::environment environment_;
 
         ///
-        ///
+        /// \brief  Used to send MPI messages
         ///
         boost::mpi::communicator communicator_;
 
@@ -70,14 +73,25 @@ namespace esl::computation::distributed {
         // std::unordered_map<identity<agent>,
         // std::unordered_map<node_identifier, timer<mean> >> communications_;
     public:
+        ///
+        /// \brief
+        ///
         mpi_environment();
 
+        ///
+        /// \brief
+        ///
         ~mpi_environment() override = default;
 
-
+        ///
+        /// \brief  Runs a model to termination
+        ///
+        /// \param simulation The model to run in this environment.
         void run(simulation::model &simulation) override;
 
     protected:
+        ///
+        /// \brief  Used to migrate agents between cluster nodes.
         ///
         /// \param simulation
         void migrate(simulation::model &simulation, agent_timing &timing);
@@ -91,8 +105,9 @@ namespace esl::computation::distributed {
         ///
         /// \brief  Decide on which agents to move away from this process to
         ///         other MPI processes.
+        ///         Default behaviour is to not migrate any agent.
         ///
-        /// \return
+        /// \return List of agents to move
         virtual std::vector<migration> migrate_agents();
 
         ///
@@ -103,8 +118,7 @@ namespace esl::computation::distributed {
 
         ///
         /// \brief  Agents are deactivated when they are deleted, or when they
-        /// migrate away from
-        ///         this process
+        ///         migrate away from this node.
         size_t deactivate() override;
 
         ///
@@ -118,19 +132,32 @@ namespace esl::computation::distributed {
         void activate_agent(const identity<agent> &a, node_identifier node);
 
         ///
+        /// \brief  Deactives an agent, and notifies all nodes.
+        /// \param a
         void deactivate_agent(const identity<agent> &a) override;
 
+        ///
+        /// \brief  Tasks to do before the simulation performs a time step
+        ///
         void before_step() override;
 
+
+        ///
+        /// \brief  Tasks to do after the simulation performs a time step
+        ///
         void after_step(simulation::model &simulation) override;
 
         ///
-        /// \return
+        /// \brief
+        ///
+        /// \return True if this node is the head node in the cluster (node
+        //          results are stored).
         bool is_coordinator() const;
 
         ///
         /// \param simulation
-        /// \return
+        ///
+        /// \return Number of messages sent
         size_t send_messages(simulation::model &simulation) override;
 
         void clear_agents(std::shared_ptr<simulation::model> simulation);

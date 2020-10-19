@@ -30,6 +30,6 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-BOOST_CLASS_EXPORT(esl::interaction::transfer)
+//BOOST_CLASS_EXPORT(esl::interaction::transfer)
 
 

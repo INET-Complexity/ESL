@@ -31,6 +31,8 @@
 
 using namespace boost::python;
 
+
+/*
 BOOST_PYTHON_MODULE(price)
 {
     class_<esl::economics::rate<std::int64_t>>("rate_int64",
@@ -39,23 +41,23 @@ BOOST_PYTHON_MODULE(price)
         .def(self == self)
         .def(self != self)
 ;
-/*
-        .def(self <  self)
-        .def(self <= self)
-        .def(self >  self)
-        .def(self >= self)
+//        .def(self <  self)
+//        .def(self <= self)
+//        .def(self >  self)
+//        .def(self >= self)
+//
+//        .def(self +  self)
+//        .def(self += self)
+//        .def(self -  self)
+//        .def(self -= self)
+//
+//        .def(self * self)
+//        .def(self * self)
+//        .def(self /  self)
+//        .def(self /= self)
+//        ;
 
-        .def(self +  self)
-        .def(self += self)
-        .def(self -  self)
-        .def(self -= self)
-
-        .def(self * self)
-        .def(self * self)
-        .def(self /  self)
-        .def(self /= self)
-        ;
-*/
 }
+ */
 
 #endif  // WITH_PYTHON

@@ -207,7 +207,7 @@ namespace esl::economics {
         constexpr iso_4217 XPF = iso_4217({'X', 'P', 'F'}, 1);
         constexpr iso_4217 XPT = iso_4217({'X', 'P', 'T'});
         constexpr iso_4217 XSU = iso_4217({'X', 'S', 'U'});
-        // constexpr iso_4217 XTS = iso_4217({'X', 'T', 'S'});
+        // constexpr iso_4217 XTS = iso_4217({'X', 'element_t_', 'S'});
         constexpr iso_4217 XUA = iso_4217({'X', 'U', 'A'});
         // constexpr iso_4217 XXX = iso_4217({'X', 'X', 'X'});
         constexpr iso_4217 YER = iso_4217({'Y', 'E', 'R'});

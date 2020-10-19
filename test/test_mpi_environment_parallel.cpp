@@ -63,16 +63,23 @@ using namespace esl::computation::distributed;
 
 #include <boost/serialization/shared_ptr.hpp>
 
-
-struct test_model : public esl::simulation::model
+///
+/// \brief  Testing model used to test MPI environment.
+///
+struct test_model
+: public esl::simulation::model
 {
     test_model(esl::computation::environment &e,
                esl::simulation::parameter::parametrization parameters)
     : esl::simulation::model(e, parameters)
-    {}
+    {
+
+    }
 
     void initialize() override
-    {}
+    {
+
+    }
 
     ///
     esl::simulation::time_point

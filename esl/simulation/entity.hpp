@@ -43,8 +43,8 @@ namespace esl {
 
     ///
     /// \brief  This specialization is reserved to be the root of every entity.
-    /// \example    It is used to test whether some type T is an entity, e.g.
-    ///             is_base_of<entity<void>, T>
+    /// \example    It is used to test whether some type element_t_ is an entity, e.g.
+    ///             is_base_of<entity<void>, element_t_>
     ///
     template<>
     struct entity<void>
