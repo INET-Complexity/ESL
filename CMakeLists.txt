@@ -28,7 +28,7 @@ MESSAGE("building binary in ${CMAKE_BINARY_DIR}")
 ################################################################################
 # cmake configuration
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.15) # 3.9.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9.3)
 
 SET(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
 
