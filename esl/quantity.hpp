@@ -32,6 +32,7 @@
 
 #include <iostream>
 
+#include "exception.hpp"
 #include <boost/serialization/nvp.hpp>
 
 #ifndef EXCEPTION_ON_BASIS_CHANGE
@@ -59,53 +60,25 @@ namespace esl {
     private:
     public:
         ///
-        /// \note   We explicitly delete the division into quantity operator as
-        /// this
-        ///         loses the remainder. Instead, use
-        ///         quantity::divide()
-        template<typename divisor_type_>
-        quantity &operator/=(divisor_type_) const = delete;
-
-        ///
-        ///`\brief  The number of parts
+        /// \brief  The
         ///
         std::uint64_t amount;
 
         ///
-        /// \brief  The number of sub-units to make one part
-        ///
-        std::uint64_t basis;
-
-        ///
         /// \param amount   The number of parts of something, e.g. 23 cents.
         ///                 Default: 0
-        /// \param basis    The number of parts to make one unit, e.g.
-        ///                 100 cents to 1 dollar. Default: 1
-        explicit constexpr quantity(std::uint64_t amount = 0,
-                                    std::uint64_t basis  = 1)
-        : amount(amount), basis(basis)
+        constexpr quantity(std::uint64_t amount = 0)
+        : amount(amount)
         {
-            if(basis < 1) {
-                throw std::logic_error("quantity with 0 basis");
-            }
+
         }
 
         ///
         /// \param q
         constexpr quantity(const quantity &q)
-        : quantity(q.amount, q.basis)
+        : quantity(q.amount)
         {
 
-        }
-
-        ///
-        /// \param operand
-        /// \return
-        constexpr void assert_equal_basis(const quantity &operand) const
-        {
-            if(basis != operand.basis) {
-                throw std::logic_error("assert_equal_basis");
-            }
         }
 
         ///
@@ -124,55 +97,42 @@ namespace esl {
             auto iterator_ = result_.begin();
             for(; iterator_ != result_.begin() + remainder_; ++iterator_) {
                 iterator_->amount = quotient_ + 1;
-                iterator_->basis  = basis;
             }
 
             for(; iterator_ != result_.end(); ++iterator_) {
                 iterator_->amount = quotient_;
-                iterator_->basis  = basis;
             }
 
             return result_;
         }
 
-
-        [[nodiscard]] constexpr quantity
-        operator*(const std::uint64_t &operand) const
+        ///
+        /// \brief  Integer division which loses the remainder.
+        ///         See quantity::divide to recover the remainder
+        ///
+        template<typename divisor_type_>
+        quantity &operator /= (divisor_type_ value) const
         {
-            return quantity(amount * operand, basis);
+            amount /= value;
         }
 
-        [[nodiscard]]
-#if !EXCEPTION_ON_BASIS_CHANGE
-        constexpr
-#endif
-        quantity
-        operator*(const quantity &operand) const
+
+        [[nodiscard]] constexpr quantity
+        operator * (const std::uint64_t &operand) const
         {
-            auto numerator_ = amount * operand.amount;
-            auto remainder_ = numerator_ % operand.basis;
+            return quantity(amount * operand);
+        }
 
-            if(!remainder_) {
-                return quantity(numerator_ / operand.basis, basis);
-            }
-
-            if(EXCEPTION_ON_BASIS_CHANGE) {
-                throw std::logic_error("EXCEPTION_ON_BASIS_CHANGE");
-            }
-
-            auto coremainder_ = numerator_ % basis;
-
-            if(!coremainder_) {
-                return quantity(numerator_ / basis, operand.basis);
-            }
-
-            return quantity(numerator_, basis * operand.basis);
+        [[nodiscard]] constexpr quantity
+        operator * (const quantity &operand) const
+        {
+            return quantity(amount * operand.amount);
         }
 
         ///
         /// \param operand
         /// \return
-        quantity &operator*=(const std::uint64_t &operand)
+        quantity &operator *= (const std::uint64_t &operand)
         {
             (*this) = (*this) * operand;
             return *this;
@@ -183,36 +143,16 @@ namespace esl {
         ///
         /// \param operand
         /// \return
-        [[nodiscard]]
-#if !EXCEPTION_ON_BASIS_CHANGE
-        constexpr
-#endif
-        quantity operator+(const quantity &operand) const
+        [[nodiscard]] constexpr
+        quantity operator + (const quantity &operand) const
         {
-            auto numerator_ = amount * operand.basis + operand.amount * basis;
-            auto remainder_ = numerator_ % operand.basis;
-
-            if(!remainder_) {
-                return quantity(numerator_ / operand.basis, basis);
-            }
-
-            if(EXCEPTION_ON_BASIS_CHANGE) {
-                throw std::logic_error("EXCEPTION_ON_BASIS_CHANGE");
-            }
-
-            auto coremainder_ = numerator_ % basis;
-
-            if(!coremainder_) {
-                return quantity(numerator_ / basis, operand.basis);
-            }
-
-            return quantity(numerator_, basis * operand.basis);
+            return quantity(amount + operand.amount);
         }
 
         ///
         /// \param operand
         /// \return
-        quantity &operator+=(const quantity &operand)
+        quantity &operator += (const quantity &operand)
         {
             (*this) = (*this) + operand;
             return *this;
@@ -223,72 +163,46 @@ namespace esl {
         ///
         /// \param operand
         /// \return
-        [[nodiscard]]
-#if !EXCEPTION_ON_BASIS_CHANGE
-        constexpr
-#endif
-        quantity operator-(const quantity &operand) const
+        [[nodiscard]] constexpr quantity operator - (const quantity &operand) const
         {
-            auto left_  = amount * operand.basis;
-            auto right_ = operand.amount * basis;
-            if(right_ > left_) {
-                throw std::logic_error(
-                    "subtraction results in negative quantity");
+            if(amount < operand.amount) {
+                throw esl::exception("subtraction results in negative quantity");
             }
-            auto numerator_ = left_ - right_;
-            auto remainder_ = numerator_ % operand.basis;
-
-            if(!remainder_) {
-                return quantity(numerator_ / operand.basis, basis);
-            }
-
-            if(EXCEPTION_ON_BASIS_CHANGE) {
-                throw std::logic_error("EXCEPTION_ON_BASIS_CHANGE");
-            }
-
-            auto coremainder_ = numerator_ % basis;
-
-            if(!coremainder_) {
-                return quantity(numerator_ / basis, operand.basis);
-            }
-
-            return quantity(numerator_, basis * operand.basis);
+            return quantity(amount - operand.amount);
         }
 
 
-        quantity &operator=(const quantity &operand)
+        quantity &operator = (const quantity &operand)
         {
             amount = operand.amount;
-            basis  = operand.basis;
             return *this;
         }
 
         ///
         /// \param operand
-        /// \return
-        quantity &operator-=(const quantity &operand)
+        ///
+        quantity &operator -= (const quantity &operand)
         {
             (*this) = (*this) - operand;
             return *this;
         }
 
         ///
-        /// \brief  true if equal to the truncated double equivalent of this
-        ///         quantity
+        /// \brief
         ///
         /// \param operand
         /// \return
-        [[nodiscard]] constexpr bool operator==(double operand) const
+        [[nodiscard]] constexpr bool operator == (double operand) const
         {
-            return (amount == std::uint64_t(operand * basis));
+            return (amount == operand);
         }
 
         ///
         /// \param operand
         /// \return
-        [[nodiscard]] constexpr bool operator==(const quantity &operand) const
+        [[nodiscard]] constexpr bool operator == (const quantity &operand) const
         {
-            return (amount == operand.amount && basis == operand.basis);
+            return (amount == operand.amount);
         }
 
         [[nodiscard]] constexpr bool operator!=(double operand) const
@@ -296,24 +210,24 @@ namespace esl {
             return !((*this) == operand);
         }
 
-        [[nodiscard]] constexpr bool operator<(double operand) const
+        [[nodiscard]] constexpr bool operator < (double operand) const
         {
-            return (amount < operand * basis);
+            return (amount < operand);
         }
 
-        [[nodiscard]] constexpr bool operator<(const quantity &operand) const
+        [[nodiscard]] constexpr bool operator < (const quantity &operand) const
         {
-            return (amount * basis < operand.amount * operand.basis);
+            return amount < operand.amount;
         }
 
-        [[nodiscard]] constexpr bool operator>(double operand) const
+        [[nodiscard]] constexpr bool operator > (double operand) const
         {
-            return (amount > operand * basis);
+            return amount > operand;
         }
 
-        [[nodiscard]] constexpr bool operator>(const quantity &operand) const
+        [[nodiscard]] constexpr bool operator > (const quantity &operand) const
         {
-            return (amount * basis > operand.amount * operand.basis);
+            return amount > operand.amount;
         }
 
         [[nodiscard]] constexpr bool operator<=(double operand) const
@@ -343,14 +257,13 @@ namespace esl {
         /// \param divisor
         /// \return
         [[nodiscard]] std::vector<quantity>
-        operator/(std::uint64_t divisor) const
+        operator / (std::uint64_t divisor) const
         {
             std::uint64_t quotient_  = amount / divisor;
             std::uint64_t remainder_ = amount % divisor;
 
             if(divisor >= (2 * remainder_)) {
-                std::vector<quantity> result_(divisor,
-                                              quantity(quotient_, basis));
+                std::vector<quantity> result_(divisor, quantity(quotient_));
                 for(auto iterator_ = result_.begin();
                     iterator_ != result_.begin() + remainder_;
                     ++iterator_) {
@@ -359,8 +272,7 @@ namespace esl {
                 return result_;
             }
 
-            std::vector<quantity> result_(divisor,
-                                          quantity(quotient_ + 1, basis));
+            std::vector<quantity> result_(divisor, quantity(quotient_ + 1));
             for(auto iterator_ = result_.begin() + remainder_;
                 iterator_ != result_.end();
                 ++iterator_) {
@@ -374,16 +286,12 @@ namespace esl {
         ///
         [[nodiscard]] explicit operator double() const
         {
-            return double(amount) / basis;
+            return double(amount);
         }
 
         friend std::ostream &operator<<(std::ostream &stream, const quantity &q)
         {
             stream << q.amount;
-            if(q.basis != 1) {
-                stream << '/';
-                stream << q.basis;
-            }
             return stream;
         }
 
@@ -392,7 +300,6 @@ namespace esl {
         {
             (void)version;
             archive &BOOST_SERIALIZATION_NVP(amount);
-            archive &BOOST_SERIALIZATION_NVP(basis);
         }
     };
 

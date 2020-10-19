@@ -89,7 +89,6 @@ namespace esl {
         class_<quantity>(
             "quantity",init<>())
             .def(init<std::uint64_t>())
-            .def(init<std::uint64_t, std::uint64_t>())
             .def(self += self)
             .def(self + self)
             .def(self -= self)

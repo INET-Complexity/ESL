@@ -430,8 +430,8 @@ namespace esl::economics::markets::walras {
                 auto i = orders.find(p)->second->supply.find(*property_);
                 if(orders.find(p)->second->supply.end() == i) {
                     auto [ii,b] = orders.find(p)->second->supply.insert({property_->identifier
-                                                                            , std::make_tuple(quantity(0,1)
-                            ,quantity(0,1))});
+                                                                            , std::make_tuple(quantity(0)
+                            ,quantity(0))});
                     i = ii;
                 }
                 uint64_t &long_  = std::get<0>(i->second).amount;
@@ -445,9 +445,9 @@ namespace esl::economics::markets::walras {
                         //LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
 
 
-                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1));
                         auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
-                        r->second.insert(short_contract_, quantity(cancel_, 1));
+                        r->second.insert(short_contract_, quantity(cancel_));
 
                         // ???
                         // auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
@@ -463,7 +463,7 @@ namespace esl::economics::markets::walras {
                     if(uint64_t(v) > 0){
                         //LOG(trace) << p << " purchased additional " << v << std::endl;
                         accounting::inventory_filter<law::property> purchased_;
-                        purchased_.insert(property_, quantity(uint64_t(v), 1));
+                        purchased_.insert(property_, quantity(uint64_t(v)));
                         send_.emplace(p, purchased_);
 
                         // they should send cash for the purchase
@@ -478,7 +478,7 @@ namespace esl::economics::markets::walras {
                         //LOG(trace) << "cancel the long position of " << p <<" by " << cancel_ << std::endl;
 
                         auto r = receive_.emplace( p, accounting::inventory_filter<law::property>()).first;
-                        r->second.insert(property_, quantity(cancel_, 1));
+                        r->second.insert(property_, quantity(cancel_));
 
                         auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         auto proceeds_ = usd_->amount(cancel_ * double(std::get<price>(data_.type)) / data_.lot);
@@ -491,13 +491,13 @@ namespace esl::economics::markets::walras {
                         auto amount_to_extend = uint64_t(-v);
                         //LOG(trace) << "extend the short position of " << p <<" by " << amount_to_extend << std::endl;
 
-                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1,1));
+                        auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1));
                         auto s = send_.emplace( p, accounting::inventory_filter<law::property>()).first;
 
                         auto sale_ = usd_->amount(amount_to_extend * double(std::get<price>(data_.type)) / data_.lot);
 
                         s->second.insert(usd_, sale_);
-                        s->second.insert(short_contract_, quantity(amount_to_extend, 1));
+                        s->second.insert(short_contract_, quantity(amount_to_extend));
                     }
                 }
             }

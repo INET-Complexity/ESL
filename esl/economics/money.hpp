@@ -77,13 +77,12 @@ namespace esl::economics {
                         std::function<uint64_t(double)> rounding_rule =
                         rounding::integer_towards_zero<double, uint64_t>)
         {
-            return quantity(rounding_rule(real * denomination.denominator),
-                            denomination.denominator);
+            return quantity(rounding_rule(real * denomination.denominator));
         }
 
         esl::economics::price price(const quantity &q)
         {
-            return esl::economics::price(int64_t (q.amount * q.basis), denomination);
+            return esl::economics::price(int64_t(q.amount), denomination);
         }
 
         esl::economics::price price(double real = 0.,

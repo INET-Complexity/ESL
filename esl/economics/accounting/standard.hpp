@@ -97,7 +97,7 @@ namespace esl::economics::accounting {
             }
 
             int64_t value_ = (std::get<price>(i->second.type).value * q.amount)
-                / (q.basis * i->second.lot);
+                / (i->second.lot);
 
             return price(value_, std::get<price>(i->second.type).valuation);
         }
@@ -118,7 +118,7 @@ namespace esl::economics::accounting {
             }
             // TODO: use foreign_currencies if valuation is in different currency
             int64_t value_ = (std::get<price>(i->second.type).value * c.size.amount * q.amount)
-                             / (q.basis * i->second.lot);
+                             / (i->second.lot);
             result_.value -= value_;
             //LOG(trace) << "value of " << q << " short contracts = " << result_ << std::endl;
             return result_;
