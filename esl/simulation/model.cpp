@@ -26,10 +26,12 @@
 
 #include <chrono>
 using std::chrono::high_resolution_clock;
+#include <numeric>
 
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/data/log.hpp>
+#include <esl/quantity.hpp>
 
 
 namespace esl::simulation {
@@ -44,6 +46,7 @@ namespace esl::simulation {
         , sample(parameters.get<std::uint64_t>("sample"))
         , agents(e)
         , verbosity(parameters.get<std::uint64_t>("verbosity"))
+        , threads( std::max(1u, parameters.get<unsigned int>("threads")))
     {
 
     }
@@ -65,7 +68,9 @@ namespace esl::simulation {
         environment_.before_step();
 
         // read the sample index from the parameter collection
-        auto first_event_   = step.upper;
+
+        std::mutex mutex_first_event_;
+        time_point first_event_   = step.upper;
         unsigned int round_ = 0;
         do {
 
@@ -73,27 +78,31 @@ namespace esl::simulation {
                 LOG(notice) << "time " << step << " round " << round_  << std::endl;
             }
             first_event_   = step.upper;
-            for(auto &[i, a] : agents.local_agents_) {
 
-                //double agent_cb_end_;
-                //timings_.emplace(i, 0.);
-                //timings_cb_.emplace(i, 0.);
-                //timings_act_.emplace(i, 0.);
-                //auto agent_start_ = high_resolution_clock::now();
-                //auto agent_act_ = high_resolution_clock::now();
+
+            auto job_ = [&](std::shared_ptr<agent> a){
+                // double agent_cb_end_;
+                // timings_.emplace(i, 0.);
+                // timings_cb_.emplace(i, 0.);
+                // timings_act_.emplace(i, 0.);
+                // auto agent_start_ = high_resolution_clock::now();
+                // auto agent_act_ = high_resolution_clock::now();
                 // The seed is deterministic in the following variables:
                 std::seed_seq seed_ {
-                    std::uint64_t(std::hash<identity<agent>>()(i)),
-                    std::uint64_t(step.lower),
-                    std::uint64_t(round_),
-                    sample
-                };
+                    std::uint64_t(std::hash<identity<agent>>()(a->identifier)),
+                    std::uint64_t(step.lower), std::uint64_t(round_),
+                    sample};
 
-                //try {
-                    first_event_ = std::min(first_event_, a->process_messages(step, seed_));
-                    //agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count());
-                    //agent_act_ = high_resolution_clock::now();
+                // try {
+
+                {
+                    std::unique_lock lock_(mutex_first_event_);
+                    first_event_ = std::min(first_event_,
+                                            a->process_messages(step, seed_));
+                    // agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count()); agent_act_ = high_resolution_clock::now();
                     first_event_ = std::min(first_event_, a->act(step, seed_));
+                }
+
                 //} catch(const std::runtime_error &e) {
                 //    LOG(errorlog) << e.what() << std::endl;
                 //    throw e;
@@ -103,17 +112,45 @@ namespace esl::simulation {
                 //} catch(...) {
                 //    throw;
                 //}
-                a->inbox.clear(); 
-                //auto agent_end_ = high_resolution_clock::now() - agent_start_;
+                a->inbox.clear();
+                // auto agent_end_ = high_resolution_clock::now() - agent_start_;
 
 
-                //timings_cb_[a->identifier] += agent_cb_end_;
-                //timings_act_[a->identifier] += double( (high_resolution_clock::now() - agent_act_).count());
-                //timings_[a->identifier] += (double(agent_end_.count()) );
-                //LOG(notice) << "a" << a->identifier << " tcb " << step << " " << std::setprecision(8) << timings_cb_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl;
-                //LOG(notice) << "a" << a->identifier << " tac " << step << " " << std::setprecision(8) << timings_act_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl;
+                // timings_cb_[a->identifier] += agent_cb_end_;
+                // timings_act_[a->identifier] += double( (high_resolution_clock::now() - agent_act_).count());
+                // timings_[a->identifier] += (double(agent_end_.count()) );
+                // LOG(notice) << "a" << a->identifier << " tcb " << step << " " << std::setprecision(8) << timings_cb_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl; LOG(notice) << "a" << a->identifier << " tac " << step << " " << std::setprecision(8) << timings_act_[a->identifier]/ 1e+9/step.lower <<  " s" << std::endl;
+
+            };
+
+            // important: if using a single thread, run everything in main
+            if(threads <= 1) {
+                for(auto &[i, a] : agents.local_agents_) {
+                    job_(a);
+                }
+            }else{
+                std::vector<std::thread> threads_;
+                auto iterator_ = agents.local_agents_.begin();
+                for(const auto& tasks_: quantity(agents.local_agents_.size()) / threads){
+                    std::vector<std::shared_ptr<agent>> task_split_;
+                    for(auto i = quantity(0); i < tasks_; ++i){
+                        task_split_.push_back(iterator_->second);
+                        std::advance(iterator_, 1);
+                    }
+
+                    threads_.emplace_back([&](std::vector<std::shared_ptr<agent>> ts){
+                            for(const auto& a: ts){
+                                job_(a);
+                            }
+                        }, task_split_);
+                }
+
+                for(auto &t: threads_){
+                    t.join();
+                }
 
             }
+
             environment_.send_messages(*this);
             ++round_;
             ++rounds_;

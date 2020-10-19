@@ -86,7 +86,8 @@ namespace esl {
         ///
         ///
         ///
-        entity() : entity(identity<entity_type_>())
+        entity()
+        : entity(identity<entity_type_>())
         {
 
         }
@@ -123,7 +124,6 @@ namespace esl {
         }
 
     public:
-
         constexpr bool operator == (const entity_type_ &operand) const
         {
             return this->identifier == operand.identifier;

@@ -126,21 +126,27 @@ namespace esl::computation {
     size_t environment::send_messages(simulation::model &simulation)
     {
         size_t messages_ = 0;
-        for(auto &[i, a] : simulation.agents.local_agents_) {
-            (void) i;
-            for(const auto &m: a->outbox) {
-                auto iterator_ =
-                    simulation.agents.local_agents_.find(m->recipient);
-                if(simulation.agents.local_agents_.end() == iterator_) {
-                    // not in distributed mode, and no local agent matching
-                    throw std::logic_error("agent not found "
-                                          + m->recipient.representation());
+        if(simulation.threads <= 1) {
+            for(auto &[i, a] : simulation.agents.local_agents_) {
+                (void)i;
+                for(const auto &m : a->outbox) {
+                    auto iterator_ =
+                        simulation.agents.local_agents_.find(m->recipient);
+                    if(simulation.agents.local_agents_.end() == iterator_) {
+                        // not in distributed mode, and no local agent matching
+                        throw std::logic_error("agent not found "
+                                               + m->recipient.representation());
+                    }
+                    iterator_->second->inbox.insert({m->received, m});
+                    ++messages_;
                 }
-                iterator_->second->inbox.insert({m->received, m});
-                ++messages_;
+                a->outbox.clear();
+                a->outbox.shrink_to_fit();
             }
-            a->outbox.clear();
-            a->outbox.shrink_to_fit();
+        }else{
+
+
+
         }
         return messages_;
     }

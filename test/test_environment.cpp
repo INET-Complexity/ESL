@@ -34,23 +34,28 @@
 #include <esl/agent.hpp>
 
 
-struct test_agent
-: public esl::agent
-{
-    using esl::agent::agent;
+using namespace esl;
+using namespace esl::simulation;
 
-    esl::simulation::time_point act(esl::simulation::time_interval step,
+struct test_agent
+: public agent
+{
+    using agent::agent;
+
+    unsigned int delay = 0;
+
+    time_point act(time_interval step,
                                     std::seed_seq &seed) override
     {
-        return agent::act(step, seed);
+        return step.lower + delay;
     }
 };
 
 
 struct test_model
-    : public esl::simulation::model
+    : public model
 {
-    using esl::simulation::model::model;
+    using model::model;
 
     int initialize_called = 0;
 
@@ -74,9 +79,9 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
     BOOST_AUTO_TEST_CASE(environment_constructor)
     {
-        esl::computation::environment e;
+        computation::environment e;
 
-        test_model tm(e, esl::simulation::parameter::parametrization(0, 1, 100));
+        test_model tm(e, parameter::parametrization(0, 1, 100));
 
         BOOST_CHECK_EQUAL(tm.start, 1);
         BOOST_CHECK_EQUAL(tm.time, 1);
@@ -85,14 +90,68 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
     BOOST_AUTO_TEST_CASE(environment_basic_time_stepping)
     {
-        esl::computation::environment e;
+        computation::environment e;
+        test_model tm(e, parameter::parametrization(0, 0, 100));
 
-        test_model tm(e, esl::simulation::parameter::parametrization(0, 0, 100));
+        auto next_ = tm.step( {0, 3});
+
+        std::cout << next_ << std::endl;
+
+        BOOST_CHECK_EQUAL(next_, 3);
+    }
+
+
+    BOOST_AUTO_TEST_CASE(environment_time_step_with_agents)
+    {
+        computation::environment e;
+        test_model tm(e, parameter::parametrization(0, 0, 100));
+
+        auto a1 = tm.create<test_agent>();
+        a1->delay = 5;
+
+        auto next_ = tm.step( {0, 3});
+        std::cout << next_ << std::endl;
+        BOOST_CHECK_EQUAL(next_, 3);
+
+        next_ = tm.step( {3, 5});
+
+        std::cout << next_ << std::endl;
+
+        BOOST_CHECK_EQUAL(next_, 5);
+
+    }
+
+
+
+    ///
+    /// \brief
+    ///
+    BOOST_AUTO_TEST_CASE(environment_run_agents_parallel)
+    {
+        computation::environment e;
+        unsigned int threads = 8;
+
+        test_model tm(e, parameter::parametrization(0, 0, 100, 0, threads));
+
+        // We create one agent with delay 5, and other agents have more.
+        // If the parallelisation fails, we might miss that particular agent
+        // and end with a higher time point although this is nondeterministic
+        // and we are thus not guaranteed to catch it.
+        auto test_agents = 100'000;
+        for(auto i = 0; i < test_agents; ++i){
+            auto a1 = tm.create<test_agent>();
+            a1->delay = 4 + test_agents - i;
+        }
 
         auto next_ = tm.step( {0, 3});
 
         BOOST_CHECK_EQUAL(next_, 3);
+
+        // agents will delay again
+        next_ = tm.step( {3, 1234});
+        BOOST_CHECK_EQUAL(next_, 8);
     }
+
 
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

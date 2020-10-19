@@ -75,7 +75,7 @@ namespace esl {
         ///
         /// \param rhs
         /// \return
-        [[nodiscard]] constexpr bool operator!=(const agent &rhs) const
+        [[nodiscard]] constexpr bool operator != (const agent &rhs) const
         {
             return !(*this == rhs);
         }

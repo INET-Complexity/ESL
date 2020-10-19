@@ -85,15 +85,18 @@ namespace esl::simulation::parameter {
                        , time_point start           = time_point()
                        , time_point end             = time_point() + 1
 #ifdef ESL_RELEASE
-                       , std::uint64_t verbosity    = 1==ESL_RELEASE ? 1000 : 100 )
+                       , std::uint64_t verbosity    = 0
 #else
-                       , std::uint64_t verbosity    = 100 )
+                       , std::uint64_t verbosity    = 1
 #endif
+                       , unsigned int threads       = 1)
+
         {
-            values["sample"] = std::make_shared<constant<std::uint64_t>>(sample);
-            values["start"]  = std::make_shared<constant<time_point>>(start);
-            values["end"]    = std::make_shared<constant<time_point>>(end);
+            values["sample"]    = std::make_shared<constant<std::uint64_t>>(sample);
+            values["start"]     = std::make_shared<constant<time_point>>(start);
+            values["end"]       = std::make_shared<constant<time_point>>(end);
             values["verbosity"] = std::make_shared<constant<std::uint64_t>>(verbosity);
+            values["threads"]   = std::make_shared<constant<unsigned int>>(verbosity);
         }
 
 
