@@ -2,7 +2,7 @@ sudo: require
 
 language: cpp
 
-dist: bionic
+dist: focal
 
 env:
   - BLAS=OpenBLAS CTEST_OUTPUT_ON_FAILURE=1
