@@ -1,6 +1,26 @@
 cmake_minimum_required(VERSION 3.12)
 
-INCLUDE(CMakeVersion.txt)
+
+################################################################################
+# Read and set the library version
+################################################################################
+FILE(READ "esl/version" version_header)
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_major ${CMAKE_MATCH_1})
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_minor ${CMAKE_MATCH_1})
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_revision ${CMAKE_MATCH_1})
+
+# Enable new behaviour on this policy so we can set the version automatically.
+# enables compatibility with older versions of cmake
+CMAKE_POLICY(SET CMP0048 NEW)
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library"
@@ -30,8 +50,6 @@ ENDIF()
 IF(MSVC OR MINGW)
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 ENDIF()
-
-PROJECT(hello-boost VERSION ${PROJECT_VERSION})
 
 ################################################################################
 # Caching
@@ -67,7 +85,7 @@ ENDIF()
 # Python bindings configuration
 ################################################################################
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3.6 REQUIRED)  # for building bindings
+    FIND_PACKAGE(PythonLibs 3.7 REQUIRED)  # for building bindings
     FIND_PACKAGE(PythonInterp 3) # for running tests, not required
 
     IF(SKBUILD)
