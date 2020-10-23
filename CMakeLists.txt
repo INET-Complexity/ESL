@@ -67,7 +67,7 @@ ENDIF()
 # Python bindings configuration
 ################################################################################
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3.7 REQUIRED)  # for building bindings
+    FIND_PACKAGE(PythonLibs 3.6 REQUIRED)  # for building bindings
     FIND_PACKAGE(PythonInterp 3) # for running tests, not required
 
     IF(SKBUILD)
