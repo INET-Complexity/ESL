@@ -1,0 +1,21 @@
+
+################################################################################
+# Read and set the library version
+################################################################################
+FILE(READ "esl/version" version_header)
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_major ${CMAKE_MATCH_1})
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_minor ${CMAKE_MATCH_1})
+
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
+        _ ${version_header})
+SET(version_revision ${CMAKE_MATCH_1})
+
+# Enable new behaviour on this policy so we can set the version automatically.
+# enables compatibility with older versions of cmake
+CMAKE_POLICY(SET CMP0048 NEW)

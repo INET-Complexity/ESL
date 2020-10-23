@@ -47,6 +47,7 @@ struct test_agent
     time_point act(time_interval step,
                                     std::seed_seq &seed) override
     {
+        (void) seed;
         return step.lower + delay;
     }
 };
@@ -63,7 +64,6 @@ struct test_model
 
     void initialize() override
     {
-
         auto ta = this->template create<test_agent>();
 
         ++initialize_called;
@@ -110,18 +110,12 @@ BOOST_AUTO_TEST_SUITE(ESL)
         a1->delay = 5;
 
         auto next_ = tm.step( {0, 3});
-        std::cout << next_ << std::endl;
         BOOST_CHECK_EQUAL(next_, 3);
 
         next_ = tm.step( {3, 5});
 
-        std::cout << next_ << std::endl;
-
         BOOST_CHECK_EQUAL(next_, 5);
-
     }
-
-
 
     ///
     /// \brief
@@ -144,14 +138,11 @@ BOOST_AUTO_TEST_SUITE(ESL)
         }
 
         auto next_ = tm.step( {0, 3});
-
         BOOST_CHECK_EQUAL(next_, 3);
 
         // agents will delay again
         next_ = tm.step( {3, 1234});
         BOOST_CHECK_EQUAL(next_, 8);
     }
-
-
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

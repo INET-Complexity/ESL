@@ -99,6 +99,14 @@ namespace esl::simulation {
         std::uint64_t verbosity;
 
         ///
+        /// \brief  The number of threads to run the model in parallel.
+        ///         By default, no parallelism is used.
+        ///
+        /// \details
+        ///
+        unsigned int threads;
+
+        ///
         /// \brief
         ///
         /// \details    The model needs a reference to the computational

@@ -1,4 +1,0 @@
-
-
-class Currency(object):
-    pass

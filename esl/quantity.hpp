@@ -60,7 +60,7 @@ namespace esl {
     private:
     public:
         ///
-        /// \brief  The
+        /// \brief
         ///
         std::uint64_t amount;
 
@@ -75,15 +75,19 @@ namespace esl {
 
         ///
         /// \param q
+        ///
         constexpr quantity(const quantity &q)
         : quantity(q.amount)
         {
 
         }
 
+        ~quantity() = default;
+
         ///
         /// \tparam divisor_
         /// \return
+        ///
         template<uint64_t divisor_>
         constexpr std::array<quantity, divisor_> divide() const
         {
@@ -111,9 +115,10 @@ namespace esl {
         ///         See quantity::divide to recover the remainder
         ///
         template<typename divisor_type_>
-        quantity &operator /= (divisor_type_ value) const
+        quantity &operator /= (divisor_type_ value)
         {
             amount /= value;
+            return *this;
         }
 
 
@@ -294,6 +299,29 @@ namespace esl {
             stream << q.amount;
             return stream;
         }
+
+        quantity& operator ++ ()
+        {
+            ++amount;
+            return *this;
+        }
+
+        quantity& operator -- ()
+        {
+            ++amount;
+            return *this;
+        }
+
+        [[nodiscard]] constexpr quantity operator ++ (int)
+        {
+            return quantity(amount++);
+        }
+
+        [[nodiscard]] constexpr quantity operator -- (int)
+        {
+            return quantity(amount--);
+        }
+
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

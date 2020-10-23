@@ -24,11 +24,6 @@
 #
 import sys
 
-# main module
-try:
-    from esl._esl import *
-except ImportError:
-    raise ModuleNotFoundError("Can't find ESL native module, did the compilation succeed?")
+from esl._esl import *
 
-# submodules
 from esl.simulation import *
