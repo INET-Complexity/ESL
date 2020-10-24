@@ -27,8 +27,10 @@ jobs:
         
     - name: Install Native Code dependencies
       run: |
+        sudo add-apt-repository ppa:boost-latest/ppa
         sudo apt-get update -qq
         sudo apt install gcc g++
+        sudo apt install ninja-build
         sudo apt install openmpi-bin libopenmpi-dev
         sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
         sudo apt install libopenblas-dev liblapack-dev
