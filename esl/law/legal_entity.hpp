@@ -31,8 +31,10 @@
 #include <tuple>
 #include <utility>
 
-#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+
+#include <cassert>
 
 namespace esl::law {
 
@@ -134,10 +136,11 @@ namespace esl::law {
         ///         required (which chooses the platform-appropriate integer
         ///         model).
         ///
-        /// \return The checksum digits (not integer values).
+        /// \return The checksum digits (not integer values)
         [[nodiscard]] std::tuple<char, char> checksum() const
         {
-            boost::multiprecision::uint128_t sum_ = 0;
+            boost::multiprecision::uint128_t sum_{0};
+
             for(auto i = 0; i < 4; ++i) {
                 sum_ *= 10;
                 sum_ += local[i] - '0';

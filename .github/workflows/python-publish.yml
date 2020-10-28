@@ -40,5 +40,4 @@ jobs:
 
       run: |
         cibuildwheel --output-dir distribution --platform linux
-        #python3 setup.py bdist_wheel bdist_wheel -- -- -j2
         twine upload distribution/*
