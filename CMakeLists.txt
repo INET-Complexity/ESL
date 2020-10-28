@@ -73,7 +73,14 @@ ENDIF()
 OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)
-    ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
+
+
+    IF(SKBUILD)
+        # No linking to python
+    ELSE()
+        ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
+    ENDIF()
+
 ENDIF()
 
 OPTION(WITH_QL  "Enables QuantLib" OFF)
@@ -85,7 +92,7 @@ ENDIF()
 # Python bindings configuration
 ################################################################################
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3.7 REQUIRED)  # for building bindings
+    FIND_PACKAGE(PythonLibs 3 REQUIRED)  # for building bindings
     FIND_PACKAGE(PythonInterp 3) # for running tests, not required
 
     IF(SKBUILD)
@@ -120,11 +127,20 @@ LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
 IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
-    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
-            python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+
+    IF(FALSE)
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
+                python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    ELSE()
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
+    ENDIF()
+
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
         MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
-        MESSAGE("library: \t" ${PYTHON_LIBRARIES})
+        MESSAGE("library: \t" ${PYTHON_LIBRARY})
+        MESSAGE("libraries: \t" ${PYTHON_LIBRARIES})
+
+
     ENDIF()
 ENDIF()
 
@@ -157,7 +173,7 @@ ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
 
-FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 
 ########################################################################################################################
 # Optimized linear algebra and scientific computing routines
@@ -190,7 +206,7 @@ IF(MSVC)
     #TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
 
 ELSE()
-    ADD_COMPILE_OPTIONS(-m64) # should be the default with modern gccs
+    #ADD_COMPILE_OPTIONS(-m64) # should be the default with modern gccs
 
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
@@ -263,7 +279,20 @@ ELSE()
 ENDIF()
 
 IF(WITH_PYTHON)
-    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+    # pep-0513/#libpythonx-y-so-1
+    # "Note that libpythonX.Y.so.1 is not on the list of libraries that a manylinux1 extension is allowed to link to.
+    # Explicitly linking to libpythonX.Y.so.1 is unnecessary in almost all cases: the way ELF linking works, extension
+    # modules that are loaded into the interpreter automatically get access to all of the interpreter's symbols,
+    # regardless of whether or not the extension itself is explicitly linked against libpython.
+    # Furthermore, explicit linking to libpython creates problems in the common configuration where Python is not built
+    # with --enable-shared. In particular, on Debian and Ubuntu systems, apt install pythonX.Y does not even
+    # install libpythonX.Y.so.1, meaning that any wheel that did depend on libpythonX.Y.so.1 could fail to import."
+
+    IF(SKBUILD)
+        # No linking to python
+    ELSE()
+        LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+    ENDIF()
 ENDIF()
 
 IF(WITH_MPI)
@@ -274,14 +303,12 @@ IF(WITH_QL)
     LIST(APPEND ALL_LINKED_LIBRARIES QuantLib ${QuantLib_LIBRARIES})
 ENDIF()
 
-
 IF(BLAS_FOUND)
     LIST(APPEND ALL_LINKED_LIBRARIES ${BLAS_LIBRARIES} GSL::gslcblas)
     IF(LAPACK_FOUND)
         LIST(APPEND ALL_LINKED_LIBRARIES ${LAPACK_LIBRARIES})
     ENDIF()
 ENDIF()
-
 
 IF(MSVC)
     MESSAGE("LINKING WITH")
@@ -293,7 +320,6 @@ ELSE()
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
 ENDIF()
 
-
 ################################################################################
 
 # This needs to be at this position, because for MSVC we need to issue a LINK_DIRECTORIES
@@ -301,12 +327,6 @@ ENDIF()
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 
 SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
-
-
-
-
-
-
 
 IF(MSVC)
     # multi-processor compilation
@@ -332,19 +352,6 @@ ELSE()
     TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
 ENDIF()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
 # Copy library into testing folder, so it can be linked against by Python tests
 ################################################################################
@@ -352,7 +359,6 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${ESL_TARGET_NAME}>
         ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
-
 
 ################################################################################
 #   Add tests
@@ -428,24 +434,22 @@ IF(WITH_PYTHON)
 
     ####################################################################################################################
     # create python tests
-    #    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
-    #    FOREACH(test_src ${TEST_SRCS})
-    #        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
-    #        SET(pytest_name "${pytest_name}_python")
-    #        MESSAGE("PYTEST " ${pytest_name})
-    #        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
-    #    ENDFOREACH(test_src)
-    #
-    #    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
-    #
-    #    SET_TARGET_PROPERTIES(pytest PROPERTIES
-    #        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
-    #
-    #    IF(PYTHONINTERP_FOUND)
-    #
-    #        ADD_TEST(NAME pytest
-    #                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-    #                COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
-    #
-    #    ENDIF()
+    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+    FOREACH(test_src ${TEST_SRCS})
+        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
+        SET(pytest_name "${pytest_name}_python")
+        MESSAGE("PYTEST " ${pytest_name})
+        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
+    ENDFOREACH(test_src)
+
+    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+
+    #SET_TARGET_PROPERTIES(pytest PROPERTIES
+    #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+
+    #IF(PYTHONINTERP_FOUND)
+    #    ADD_TEST(NAME pytest
+    #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+    #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
+    #ENDIF()
 ENDIF()

@@ -22,4 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include "balance_sheet.hpp"
+#include <esl/economics/accounting/balance_sheet.hpp>

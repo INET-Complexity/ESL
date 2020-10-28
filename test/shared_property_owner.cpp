@@ -25,7 +25,9 @@
 #include <test/shared_property_owner.hpp>
 
 #include <boost/serialization/export.hpp>
+#if BOOST_VERSION >= 106500
 #include <boost/serialization/unordered_map.hpp>
+#endif
 
 /// \param i
 test_property_owner::test_property_owner(

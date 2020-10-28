@@ -1,7 +1,6 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# This workflow will upload a Python Package using Twine when a release is created
 
-name: Upload Python Package
+name: Build and Deploy Python Package to Test Pypi
 
 on:
   release:
@@ -14,42 +13,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-        
+
+#    - name: Set up Python
+#      uses: actions/setup-python@v2
+#      with:
+#        python-version: '3.8'
+
+    - name: Install docker environment for build
+      run: |
+        sudo apt-get update -qq
+        sudo apt install docker
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install scikit-build setuptools wheel twine
-        
-    - name: Install Native Code dependencies
-      run: |
-        sudo apt-get update -qq
-        sudo apt install gcc g++
-        sudo apt install ninja-build
-        sudo apt install openmpi-bin libopenmpi-dev
-        sudo apt install libboost-all-dev libboost-mpi-dev libboost-mpi-python-dev
-        sudo apt install libopenblas-dev liblapack-dev
-        sudo apt install libgsl-dev
-        sudo apt install python3 python-dev python3-pip
-        sudo apt install python3-setuptools
-        sudo pip3 install -r requirements.txt
-        sudo apt-get install autoconf
-        wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
-        tar -xvf adept-2.0.5.tar.gz
-        cd adept-2.0.5/
-        ./configure && make -j2 && sudo make install
-        cd include && ./create_adept_source_header
-        sudo cp adept_source.h /usr/local/include/
-        cd ../..
+        pip install cibuildwheel scikit-build setuptools wheel twine
 
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+        CIBW_BUILD: 'cp38-manylinux*'
+        CIBW_BEFORE_ALL_LINUX: 'yum update && yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && cat project-config.jam && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.8    :  /opt/python/cp38-cp38/bin/python    : /opt/python/cp38-cp38/include/python3.8/    : /opt/python/cp38-cp38/lib/python3.8/ ;" >> project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xvf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
+
       run: |
-        python3 setup.py bdist_wheel bdist_wheel -- -- -j2
-        twine upload dist/*
+        cibuildwheel --output-dir distribution --platform linux
+        #python3 setup.py bdist_wheel bdist_wheel -- -- -j2
+        twine upload distribution/*

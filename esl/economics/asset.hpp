@@ -25,7 +25,7 @@
 #ifndef ESL_ECONOMICS_ASSET_HPP
 #define ESL_ECONOMICS_ASSET_HPP
 
-#include <boost/serialization/serialization.hpp>
+//#include <boost/serialization/serialization.hpp>
 
 #include <esl/quantity.hpp>
 #include <esl/economics/price.hpp>

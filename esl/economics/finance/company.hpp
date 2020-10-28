@@ -34,7 +34,9 @@
 
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#if BOOST_VERSION >= 106500
 #include <boost/serialization/unordered_map.hpp>
+#endif
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/nvp.hpp>

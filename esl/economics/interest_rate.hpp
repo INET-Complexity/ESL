@@ -40,14 +40,20 @@ namespace esl::economics {
         ///
         /// \param rate_over_duration
         /// \param duration
-        constexpr interest_rate(rational rate_over_duration = 0,
+#if BOOST_VERSION >= 106500
+        constexpr
+#endif
+            interest_rate(rational rate_over_duration = 0,
                                 esl::simulation::time_duration duration = esl::simulation::time_duration(1))
         : rate<>(rate_over_duration), duration(duration)
         {
 
         }
 
-        constexpr interest_rate(rate<> rate_over_duration,
+#if BOOST_VERSION >= 106500
+        constexpr
+#endif
+            interest_rate(rate<> rate_over_duration,
                                 esl::simulation::time_duration duration)
                 : rate<>(rate_over_duration), duration(duration)
         {

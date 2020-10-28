@@ -23,8 +23,10 @@
 ///             requirements in CITATION.cff
 ///
 #include <boost/serialization/export.hpp>
+#if BOOST_VERSION >= 106500
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
+#endif
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <esl/economics/accounting/inventory.hpp>

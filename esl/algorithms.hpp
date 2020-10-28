@@ -32,6 +32,8 @@
 #include <iterator>
 #include <vector>
 #include <numeric>
+#include <utility>
+#include <tuple>
 
 
 namespace esl {

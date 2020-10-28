@@ -100,7 +100,8 @@ namespace esl::simulation {
 
         ///
         /// \brief  The number of threads to run the model in parallel.
-        ///         By default, no parallelism is used.
+        ///         By default, no parallelism is used
+        ///
         ///
         /// \details
         ///

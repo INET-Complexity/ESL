@@ -27,7 +27,9 @@
 #ifdef WITH_MPI
 #include <vector>
 
+#if BOOST_VERSION >= 106500
 #include <boost/serialization/unordered_map.hpp>
+#endif
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <esl/agent.hpp>

@@ -32,28 +32,15 @@
 
 #include <iostream>
 
-#include "exception.hpp"
+#include <esl/exception.hpp>
 #include <boost/serialization/nvp.hpp>
 
-#ifndef EXCEPTION_ON_BASIS_CHANGE
-#define EXCEPTION_ON_BASIS_CHANGE true
-#endif
 
 
 namespace esl {
     ///
     /// \brief  The quantity class is used to losslessly deal with quantities of
-    ///         economic goods in large quantities. A quantity is associated
-    ///         with a basis (the number of parts that make up a unit amount of
-    ///         the object).
-    ///
-    /// \details    The quantity is not a fraction: a property that dividies
-    ///             into single parts, is not the same as a property that
-    ///             divides into 100 parts. Hence, quantity(1,1) is not the same
-    ///             as quantity(100,100). Implicit conversion or combination of
-    ///             `quantity` with different `basis` is not encouraged, and the
-    ///             preprocessor option EXCEPTION_ON_BASIS_CHANGE can be used to
-    ///             disallow this.
+    ///         economic goods in large quantities.
     ///
     struct quantity
     {

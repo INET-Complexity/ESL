@@ -29,7 +29,10 @@ using std::chrono::high_resolution_clock;
 
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
+
+#if BOOST_VERSION >= 106500
 #include <boost/serialization/unordered_map.hpp>
+#endif
 
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>

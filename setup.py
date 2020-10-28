@@ -1,5 +1,5 @@
 import sys
-import os
+import pathlib
 
 
 try:
@@ -24,19 +24,28 @@ def read_version():
         raise ValueError("Can not read esl/version file.")
 
 def get_packages():
-
-    #for root, dirs, files in os.walk('notes'):
-    #    print(root, dirs, files)
     pass
 
-
 setup(
-    name                = "esl",
-    version             = ".".join(map(str, read_version())),
-    description         = "Economic Simulation Library ",
-    author              = "Maarten P. Scholl",
-    #author_email        =
-    license             = "Apache License 2.0",
+    name                = 'eslpy',
+    version             = '.'.join(map(str, read_version())),
+    description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
+
+    long_description    = (pathlib.Path(__file__).parent / "README.md").read_text(),
+    long_description_content_type="text/markdown",
+
+    author              = 'Maarten P. Scholl',
+    author_email        = 'maarten.scholl@cs.ox.ac.uk',
+
+    classifiers         = [ 'Development Status :: 3 - Alpha',
+                            'License :: OSI Approved :: Apache Software License',
+                            'Programming Language :: Python',
+                            'Programming Language :: C++',
+                            'Topic :: Scientific/Engineering',
+                            'Intended Audience :: Science/Research',
+                          ],
+
+    license             = 'Apache License 2.0',
     packages            = [ 'esl'
                           , 'esl.computation'
                           , 'esl.computation.distributed'
