@@ -22,14 +22,42 @@ For release 0.0.2, we aim to provide the following market mechanisms.
 
 * Common types of auctions
 
-## Installation
+## Getting the library
 
-### Linux
-As of version 0.0.1, we provide instructions for Ubuntu 18.04 LTS. Builds can be automated using the provided travis script.
 
-### Windows
-On windows, the library can be built 
+### Python package download and installation
+We aim to provide optimized packages for Linux, MacOS and Windows for Python 3.6 and later. 
+These are automatically delivered to Pypi, and can be downloaded and installed using pip:
 
+```shell
+    pip install eslpy
+```
+
+For linux, we build packages for the ```manylinux2014``` platform.
+Precompiled packages are built without MPI support, as there are several implementations available and in practice the desired MPI
+ implementation is imposed by the computing environment. Therefore, MPI users are encouraged to build the package from source code,
+ and compiling for a specific computing environment may yield performance gains that are not available from a generic package.
+
+#### From source code
+
+Users can also build the Python package from source and install it directly. 
+For this, the following dependencies need to be satisfied:
+* C++17 compiler
+* [CMake](https://cmake.org/) >= 3.12
+* [GSL](https://www.gnu.org/software/gsl/) >= 2.3
+* [Adept](http://www.met.reading.ac.uk/clouds/adept/) >= 2.05 
+* Optional: any Boost.MPI compatible MPI development library, such as [OpenMPI](https://www.open-mpi.org/)
+* [Python](https://www.python.org/downloads/) >= 3.6 development headers, libraries, and optionally binaries to run unit tests.
+* [Boost](https://www.boost.org/users/download/) >= 1.65, with Boost.Python configured (mandatory) and Boost.MPI (optional)
+
+
+Once the dependencies are satisfied one can build install with pip (provided PEP 517 is supported, which is the case for recent updates of pip)
+
+```shell
+    pip install .
+```
+
+### C++ library
 
 Build with `N` processes:
 
