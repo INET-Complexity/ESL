@@ -27,7 +27,8 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install cibuildwheel scikit-build setuptools wheel twine
+        pip install --user cibuildwheel
+        pip install --user twine
 
     - name: Build and publish
       env:
@@ -39,5 +40,5 @@ jobs:
         CIBW_BEFORE_ALL_LINUX: 'yum update && yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && cat project-config.jam && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.8    :  /opt/python/cp38-cp38/bin/python    : /opt/python/cp38-cp38/include/python3.8/    : /opt/python/cp38-cp38/lib/python3.8/ ;" >> project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xvf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
 
       run: |
-        cibuildwheel --output-dir distribution --platform linux
-        twine upload distribution/*
+        python -m cibuildwheel --output-dir distribution --platform linux
+        python -m twine upload distribution/*
