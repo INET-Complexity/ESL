@@ -27,7 +27,6 @@ jobs:
           python -m pip install cibuildwheel==1.6.3 twine
 
       - name: Build and publish
-        using: 'docker'
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
