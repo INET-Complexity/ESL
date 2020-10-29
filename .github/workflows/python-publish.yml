@@ -21,17 +21,13 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Install docker environment for build
-        run: |
-          sudo apt-get update -qq
-          sudo apt install docker.io
-
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install cibuildwheel==1.6.3 twine
 
       - name: Build and publish
+        using: 'docker'
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
