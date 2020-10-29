@@ -14,7 +14,6 @@ jobs:
         python_minor_version: [6, 7, 8, 9]
 
     steps:
-      - continue-on-error: true
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         name: Install Python
@@ -38,3 +37,5 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir distribution --platform linux
           python -m twine upload distribution/*
+
+        continue-on-error: true
