@@ -24,10 +24,12 @@ For release 0.0.2, we aim to provide the following market mechanisms.
 
 ## Getting the library
 
+:warning: ** The python bindings are currently under development, and are not at parity with the C++ code. 
+
 
 ### Python package download and installation
 We aim to provide optimized packages for Linux, MacOS and Windows for Python 3.6 and later. 
-These are automatically delivered to Pypi, and can be downloaded and installed using pip:
+These are automatically delivered to Pypi, and can be downloaded and installed using pip.
 
 ```shell
     pip install eslpy
