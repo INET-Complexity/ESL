@@ -15,11 +15,12 @@ jobs:
         python_minor_version: [6, 7, 8, 9]
 
     steps:
+      - continue-on-error: true
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         name: Install Python
         with:
-          python-version: '3.8' # this is the Python for the build machine
+          python-version: '3.${{matrix.python_minor_version}}'
 
       - name: Install Python dependencies
         run: |
