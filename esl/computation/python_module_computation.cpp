@@ -38,23 +38,31 @@ using esl::computation::agent_timing;
 
 
 namespace esl::computation {
+
+
     BOOST_PYTHON_MODULE(_computation)
     {
-        ////////////////////////////////////////////////////////////////////////
-        // export block_pool memory block
-        class_<block_pool::block<object>>("block");
 
-        ////////////////////////////////////////////////////////////////////////
+        // export block_pool memory block
+        class_<block_pool::block<object>>("block")
+            .def_readwrite("data", &block_pool::block<object>::data)
+            .def_readwrite("index", &block_pool::block<object>::index)
+            ;
+
+
         // computational environment base class with default single thread
         class_<environment>("environment")
             .def("step", &environment::step)
-            .def("run", &environment::run);
+            .def("run", &environment::run)
+            ;
 
-        ////////////////////////////////////////////////////////////////////////
+
         // timing information
         class_<agent_timing>("agent_timing")
             .def_readwrite("messaging", &agent_timing::messaging)
             .def_readwrite("acting", &agent_timing::acting);
+
+
     }
 
 }

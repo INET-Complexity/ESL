@@ -61,7 +61,6 @@ namespace esl::computation {
                 boost::serialization::make_binary_object(&messaging,
                                                          sizeof(messaging)));
 
-
             boost::serialization::make_nvp(
                 "acting",
                 boost::serialization::make_binary_object(&acting,

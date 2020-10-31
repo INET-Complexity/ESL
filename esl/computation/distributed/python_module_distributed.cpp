@@ -43,7 +43,6 @@ BOOST_PYTHON_MODULE(_distributed)
         .def_readwrite("location", &activation::location)
         .def_readwrite("activated", &activation::activated);
 
-
     class_<migration>("migration")
         .def_readwrite("source", &migration::source)
         .def_readwrite("target", &migration::target)

@@ -1,17 +1,27 @@
-import sys
+import os
 import pathlib
+import sys
 
+# The relative path of the source code to the setup file
+source_directory = 'esl'
 
 try:
+    # Attempt to load skbuild, which is necessary to build this python package
     from skbuild import setup
 except ImportError:
-    print('Please update pip, you need pip 10 or greater,\n'
-          ' or you need to install the PEP 518 requirements in pyproject.toml yourself', file=sys.stderr)
-    raise
+    error_message = 'Please update pip, you need pip 10 or greater, or install the skbuild package, or install the ' \
+                    'PEP 518 requirements in pyproject.toml '
+    print(error_message, file=sys.stderr)
+    raise ImportError(error_message)
+
 
 def read_version():
+    """
+    Reads the library version number from the unified version files, esl/version
+    :return:    Version tuple, in (major, minor, patch) format.
+    """
     try:
-        with open("esl/version", "r") as source_version:
+        with open(f"{source_directory}/version", "r") as source_version:
             lines = source_version.readlines()
             version = []
             for line in lines:
@@ -21,16 +31,33 @@ def read_version():
 
             return tuple(version)
     except:
-        raise ValueError("Can not read esl/version file.")
+        raise ValueError(f"Can not read {source_directory}/version file.")
+
 
 def get_packages():
-    pass
+    """
+    Walks the source directory to find python modules. A module has an __init__.py file in the directory.
+    :return:    A dictionary mapping package names to subdirectories, e.g. {'esl.simulation': 'esl/simulation'}
+    """
+    packages = dict()
+    for subdirectory, dirs, files in os.walk(source_directory):
+        for file in files:
+            entry = subdirectory + os.sep + file
+            if entry.endswith("__init__.py"):
+                packages[subdirectory.replace('/', '.')] = subdirectory
+    return packages
 
+
+packages = get_packages()
+
+# Set up the package, together with metadata that will be visible on package repositories such as Pypi
 setup(
     name                = 'eslpy',
+
     version             = '.'.join(map(str, read_version())),
     description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
 
+    # This loads the README file, and allows repositories such as Pypi to render the readme using markdown
     long_description    = (pathlib.Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
 
@@ -46,18 +73,9 @@ setup(
                           ],
 
     license             = 'Apache License 2.0',
-    packages            = [ 'esl'
-                          , 'esl.computation'
-                          , 'esl.computation.distributed'
-                          , 'esl.mathematics'
-                          , 'esl.simulation'
-                          ],
 
-    package_dir         = { 'esl': 'esl'
-                          , 'esl.computation': 'esl/computation'
-                          , 'esl.computation.distributed': 'esl/computation/distributed'
-                          , 'esl.mathematics': 'esl/mathematics'
-                          , 'esl.simulation': 'esl/simulation'
-                          },
+    packages            = list(packages.keys()),
+    package_dir         = packages,
+
     cmake_install_dir   = 'esl'
 )

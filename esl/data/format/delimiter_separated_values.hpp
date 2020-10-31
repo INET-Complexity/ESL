@@ -33,9 +33,19 @@
 
 namespace esl::data::format::delimiter_separated_values {
 
-
-    std::string render(const std::string &text, char delimiter = ',',
-                       char quote = '"', char escape = '\\')
+    ///
+    /// \brief  Renders a string with DSV escape characters
+    ///
+    /// \param text
+    /// \param delimiter
+    /// \param quote
+    /// \param escape
+    /// \return
+    std::string render( const std::string &text
+                      , const char delimiter = ','
+                      , const char quote = '"'
+                      , const char escape = '\\'
+                      )
     {
         bool quote_ = false;
         if(text.find(delimiter) != std::string::npos) {
@@ -49,7 +59,7 @@ namespace esl::data::format::delimiter_separated_values {
             stream_ << quote;
         }
 
-        for(auto c : text) {
+        for(auto c: text) {
             if(quote == c || escape == c) {
                 stream_ << escape;
             }
@@ -63,34 +73,42 @@ namespace esl::data::format::delimiter_separated_values {
     }
 
 
-    template<typename T>
-    void extract_element(std::ostream &s, T v)
+    template<typename element_t_>
+    void extract_element(std::ostream &s, element_t_ v)
     {
         s << v;
     }
 
+    ///
+    /// \brief  Specialization for strings, which must be escaped.
+    ///
+    /// \param s
+    /// \param v
     template<>
-    void extract_element(std::ostream &s, std::string v)
+    void extract_element(std::ostream &s, const std::string &v)
     {
         s << render(v);
     }
 
 
-    template<typename... Ts>
-    static void extract_element(std::ostream &s, std::string &&first,
-                                Ts &&... rest)
+    template<typename... elements_t_>
+    static void extract_element( std::ostream &s
+                               , std::string &&first
+                               , elements_t_ &&... rest)
     {
         char delimiter_ = ',';
         s << render(first) << delimiter_;
-        extract_element(s, std::forward<Ts>(rest)...);
+        extract_element(s, std::forward<elements_t_>(rest)...);
     }
 
-    template<typename T, typename... Ts>
-    static void extract_element(std::ostream &s, T &&first, Ts &&... rest)
+    template<typename element_t_, typename... elements_t_>
+    static void extract_element(std::ostream &s
+                               , element_t_ &&first
+                               , elements_t_ &&... rest)
     {
         char delimiter_ = ',';
         s << first << delimiter_;
-        extract_element(s, std::forward<Ts>(rest)...);
+        extract_element(s, std::forward<elements_t_>(rest)...);
     }
 
     ///
@@ -122,9 +140,6 @@ namespace esl::data::format::delimiter_separated_values {
             render_row(stream, record_);
         }
     }
-
-
-
 
 }  // namespace esl::data::format::delimiter_separated_values
 

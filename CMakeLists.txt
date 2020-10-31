@@ -128,7 +128,8 @@ IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
 
-    IF(FALSE)
+    #
+    IF(ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
         LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
                 python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     ELSE()
@@ -147,10 +148,12 @@ ENDIF()
 # If using the Message Passing Interface, enable MPI
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi)
+
+    # We can expose the python bindings for MPI as well, to permit direct
     # And enable MPI_Python
-    IF(WITH_PYTHON)
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python)
-    ENDIF()
+    #IF(WITH_PYTHON)
+    #    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python)
+    #ENDIF()
 ENDIF()
 
 ################################################################################
@@ -313,7 +316,6 @@ ELSE()
 ENDIF()
 
 ################################################################################
-
 # This needs to be at this position, because for MSVC we need to issue a LINK_DIRECTORIES
 # call before this to get it right
 ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
@@ -324,13 +326,12 @@ IF(MSVC)
     # multi-processor compilation
     TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
 
-    #
     SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
     SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
 ENDIF()
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
-    TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
+    # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
 endif()

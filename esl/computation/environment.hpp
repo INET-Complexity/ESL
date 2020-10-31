@@ -92,6 +92,7 @@ namespace esl {
             ///
             virtual void run(simulation::model &simulation);
 
+
         protected:
             // allows the model to call send_messages
             friend class esl::simulation::model;
@@ -113,7 +114,6 @@ namespace esl {
             /// \brief  tasks that are to be executed before simulation::step
             ///
             virtual void before_step();
-
 
             ///
             /// \brief  tasks that are to be executed after each

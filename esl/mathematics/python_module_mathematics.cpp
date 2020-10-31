@@ -37,12 +37,9 @@ using namespace boost::python;
 namespace esl::mathematics {
     BOOST_PYTHON_MODULE(_mathematics)
     {
-        /**
-         * @TODO 2020-10-01: exposing this to python leads to issues with
-         *                   linking and thread local storage.
 
+        /*
         class_<variable>( "variable",init<>())
-            .def(init<std::uint64_t>())
             .def(init<double>())
             .def(self + self)
             .def(self += self)
@@ -52,18 +49,17 @@ namespace esl::mathematics {
             .def(self *= self)
             .def(self / self)
             .def(self /= self)
-//            .def(self % self)
-//            .def(self %= self)
-//            .def(float_(self))
-            .def("value", &variable::value)
+            //.def("value", &variable::value)
             ;
+        */
+
 
         ///
         /// Overload only the specialization, because the other one is merely
         /// a cast and we can do that in Python also.
         ///
-        def("value", value<variable>);
-         */
+        //def("value", &value<variable>);
+
     }
 }
 
