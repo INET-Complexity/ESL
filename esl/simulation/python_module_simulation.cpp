@@ -37,21 +37,31 @@
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
-#include <boost/make_shared.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/object.hpp>
 using namespace boost::python;
+#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
+
+#include <boost/make_shared.hpp>
 
 #include <vector>
 using std::vector;
 
+// as section of typedefs
 typedef esl::entity<boost::python::object> python_entity;
 typedef esl::identity<boost::python::object> python_identity;
+typedef esl::entity<esl::simulation::world> world_entity;
+
+
+
+
 
 boost::shared_ptr<python_identity>
 convert_digit_list(const boost::python::list &list)
 {
     vector<uint64_t> result_;
     for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
-        result_.push_back(boost::python::extract<double>(list[i]));
+        result_.push_back(boost::python::extract<std::uint64_t>(list[i]));
     }
     return boost::make_shared<python_identity>(result_);
 }
@@ -84,7 +94,6 @@ namespace esl::simulation {
 
     BOOST_PYTHON_MODULE(_simulation)
     {
-        ////////////////////////////////////////////////////////////////////////
 
         class_<esl::entity<object>, boost::noncopyable>(
             "entity", init<identity<object>>())
@@ -94,27 +103,22 @@ namespace esl::simulation {
             .def("__eq__", &esl::entity<object>::operator==<object>)
             .def("__ne__", &esl::entity<object>::operator!=<object>);
 
-        ////////////////////////////////////////////////////////////////////////
 
         class_<python_identity>("identity")
             .def("__init__", make_constructor(convert_digit_list))
-
             .def_readonly("digits", &python_identity::digits)
 
             .def("__str__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
             .def("__repr__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
-            // clang-format off
-        .def("__eq__", &python_identity::operator== <object>)
-        .def("__ne__", &python_identity::operator!= <object>)
-        .def("__lt__", &python_identity::operator<  <object>)
-        .def("__le__", &python_identity::operator<= <object>)
-        .def("__gt__", &python_identity::operator>  <object>)
-        .def("__ge__", &python_identity::operator>= <object>);
-        // clang-format on
 
-        ////////////////////////////////////////////////////////////////////////
+            .def("__eq__", &python_identity::operator== <object>)
+            .def("__ne__", &python_identity::operator!= <object>)
+            .def("__lt__", &python_identity::operator<  <object>)
+            .def("__le__", &python_identity::operator<= <object>)
+            .def("__gt__", &python_identity::operator>  <object>)
+            .def("__ge__", &python_identity::operator>= <object>);
 
         class_<model>("model",
                       init<esl::computation::environment &,
@@ -123,7 +127,6 @@ namespace esl::simulation {
             .def_readwrite("end", &model::end)
             .def_readwrite("time", &model::time);
 
-        ////////////////////////////////////////////////////////////////////////
 
         def("time_point", python_time_point);
 
@@ -140,9 +143,16 @@ namespace esl::simulation {
             .def("__repr__", &time_interval::representation)
             .def("__str__", &time_interval::representation);
 
-        ////////////////////////////////////////////////////////////////////////
 
-        class_<world>("world");
+        class_<world, bases<world_entity>>("world", init<>())
+            .def_readonly("identifier", &world::entity<world>::identifier)
+            //.def("create", &world::entity<world>::identifier)
+
+            .def("__repr__", &world::entity<world>::representation)
+            ;
+
+        implicitly_convertible<world, identity<world>>();
+
     }
 
 }

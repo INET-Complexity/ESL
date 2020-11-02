@@ -24,10 +24,9 @@
 ///             requirements in CITATION.cff
 ///
 """
-import esl.time
-import pytest
+import esl
 
-
+__ = """
 def test_time_built():
     if not hasattr(esl.time, "time_interval"):
         pytest.fail("module missing: esl.time.time_interval")
@@ -58,3 +57,4 @@ def test_time_step():
     r = "[0,1)"
     assert str(step) == r
     assert repr(step) == r
+"""

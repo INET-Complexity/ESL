@@ -42,15 +42,13 @@ using namespace boost::python;
 namespace esl::law {
     BOOST_PYTHON_MODULE(_law)
     {
-        ////////////////////////////////////////////////////////////////////////
-
+        /*
         class_<esl::law::government>
         ( "government", init<std::string>())
         .def_readwrite("title", &esl::law::government::title)
         ;
 
 
-        ////////////////////////////////////////////////////////////////////////
 
         class_<esl::law::legal_person>(
             "legal_person",
@@ -67,25 +65,22 @@ namespace esl::law {
             .def_readonly("primary_jurisdiction",
                           &esl::law::legal_person::primary_jurisdiction);
 
-        ////////////////////////////////////////////////////////////////////////
 
         class_<natural_person>
             ( "natural_person", init<esl::geography::iso_3166_1_alpha_2>())
             .def_readonly("nationality", &natural_person::nationality)
             ;
 
-        ////////////////////////////////////////////////////////////////////////
         class_<organization, bases<legal_person>>(
             "organization",
             init<const esl::identity<esl::agent> &,
                 const esl::law::jurisdiction &>());
 
-        ////////////////////////////////////////////////////////////////////////
 
         class_<property, bases<entity<property>>>( "property"
                                                  , init<identity<property>>())
             .def("name", &property::name);
-
+        */
 
 
     }

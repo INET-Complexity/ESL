@@ -1,9 +1,9 @@
-/// \file   python_module.cpp
+/// \file   execution_report.cpp
 ///
 /// \brief
 ///
 /// \authors    maarten
-/// \date       2020-08-30
+/// \date       2020-11-01
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,42 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/mathematics/python_module_mathematics.hpp>
-
-
-#ifdef WITH_PYTHON
-
-#include <esl/mathematics/variable.hpp>
-
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include <boost/python.hpp>
-using namespace boost::python;
-
-
-namespace esl::mathematics {
-    BOOST_PYTHON_MODULE(_mathematics)
-    {
-        class_<variable>( "variable", init<>())
-            .def(init<double>())
-            .def(self + self)
-            .def(self += self)
-            .def(self - self)
-            .def(self -= self)
-            .def(self * self)
-            .def(self *= self)
-            .def(self / self)
-            .def(self /= self)
-            //.def("value", &variable::value)
-            ;
-
-
-        ///
-        /// Overload only the specialization, because the other one is merely
-        /// a cast and we can do that in Python also.
-        ///
-        //def("value", &value<variable>);
-
-    }
-}
-
-#endif
+#include "execution_report.hpp"

@@ -97,13 +97,27 @@ namespace esl {
         ///
         /// \param identifier
         explicit entity(identity<entity_type_> identifier)
-        : identifier(std::move(identifier)), children_(0)
-        {}
+        : identifier(std::move(identifier))
+        , children_(0)
+        {
 
+        }
+
+        explicit entity(std::vector<typename identity<entity_type_>::digit_t> digits)
+        : entity(identity<entity_type_>(digits))
+        {
+
+        }
+
+        ///
+        /// \brief
+        ///
+        /// \tparam child_t_
+        /// \return
         template<typename child_t_>
         identity<child_t_> create()
         {
-            auto prefix_ = std::vector<std::uint64_t>(this->identifier.digits);
+            auto prefix_ = std::vector<std::uint64_t>(identifier.digits);
             prefix_.push_back(children_);
             ++children_;
             prefix_.shrink_to_fit();
@@ -155,6 +169,20 @@ namespace esl {
             return this->identifier != operand.identifier;
         }
 
+        [[nodiscard]] virtual /*C++20 constexpr*/ std::string name() const
+        {
+            std::stringstream stream_;
+            stream_ << "entity" << ' ' << identifier;
+            return stream_.str();
+        }
+
+        /*C++20 constexpr*/ [[nodiscard]] std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << identifier;
+            return stream_.str();
+        }
+
         ///
         /// \param stream output-stream
         /// \param e entity
@@ -162,14 +190,7 @@ namespace esl {
         friend std::ostream &operator<<(std::ostream &stream,
                                         const entity<entity_type_> &e)
         {
-            return stream << e.identifier;
-        }
-        
-        virtual /*C++20 constexpr*/ std::string name() const
-        {
-            std::stringstream stream_;
-            stream_ << "entity" << ' ' << this->identifier;
-            return stream_.str();
+            return stream << e.representation();
         }
 
         ///

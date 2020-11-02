@@ -1,11 +1,10 @@
-import esl.identity
-import esl.communicator
+import esl
 
 
 def test_communicator():
-    sender = esl.identity.identity([1, 2, 3])
+    sender = esl.simulation.identity([1, 2, 3])
 
-    recipient = esl.identity.identity([1, 2, 2])
+    recipient = esl.simulation.identity([1, 2, 2])
 
     communicator_instance = esl.communicator.communicator()
 

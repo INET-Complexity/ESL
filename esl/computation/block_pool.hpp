@@ -52,6 +52,9 @@ namespace esl::computation::block_pool {
         ///
         element_t_ data;
 
+        ///
+        /// \brief
+        ///
         typedef std::uint64_t index_t;
 
         ///
@@ -83,10 +86,10 @@ namespace esl::computation::block_pool {
         typedef element_t_ value_type;
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
-        typedef element_t_ &reference;
-        typedef const element_t_ &const_reference;
-        typedef element_t_ *pointer;
-        typedef const element_t_ *const_pointer;
+        typedef value_type &reference;
+        typedef const value_type &const_reference;
+        typedef value_type *pointer;
+        typedef const value_type *const_pointer;
 
         typedef index_t_ index;
 
@@ -132,11 +135,16 @@ namespace esl::computation::block_pool {
 
         ~static_block_pool() = default;
 
-        size_type size() const
+        [[nodiscard]] size_type size() const
         {
             return size_;
         }
 
+        ///
+        /// \brief  Places a new element `e` into the block_pool
+        ///
+        /// \param e
+        /// \return iterator pointing at the element
         std::pair<index, block<element_t_> *> emplace(const element_t_ &e)
         {
             if(size_ >= capacity_) {
@@ -206,7 +214,7 @@ namespace esl::computation::block_pool {
 
         constexpr reference operator [] (index i)
         {
-            return *(blocks + (i % capacity_));
+            return blocks[i % capacity_].data;
         }
 
         constexpr const_reference operator [] (index i) const

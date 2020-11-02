@@ -25,12 +25,12 @@
 #ifndef ESL_SIMULATION_IDENTIFIABLE_AS_HPP
 #define ESL_SIMULATION_IDENTIFIABLE_AS_HPP
 
-
 #include <type_traits>
+
 #include <esl/simulation/identity.hpp>
 
-namespace esl {
 
+namespace esl {
     // forward declaration, see simulation/entity.hpp
     template<typename entity_type_>
     struct entity;
@@ -93,7 +93,7 @@ namespace esl {
 #include <boost/mpi.hpp>
 namespace boost ::mpi {
     ///
-    /// \brief Empty object, therefore trivially an mpi dataype
+    /// \brief Empty object, therefore trivially an mpi datatype
     /// \tparam derived_type_
     template<typename derived_type_>
     struct is_mpi_datatype<esl::identifiable_as<derived_type_>>

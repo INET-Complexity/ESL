@@ -356,6 +356,8 @@ ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
 ################################################################################
 #   Add tests
 ################################################################################
+
+FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
 FOREACH(test_src ${TEST_SRCS})
     GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
 
@@ -368,19 +370,19 @@ FOREACH(test_src ${TEST_SRCS})
     IF(${test_name} MATCHES "^(test_mpi_)")
         IF(WITH_MPI)
             IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
-                MESSAGE("\t MPI PYTHON TEST")
+                MESSAGE("\t MPI PYTHON TEST" ${test_name})
                 ADD_TEST(NAME ${test_name}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                         COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
             ELSE()
-                MESSAGE("\t MPI TEST")
+                MESSAGE("\t MPI TEST" ${test_name})
                 ADD_TEST(NAME ${test_name}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                         COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
             ENDIF()
         ENDIF()
     ELSEIF(${test_name} MATCHES "^(test_python_)")
-        MESSAGE("\t PYTHON TEST")
+        MESSAGE("\t PYTHON TEST" ${test_name})
         ADD_TEST(NAME ${test_name}
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                 COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})

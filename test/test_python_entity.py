@@ -1,13 +1,12 @@
-import esl.identity
-import esl.entity
+import esl
 
 
 def test_entity():
-    i = esl.identity.identity([1, 2, 3])
-    e = esl.entity.entity(i)
+    i = esl.simulation.identity([1, 2, 3])
+    e = esl.simulation.entity(i)
 
     assert(e.identifier == i)
-    j = esl.identity.identity([1, 2, 4])
-    f = esl.entity.entity(j)
+    j = esl.simulation.identity([1, 2, 4])
+    f = esl.simulation.entity(j)
     assert(e != f)
 

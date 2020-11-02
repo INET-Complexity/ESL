@@ -26,4 +26,47 @@
 #define ESL_SIMULATION_PYTHON_MODULE_HPP
 
 
+#ifdef WITH_PYTHON
+#include <esl/simulation/entity.hpp>
+
+
+
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
+#include <boost/python/converter/shared_ptr_to_python.hpp>
+#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
+
+namespace esl::simulation::python_module {
+    ///
+    /// \brief
+    ///
+    template<typename parent_t_>
+    void helper_create_child_identity(parent_t_ &e)
+    {
+       // e.create<>()
+    }
+
+    ///
+    /// \brief
+    ///
+    void helper_create_child_entity(const boost::python::object& python_object)
+    {
+        boost::python::extract<boost::python::object> extractor_(python_object);
+        boost::python::object object_ = extractor_();
+        auto name_ = boost::python::extract<std::string>(
+            object_.attr("__class__").attr("__name__"));
+
+        //return boost::python::converter::shared_ptr_to_python(
+        //    std::make_shared()
+        //);
+    }
+
+
+
+
+} // namespace esl::simulation::python_module
+
+#endif // WITH_PYTHON
+
 #endif  // ESL_SIMULATION_PYTHON_MODULE_HPP

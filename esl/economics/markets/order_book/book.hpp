@@ -33,28 +33,13 @@
 #include <string>
 #include <utility>
 
-#include <esl/economics/markets/order_book/order.hpp>
-#include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/order_book/basic_book.hpp>
+
 #include <esl/computation/block_pool.hpp>
 #include <esl/mathematics/interval.hpp>
 #include <esl/data/log.hpp>
 
-
 namespace esl::economics::markets::order_book {
-
-    ///
-    /// \todo:  once the functionality is stable between different LOB
-    ///         implementations, we provide a stable API through this base class
-    ///
-    struct basic_book
-    {
-        basic_book( )
-        {
-
-        }
-
-        virtual ~basic_book() = default;
-    };
 
 
     ///
@@ -62,55 +47,37 @@ namespace esl::economics::markets::order_book {
     ///
     namespace statically_allocated {
 
-        struct execution_report
-        {
-            enum state_t
-            {   invalid
-            ,   cancel
-            ,   match
-            ,   placement
-            } state : 2;
 
-            std::uint32_t               quantity;
-            std::uint64_t               identifier;
-            limit_order_message::side_t side;           // possibly superfluous
-            quote                       limit;
-            identity<agent>             owner;
-
-            friend std::ostream &operator << (std::ostream &stream, const execution_report &e)
-            {
-                switch(e.state){
-                case invalid:
-                    stream << "invalid";
-                    break;
-                case cancel:
-                    stream << "cancel";
-                    break;
-                case match:
-                    stream << "match";
-                    break;
-                case placement:
-                    stream << "placement";
-                    break;
-                }
-                stream << " " << e.owner
-                       << " " << e.quantity
-                       << "@" << double(e.limit ) * e.limit.lot;
-
-                return stream;
-            }
-        };
-
-        template< size_t max_orders_ = 0x1 << 17
+        template< size_t max_orders_ = 0x1ULL << 17ULL
                 , typename quantity_t_ = std::uint32_t >
         class book
         : public basic_book
         {
         public:
+            ///
+            ///
+            ///
             struct record
             {
+                ///
+                /// \brief
+                ///
+                quote limit;
+
+
+                ///
+                /// \brief  Order quantity remaining
+                ///
                 quantity_t_ quantity;
+
+                ///
+                /// \brief  The market participant that submitted the order.
+                ///
                 identity<agent> owner;
+
+                ///
+                /// \brief  Pointer to the next block in the order-queue
+                ///
                 computation::block_pool::block<record> *successor;
             };
 
@@ -122,15 +89,6 @@ namespace esl::economics::markets::order_book {
             typedef typename pool_t::index index;
 
             typedef std::int64_t limit;
-
-            /*//
-            /// \brief      Number of ticks in the currency unit.
-            /// \example    When prices are quoted in USD, and to a precision of
-            ///             cents, the number of ticks per currency unit is 100.
-            ///
-            std::uint32_t ticks;
-             */
-
 
             typedef computation::block_pool::block<record> *record_pointer;
             typedef std::pair<record_pointer, record_pointer> limit_type;
@@ -152,7 +110,13 @@ namespace esl::economics::markets::order_book {
             ///
             mathematics::interval<quote> valid_limits;
 
+            ///
+            /// \brief  pointer into the `limits_` datastructure to the best
+            ///         bid offer
+            ///
             limit_type *best_bid_;
+
+
             limit_type *best_ask_;
 
             ///
@@ -168,6 +132,11 @@ namespace esl::economics::markets::order_book {
             std::function<quote(const limit &limit)> decode;
 
         public:
+            ///
+            /// \brief      Number of ticks in the currency unit.
+            /// \example    When prices are quoted in USD, and to a precision of
+            ///             cents, the number of ticks per currency unit is 100.
+            ///
             std::uint32_t ticks;
 
             ///
@@ -201,26 +170,23 @@ namespace esl::economics::markets::order_book {
                 return quote( ((reverse )/ (limits_.size()-1) +  intercept_) / valid_limits.lower.lot, valid_limits.lower);
             }
 
-            std::vector<execution_report> reports;
-
             ///
+            /// \brief
             ///
+            /// \details    The tick-size is set to the minimum lot size taken
+            ///             from the minimum and maximum quotes, i.e.
+            ///             `ticks = min(minimum.lot, maximum.lot)`
             ///
             /// \param minimum
             /// \param maximum
-            /// \param decimals
-            book( quote minimum
-                , quote maximum
-                //, std::uint32_t ticks = 10'000
-                //, const std::function<bool(const quote &quote, limit &out_limit)>& encode = default_encode
-                //, std::function<quote(const limit &limit)> decode = default_decode
-                )
+            ///
+            book( const quote &minimum, const quote &maximum)
             : basic_book( )
             , pool_()
             , valid_limits(minimum, maximum)
             //, encode(encode)
             //, decode(decode)
-            , ticks(minimum.lot)
+            , ticks(std::min(minimum.lot, maximum.lot))
             {
                 reports.reserve(32);
                 assert(!valid_limits.empty());
@@ -284,7 +250,7 @@ namespace esl::economics::markets::order_book {
             /// \brief  Returns the best bid, the highest bid price, if any
             ///
             /// \return
-            [[nodiscard]] std::optional<quote> bid() const
+            [[nodiscard]] std::optional<quote> bid() const override
             {
                 if(!best_bid_->first){
                     return {};
@@ -297,7 +263,7 @@ namespace esl::economics::markets::order_book {
             /// \brief  Returns the best ask, meaning lowest ask price, if any
             ///
             /// \return
-            [[nodiscard]] std::optional<quote> ask() const
+            [[nodiscard]] std::optional<quote> ask() const override
             {
                 if(!best_ask_->first){
                     return {};
@@ -337,11 +303,11 @@ namespace esl::economics::markets::order_book {
 
                     auto quote_ = decode(level - &limits_[0]);
 
-                    // execution report for aggressor
+                    // execution report for liquidity taker
                     reports.emplace_back(execution_report
                     { .state      = execution_report::match
                     , .quantity   = execution_size_
-                    , .identifier = std::numeric_limits<uint64_t>::max()
+                    , .identifier = basic_book::direct_order
                     , .side       = order.side
                     , .limit      = quote_
                     , .owner      = order.owner
@@ -398,7 +364,7 @@ namespace esl::economics::markets::order_book {
                     reports.emplace_back(execution_report
                         { .state      = execution_report::invalid
                         , .quantity   = order.quantity
-                        , .identifier = std::numeric_limits<std::uint64_t>::max()
+                        , .identifier = basic_book::direct_order
                         , .side       = order.side
                         , .limit      = order.limit
                         , .owner      = order.owner
@@ -443,12 +409,12 @@ namespace esl::economics::markets::order_book {
                         || order.lifetime == limit_order_message::fill_or_kill){
                         // cancel an immediate/fill order that could not be matched
                         reports.emplace_back(execution_report
-                            { .state    = execution_report::cancel
-                            , .quantity = order.quantity
-                            , .identifier = std::numeric_limits<std::uint64_t>::max()
-                            , .side     = order.side
-                            , .limit    = order.limit
-                            , .owner    = order.owner
+                            { .state      = execution_report::cancel
+                            , .quantity   = order.quantity
+                            , .identifier = basic_book::direct_order
+                            , .side       = order.side
+                            , .limit      = order.limit
+                            , .owner      = order.owner
                             });
                         return;
                 }
@@ -462,7 +428,7 @@ namespace esl::economics::markets::order_book {
                     reports.emplace_back(execution_report
                     { .state        = execution_report::cancel
                     , .quantity     = remainder_
-                    , .identifier   = std::numeric_limits<std::uint64_t>::max()
+                    , .identifier   = basic_book::direct_order
                     , .side         = order.side
                     , .limit        = order.limit
                     , .owner        = order.owner
@@ -471,7 +437,8 @@ namespace esl::economics::markets::order_book {
                 }
 
                 auto block_ = pool_.emplace(record
-                      { .quantity  = remainder_
+                      { .limit     = order.limit
+                      , .quantity  = remainder_
                       , .owner     = order.owner
                       , .successor = nullptr
                 });
@@ -507,20 +474,30 @@ namespace esl::economics::markets::order_book {
             ///         the order book.
             ///
             /// \param order
-            void cancel(typename computation::block_pool::block<record>::index_t order)
+            void cancel(basic_book::order_identifier order)
             {
+                auto index_ = (std::uint64_t)( order );
+
                 const record &order_ = pool_[order];
+
+                auto side_ = limit_order_message::side_t::buy;
+                // if there is no bid, or the best bid is lower than this order,
+                // this must be a sell order
+                auto best_bid_ = bid();
+                if(!best_bid_.has_value() || best_bid_.value() < order_.limit){
+                    side_ = limit_order_message::side_t::sell;
+                }
 
                 reports.emplace_back(execution_report
                  { .state        = execution_report::cancel
                  , .quantity     = order_.quantity
                  , .identifier   = order
-                 //, .side         = order_.side
-                 //, .limit        = order_.limit
+                 , .side         = side_
+                 , .limit        = order_.limit
                  , .owner        = order_.owner
                  });
 
-                pool_.erase(order);
+                pool_.erase(index_);
             }
 
             ///
@@ -604,58 +581,173 @@ namespace esl::economics::markets::order_book {
         ///
         /// \todo:
         ///
-        class book_binary_tree
+        class binary_tree_book
+        : public basic_book
         {
         public:
-            typedef std::uint64_t index;
+
 
         private:
-            index next_;
+            basic_book::order_identifier  next_;
 
+
+            std::map<basic_book::order_identifier, quote> limit_orders_;
         public:
-            book_binary_tree()
-            :   next_(0)
+            binary_tree_book()
+            : next_(0)
             {
-                throw std::logic_error("Not implemented");
+
             }
 
-            bool insert(const limit_order_message &order);
-
-            void erase(index identifier);
-
-            limit_order_message &find( limit_order_message::side_t side
-                                     , index identifier);
-
-            bool match(std::queue<limit_order_message> &);
-
-            [[nodiscard]] price spread() const
-            {
-                return orders_ask.cbegin()->first - orders_bid.cbegin()->first;
-            }
-
-            void match(limit_order_message &bid, limit_order_message &ask);
-
-            typedef std::multimap< price
-                                 , std::pair<index, limit_order_message>
+            typedef std::multimap< quote
+                                 , std::pair<basic_book::order_identifier , limit_order_message>
                                  , std::greater<>
                                  > bid_t;
 
-            typedef std::multimap< price
-                                 , std::pair<index, limit_order_message>
+            typedef std::multimap< quote
+                                 , std::pair<basic_book::order_identifier , limit_order_message>
                                  , std::less<>
                                  > ask_t;
 
             bid_t orders_bid;
             ask_t orders_ask;
+
+
+            [[nodiscard]] std::optional<quote> bid() const override
+            {
+                if(orders_bid.empty()){
+                    return {};
+                }
+                return quote(orders_bid.begin()->first);
+            }
+
+
+            [[nodiscard]] std::optional<quote> ask() const override
+            {
+                if(orders_ask.empty()){
+                    return {};
+                }
+                return quote(orders_ask.begin()->first);
+            }
+
+            ///
+            /// \brief
+            ///
+            /// \param order
+            void insert(const limit_order_message &order) override
+            {
+                if(limit_order_message::side_t::buy == order.side){
+                    auto remainder_ = order.quantity;
+                    for( auto i = orders_ask.begin()
+                       ; i != orders_ask.end() && order.limit >= i->first
+                       ; ++ i){
+
+                        auto executed_ = std::min(order.quantity, i->second.second.quantity);
+                        remainder_ -= executed_;
+
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::match,
+                            .quantity   = executed_,
+                            .identifier = direct_order,
+                            .side       = order.side,
+                            .limit      = i->second.second.limit,
+                            .owner      = order.owner
+                            });
+
+                        i->second.second.quantity -= executed_;
+
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::match,
+                            .quantity   = executed_,
+                            .identifier = direct_order,
+                            .side       = i->second.second.side,
+                            .limit      = i->second.second.limit,
+                            .owner      = i->second.second.owner
+                        });
+
+                        if(0 == i->second.second.quantity){
+                            orders_ask.erase(i);
+                            i = orders_ask.begin();
+                            limit_orders_.erase(i->second.first);
+                        }
+                    }
+
+                    if(remainder_ > 0) {
+                        // place remainder
+                        auto pair_ = std::make_pair(next_, order);
+                        orders_bid.emplace(order.limit, pair_);
+                        limit_orders_.emplace(next_, order.limit);
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::placement,
+                            .quantity   = order.quantity,
+                            .identifier = next_,
+                            .side       = order.side,
+                            .limit      = order.limit,
+                            .owner      = order.owner});
+                        ++next_;
+                    }
+                }else{
+                    auto remainder_ = order.quantity;
+                    for( auto i = orders_bid.begin()
+                        ; i != orders_bid.end() && order.limit <= i->first
+                        ; ++ i){
+
+                        auto executed_ = std::min(order.quantity, i->second.second.quantity);
+                        remainder_ -= executed_;
+
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::match,
+                            .quantity   = executed_,
+                            .identifier = direct_order,
+                            .side       = order.side,
+                            .limit      = i->second.second.limit,
+                            .owner      = order.owner
+                        });
+
+                        i->second.second.quantity -= executed_;
+
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::match,
+                            .quantity   = executed_,
+                            .identifier = direct_order,
+                            .side       = i->second.second.side,
+                            .limit      = i->second.second.limit,
+                            .owner      = i->second.second.owner
+                        });
+
+                        if(0 == i->second.second.quantity){
+                            orders_bid.erase(i);
+                            i = orders_bid.begin();
+                            limit_orders_.erase(i->second.first);
+                        }
+                    }
+
+                    if(remainder_ > 0) {
+                        // place remainder
+                        auto pair_ = std::make_pair(next_, order);
+                        orders_ask.emplace(order.limit, pair_);
+                        limit_orders_.emplace(next_, order.limit);
+
+                        reports.emplace_back(execution_report {
+                            .state      = execution_report::placement,
+                            .quantity   = order.quantity,
+                            .identifier = next_,
+                            .side       = order.side,
+                            .limit      = order.limit,
+                            .owner      = order.owner});
+                        ++next_;
+                    }
+                }
+            }
+
+            void cancel(order_identifier order) override
+            {
+
+            }
         };
 
-    }//dynamically_allocated
-
-
-    namespace four_heap {
         // TODO: Wellman's 4-heap data structure
-    }
-
+    }//dynamically_allocated
 
 }  // namespace esl::economics::markets::order_book
 

@@ -29,7 +29,8 @@
 
 namespace esl {
 
-    agent::agent() : agent(identity<agent>())
+    agent::agent()
+    : agent(identity<agent>())
     {}
 
     agent::agent(identity<agent> i)
