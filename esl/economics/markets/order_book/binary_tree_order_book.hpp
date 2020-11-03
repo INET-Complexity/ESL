@@ -207,6 +207,11 @@ namespace esl::economics::markets::order_book {
         {
 
         }
+
+        void display(std::uint64_t levels) const override
+        {
+
+        }
     };
 }  // namespace esl::economics::markets::order_book
 

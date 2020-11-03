@@ -47,7 +47,10 @@ namespace esl::economics::markets::order_book {
     public:
         std::map<ticker, std::shared_ptr<basic_book> > books;
 
-        explicit matching_engine(std::function<std::shared_ptr<basic_book>(void)> order_book_factory)
+        explicit matching_engine(std::function<std::shared_ptr<basic_book>(void)> order_book_factory =
+                                     [](){
+                                         return std::make_shared<binary_tree_order_book>();
+                                     })
         : order_book_factory_(order_book_factory)
         {
 
