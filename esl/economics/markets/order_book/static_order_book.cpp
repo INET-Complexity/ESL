@@ -1,9 +1,9 @@
-/// \file   exchange.hpp
+/// \file   static_order_book.cpp
 ///
 /// \brief
 ///
-/// \authors    Maarten
-/// \date       2020-06-24
+/// \authors    maarten
+/// \date       2020-11-03
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,39 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ME_EXCHANGE_HPP
-#define ME_EXCHANGE_HPP
-
-
-#include <esl/economics/markets/market.hpp>
-#include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
-
-
-namespace esl::economics::markets::order_book {
-
-    class exchange
-    : public esl::economics::market
-    {
-    private:
-
-    public:
-        using market::market;
-
-        ///
-        /// \brief  Create a market for a set of assets.
-        exchange(identity<agent> i, law::property_map<quote> traded = {});
-
-        virtual ~exchange() = default;
-
-        template<class archive_t>
-        void serialize(archive_t &archive, const unsigned int version)
-        {
-            (void)version;
-            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(market);
-        }
-
-    };
-
-};
-
-#endif //ME_EXCHANGE_HPP
+#include "static_order_book.hpp"

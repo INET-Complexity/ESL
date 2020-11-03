@@ -24,8 +24,8 @@
 ///
 
 
-#include <esl/economics/markets/order_book/book.hpp>
 #include <esl/data/log.hpp>
+#include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
 
 
 namespace esl::economics::markets::order_book {

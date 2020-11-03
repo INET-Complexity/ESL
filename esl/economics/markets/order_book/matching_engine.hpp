@@ -32,7 +32,7 @@
 #include <map>
 
 
-#include <esl/economics/markets/order_book/book.hpp>
+#include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
 #include <esl/economics/markets/order_book/order.hpp>
 #include <esl/economics/markets/ticker.hpp>
 #include <queue>

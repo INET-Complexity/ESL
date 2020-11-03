@@ -46,7 +46,7 @@ namespace esl::economics::markets {
     struct quote
     {
     private:
-        void assert_equal_type_(const quote& other) const
+        constexpr void assert_equal_type_(const quote& other) const
         {
             if(type.index() != other.type.index()){
                 throw std::logic_error("comparing quotes of different types");
@@ -107,7 +107,7 @@ namespace esl::economics::markets {
 
         quote &operator = (const quote &o) = default;
 
-        [[nodiscard]] bool operator == (const quote &other) const
+        constexpr [[nodiscard]] bool operator == (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -117,7 +117,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        [[nodiscard]] bool operator != (const quote &other) const
+        constexpr [[nodiscard]] bool operator != (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -128,7 +128,7 @@ namespace esl::economics::markets {
         }
 
 
-        [[nodiscard]] bool operator < (const quote &other) const
+        constexpr [[nodiscard]] bool operator < (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -138,7 +138,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        [[nodiscard]] bool operator > (const quote &other) const
+        constexpr [[nodiscard]] bool operator > (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -148,7 +148,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        [[nodiscard]] bool operator <= (const quote &other) const
+        constexpr [[nodiscard]] bool operator <= (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -158,7 +158,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        [[nodiscard]] bool operator >= (const quote &other) const
+        constexpr [[nodiscard]] bool operator >= (const quote &other) const
         {
             assert_equal_type_(other);
 

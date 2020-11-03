@@ -30,7 +30,7 @@
 #include <cstdint>
 #include <utility>
 #include <stdexcept>
-#include <array>
+#include <vector>
 
 
 namespace esl::computation::block_pool {
@@ -77,7 +77,7 @@ namespace esl::computation::block_pool {
     /// \tparam capacity
     /// \tparam element_t_
     template< typename element_t_
-            , size_t capacity_
+            //, size_t capacity_
             , typename index_t_ = std::uint64_t
             >
     class static_block_pool
@@ -94,10 +94,11 @@ namespace esl::computation::block_pool {
         typedef index_t_ index;
 
     private:
+
         ///
         /// \brief  Underlying container
         ///
-        std::array<block<element_t_>, capacity_> blocks;
+        std::vector<block<element_t_>> blocks;
 
         ///
         /// \brief  Points to first free element
@@ -122,12 +123,14 @@ namespace esl::computation::block_pool {
         size_type size_;
 
     public:
-        static_block_pool()
+        static_block_pool(size_t capacity)
+        : blocks(capacity, block<element_t_>())
         {
-            for(end = &blocks.back(); end >= blocks.begin(); --end) {
-                end->empty = end + 1;
+            blocks[capacity - 1].empty = nullptr;
+            for(size_t i = 1; i < capacity; ++i){
+                blocks[capacity - 1 - i].empty = &blocks[capacity - i];
             }
-            end     = blocks.begin();
+            end     = &blocks[0];
             round_  = 0;
             back_   = 0;
             size_   = 0;
@@ -135,9 +138,23 @@ namespace esl::computation::block_pool {
 
         ~static_block_pool() = default;
 
+
+        ///
+        /// \brief current number of elements in the data structure
+        ///
+        /// \return
         [[nodiscard]] size_type size() const
         {
             return size_;
+        }
+
+        ///
+        /// \brief  maximum number of elements that fit in the data structure
+        ///
+        /// \return
+        [[nodiscard]] size_type capacity() const
+        {
+            return blocks.size();
         }
 
         ///
@@ -147,7 +164,7 @@ namespace esl::computation::block_pool {
         /// \return iterator pointing at the element
         std::pair<index, block<element_t_> *> emplace(const element_t_ &e)
         {
-            if(size_ >= capacity_) {
+            if(size_ >= capacity()) {
                 throw std::length_error("block_pool container at capacity");
             }
 #if DEBUG
@@ -168,7 +185,7 @@ namespace esl::computation::block_pool {
                 ++back_;
             }
 
-            if(back_ > capacity_) {
+            if(back_ > capacity()) {
                 ++round_;
                 back_ = 0;
             }
@@ -176,7 +193,7 @@ namespace esl::computation::block_pool {
             end = end->empty;
             ++size_;
 
-            return {round_ * capacity_ + offset_, i};
+            return {round_ * capacity() + offset_, i};
         }
 
         ///
@@ -189,7 +206,7 @@ namespace esl::computation::block_pool {
             noexcept
 #endif
         {
-            block<element_t_> *removed_ = blocks.data() + (i % capacity_);
+            block<element_t_> *removed_ = &blocks[i % capacity()];
 
 #if DEBUG
             if(!removed->set) {
@@ -214,7 +231,7 @@ namespace esl::computation::block_pool {
 
         constexpr reference operator [] (index i)
         {
-            return blocks[i % capacity_].data;
+            return blocks[i % capacity()].data;
         }
 
         constexpr const_reference operator [] (index i) const
@@ -224,7 +241,7 @@ namespace esl::computation::block_pool {
 
         constexpr reference at(index i)
         {
-            block<element_t_> *element_ = blocks + (i % capacity_);
+            block<element_t_> *element_ = blocks[i % capacity()];
 #if DEBUG
             if(!element_->set) {
                 throw std::exception("trying to access non-existing element");

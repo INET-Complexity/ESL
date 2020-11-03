@@ -215,7 +215,7 @@ namespace esl::economics {
         constexpr iso_4217 ZMW = iso_4217({'Z', 'M', 'W'});
         constexpr iso_4217 ZWL = iso_4217({'Z', 'W', 'L'});
 
-    }//namespace countries
+    }//namespace currencies
 
     namespace detail {
         constexpr size_t unique_hash(iso_4217 c)

@@ -41,13 +41,21 @@ namespace esl::economics {
     ///
     struct iso_4217
     {
+        ///
+        /// The currency code as represented by 3 characters.
+        ///
         std::array<char, 3> code;
 
         ///
-        /// \todo: rename to unit
+        /// \brief  The number of subunits of the currency, e.g. when a currency
+        ///         has cents as the smallest unit, denominator is set to 100.
         ///
         std::uint64_t denominator;
 
+        ///
+        ///
+        ///
+        /// \param operand
         constexpr iso_4217(const iso_4217 &operand)
         : iso_4217(operand.code, operand.denominator)
         {
