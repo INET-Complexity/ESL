@@ -88,14 +88,22 @@ BOOST_PYTHON_MODULE(order_book)
         .def("display", &basic_book::display)
         ;
 
+    class_<binary_tree_order_book, bases<basic_book>>("binary_tree_order_book", init<>())
+        .def_readwrite("reports", &basic_book::reports)
+        .def("ask", &basic_book::ask)
+        .def("bid", &basic_book::bid)
+        .def("insert", &basic_book::insert)
+        .def("cancel", &basic_book::cancel)
+        .def("display", &basic_book::display)
+        ;
 
 
 
-
-
-
-
-
+    class_<matching_engine>("matching_engine", init<>())
+        .def_readwrite("books", &matching_engine::books)
+        .def("insert", &basic_book::insert)
+        .def("cancel", &basic_book::cancel)
+        ;
 }
 
 #endif

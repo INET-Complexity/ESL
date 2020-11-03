@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
     BOOST_AUTO_TEST_CASE(block_pool_index)
     {
-        esl::computation::block_pool::static_block_pool<int, 5> bp_;
+        esl::computation::block_pool::static_block_pool<int> bp_(5);
 
         for(std::uint64_t i = 0; i < 5; ++i){
             auto a = bp_.emplace(i);
