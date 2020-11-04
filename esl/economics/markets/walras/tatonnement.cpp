@@ -375,7 +375,7 @@ namespace esl::economics::markets::tatonnement {
     /// \brief   Root-finding version, value and gradient wrapper.
     ///
     /// \param multipliers  Price multipliers
-    /// \param jacobian
+    /// \param jacobian output for jacobian matrix
     /// \return
     std::vector<double>
     excess_demand_model::multiroot_function_value_and_gradient

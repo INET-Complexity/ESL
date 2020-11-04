@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 
 ################################################################################
@@ -128,20 +128,17 @@ IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
 
-    #
-    IF(ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
-                python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
-    ELSE()
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
-    ENDIF()
+    #IF(ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
+    #    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
+    #            python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    #ELSE()
+    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
+    #ENDIF()
 
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
         MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
         MESSAGE("library: \t" ${PYTHON_LIBRARY})
         MESSAGE("libraries: \t" ${PYTHON_LIBRARIES})
-
-
     ENDIF()
 ENDIF()
 
