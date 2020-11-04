@@ -118,13 +118,14 @@ variable volatility(const std::vector<variable> &prices)
 
     variable sample_statistic_{0};
     for(size_t t = 1; t < prices.size(); ++t){
-        sample_statistic_ += adept::pow(adept::exp(adept::log(prices[t-1]) -adept::log(prices[t]) -1) - mean_, 2);
+        sample_statistic_ += adept::pow(adept::exp(adept::log(prices[t-1]) -adept::log(prices[t])) - 1 - mean_, 2);
     }
 
     sample_statistic_ /= (prices.size() - 2);
 
     // to standard deviation
     sample_statistic_ = adept::sqrt(sample_statistic_);
+
     return sample_statistic_;
 }
 
@@ -135,7 +136,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         adept::Stack stack_;
 
         variable g1     = 0.8;
-        variable g2     = 0.7;
+        variable g2     = 1.1;
 
         variable b1     = 0.03;
         variable b2     = 0.01;
@@ -190,7 +191,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         auto volatility_ = volatility(result_.prices);
 
         // this prints annualized volatility
-        //std::cout << "volatility " << (std::exp(volatility_.value()) - 1) * (std::sqrt(252)) << std::endl;
+        //std::cout << "volatility " << volatility_.value() * std::sqrt(252) << std::endl;
 
         stack_.dependent(volatility_);
 
@@ -198,7 +199,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         // Compute the Jacobian matrix; note that jacobian_out must be
         // allocated to be of size m*n, where m is the number of dependent
         // variables and n is the number of independents.
-        double jacobian_out[independents_ * 100] = {0};
+        double jacobian_out[independents_ * 1] = {0};
 
         stack_.jacobian(jacobian_out);
 
