@@ -1,4 +1,4 @@
-name: Build and publish to Test Pypi
+name: build publish Test Pypi
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build manylinux2014 wheels
+    name: Build wheels
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

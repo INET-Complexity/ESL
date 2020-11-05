@@ -26,7 +26,7 @@
 #define ESL_QUOTE_HPP
 
 #include <variant>
-
+#include <utility>
 #include <type_traits>
 
 #include <esl/economics/exchange_rate.hpp>
@@ -107,7 +107,7 @@ namespace esl::economics::markets {
 
         quote &operator = (const quote &o) = default;
 
-        constexpr [[nodiscard]] bool operator == (const quote &other) const
+        [[nodiscard]] constexpr bool operator == (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -117,7 +117,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        constexpr [[nodiscard]] bool operator != (const quote &other) const
+        [[nodiscard]] constexpr bool operator != (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -128,7 +128,7 @@ namespace esl::economics::markets {
         }
 
 
-        constexpr [[nodiscard]] bool operator < (const quote &other) const
+        [[nodiscard]] constexpr bool operator < (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -138,7 +138,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        constexpr [[nodiscard]] bool operator > (const quote &other) const
+        [[nodiscard]] constexpr bool operator > (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -148,7 +148,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        constexpr [[nodiscard]] bool operator <= (const quote &other) const
+        [[nodiscard]] constexpr bool operator <= (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -158,7 +158,7 @@ namespace esl::economics::markets {
             }, type);
         }
 
-        constexpr [[nodiscard]] bool operator >= (const quote &other) const
+        [[nodiscard]] constexpr bool operator >= (const quote &other) const
         {
             assert_equal_type_(other);
 
@@ -212,13 +212,11 @@ namespace esl::economics::markets {
             }
         }
 
-
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
             boost::serialization::split_member(archive, *this, version);
         }
-
 
         std::ostream &operator << (std::ostream &stream) const
         {

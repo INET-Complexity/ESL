@@ -23,6 +23,8 @@
 #ifndef ESL_EXCHANGE_RATE_HPP
 #define ESL_EXCHANGE_RATE_HPP
 
+#include <cstdint>
+
 #include <esl/economics/rate.hpp>
 
 namespace esl::economics {
@@ -32,13 +34,13 @@ namespace esl::economics {
     /// \note
     ///
     struct exchange_rate
-    : public rate<uint64_t>
+    : public rate<std::uint64_t>
     {
         ///
         /// \param quote
         /// \param base
-        constexpr exchange_rate(uint64_t quote = 1, uint64_t base = 1)
-        : rate<uint64_t>(quote, base)
+        constexpr exchange_rate(std::uint64_t quote = 1, std::uint64_t base = 1)
+        : rate<std::uint64_t>(quote, base)
         {
             assert(quote > 0);
             assert(base > 0);
@@ -59,7 +61,7 @@ namespace esl::economics {
         ///
         /// \param r
          exchange_rate(double f, const exchange_rate &similar)
-        : exchange_rate(uint64_t( f * similar.denominator()), similar.denominator())
+        : exchange_rate(std::uint64_t( f * similar.denominator()), similar.denominator())
         {
 
         }
@@ -72,7 +74,7 @@ namespace esl::economics {
         /// \return
         exchange_rate &operator = (const exchange_rate &o)
         {
-            rate<uint64_t>::operator=(o);
+            rate<std::uint64_t>::operator=(o);
             return *this;
         }
 
@@ -93,7 +95,7 @@ namespace esl::economics {
         {
             (void)version;
             archive &boost::serialization::make_nvp(
-                "rate_uint64_t_",
+                "rate_std::uint64_t_",
                 boost::serialization::base_object<rate<>>(*this));
         }
     };
