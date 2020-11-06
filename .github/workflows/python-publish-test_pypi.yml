@@ -21,8 +21,6 @@ jobs:
       #    xcode-version: latest
       # if: matrix.os == 'macos-latest'
 
-
-
       # For windows, install latest nuget package manager
       - uses: nuget/setup-nuget@v1
         with:
@@ -56,7 +54,7 @@ jobs:
           Install-Package -Force boost_wserialization-vc142
           Install-Package -Force boost_zlib-vc142
           nuget locals all -list
-          dir C:\Users\runneradmin\.nuget\packages\
+        # dir C:\Users\runneradmin\.nuget\packages\
         shell: powershell
 
       - uses: actions/checkout@v2
