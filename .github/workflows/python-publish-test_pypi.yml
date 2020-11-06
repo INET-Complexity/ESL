@@ -56,7 +56,7 @@ jobs:
           Install-Package -Force boost_wserialization-vc142
           Install-Package -Force boost_zlib-vc142
           nuget locals all -list
-          dir /home/RUNNER~/.nuget/packages/
+          dir C:\Users\runneradmin\.nuget\packages\
         shell: powershell
 
       - uses: actions/checkout@v2

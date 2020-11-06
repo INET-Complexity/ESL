@@ -173,7 +173,81 @@ ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
 
-FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+IF(MSVC)
+    # Install-Package gsl-msvc-x64 -Version 2.4.0.8788
+    # Install-Package boost -Version 1.72.0
+    # Install-Package boost_program_options-vc140 -Version 1.72.0
+    #
+
+    MESSAGE("################################################################################")
+    MESSAGE("MSVC build detected, please use NuGet package manager to install dependencies if not yet satisfied: ")
+    LIST(APPEND VS_DEPENDENCIES "")
+
+
+    # TODO: we hardcode it for github actions, but we should make this generic
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/adept")
+
+    # Github Actions setup:
+    # C:\Users\runneradmin\.nuget\packages\
+
+    SET(MSVC_GSL_VERSION "2.4.0.8788")
+    MESSAGE("\tInstall-Package gsl-msvc-x64 -Version ${MSVC_GSL_VERSION}")
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Users/runneradmin/.nuget/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native")
+    LIST(APPEND VS_DEPENDENCIES "gsl-msvc-x64_${MSVC_GSL_VERSION}") #MESSAGE("gsl-msvc-x64_${MSVC_GSL_VERSION}")
+    LIST(APPEND GSL_LIBRARY_DIRS "C:/Users/runneradmin/.nuget/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native/lib/x64/Release")
+
+
+    SET(MSVC_VERSION_PACKAGE_MANAGER "vc142")
+    SET(MSVC_BOOST_VERSION "1.72.0")
+    LIST(APPEND VS_DEPENDENCIES "boost_${MSVC_BOOST_VERSION}")
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Users/runneradmin/.nuget/packages/boost.1.72.0.0/lib/native/include")
+
+    # to be compliant, we need to set most of the following variables:
+    # Boost_LIBRARIES
+    LIST(APPEND Boost_LIBRARIES )
+
+    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
+        MESSAGE("\tInstall-Package boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER} -Version ${MSVC_BOOST_VERSION}")
+        #MESSAGE("\tboost_${bll}_${MSVC_BOOST_VERSION}")
+        LIST(APPEND VS_DEPENDENCIES "boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}_${MSVC_BOOST_VERSION}")
+
+    ENDFOREACH()
+
+    # Boost_FOUND
+    SET(Boost_FOUND TRUE)
+    #Boost_INCLUDE_DIRS
+    SET(Boost_INCLUDE_DIRS "C:/Users/runneradmin/.nuget/packages/boost.1.72.0.0/lib/native/include/")
+    #Boost_LIBRARY_DIRS
+    LIST(APPEND Boost_LIBRARY_DIRS)
+    #Boost_LIBRARIES
+    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
+        LIST(APPEND Boost_LIBRARY_DIRS "C:/Users/runneradmin/.nuget/packages/boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}.${MSVC_BOOST_VERSION}.0/lib/native/")
+        # Boost_<C>_FOUND
+        SET("Boost_${bll}_FOUND" TRUE)
+    ENDFOREACH()
+
+    MESSAGE("add library gsl.lib cblas.lib")
+    #ADD_LIBRARY("${bll}-vc142-mt-x64-1_72.lib" ALIAS "Boost::${bll}")
+    LIST(APPEND Boost_LIBRARIES gsl.lib cblas.lib)
+
+    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
+        MESSAGE("add library libboost_${bll}-vc142-mt-s-x64-1_72.lib")
+        LIST(APPEND Boost_LIBRARIES "libboost_${bll}-vc142-mt-s-x64-1_72.lib")
+    ENDFOREACH()
+
+    #
+    #Boost_<C>_LIBRARY
+    #Boost_VERSION
+    #Boost_LIB_VERSION
+    #Boost_MAJOR_VERSION
+    #Boost_MINOR_VERSION
+    #Boost_SUBMINOR_VERSION
+    #Boost_LIB_DIAGNOSTIC_DEFINITIONS (Windows)
+ELSE()
+    FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+ENDIF()
+
+#FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 
 ########################################################################################################################
 # Optimized linear algebra and scientific computing routines
