@@ -26,11 +26,12 @@ jobs:
           nuget-version: latest
 
       - name: Install windows nuget packages
-        run: | # -Version 1.72.0
+        run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
-          Install-Package gsl-msvc-x64
-          Install-Package boost_python3${{matrix.python_minor_version}}-vc142
-          Install-Package boost
+          Install-Package -Force gsl-msvc-x64
+          Install-Package -Force Python3${{matrix.python_minor_version}}
+          Install-Package -Force boost
+          Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
         shell: powershell
 
       - uses: actions/checkout@v2
