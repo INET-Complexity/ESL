@@ -56,6 +56,7 @@ jobs:
           nuget locals all -list
         # dir C:\Users\runneradmin\.nuget\packages\
         shell: powershell
+        if: matrix.os == 'windows-latest'
 
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -63,7 +64,7 @@ jobs:
         with:
           python-version: '3.${{matrix.python_minor_version}}'
 
-
+      # Install msbuild
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
         if: matrix.os == 'windows-latest'
@@ -82,7 +83,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-manylinux* cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-win_amd64'
           CIBW_BEFORE_BUILD_WINDOWS: 'choco install wget && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xvf adept-2.0.5.tar.gz'
-          # We add `brew reinstall python` so that it installs python but with
+
           CIBW_BEFORE_BUILD_MACOS: 'brew update && brew install gcc gsl boost boost-python3 && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xvf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
           CIBW_BEFORE_ALL_LINUX: 'yum update && yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xvf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
 
