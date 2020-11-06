@@ -15,11 +15,10 @@ jobs:
         python_minor_version: [8] # 6, 7, 8, 9
 
     steps:
-
       # For MacOS, force usage of latest XCode
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest
+      #- uses: maxim-lobanov/setup-xcode@v1
+      #  with:
+      #    xcode-version: latest
 
       # For windows, install latest nuget package manager
       - uses: nuget/setup-nuget@v1
@@ -28,11 +27,8 @@ jobs:
 
       - name: Install windows nuget packages
         run: |
-          Install-Package boost -Version 1.72.0 &&
+          Install-Package boost -Version 1.72.0
         shell: powershell
-
-
-
 
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
