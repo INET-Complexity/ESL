@@ -55,6 +55,8 @@ jobs:
           Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
           Install-Package -Force boost_wserialization-vc142
           Install-Package -Force boost_zlib-vc142
+          nuget locals all -list
+          dir /home/RUNNER~/.nuget/packages/
         shell: powershell
 
       - uses: actions/checkout@v2
