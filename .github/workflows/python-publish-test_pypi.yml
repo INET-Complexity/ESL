@@ -27,7 +27,7 @@ jobs:
       - uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
-        if: matrix.os == windows-latest
+        if: matrix.os == 'windows-latest'
 
       - name: Install windows nuget packages
         run: |
