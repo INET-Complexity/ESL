@@ -27,9 +27,9 @@ jobs:
 
       - name: Install windows nuget packages
         run: | # -Version 1.72.0
-          Install-Package boost
-          Install-Package boost_python38-vc142
           Install-Package gsl-msvc-x64
+          Install-Package boost_python3${{matrix.python_minor_version}}-vc142
+          Install-Package boost
         shell: powershell
 
       - uses: actions/checkout@v2
