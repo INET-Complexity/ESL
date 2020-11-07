@@ -99,6 +99,16 @@ jobs:
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
 
+      # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
+      - name: Macos diagnostics
+        run: |
+
+          ls /Users/runner/hostedtoolcache/Python/
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/ -R
+        if: matrix.os == 'macos-latest'
+
       - name: Install boost Macos
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
@@ -109,7 +119,7 @@ jobs:
           echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           ./b2 install -j 8 --with=all
         if: matrix.os == 'macos-latest'
-        # || matrix.os == 'ubuntu-20.04'
+        # || matrix.os == 'windows latest'
 
       - name: Build and publish
         env:
