@@ -51,6 +51,10 @@ IF(MSVC OR MINGW)
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 ENDIF()
 
+IF(APPLE)
+    ADD_DEFINITIONS(_LIBCPP_DISABLE_AVAILABILITY)
+ENDIF()
+
 ################################################################################
 # Caching
 ################################################################################

@@ -31,6 +31,7 @@
 
 #include <esl/economics/exchange_rate.hpp>
 #include <esl/economics/price.hpp>
+#include <esl/exception.hpp>
 
 
 namespace esl::economics::markets {
@@ -113,7 +114,11 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) == (std::get<variant_>(other.type) * other.lot );
+
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) == ( (*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -123,7 +128,10 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) != (std::get<variant_>(other.type) * other.lot );
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) != ((*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -134,7 +142,11 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) < (std::get<variant_>(other.type) * other.lot );
+                //return (lot * k) < (std::get<variant_>(other.type) * other.lot );
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) < ((*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -144,7 +156,11 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) > (std::get<variant_>(other.type) * other.lot );
+                //return (lot * k) > (std::get<variant_>(other.type) * other.lot );
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) > ((*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -154,7 +170,11 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) <= (std::get<variant_>(other.type) * other.lot );
+                //return (lot * k) <= (std::get<variant_>(other.type) * other.lot );
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) <= ((*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -164,7 +184,11 @@ namespace esl::economics::markets {
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                return (lot * k) >= (std::get<variant_>(other.type) * other.lot );
+                //return (lot * k) >= (std::get<variant_>(other.type) * other.lot );
+                if(auto *vp = std::get_if<variant_>(&other.type)  ){
+                    return (lot * k) >= ((*vp) * other.lot );
+                }
+                throw esl::exception("quote variants do not match");
             }, type);
         }
 
@@ -179,16 +203,19 @@ namespace esl::economics::markets {
             archive &BOOST_SERIALIZATION_NVP(index_);
             switch(index_) {
             case 0:
-                archive << boost::serialization::make_nvp(
-                    "exchange_rate", std::get<exchange_rate>(type));
-                break;
+                if(auto *vp = std::get_if<exchange_rate>(&type)  ){
+                    archive << boost::serialization::make_nvp(
+                        "exchange_rate", (vp));
+                    break;
+                }
             case 1:
-                archive << boost::serialization::make_nvp(
-                    "price", std::get<price>(type));
-                break;
-
+                if(auto *vp = std::get_if<price>(&type)  ){
+                    archive << boost::serialization::make_nvp(
+                        "price", *vp);
+                    break;
+                }
             default:
-                throw std::logic_error("variant quote not supported");
+                throw esl::exception("variant quote not supported");
             }
         }
 
