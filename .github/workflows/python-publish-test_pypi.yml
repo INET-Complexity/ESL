@@ -121,7 +121,7 @@ jobs:
           ./bootstrap.sh
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/ ;" >> project-config.jam
-          ./b2 cxxflags=-std=c++17 install -j 8 --with=all
+          ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-fiber
         if: matrix.os == 'macos-latest'
         # || matrix.os == 'windows latest'
 
