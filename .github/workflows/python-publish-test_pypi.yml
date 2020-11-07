@@ -17,7 +17,7 @@ jobs:
     steps:
       # For windows, install latest nuget package manager
       - name: Setup windows nuget
-      - uses: nuget/setup-nuget@v1
+        uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
         if: matrix.os == 'windows-latest'
