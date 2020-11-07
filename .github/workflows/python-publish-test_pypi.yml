@@ -80,7 +80,7 @@ jobs:
       - name: Install brew packages MacOS
         run: |
           brew update >/dev/null
-          brew install gsl
+          brew install gcc gsl
         shell: bash
         if: matrix.os == 'macos-latest'
 
@@ -89,7 +89,7 @@ jobs:
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
           cd adept-2.0.5/
-          ./configure
+          ./configure --disable-fortran
           make -j2
           make install
           cd include
