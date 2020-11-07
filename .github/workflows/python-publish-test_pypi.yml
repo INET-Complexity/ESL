@@ -108,7 +108,7 @@ jobs:
           echo '---------'
           ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/
           echo '---------'
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/
           echo '---------'
           ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/
         if: matrix.os == 'macos-latest'
@@ -120,7 +120,7 @@ jobs:
           cd boost_1_*
           ./bootstrap.sh
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/ ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --with=all
         if: matrix.os == 'macos-latest'
         # || matrix.os == 'windows latest'
