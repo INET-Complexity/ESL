@@ -70,22 +70,21 @@ jobs:
           python -m pip install cibuildwheel==1.6.3 twine
         shell: bash
 
-      -name: Update and install gsl
+      - name: Update and install gsl
         run: |
           yum update
           yum install -y wget epel-release gsl gsl-devel
         shell: bash
         if: matrix.os == 'ubuntu-20.04'
 
-
-      -name: Install brew packages MacOS
+      - name: Install brew packages MacOS
         run: |
           brew update >/dev/null
           brew install gsl
         shell: bash
         if: matrix.os == 'macos-latest'
 
-      -name: Install Adept MacOS and Linux
+      - name: Install Adept MacOS and Linux
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
