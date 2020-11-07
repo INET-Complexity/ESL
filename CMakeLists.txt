@@ -51,8 +51,9 @@ IF(MSVC OR MINGW)
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 ENDIF()
 
+# ignore warnings about unavailable functions in standard library on older MacOS
 IF(APPLE)
-    ADD_DEFINITIONS(_LIBCPP_DISABLE_AVAILABILITY)
+    ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
 ENDIF()
 
 ################################################################################
