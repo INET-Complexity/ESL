@@ -102,11 +102,11 @@ jobs:
       # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
       - name: Macos diagnostics
         run: |
-
           ls /Users/runner/hostedtoolcache/Python/
           ls /Users/runner/hostedtoolcache/Python/3.8.6/
           ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/ -R
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/
+          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/
         if: matrix.os == 'macos-latest'
 
       - name: Install boost Macos
@@ -116,7 +116,7 @@ jobs:
           cd boost_1_*
           ./bootstrap.sh
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/ ;" >> project-config.jam
           ./b2 install -j 8 --with=all
         if: matrix.os == 'macos-latest'
         # || matrix.os == 'windows latest'
