@@ -96,9 +96,8 @@ jobs:
           cp adept_source.h /usr/local/include/
           cd ~
 
-
-
       -name: Install boost Macos
+        if: matrix.os == 'macos-latest'
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
@@ -107,7 +106,6 @@ jobs:
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           ./b2 install -j 8 --with=all
-        if: matrix.os == 'macos-latest'
         # || matrix.os == 'ubuntu-20.04'
 
       - name: Build and publish
