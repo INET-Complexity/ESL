@@ -62,12 +62,12 @@ namespace esl::economics {
             return stream_.str();
         }
 
-        constexpr inline bool operator == (const money &m) const
+        inline bool operator == (const money &m) const
         {
             return this->denomination == m.denomination;
         }
 
-        constexpr inline bool operator != (const money &m) const
+        inline bool operator != (const money &m) const
         {
             return !(*this == m);
         }
