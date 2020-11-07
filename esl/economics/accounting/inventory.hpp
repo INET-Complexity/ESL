@@ -28,6 +28,7 @@
 
 #include <initializer_list>
 
+#include <esl/exception.hpp>
 #include <esl/economics/accounting/standard.hpp>
 #include <esl/economics/cash.hpp>
 #include <esl/economics/currencies.hpp>
@@ -35,41 +36,12 @@
 #include <esl/quantity.hpp>
 #include <esl/law/property_collection.hpp>
 
-/*
-#ifdef __GNUG__
-#include <cstdlib>
-#include <memory>
-#include <cxxabi.h>
-
-std::string demangle1(const char* name) {
-
-    int status = -4; // some arbitrary value to eliminate the compiler warning
-
-    // enable c++11 by passing the flag -std=c++11 to g++
-    std::unique_ptr<char, void(*)(void*)> res {
-        abi::__cxa_demangle(name, NULL, NULL, &status),
-        std::free
-    };
-
-    return (status==0) ? res.get() : name ;
-}
-
-#else
-
-// does nothing if not g++
-std::string demangle1(const char* name) {
-    return name;
-}
-#endif
-*/
-
-
 
 namespace esl::economics::accounting {
 
 
     struct insufficent_inventory
-    : public std::exception
+    : public esl::exception
     {
     public:
         const quantity before;
@@ -80,7 +52,7 @@ namespace esl::economics::accounting {
 
         const std::string property_name;
 
-        std::string message;
+        //std::string message;
 
         ///
         /// \brief                  used to
@@ -88,15 +60,20 @@ namespace esl::economics::accounting {
         /// \param withdrawal
         /// \param property_name    textual description of the property that is
         ///                         missing, used for message only
-        explicit insufficent_inventory(quantity before, quantity withdrawal, identity<law::property> identifier, const std::string &property_name = "property")
-        : before(before)
+        insufficent_inventory( quantity before
+                             , quantity withdrawal
+                             , identity<law::property> identifier
+                             , const std::string &property_name = "property"
+                             )
+        : esl::exception()
+        , before(before)
         , withdrawal(withdrawal)
         , identifier(identifier)
         , property_name(property_name)
         {
             std::stringstream stream_;
             stream_ << "insufficient inventory (" << before << ") for withdrawal (" << withdrawal << ") of " << property_name << std::endl;
-            message = stream_.str();
+            message_ = stream_.str();
         }
 
         ///
@@ -105,7 +82,7 @@ namespace esl::economics::accounting {
         [[nodiscard]] const char *what() const noexcept override
         {
 
-            return message.c_str();
+            return message_.c_str();
         }
     };
 
@@ -346,12 +323,13 @@ namespace esl::economics::accounting {
             }
         }
 
+        /*
         void erase_from(law::property_map<quantity> &m) const
         {
             for(auto k : items) {
                 auto i = m.find(k);
                 if(m.end() == i || i->second.amount == 0) {
-                    throw insufficent_inventory(quantity(0), quantity(1));
+                    throw insufficent_inventory(quantity(0), quantity(1), i->first->identifier);
                 } else {
                     // if(i->second.amount > 1){
                     //    throw duplicate_infungible();
@@ -360,6 +338,7 @@ namespace esl::economics::accounting {
                 }
             }
         }
+         */
 
         ///
         /// \return

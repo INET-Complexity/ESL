@@ -86,7 +86,7 @@ namespace esl::law {
     /// \param associative
     /// \return
     template<typename value_t_, typename allocator_>
-    constexpr std::ostream &
+    std::ostream &
     operator << (std::ostream &stream,
                const std::unordered_map<std::shared_ptr<property>,
                    value_t_,
