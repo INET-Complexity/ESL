@@ -16,6 +16,7 @@ jobs:
 
     steps:
       # For windows, install latest nuget package manager
+      - name: Setup windows nuget
       - uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
@@ -69,21 +70,19 @@ jobs:
           python -m pip install cibuildwheel==1.6.3 twine
 
       -name: Install/update Linux
-        if: matrix.os == 'ubuntu-20.04'
         run: |
           yum update
           yum install -y wget epel-release gsl gsl-devel
+        if: matrix.os == 'ubuntu-20.04'
 
 
       -name: Install brew packages MacOS
-        if: matrix.os == 'macos-latest'
         run: |
           brew update >/dev/null
           brew install gsl
+        if: matrix.os == 'macos-latest'
 
-
-      -name: Install adept MacOS/Linux
-        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
+      -name: Install Adept MacOS and Linux
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
@@ -95,9 +94,9 @@ jobs:
           ./create_adept_source_header
           cp adept_source.h /usr/local/include/
           cd ~
+        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
 
       -name: Install boost Macos
-        if: matrix.os == 'macos-latest'
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
@@ -106,6 +105,7 @@ jobs:
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           ./b2 install -j 8 --with=all
+        if: matrix.os == 'macos-latest'
         # || matrix.os == 'ubuntu-20.04'
 
       - name: Build and publish
