@@ -70,7 +70,7 @@ jobs:
           python -m pip install cibuildwheel==1.6.3 twine
         shell: bash
 
-      -name: Install/update Linux
+      -name: Update and install gsl
         run: |
           yum update
           yum install -y wget epel-release gsl gsl-devel
