@@ -45,7 +45,7 @@ namespace esl {
         std::string message_;
 
     public:
-        explicit exception(const std::string &message)
+        explicit exception(const std::string &message = std::string())
         : message_(message)
         {
 

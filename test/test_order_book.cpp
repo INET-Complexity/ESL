@@ -22,8 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
-
+#include <set>
+#include <cmath>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE order_book
@@ -43,22 +43,18 @@
 using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets::order_book;
+using esl::economics::markets::quote;
 using esl::economics::markets::order_book::limit_order_message;
-using namespace esl::economics::markets::order_book;
-
-#include <set>
-#include <cmath>
 
 
 BOOST_AUTO_TEST_SUITE(ESL)
-
     ///
     /// \brief This tests whether memory is initialized correctly
     ///
     BOOST_AUTO_TEST_CASE(statically_allocated_book_construction)
     {
-        auto  min_ = markets::quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(1'0.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(1'0.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::static_order_book(min_, max_);
 
         BOOST_CHECK_EQUAL(book_.ticks,10'000);
@@ -67,12 +63,12 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         markets::order_book::static_order_book::limit l_;
 
-        book_.default_encode(markets::quote(min_), l_);
+        book_.default_encode(quote(min_), l_);
         BOOST_CHECK_EQUAL(l_,0);
 
         markets::order_book::static_order_book::limit u_;
 
-        book_.default_encode(markets::quote(max_), u_);
+        book_.default_encode(quote(max_), u_);
         BOOST_CHECK_EQUAL(u_,999 * 100 + 1);
     }
 
@@ -82,8 +78,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
     ///
     BOOST_AUTO_TEST_CASE(statically_allocated_book_invalidated)
     {
-        auto  min_ = markets::quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(1'0.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(1'0.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::static_order_book(min_, max_);
 
         esl::economics::markets::ticker ticker_dummy_;
@@ -93,7 +89,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             ( ticker_dummy_
                 , owner_dummy_
                 , limit_order_message::side_t::buy
-                , markets::quote(price(0.001, currencies::USD), 100 *  currencies::USD.denominator)
+                , quote(price::approximate(0.001, currencies::USD), 100 *  currencies::USD.denominator)
                 , 1000
                 ,limit_order_message::lifetime_t::good_until_cancelled
             );
@@ -108,7 +104,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             ( ticker_dummy_
                 , owner_dummy_
                 , limit_order_message::side_t::buy
-                , markets::quote(price(10.01, currencies::USD), 100 *  currencies::USD.denominator)
+                , quote(price::approximate(10.01, currencies::USD), 100 *  currencies::USD.denominator)
                 , 1000
                 ,limit_order_message::lifetime_t::good_until_cancelled
             );
@@ -128,7 +124,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             ( ticker_dummy_
                 , owner_dummy_
                 , limit_order_message::side_t::buy
-                , markets::quote(price(p, currencies::USD), 100 *  currencies::USD.denominator)
+                , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
                 ,limit_order_message::lifetime_t::good_until_cancelled
             );
@@ -146,7 +142,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             ( ticker_dummy_
                 , owner_dummy_
                 , limit_order_message::side_t::sell
-                , markets::quote(price(p, currencies::USD), 100 *  currencies::USD.denominator)
+                , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
                 ,limit_order_message::lifetime_t::good_until_cancelled
             );
@@ -161,8 +157,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
     ///
     BOOST_AUTO_TEST_CASE(statically_allocated_book_encode_decode)
     {
-        auto  min_ = markets::quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(10.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::static_order_book(min_, max_);
 
         std::set<markets::order_book::static_order_book::limit> unique_;
@@ -174,7 +170,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         }){
             markets::order_book::static_order_book::limit l;
             // use nextafter, because otherwise we make floating point errors
-            auto q = markets::quote(price(std::nextafter(p, p+0.01), currencies::USD)
+            auto q = quote(price::approximate(std::nextafter(p, p+0.01), currencies::USD)
                                    , 100 *  currencies::USD.denominator);
             BOOST_CHECK(book_.encode(q, l));
             auto array_index_ = l;
@@ -196,8 +192,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
     BOOST_AUTO_TEST_CASE(statically_allocated_book_placement)
     {
-        auto  min_ = markets::quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(10.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::static_order_book(min_, max_);
 
         book_.insert(create_bid(4.75));
@@ -210,15 +206,15 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.reports.back().state,  execution_report::placement);
 
         BOOST_CHECK(book_.bid());
-        BOOST_CHECK_EQUAL(book_.bid().value(), markets::quote(price(4.76, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.76, currencies::USD), 100 *  currencies::USD.denominator));
     }
 
 
 
     BOOST_AUTO_TEST_CASE(statically_allocated_book_match)
     {
-        auto  min_ = markets::quote(price(0.01, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(10.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(10.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = markets::order_book::static_order_book(min_, max_);
 
         book_.insert(create_bid(4.75, 500));
@@ -234,18 +230,18 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         book_.display(); std::cout << std::endl;
 
-        BOOST_CHECK_EQUAL(book_.bid().value(), markets::quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
 
         book_.insert(create_ask(4.75, 1000));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
 
         book_.display(); std::cout << std::endl;
 
-        BOOST_CHECK_EQUAL(book_.bid().value(), markets::quote(price(4.74, currencies::USD), 100 *  currencies::USD.denominator));
-        BOOST_CHECK_EQUAL(book_.ask().value(), markets::quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.74, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
 
 
         book_.insert(create_bid(4.75, 200));   //  expect: execute 200 at 4.75
-        BOOST_CHECK_EQUAL(book_.ask().value(), markets::quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
         BOOST_CHECK_EQUAL(book_.reports.back().quantity, 200);
 
 
@@ -256,7 +252,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         book_.display(); std::cout << std::endl;
 
         BOOST_CHECK(!book_.ask());
-        BOOST_CHECK_EQUAL(book_.bid().value(), markets::quote(price(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
     }
 
     limit_order_message create(double p, size_t q = 1000, limit_order_message::side_t side = limit_order_message::side_t::sell)
@@ -268,7 +264,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             ( ticker_dummy_
                 , owner_dummy_
                 , side
-                , markets::quote(price(p, currencies::USD), 100 *  currencies::USD.denominator)
+                , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
                 ,limit_order_message::lifetime_t::good_until_cancelled
             );
@@ -279,8 +275,8 @@ BOOST_AUTO_TEST_SUITE(ESL)
 #ifdef ESL_RELEASE
     BOOST_AUTO_TEST_CASE(statically_allocated_book_performance)
     {
-        auto  min_ = markets::quote(price( 80.00, currencies::USD), 100 *  currencies::USD.denominator);
-        auto  max_ = markets::quote(price(120.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  min_ = quote(price::approximate( 80.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(120.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = new static_order_book(min_, max_, 1024*1024);
 
         std::vector<limit_order_message> messages_;

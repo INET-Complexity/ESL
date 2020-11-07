@@ -58,9 +58,10 @@ namespace esl::economics {
         /// \param value
         /// \param valuation
         explicit constexpr price( int64_t value = 0
-                                ,  iso_4217 valuation = iso_4217()
+                                , iso_4217 valuation = iso_4217()
                                 )
-        : value(value), valuation(valuation)
+        : value(value)
+        , valuation(valuation)
         {
 
         }
@@ -70,18 +71,12 @@ namespace esl::economics {
         ///
         /// \param value_untruncated
         /// \param valuation
-        explicit constexpr price(float value_untruncated,
-                                 const iso_4217& valuation = iso_4217())
-        : price(static_cast<int64_t>(value_untruncated * static_cast<int64_t>(valuation.denominator)), valuation)
+        static constexpr price approximate( double value_untruncated
+                                          , const iso_4217& valuation = iso_4217()
+                                          )
         {
-
-        }
-
-        explicit constexpr price(double value_untruncated,
-                                 const iso_4217& valuation = iso_4217())
-                : price(static_cast<int64_t>(value_untruncated * valuation.denominator), valuation)
-        {
-
+            auto units_ = static_cast<int64_t>(value_untruncated * valuation.denominator);
+            return price( units_, valuation);
         }
 
         constexpr price(const price &p)

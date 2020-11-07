@@ -69,7 +69,7 @@ namespace esl::economics {
             return stream_.str();
         }
 
-        constexpr bool operator == (const cash &c) const
+        bool operator == (const cash &c) const
         {
             return this->denomination == c.denomination;
         }
