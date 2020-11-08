@@ -22,6 +22,15 @@ jobs:
           nuget-version: latest
         if: matrix.os == 'windows-latest'
 
+
+
+      - name: Macos set xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+        if: matrix.os == 'macos-latest'
+
+
       - name: Install windows nuget packages
         run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
@@ -99,11 +108,6 @@ jobs:
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
 
-      - name: Macos set xcode
-        uses: maxim-lobanov/setup-xcode@v1
-          with:
-            xcode-version: latest-stable
-        if: matrix.os == 'macos-latest'
 
           # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
       - name: Macos diagnostics
