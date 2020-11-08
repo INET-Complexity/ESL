@@ -22,13 +22,16 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#include <tuple>
+#include <utility>
+
+
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE walrasian_market
 
 #include <boost/test/included/unit_test.hpp>
 
 #include <esl/economics/finance/company.hpp>
-
 
 #include <esl/computation/environment.hpp>
 #include <esl/economics/markets/walras/price_setter.hpp>
@@ -38,6 +41,10 @@
 #include <esl/economics/markets/walras/quote_message.hpp>
 
 using namespace esl;
+using namespace esl::economics;
+using namespace esl::economics::markets;
+using namespace esl::economics::finance;
+using esl::economics::company;
 
 
 struct test_trader_order
@@ -72,7 +79,7 @@ struct test_trader_order
 
     std::map<identity<law::property>, variable> excess_demand(
     const std::map<identity<law::property>,
-                   std::tuple<economics::markets::quote, variable>> &quotes)
+                   std::tuple<quote, variable>> &quotes)
     const  override
     {
         std::map<identity<law::property>, variable> signals_;
@@ -127,20 +134,23 @@ struct test_trader_order
 
 
 struct test_constant_demand_trader
-: public economics::finance::shareholder
+: public shareholder
 {
     test_constant_demand_trader(
-        const identity<economics::finance::shareholder> &i)
+        const identity<shareholder> &i)
     : economics::finance::shareholder(i)
-    {}
+    {
 
-    simulation::time_point act(simulation::time_interval step,
-                                    std::seed_seq &seed) override
+    }
+
+    simulation::time_point act( simulation::time_interval step
+                              , std::seed_seq &seed
+                              ) override
     {
         (void) seed;
-        economics::accounting::standard a(economics::currencies::USD);
+        accounting::standard a(currencies::USD);
 
-        for(auto [k, message_] : inbox) {
+        for(auto [k, message_]: inbox) {
             switch(k) {
             case economics::markets::walras::quote_message::code
                 :
@@ -184,14 +194,11 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
     simulation::model model_(e, simulation::parameter::parametrization(0, 0, 10));
 
 
-    std::vector<std::tuple<std::shared_ptr<economics::company>,
-                           economics::finance::share_class>>
-        shares_;
+    std::vector<std::tuple<std::shared_ptr<company>, share_class>>
+        share_classes_;
 
-    std::map<std::tuple<identity<economics::company>,
-                        economics::finance::share_class>,
-             identity<law::property>>
-        stocks_;
+    typedef std::tuple<identity<company>,  economics::finance::share_class> key_t;
+    std::map<key_t, identity<law::property>> stocks_;
 
     law::property_map<economics::markets::quote> traded_assets_;
     size_t assets = 2;
@@ -214,7 +221,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
             traded_assets_.insert(
                 {stock_, economics::markets::quote(economics::price(
                              1.00, economics::currencies::USD))});
-            shares_.emplace_back(make_tuple(company_, share_));
+            share_classes_.emplace_back(make_tuple(company_, share_));
 
             auto key_ = std::make_tuple<identity<economics::company>,
                                         economics::finance::share_class>(
@@ -251,11 +258,15 @@ BOOST_AUTO_TEST_CASE(walras_market_quote)
                     quantity(100'000'000));
         }
 
-        std::cout << shares_.size() << std::endl;
+        std::cout << share_classes_.size() << std::endl;
 
-        for(auto &share : shares_) {
-            std::get<0>(share)->shareholders[*p] = {
-                {std::get<1>(share), 100'000'000}};
+        for(auto &share: share_classes_) {
+            auto c = std::get<0>(share);
+
+            std::map<finance::share_class, std::uint64_t> holdings_;
+            holdings_.emplace(std::get<1>(share), 100'000'000);
+
+            c->shareholders.emplace(*p, holdings_);
         }
     }
 
