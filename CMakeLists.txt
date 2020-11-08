@@ -4,7 +4,7 @@ IF(APPLE)
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
     # somehow this is not always set
-    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
+    ADD_COMPILE_OPTIONS(--mmacosx-version-min=10.15)
 ENDIF()
 
 ################################################################################
@@ -41,7 +41,7 @@ IF(APPLE)
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
     # somehow this is not always set
-    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
+    ADD_COMPILE_OPTIONS(--mmacosx-version-min=10.15)
 ENDIF()
 
 ################################################################################
