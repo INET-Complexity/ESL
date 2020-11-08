@@ -1,5 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
+IF(APPLE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+ENDIF()
 
 ################################################################################
 # Read and set the library version
