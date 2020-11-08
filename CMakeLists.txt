@@ -1,10 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 IF(APPLE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+
+    # -DCMAKE_MACOSX_RPATH=0
+    SET(CMAKE_MACOSX_RPATH 0)
+
+    #
 
     # somehow this is not always set
-    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
+    # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
 ENDIF()
 
 ################################################################################
@@ -34,15 +39,6 @@ PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
 
 MESSAGE("ESL Version ${PROJECT_VERSION}")
 MESSAGE("Building binary in ${CMAKE_BINARY_DIR}")
-
-
-
-IF(APPLE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
-
-    # somehow this is not always set
-    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
-ENDIF()
 
 ################################################################################
 #   Project Configuration
