@@ -375,6 +375,11 @@ ENDIF()
 IF(WITH_PYTHON)
     # pep-0513/#libpythonx-y-so-1
     IF(SKBUILD)
+
+        IF(APPLE) # yes linking to python
+            LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+        ENDIF()
+
         # No linking to python
     ELSE()
         LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
