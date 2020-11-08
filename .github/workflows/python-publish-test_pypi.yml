@@ -99,18 +99,19 @@ jobs:
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
 
-      # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
+      - name: Macos set xcode
+        uses: maxim-lobanov/setup-xcode@v1
+          with:
+            xcode-version: latest-stable
+        if: matrix.os == 'macos-latest'
+
+          # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
       - name: Macos diagnostics
         run: |
-          ls /Users/runner/hostedtoolcache/Python/
-          echo '---------'
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/
-          echo '---------'
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/
-          echo '---------'
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/
-          echo '---------'
-          ls /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/
+          xcodebuild -showsdks
+          xcodebuild -sdk -version
+          xcode-select --print-path
+          xcrun --show-sdk-version
         if: matrix.os == 'macos-latest'
 
       - name: Install boost Macos
