@@ -36,7 +36,6 @@
 #include <esl/data/severity.hpp>
 
 
-
 namespace esl::data {
     ///
     /// \brief  A channel is a formatter that adds additional information
@@ -48,12 +47,15 @@ namespace esl::data {
         ///
         const severity level;
 
-    private:
+    protected:
         ///
         /// \brief  The output stream this channel operates on
         ///
         std::ostream &stream;
 
+        ///
+        ///
+        ///
         static std::mutex mutex_;
 
         ///
