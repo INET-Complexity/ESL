@@ -34,30 +34,29 @@
 using namespace boost::python;
 
 
-namespace esl::mathematics {
-    BOOST_PYTHON_MODULE(_mathematics)
-    {
-        class_<variable>( "variable", init<>())
-            .def(init<double>())
-            .def(self + self)
-            .def(self += self)
-            .def(self - self)
-            .def(self -= self)
-            .def(self * self)
-            .def(self *= self)
-            .def(self / self)
-            .def(self /= self)
-            //.def("value", &variable::value)
-            ;
+BOOST_PYTHON_MODULE(_mathematics)
+{
+    class_<esl::/*mathematics::*/variable>( "variable", init<>())
+        .def(init<double>())
+        .def(self + self)
+        .def(self += self)
+        .def(self - self)
+        .def(self -= self)
+        .def(self * self)
+        .def(self *= self)
+        .def(self / self)
+        .def(self /= self)
+        //.def("value", &variable::value)
+        ;
 
 
-        ///
-        /// Overload only the specialization, because the other one is merely
-        /// a cast and we can do that in Python also.
-        ///
-        //def("value", &value<variable>);
+    ///
+    /// Overload only the specialization, because the other one is merely
+    /// a cast and we can do that in Python also.
+    ///
+    //def("value", &value<variable>);
 
-    }
 }
+
 
 #endif

@@ -26,6 +26,9 @@
 #define ESL_LOCATION_HPP
 
 namespace esl::geography {
+    ///
+    /// \brief Basic contract for locations.
+    ///
     struct location
     {
 

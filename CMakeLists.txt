@@ -328,9 +328,8 @@ ADD_DEFINITIONS(-DADEPT_STORAGE_THREAD_SAFE)
 ################################################################################
 # Enables ADD_TEST
 ################################################################################
+
 ENABLE_TESTING()
-
-
 
 ################################################################################
 # Add include directories
@@ -368,16 +367,10 @@ ELSE()
 ENDIF()
 
 IF(WITH_PYTHON)
+    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
     # pep-0513/#libpythonx-y-so-1
     IF(SKBUILD)
-
-        IF(APPLE) # yes linking to python
-            LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
-        ENDIF()
-
-        # No linking to python
     ELSE()
-        LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
     ENDIF()
 ENDIF()
 
@@ -490,7 +483,7 @@ IF(WITH_PYTHON)
     ####################################################################################################################
     # create python modules
     # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
-    # with python_module as part of the filename
+    # with python_module as prefix of the filename
     FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
     FOREACH (source ${ESL_PYTHON_SOURCE})
         GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)

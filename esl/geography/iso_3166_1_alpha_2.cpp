@@ -23,24 +23,3 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/geography/iso_3166_1_alpha_2.hpp>
-
-
-#ifdef WITH_PYTHON
-#include <boost/python.hpp>
-
-#include <string>
-
-std::string python_country_code(const esl::geography::iso_3166_1_alpha_2 &c)
-{
-    return (std::string() + c.code[0]) + c.code[1];
-}
-
-
-using namespace boost::python;
-BOOST_PYTHON_MODULE(country)
-{
-    class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2")
-        .add_property("code", python_country_code)
-        ;
-}
-#endif
