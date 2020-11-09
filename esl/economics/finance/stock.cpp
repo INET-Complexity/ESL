@@ -20,7 +20,6 @@
 ///
 ///             You may obtain instructions to fulfill the attribution requirements in CITATION.cff
 ///
-
 #include <esl/economics/finance/stock.hpp>
 
 #include <esl/economics/finance/company.hpp>
@@ -61,11 +60,11 @@ namespace esl::economics::finance {
     }
 
     identity<law::property>
-    create_share_identifier(identity<company> company_identifier,
+    create_share_identifier(const identity<company>& company_identifier,
                             share_class details)
     {
         std::vector<std::uint64_t> result_;
-        for(auto d : company_identifier.digits) {
+        for(auto d: company_identifier.digits) {
             result_.push_back(d);
         }
         result_.push_back(details.rank);
