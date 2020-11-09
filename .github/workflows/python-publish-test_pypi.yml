@@ -99,10 +99,10 @@ jobs:
           cd adept-2.0.5/
           ./configure --disable-fortran --silent
           make -j2 --silent
-          make install --silent
+          sudo make install --silent
           cd include
           ./create_adept_source_header
-          cp adept_source.h /usr/local/include/
+          sudo cp adept_source.h /usr/local/include/
           cd ~
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
