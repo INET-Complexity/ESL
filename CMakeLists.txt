@@ -1,12 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 IF(APPLE)
+    # old version 10.9 for compatibility
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
     # -DCMAKE_MACOSX_RPATH=0
     SET(CMAKE_MACOSX_RPATH 0)
-
-    #
 
     # somehow this is not always set
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)

@@ -16,22 +16,19 @@ jobs:
 
     steps:
       # For windows, install latest nuget package manager
-      - name: Setup windows nuget
+      - name: [Windows] Setup nuget
         uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
         if: matrix.os == 'windows-latest'
 
-
-
-      - name: Macos set xcode
+      - name: [MacOS] Configure XCode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
 
-
-      - name: Install windows nuget packages
+      - name: [windows] Install nuget packages
         run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
           Install-Package -Force gsl-msvc-x64
@@ -69,7 +66,7 @@ jobs:
           python-version: '3.${{matrix.python_minor_version}}'
 
       # Install msbuild
-      - name: Add msbuild to PATH
+      - name: [Windows] Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
         if: matrix.os == 'windows-latest'
 
@@ -79,21 +76,21 @@ jobs:
           python -m pip install cibuildwheel==1.6.3 twine
         shell: bash
 
-      - name: Update and install gsl
+      - name: [Linux] Update and install gsl
         run: |
           yum update
           yum install -y wget epel-release gsl gsl-devel
         shell: bash
         if: matrix.os == 'ubuntu-20.04'
 
-      - name: Install brew packages MacOS
+      - name: [MacOS] Install brew packages
         run: |
           brew update >/dev/null
-          brew install gcc gsl
+          brew install gfortran  gsl
         shell: bash
         if: matrix.os == 'macos-latest'
 
-      - name: Install Adept MacOS and Linux
+      - name: [Linux+MacOS] Install Adept
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
@@ -108,17 +105,12 @@ jobs:
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
 
-
-          # on MacOS, we find python at for example: /Users/runner/hostedtoolcache/Python/3.8.6/x64
-      - name: Macos diagnostics
+      - name: [MacOS] Diagnostics
         run: |
-          xcodebuild -showsdks
           xcodebuild -sdk -version
-          xcode-select --print-path
-          xcrun --show-sdk-version
         if: matrix.os == 'macos-latest'
 
-      - name: Install boost Macos
+      - name: [MacOS] Install boost
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
@@ -129,6 +121,24 @@ jobs:
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
         if: matrix.os == 'macos-latest'
         # || matrix.os == 'windows latest'
+
+      - name: [MacOS] Diagnostics
+        run: |
+          pwd
+          echo '--------------'
+          ls /usr/local/lib/
+          echo '--------------'
+          ls /usr/local/boost173
+          echo '--------------'
+          ls
+          echo '--------------'
+          cd boost~
+          ls
+          echo '--------------'
+          cp -r bin.v2 /Users/runner/work/ESL/ESL/
+        if: matrix.os == 'macos-latest'
+        continue-on-error: true
+
 
       - name: Build and publish
         env:
