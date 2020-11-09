@@ -105,7 +105,7 @@ namespace esl::economics::finance {
     }
 
 }
-
+/*
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
@@ -114,7 +114,7 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(stock)
 {
-    /*
+
     class_<esl::economics::finance::stock>
         ( "stock", init<>())
         .def(init<esl::economics::company&, const esl::economics::finance::share &>())
@@ -123,7 +123,8 @@ BOOST_PYTHON_MODULE(stock)
         .def("name", &esl::economics::finance::stock::name)
         .def(self < self)
         ;
-        */
+
 }
+*/
 
 #endif  // WITH_PYTHON

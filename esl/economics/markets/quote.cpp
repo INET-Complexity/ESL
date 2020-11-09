@@ -23,7 +23,7 @@
 ///             requirements in CITATION.cff
 ///
 #include <esl/economics/markets/quote.hpp>
-
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -33,12 +33,13 @@ BOOST_PYTHON_MODULE(quote)
 {
 
     class_<quote>("quote")
-    /*.def_readwrite("circuit_breaker", &excess_demand_model::circuit_breaker)
+    .def_readwrite("circuit_breaker", &excess_demand_model::circuit_breaker)
         .def_readwrite("methods", &excess_demand_model::methods)
         .def_readwrite("quotes", &excess_demand_model::quotes)
-        .def("compute_clearing_quotes", &excess_demand_model::compute_clearing_quotes)*/
+        .def("compute_clearing_quotes", &excess_demand_model::compute_clearing_quotes)
         ;
 
 }
 
 #endif
+*/

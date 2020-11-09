@@ -34,7 +34,7 @@ using namespace boost::python;
 using namespace esl::economics::markets;
 using namespace esl::economics::markets::tatonnement;
 
-BOOST_PYTHON_MODULE(walras)
+BOOST_PYTHON_MODULE(_walras)
 {
     enum_<excess_demand_model::solver>("solver")
         .value("root", excess_demand_model::root)

@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_wheels:
-    name: "Package ${{ matrix.os }} | Python 3.${{matrix.python_minor_version}}"
+    name: "Package ${{ matrix.os }} | CP 3.${{matrix.python_minor_version}}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

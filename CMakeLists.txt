@@ -87,13 +87,11 @@ OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)
 
-
     IF(SKBUILD)
         # No linking to python
     ELSE()
         ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
     ENDIF()
-
 ENDIF()
 
 OPTION(WITH_QL  "Enables QuantLib" OFF)
@@ -365,10 +363,15 @@ ELSE()
 ENDIF()
 
 IF(WITH_PYTHON)
-    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+
     # pep-0513/#libpythonx-y-so-1
     IF(SKBUILD)
+
+        IF(APPLE)
+            LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+        ENDIF()
     ELSE()
+        LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
     ENDIF()
 ENDIF()
 

@@ -22,7 +22,7 @@
 ///
 #include <esl/economics/finance/share_class.hpp>
 using namespace esl::economics::finance;
-
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -30,7 +30,7 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(share)
 {
-    /*
+
     class_<share>( "share")
         .def_readonly("rank", &share::rank)
         .def_readonly("votes", &share::votes)
@@ -38,8 +38,9 @@ BOOST_PYTHON_MODULE(share)
         .def_readonly("preference", &share::preference)
         .def_readonly("cumulative", &share::cumulative)
         .def_readonly("redeemable", &share::redeemable)
-        ;*/
+        ;
 }
+*/
 
 #endif  // WITH_PYTHON
 

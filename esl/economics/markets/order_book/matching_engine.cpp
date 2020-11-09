@@ -22,8 +22,6 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-
-
 #include "matching_engine.hpp"
 
 #include <iostream>

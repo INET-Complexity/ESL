@@ -22,6 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+
+/*
 #ifdef WITH_PYTHON
 #include <esl/economics/markets/order_book/basic_book.hpp>
 #include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
@@ -34,7 +36,7 @@ using namespace esl::economics::markets::order_book;
 using namespace boost::python;
 
 
-BOOST_PYTHON_MODULE(order_book)
+BOOST_PYTHON_MODULE(_order_book)
 {
     enum_<execution_report::state_t>("state_t")
         .value("invalid", execution_report::state_t::invalid)
@@ -107,3 +109,6 @@ BOOST_PYTHON_MODULE(order_book)
 }
 
 #endif
+
+
+ */
