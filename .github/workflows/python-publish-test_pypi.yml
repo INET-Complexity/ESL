@@ -127,8 +127,6 @@ jobs:
           echo '--------------'
           ls /usr/local/lib/
           echo '--------------'
-          ls /usr/local/boost173
-          echo '--------------'
           ls
           echo '--------------'
           cd boost~
