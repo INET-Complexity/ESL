@@ -1,9 +1,8 @@
-name: build publish Test Pypi
+name: build publish Pypi
 
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [created]
 
 jobs:
   build_wheels:
@@ -14,6 +13,7 @@ jobs:
         os: [macos-latest, ubuntu-20.04, windows-latest]
         python_minor_version: [8, 9]
     steps:
+
 ########################################################################################################################
 
       - name: "[Windows] Setup NuGet"
