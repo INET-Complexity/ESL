@@ -125,6 +125,6 @@ BOOST_PYTHON_MODULE(stock)
         ;
 
 }
-*/
 
 #endif  // WITH_PYTHON
+ */
