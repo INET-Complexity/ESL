@@ -365,14 +365,13 @@ ENDIF()
 IF(WITH_PYTHON)
 
     # pep-0513/#libpythonx-y-so-1
-    IF(SKBUILD)
-
-        IF(APPLE)
-            LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
-        ENDIF()
-    ELSE()
+    #IF(SKBUILD)
+        #IF(APPLE)
+        #    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
+        #ENDIF()
+    #ELSE()
         LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
-    ENDIF()
+    #ENDIF()
 ENDIF()
 
 IF(WITH_MPI)
