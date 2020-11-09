@@ -1,4 +1,4 @@
-name: build publish Pypi
+name: build publish Test Pypi
 
 on:
   push:
@@ -7,20 +7,23 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels
+    name: "Package ${{ matrix.os }} | Python 3.${{matrix.python_minor_version}}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-20.04] # ubuntu-20.04, windows-latest, macos-latest, (macos-11.0)?
-        python_minor_version: [7, 8, 9] # 6, 7, 8, 9
-
+        os: [macos-latest, ubuntu-20.04, windows-latest]
+        python_minor_version: [8, 9]
     steps:
-      # For windows, install latest nuget package manager
-      - name: "[Windows] Setup nuget"
+########################################################################################################################
+
+      - name: "[Windows] Setup NuGet"
+        # For windows, install latest nuget package manager
         uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
         if: matrix.os == 'windows-latest'
+
+########################################################################################################################
 
       - name: "[MacOS] Configure XCode"
         uses: maxim-lobanov/setup-xcode@v1
@@ -28,7 +31,9 @@ jobs:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
 
-      - name: "[Windows] Install nuget packages"
+########################################################################################################################
+
+      - name: "[Windows] Install NuGet packages"
         run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
           Install-Package -Force gsl-msvc-x64
@@ -37,7 +42,6 @@ jobs:
           Install-Package -Force boost_atomic-vc142
           Install-Package -Force boost_chrono-vc142
           Install-Package -Force boost_date_time-vc142
-          Install-Package -Force boost_fiber-vc142
           Install-Package -Force boost_filesystem-vc142
           Install-Package -Force boost_graph-vc142
           Install-Package -Force boost_iostreams-vc142
@@ -47,7 +51,6 @@ jobs:
           Install-Package -Force boost_regex-vc142
           Install-Package -Force boost_serialization-vc142
           Install-Package -Force boost_system-vc142
-          Install-Package -Force boost_thread-vc142
           Install-Package -Force boost_timer-vc142
           Install-Package -Force boost_unit_test_framework-vc142
           Install-Package -Force boost_program_options-vc142
@@ -65,29 +68,29 @@ jobs:
         with:
           python-version: '3.${{matrix.python_minor_version}}'
 
-      # Install msbuild
-      - name: "[Windows] Add msbuild to PATH"
+########################################################################################################################
+
+      - name: "[Windows] Setup MSBuild"
         uses: microsoft/setup-msbuild@v1.0.2
         if: matrix.os == 'windows-latest'
+
+########################################################################################################################
 
       - name: "[All] Install Python dependencies"
         run: |
           python -m pip install --upgrade pip
           python -m pip install cibuildwheel==1.6.3 twine
 
-      - name: "[Linux] Update and install gsl"
-        run: |
-          yum update
-          yum install -y wget epel-release gsl gsl-devel
-        shell: bash
-        if: matrix.os == 'ubuntu-20.04'
+########################################################################################################################
 
-      - name: "[MacOS] Install brew packages"
+      - name: "[MacOS] Install dependencies with brew"
         run: |
           brew update >/dev/null
           brew install gfortran gsl
         shell: bash
         if: matrix.os == 'macos-latest'
+
+########################################################################################################################
 
       - name: "[Linux+MacOS] Install Adept"
         run: |
@@ -96,59 +99,62 @@ jobs:
           cd adept-2.0.5/
           ./configure --disable-fortran --silent
           make -j2 --silent
-          make install --silent
+          sudo make install --silent
           cd include
           ./create_adept_source_header
-          cp adept_source.h /usr/local/include/
+          sudo cp adept_source.h /usr/local/include/
           cd ~
         shell: bash
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
+
+########################################################################################################################
 
       - name: "[MacOS] Diagnostics"
         run: |
           xcodebuild -sdk -version
         if: matrix.os == 'macos-latest'
 
-      - name: "[MacOS] Install boost"
+########################################################################################################################
+
+      - name: "[MacOS | Python 3.8] Install boost"
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
           cd boost_1_*
-          ./bootstrap.sh --prefix=/usr/local/boost173 macos-version=10.9
+          ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/ ;" >> project-config.jam
+          echo "using python    : 3.8    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
-        if: matrix.os == 'macos-latest'
-        # || matrix.os == 'windows latest'
+        if: matrix.os == 'macos-latest' && matrix.python_minor_version == 8
 
-      - name: "[MacOS] Diagnostics"
+
+########################################################################################################################
+
+      - name: "[MacOS | Python 3.9] Install boost"
         run: |
-          pwd
-          ls
-          echo '--------------'
-          ls /usr/local/lib/
-          echo '--------------'
-          ls
-          echo '--------------'
-          cd boost~
-          ls
-          echo '--------------'
+          wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
+          tar -xzf boost_1_*
+          cd boost_1_*
+          ./bootstrap.sh
+          cat project-config.jam
+          echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
+          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.0/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.0/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.0/x64/lib/python3.9/ ;" >> project-config.jam
+          ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
-        if: matrix.os == 'macos-latest'
-        continue-on-error: true
+        if: matrix.os == 'macos-latest' && matrix.python_minor_version == 9
+
+########################################################################################################################
 
       - name: "Build and publish"
         env:
-          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-manylinux* cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-win_amd64'
-          CIBW_BEFORE_BUILD_WINDOWS: 'choco install wget && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz > $null && tar -xf adept-2.0.5.tar.gz'
-          #CIBW_BEFORE_BUILD_MACOS: ''
-          CIBW_BEFORE_ALL_LINUX: 'wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
+          CIBW_BEFORE_ALL_LINUX: 'yum update && yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
 
         run: |
           python -m cibuildwheel --output-dir distribution --platform linux

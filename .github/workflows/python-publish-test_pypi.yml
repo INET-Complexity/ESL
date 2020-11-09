@@ -129,7 +129,6 @@ jobs:
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-latest' && matrix.python_minor_version == 8
 
-
 ########################################################################################################################
 
       - name: "[MacOS | Python 3.9] Install boost"
