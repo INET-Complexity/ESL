@@ -33,7 +33,9 @@ namespace esl::simulation {
 
     agent_collection::agent_collection(computation::environment &environment_)
     : environment_(environment_)
-    {}
+    {
+
+    }
 
     void agent_collection::activate(std::shared_ptr<agent> a)
     {

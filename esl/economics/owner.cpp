@@ -28,6 +28,7 @@
 #include <esl/economics/owner.hpp>
 #include <esl/data/log.hpp>
 
+
 namespace esl::law {
 
 }

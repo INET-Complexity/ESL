@@ -40,7 +40,8 @@ BOOST_PYTHON_MODULE(share)
         .def_readonly("redeemable", &share::redeemable)
         ;
 }
-*/
+
 
 #endif  // WITH_PYTHON
 
+*/

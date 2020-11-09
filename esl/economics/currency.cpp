@@ -22,4 +22,4 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include "currency.hpp"
+#include <esl/economics/currency.hpp>

@@ -26,6 +26,7 @@
 #include <esl/economics/finance/loan.hpp>
 using namespace esl::economics::finance;
 
+/*
 #ifdef WITH_PYTHON
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
@@ -48,3 +49,4 @@ BOOST_PYTHON_MODULE(loan)
 }
 
 #endif  // WITH_PYTHON
+*/

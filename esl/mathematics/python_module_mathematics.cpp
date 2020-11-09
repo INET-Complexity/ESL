@@ -36,7 +36,8 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(_mathematics)
 {
-    class_<esl::/*mathematics::*/variable>( "variable", init<>())
+    /*
+    class_<esl::variable>( "variable", init<>())
         .def(init<double>())
         .def(self + self)
         .def(self += self)
@@ -48,6 +49,7 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def(self /= self)
         //.def("value", &variable::value)
         ;
+    */
 
 
     ///

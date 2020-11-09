@@ -25,6 +25,8 @@
 #include <esl/economics/finance/security.hpp>
 using namespace esl::economics::finance;
 
+
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -40,3 +42,4 @@ BOOST_PYTHON_MODULE(security)
 }
 
 #endif  // WITH_PYTHON
+ */

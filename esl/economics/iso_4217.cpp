@@ -25,6 +25,7 @@
 #include <esl/economics/iso_4217.hpp>
 
 
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -44,3 +45,4 @@ BOOST_PYTHON_MODULE(currency)
         ;
 }
 #endif
+ */

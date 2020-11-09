@@ -32,7 +32,6 @@
 #include <esl/economics/tangibility.hpp>
 
 
-
 namespace esl::economics {
     ///
     /// \brief  (Financial) cash, that for example can be exchanged

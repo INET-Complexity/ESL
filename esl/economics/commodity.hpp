@@ -27,6 +27,7 @@
 #include <esl/economics/fungibility.hpp>
 #include <esl/economics/tangibility.hpp>
 
+
 namespace esl::economics {
 
     struct commodity

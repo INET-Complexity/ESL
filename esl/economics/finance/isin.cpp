@@ -23,7 +23,7 @@
 #include <esl/economics/finance/isin.hpp>
 
 
-
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -41,3 +41,4 @@ BOOST_PYTHON_MODULE(isin)
 }
 
 #endif  // WITH_PYTHON
+*/

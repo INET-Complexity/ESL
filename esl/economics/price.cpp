@@ -25,7 +25,7 @@
 #include <esl/economics/price.hpp>
 
 
-
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
@@ -53,7 +53,7 @@ BOOST_PYTHON_MODULE(price)
 }
 
 #endif  // WITH_PYTHON
-
+*/
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/export.hpp>
