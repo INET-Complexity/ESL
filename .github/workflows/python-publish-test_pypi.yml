@@ -94,9 +94,9 @@ jobs:
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
           cd adept-2.0.5/
-          ./configure --disable-fortran
-          make -j2
-          make install
+          ./configure --disable-fortran --silent
+          make -j2 --silent
+          make install --silent
           cd include
           ./create_adept_source_header
           cp adept_source.h /usr/local/include/
@@ -115,15 +115,18 @@ jobs:
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh --prefix=/usr/local/boost173 macos-version=10.9
+          cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  /Users/runner/hostedtoolcache/Python/3.8.6/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
+          cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-latest'
         # || matrix.os == 'windows latest'
 
       - name: "[MacOS] Diagnostics"
         run: |
           pwd
+          ls
           echo '--------------'
           ls /usr/local/lib/
           echo '--------------'
