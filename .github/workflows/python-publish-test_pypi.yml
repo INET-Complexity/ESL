@@ -42,7 +42,6 @@ jobs:
           Install-Package -Force boost_atomic-vc142
           Install-Package -Force boost_chrono-vc142
           Install-Package -Force boost_date_time-vc142
-        # Install-Package -Force boost_fiber-vc142
           Install-Package -Force boost_filesystem-vc142
           Install-Package -Force boost_graph-vc142
           Install-Package -Force boost_iostreams-vc142
@@ -52,7 +51,6 @@ jobs:
           Install-Package -Force boost_regex-vc142
           Install-Package -Force boost_serialization-vc142
           Install-Package -Force boost_system-vc142
-        #  Install-Package -Force boost_thread-vc142
           Install-Package -Force boost_timer-vc142
           Install-Package -Force boost_unit_test_framework-vc142
           Install-Package -Force boost_program_options-vc142
