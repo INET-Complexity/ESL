@@ -16,19 +16,19 @@ jobs:
 
     steps:
       # For windows, install latest nuget package manager
-      - name: [Windows] Setup nuget
+      - name: "[Windows] Setup nuget"
         uses: nuget/setup-nuget@v1
         with:
           nuget-version: latest
         if: matrix.os == 'windows-latest'
 
-      - name: [MacOS] Configure XCode
+      - name: "[MacOS] Configure XCode"
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
 
-      - name: [windows] Install nuget packages
+      - name: "[Windows] Install nuget packages"
         run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
           Install-Package -Force gsl-msvc-x64
