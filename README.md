@@ -11,9 +11,7 @@ The Economic Simulation Library (ESL) provides an extensive collection of high-p
 ### Market mechanisms
 
 The library provides multiple market mechanisms that use the same messaging framework, meaning market mechanisms can to a limited extended be swapped and compared within the same economic model. We aim to provide simple models that allow, for example, to convert directly supply- and demand functions to an execution strategy, so that a Walrasian price-setters can be compared to order-driven markets such as limit order books. 
-
-For release 0.0.2, we aim to provide the following market mechanisms.
-
+ 
 * Walrasian price-setter, supporting market clearing for multiple assets using a numerical scheme, accelerated by automatic differentiation.
 
 * Multiple Limit order books with different performance characteristics.
@@ -32,13 +30,37 @@ We aim to provide optimized packages for Linux, MacOS and Windows for Python 3.6
 These are automatically delivered to Pypi, and can be downloaded and installed using pip.
 
 ```shell
-    pip install eslpy
+    pip3 install eslpy
 ```
 
-For linux, we build packages for the ```manylinux2014``` platform.
+
+#### Linux
+
+For linux, we build packages for the ```manylinux2014``` platform, which provides compatibility with a large number of recent versions of popular distros. 
+We test on Centos 7 and Ubuntu 20.04.
+
+##### MPI-enabled Cluster
+
 Precompiled packages are built without MPI support, as there are several implementations available and in practice the desired MPI
  implementation is imposed by the computing environment. Therefore, MPI users are encouraged to build the package from source code,
  and compiling for a specific computing environment may yield performance gains that are not available from a generic package.
+
+#### macOS
+
+Python packages are developed for macOS deployment version 10.9 and newer.
+Note that upon installation from inside a graphical interface, the installer will request the installation of the relevant Apple XCode developer tools through a dialog menu if not yet installed. This process may repeat multiple times depending on which development tools are already installed.
+These dialogs may be accompanied by the following message in the terminal:
+
+```
+xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.
+```
+
+
+#### Windows
+
+Build configuration supports both Microsoft Visual C++ and Mingw-w64 based builds. We recommend cmake-gui to generate project files for Visual Studio. For Mingw-w64 based builds, we recommend MSYS2 to install `boost` and `gsl` dependencies. 
+
+
 
 #### From source code
 
@@ -56,7 +78,7 @@ For this, the following dependencies need to be satisfied:
 Once the dependencies are satisfied one can build install with pip (provided PEP 517 is supported, which is the case for recent updates of pip)
 
 ```shell
-    pip install .
+    pip3 install .
 ```
 
 ### C++ library
