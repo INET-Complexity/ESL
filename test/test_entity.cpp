@@ -31,10 +31,6 @@
 #include <utility>
 
 
-#if WITH_PYTHON
-#include <boost/python.hpp>
-#endif
-
 
 BOOST_AUTO_TEST_SUITE(ESL)
 

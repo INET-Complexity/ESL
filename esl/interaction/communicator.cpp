@@ -161,12 +161,10 @@ namespace esl::interaction {
 //#endif
         }
     }
-
-
-
 }  // namespace esl::interaction
 
 
+/*
 #ifdef WITH_PYTHON
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
@@ -177,7 +175,6 @@ namespace esl::interaction {
     using namespace boost::python;
 
 
-    /*
     ///
     /// \brief
     ///
@@ -221,7 +218,8 @@ namespace esl::interaction {
             .def_readwrite("outbox", &communicator::outbox)
             .def("register_callback", python_register_callback);
     }
-     */
+
 
 }  // namespace esl::interaction
 #endif
+*/

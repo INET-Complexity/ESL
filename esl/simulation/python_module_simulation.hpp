@@ -29,13 +29,10 @@
 #ifdef WITH_PYTHON
 #include <esl/simulation/entity.hpp>
 
-
-
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <boost/python/converter/shared_ptr_to_python.hpp>
-#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 namespace esl::simulation::python_module {
     ///

@@ -41,7 +41,6 @@
 #include <esl/version.hpp>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
-
 #include <boost/python.hpp>
 using namespace boost::python;
 

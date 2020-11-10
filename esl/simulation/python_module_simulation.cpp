@@ -35,25 +35,22 @@
 #include <esl/simulation/time.hpp>
 #include <esl/simulation/world.hpp>
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/object.hpp>
-using namespace boost::python;
-#undef BOOST_BIND_GLOBAL_PLACEHOLDERS
-
-#include <boost/make_shared.hpp>
 
 #include <vector>
 using std::vector;
+
+
+#include <boost/make_shared.hpp>
+
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/python.hpp>
+using namespace boost::python;
+
 
 // as section of typedefs
 typedef esl::entity<boost::python::object> python_entity;
 typedef esl::identity<boost::python::object> python_identity;
 typedef esl::entity<esl::simulation::world> world_entity;
-
-
-
 
 
 boost::shared_ptr<python_identity>
@@ -94,7 +91,7 @@ namespace esl::simulation {
 
     BOOST_PYTHON_MODULE(_simulation)
     {
-
+        /*
         class_<esl::entity<object>, boost::noncopyable>(
             "entity", init<identity<object>>())
             .def_readonly("identifier", &esl::entity<object>::identifier)
@@ -152,7 +149,7 @@ namespace esl::simulation {
             ;
 
         implicitly_convertible<world, identity<world>>();
-
+        */
     }
 
 }

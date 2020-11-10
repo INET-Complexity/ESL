@@ -22,9 +22,21 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
+#ifdef WITH_PYTHON
+
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/python.hpp>
+using namespace boost::python;
+
+
+BOOST_PYTHON_MODULE(_order_book)
+{
+
+}
+
+#endif
 
 /*
-#ifdef WITH_PYTHON
 #include <esl/economics/markets/order_book/basic_book.hpp>
 #include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
 #include <esl/economics/markets/order_book/static_order_book.hpp>
@@ -32,6 +44,7 @@
 #include <esl/economics/markets/order_book/python_module_order_book.hpp>
 using namespace esl::economics::markets::order_book;
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 using namespace boost::python;
 

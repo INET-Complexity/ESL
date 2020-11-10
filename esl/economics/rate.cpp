@@ -24,15 +24,14 @@
 ///
 #include <esl/economics/rate.hpp>
 
-
-
+/*
 #ifdef WITH_PYTHON
 #include <boost/python.hpp>
 
 using namespace boost::python;
 
 
-/*
+
 BOOST_PYTHON_MODULE(price)
 {
     class_<esl::economics::rate<std::int64_t>>("rate_int64",
@@ -58,6 +57,7 @@ BOOST_PYTHON_MODULE(price)
 //        ;
 
 }
- */
+
 
 #endif  // WITH_PYTHON
+ */

@@ -176,7 +176,7 @@ LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
 
 IF(MSVC)
     SET(CMAKE_EXE_LINKER_FLAGS " -static")
-    SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux
+    SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
     SET(Boost_USE_STATIC_LIBS        ON)
 ELSE()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
@@ -365,13 +365,11 @@ ENDIF()
 IF(WITH_PYTHON)
 
     # pep-0513/#libpythonx-y-so-1
-    #IF(SKBUILD)
-        #IF(APPLE)
-        #    LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
-        #ENDIF()
-    #ELSE()
+    IF(SKBUILD AND NOT APPLE)
+        # No linking to python
+    ELSE()
         LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
-    #ENDIF()
+    ENDIF()
 ENDIF()
 
 IF(WITH_MPI)
@@ -494,10 +492,6 @@ IF(WITH_PYTHON)
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
-
-        #SET_PROPERTY(TARGET ${python_module_name}
-        #        PROPERTY VS_PACKAGE_REFERENCES "Boost_1.72.0"
-        #        )
 
         IF(python_module_name STREQUAL "esl")
             SET(module_path_modified ".")
