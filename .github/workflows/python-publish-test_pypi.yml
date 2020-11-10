@@ -140,7 +140,7 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "Build and publish"
+      - name: "[MacOS + Linux] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
@@ -152,3 +152,21 @@ jobs:
           python -m cibuildwheel --output-dir distribution
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
+        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-20.04'
+
+########################################################################################################################
+
+      - name: "[Windows] Build and publish"
+        env:
+          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
+
+        run: |
+          python -m cibuildwheel --output-dir distribution
+          python -m twine upload --repository testpypi distribution/*
+        continue-on-error: true
+        shell: powershell
+        if: matrix.os == 'windows-latest'

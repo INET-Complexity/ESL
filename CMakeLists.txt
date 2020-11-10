@@ -1,14 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
-IF(APPLE)
-    # old version 10.9 for compatibility
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
-    SET(CMAKE_MACOSX_RPATH 0)
-
-    # If environment settings override this, you can enable force:
-    # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
-ENDIF()
-
 ################################################################################
 # Read and set the library version
 ################################################################################
@@ -30,6 +21,16 @@ SET(version_revision ${CMAKE_MATCH_1})
 # enables compatibility with older versions of cmake
 CMAKE_POLICY(SET CMP0048 NEW)
 
+IF(APPLE)
+    # old version 10.9 for compatibility
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+    SET(CMAKE_MACOSX_RPATH 0)
+
+    # If environment settings override this, you can enable force:
+    # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
+ENDIF()
+
+
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library"
         LANGUAGES CXX)
@@ -45,6 +46,11 @@ SET(CMAKE_MODULE_PATH              "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_STANDARD              17)
 SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
+
+OPTION(CONFIGURATION_SHARED "Build shared library" OFF)
+
+OPTION(WITH_TESTS "Build test cases" ON)
+
 
 IF(NOT ESL_TARGET_NAME)
     SET(ESL_TARGET_NAME "esl")
@@ -347,7 +353,6 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
 # Include directories
 ################################################################################
 
-
 IF(MSVC)
     LIST(APPEND ALL_LINKED_LIBRARIES)
 ELSEIF(MINGW)
@@ -400,129 +405,134 @@ ENDIF()
 ################################################################################
 # This needs to be at this position, because for MSVC we need to issue a LINK_DIRECTORIES
 # call before this to get it right
-ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 
-SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
+IF(CONFIGURATION_SHARED)
+    ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 
-IF(MSVC)
-    # multi-processor compilation
-    TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
+    SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
-    SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-    SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
+    IF(MSVC)
+        # multi-processor compilation
+        TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
+        SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+        SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
+    ENDIF()
+
+    IF(CMAKE_BUILD_TYPE MATCHES Debug)
+        # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
+    elseif(CMAKE_BUILD_TYPE MATCHES Release)
+        TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
+    endif()
+
+    IF(MSVC)
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+    ELSEIF(MINGW)
+        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS)
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+    ELSE()
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
+    ENDIF()
+
+
+    ################################################################################
+    # Copy library into testing folder, so it can be linked against by Python tests
+    ################################################################################
+    ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:${ESL_TARGET_NAME}>
+            ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 ENDIF()
-
-IF(CMAKE_BUILD_TYPE MATCHES Debug)
-    # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
-    TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
-endif()
-
-IF(MSVC)
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-ELSEIF(MINGW)
-    LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS)
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
-ELSE()
-    TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
-ENDIF()
-
-################################################################################
-# Copy library into testing folder, so it can be linked against by Python tests
-################################################################################
-ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:${ESL_TARGET_NAME}>
-        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 
 ################################################################################
 #   Add tests
 ################################################################################
 
-FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
-FOREACH(test_src ${TEST_SRCS})
-    GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
-
-    ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
-    TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
-    SET_TARGET_PROPERTIES(${test_name} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
-
-    # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
-    IF(${test_name} MATCHES "^(test_mpi_)")
-        IF(WITH_MPI)
-            IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
-                MESSAGE("\t MPI PYTHON TEST" ${test_name})
-                ADD_TEST(NAME ${test_name}
-                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-                        COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
-            ELSE()
-                MESSAGE("\t MPI TEST" ${test_name})
-                ADD_TEST(NAME ${test_name}
-                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                        COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
-            ENDIF()
-        ENDIF()
-    ELSEIF(${test_name} MATCHES "^(test_python_)")
-        MESSAGE("\t PYTHON TEST" ${test_name})
-        ADD_TEST(NAME ${test_name}
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-                COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
-    ELSE()
-        MESSAGE("\t C++ TEST " ${test_name})
-        ADD_TEST(NAME ${test_name}
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
-                COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
-    ENDIF()
-
-ENDFOREACH(test_src)
-
-IF(WITH_PYTHON)
-    ####################################################################################################################
-    # create python modules
-    # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
-    # with python_module as prefix of the filename
-    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
-    FOREACH (source ${ESL_PYTHON_SOURCE})
-        GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
-        GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
-
-        GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-
-        LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-
-        PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
-
-        IF(python_module_name STREQUAL "esl")
-            SET(module_path_modified ".")
-        ELSE()
-            STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
-        ENDIF()
-
-        MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
-        INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
-
-        SET(ignoreMe "${SKBUILD}")
-    ENDFOREACH ()
-
-    ####################################################################################################################
-    # create python tests
-    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+IF(WITH_TESTS)
+    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
     FOREACH(test_src ${TEST_SRCS})
-        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
-        SET(pytest_name "${pytest_name}_python")
-        MESSAGE("PYTEST " ${pytest_name})
-        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
+        GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
+
+        ADD_EXECUTABLE(${test_name} ${test_src} ${SOURCE_FILES})
+        TARGET_LINK_LIBRARIES(${test_name} ${Boost_LIBRARIES} ${ESL_TARGET_NAME})
+        SET_TARGET_PROPERTIES(${test_name} PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
+
+        # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
+        IF(${test_name} MATCHES "^(test_mpi_)")
+            IF(WITH_MPI)
+                IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
+                    MESSAGE("\t MPI PYTHON TEST" ${test_name})
+                    ADD_TEST(NAME ${test_name}
+                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+                            COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
+                ELSE()
+                    MESSAGE("\t MPI TEST" ${test_name})
+                    ADD_TEST(NAME ${test_name}
+                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                            COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
+                ENDIF()
+            ENDIF()
+        ELSEIF(${test_name} MATCHES "^(test_python_)")
+            MESSAGE("\t PYTHON TEST" ${test_name})
+            ADD_TEST(NAME ${test_name}
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+                    COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
+        ELSE()
+            MESSAGE("\t C++ TEST " ${test_name})
+            ADD_TEST(NAME ${test_name}
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
+                    COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
+        ENDIF()
+
     ENDFOREACH(test_src)
 
-    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+    IF(WITH_PYTHON)
+        ####################################################################################################################
+        # create python modules
+        # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
+        # with python_module as prefix of the filename
+        FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
+        FOREACH (source ${ESL_PYTHON_SOURCE})
+            GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
+            GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
-    #SET_TARGET_PROPERTIES(pytest PROPERTIES
-    #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+            GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
 
-    #IF(PYTHONINTERP_FOUND)
-    #    ADD_TEST(NAME pytest
-    #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-    #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
-    #ENDIF()
+            LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+
+            PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
+
+            IF(python_module_name STREQUAL "esl")
+                SET(module_path_modified ".")
+            ELSE()
+                STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
+            ENDIF()
+
+            MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
+            INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
+
+            SET(ignoreMe "${SKBUILD}")
+        ENDFOREACH ()
+
+        ####################################################################################################################
+        # create python tests
+        FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+        FOREACH(test_src ${TEST_SRCS})
+            GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
+            SET(pytest_name "${pytest_name}_python")
+            MESSAGE("PYTEST " ${pytest_name})
+            FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
+        ENDFOREACH(test_src)
+
+        ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+
+        #SET_TARGET_PROPERTIES(pytest PROPERTIES
+        #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+
+        #IF(PYTHONINTERP_FOUND)
+        #    ADD_TEST(NAME pytest
+        #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+        #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
+        #ENDIF()
+    ENDIF()
 ENDIF()
