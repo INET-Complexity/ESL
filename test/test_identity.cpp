@@ -40,7 +40,8 @@ using std::string;
 
 BOOST_AUTO_TEST_SUITE(ESL)
 
-struct dummy_base : esl::identifiable_as<dummy_base>
+struct dummy_base
+: esl::identifiable_as<dummy_base>
 {
     esl::identity<dummy_base> identifier;
 
@@ -57,7 +58,9 @@ struct dummy_derived_direct
 {
     dummy_derived_direct(const esl::identity<dummy_derived_direct> &i)
     : dummy_base(i)
-    {}
+    {
+
+    }
 };
 
 
