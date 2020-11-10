@@ -84,9 +84,8 @@ BOOST_AUTO_TEST_CASE(entity_create_child)
     BOOST_CHECK_LT(c0, c1);
 }
 
+/*
 #if WITH_PYTHON
-
-
     BOOST_AUTO_TEST_CASE(entity_create_python_object)
     {
         esl::identity<boost::python::object> i = {1, 2};
@@ -99,5 +98,7 @@ BOOST_AUTO_TEST_CASE(entity_create_child)
 
     }
 #endif
+*/
+
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
