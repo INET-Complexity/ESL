@@ -447,7 +447,7 @@ ENDIF()
 #   Add tests
 ################################################################################
 
-IF(WITH_TESTS)
+IF(WITH_TESTS AND CONFIGURATION_SHARED)
     FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
     FOREACH(test_src ${TEST_SRCS})
         GET_FILENAME_COMPONENT(test_name ${test_src} NAME_WE)
@@ -485,54 +485,55 @@ IF(WITH_TESTS)
         ENDIF()
 
     ENDFOREACH(test_src)
+ENDIF()
 
-    IF(WITH_PYTHON)
-        ####################################################################################################################
-        # create python modules
-        # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
-        # with python_module as prefix of the filename
-        FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
-        FOREACH (source ${ESL_PYTHON_SOURCE})
-            GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
-            GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
-            GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
+IF(WITH_PYTHON)
+    ####################################################################################################################
+    # create python modules
+    # the requirement a file to be parsed as a python module is that it is a uniquely named .cpp file
+    # with python_module as prefix of the filename
+    FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
+    FOREACH (source ${ESL_PYTHON_SOURCE})
+        GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
+        GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
-            LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+        GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
 
-            PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
+        LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
-            IF(python_module_name STREQUAL "esl")
-                SET(module_path_modified ".")
-            ELSE()
-                STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
-            ENDIF()
+        PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
 
-            MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
-            INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
+        IF(python_module_name STREQUAL "esl")
+            SET(module_path_modified ".")
+        ELSE()
+            STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
+        ENDIF()
 
-            SET(ignoreMe "${SKBUILD}")
-        ENDFOREACH ()
+        MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
+        INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
 
-        ####################################################################################################################
-        # create python tests
-        FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
-        FOREACH(test_src ${TEST_SRCS})
-            GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
-            SET(pytest_name "${pytest_name}_python")
-            MESSAGE("PYTEST " ${pytest_name})
-            FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
-        ENDFOREACH(test_src)
+        SET(ignoreMe "${SKBUILD}")
+    ENDFOREACH ()
 
-        ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
+    ####################################################################################################################
+    # create python tests
+    FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.py)
+    FOREACH(test_src ${TEST_SRCS})
+        GET_FILENAME_COMPONENT(pytest_name ${test_src} NAME_WE)
+        SET(pytest_name "${pytest_name}_python")
+        MESSAGE("PYTEST " ${pytest_name})
+        FILE(COPY ${test_src} DESTINATION ${CMAKE_BINARY_DIR}/python/test/)
+    ENDFOREACH(test_src)
 
-        #SET_TARGET_PROPERTIES(pytest PROPERTIES
-        #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+    ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
 
-        #IF(PYTHONINTERP_FOUND)
-        #    ADD_TEST(NAME pytest
-        #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-        #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
-        #ENDIF()
-    ENDIF()
+    #SET_TARGET_PROPERTIES(pytest PROPERTIES
+    #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
+
+    #IF(PYTHONINTERP_FOUND)
+    #    ADD_TEST(NAME pytest
+    #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
+    #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
+    #ENDIF()
 ENDIF()
