@@ -31,7 +31,6 @@
 #include <utility>
 
 
-
 BOOST_AUTO_TEST_SUITE(ESL)
 
 struct dummy_base : esl::entity<dummy_base>
