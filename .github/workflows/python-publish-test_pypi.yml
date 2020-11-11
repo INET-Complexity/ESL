@@ -181,10 +181,8 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
 
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
-
         run: |
           $env:PATH
-          $env:CMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe"
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           #env:CMAKE_GENERATOR_PLATFORM="x64"
           python -m cibuildwheel --output-dir distribution
