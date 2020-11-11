@@ -100,6 +100,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         continue-on-error: true
 
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir C:\Users\runner\.nuget\packages\
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
 
       - name: "[Windows] Diagnostics"
         run: |
