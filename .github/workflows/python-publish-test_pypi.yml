@@ -121,15 +121,13 @@ jobs:
           dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
         shell: powershell
         if: matrix.os == 'windows-latest'
+        continue-on-error: true
 
       - name: "[Windows] Configuration "
         run: |
           cmake -G "Visual Studio 16 2019" -A x64 ."
         shell: powershell
         if: matrix.os == 'windows-latest'
-
-
-
 
 ########################################################################################################################
 
