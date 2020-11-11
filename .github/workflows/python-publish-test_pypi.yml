@@ -41,35 +41,6 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "[Windows] Install NuGet packages"
-        run: |
-          Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
-          Install-Package -Force CMake,gsl-msvc-x64
-          Install-Package -Force Python3${{matrix.python_minor_version}}
-          Install-Package -Force boost-vc142,boost_atomic-vc142,boost_filesystem-vc142,boost_system-vc142,boost_program_options-vc142
-          Install-Package -Force boost_chrono-vc142,boost_date_time-vc142,boost_timer-vc142
-          Install-Package -Force boost_log-vc142, boost_log_setup-vc142
-          Install-Package -Force boost_serialization-vc142,boost_wserialization-vc142
-          Install-Package -Force boost_unit_test_framework-vc142
-          Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
-          nuget locals all -list
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-
-########################################################################################################################
-
-      - name: "[Windows] Diagnostics"
-        run: |
-          dir
-        if: matrix.os == 'windows-latest'
-
-      - name: "[Windows] Diagnostics"
-        run: |
-          pwd
-        if: matrix.os == 'windows-latest'
-
-########################################################################################################################
-
       - uses: actions/checkout@v2
 
 ########################################################################################################################
@@ -84,6 +55,36 @@ jobs:
       - name: "[Windows] Setup MSBuild"
         uses: microsoft/setup-msbuild@v1.0.2
         if: matrix.os == 'windows-latest'
+
+########################################################################################################################
+
+      - name: "[Windows] Install NuGet packages"
+        run: |
+          Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
+          Install-Package -Force CMake,gsl-msvc-x64
+          Install-Package -Force boost-vc142,boost_atomic-vc142,boost_filesystem-vc142,boost_system-vc142,boost_program_options-vc142
+          Install-Package -Force boost_chrono-vc142,boost_date_time-vc142,boost_timer-vc142
+          Install-Package -Force boost_log-vc142, boost_log_setup-vc142
+          Install-Package -Force boost_serialization-vc142,boost_wserialization-vc142
+          Install-Package -Force boost_unit_test_framework-vc142
+          Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
+          nuget locals all -list
+        shell: powershell
+        if: matrix.os == 'windows-latest'
+          #Install-Package -Force Python3${{matrix.python_minor_version}}
+
+########################################################################################################################
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir
+        if: matrix.os == 'windows-latest'
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          pwd
+        if: matrix.os == 'windows-latest'
+
 
 ########################################################################################################################
 
