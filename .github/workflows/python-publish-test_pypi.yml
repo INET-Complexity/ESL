@@ -17,20 +17,21 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "[Windows] Setup NuGet"
-        # For windows, install latest nuget package manager
-        uses: nuget/setup-nuget@v1
-        with:
-          nuget-version: latest
-        if: matrix.os == 'windows-latest'
-
-########################################################################################################################
-
       - name: "[MacOS] Configure XCode"
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
+
+########################################################################################################################
+
+      - name: "[Windows] Setup NuGet"
+        # For windows, install latest nuget package manager
+        uses: nuget/setup-nuget@v1.0.2
+        with:
+          nuget-version: latest
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
 
 ########################################################################################################################
 
@@ -69,7 +70,6 @@ jobs:
           dir C:\Users\
         if: matrix.os == 'windows-latest'
         continue-on-error: true
-
 
       - name: "[Windows] Diagnostics"
         run: |
