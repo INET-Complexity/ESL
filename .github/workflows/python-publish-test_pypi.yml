@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-20.04, windows-latest]
+        os: [windows-latest] # macos-latest, ubuntu-20.04,
         python_minor_version: [8]
     steps:
 ########################################################################################################################
@@ -37,6 +37,7 @@ jobs:
         run: |
           Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
           Install-Package -Force gsl-msvc-x64
+          Install-Package -Force CMake
           Install-Package -Force Python3${{matrix.python_minor_version}}
           Install-Package -Force boost-vc142
           Install-Package -Force boost_atomic-vc142
@@ -107,6 +108,28 @@ jobs:
         run: |
           xcodebuild -sdk -version
         if: matrix.os == 'macos-latest'
+
+########################################################################################################################
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir "C:\Program Files (x86)\"
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\"
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\"
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\"
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\"
+          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        shell: powershell
+        if: matrix.os == 'windows-latest'
+
+      - name: "[Windows] Configuration "
+        run: |
+          cmake -G "Visual Studio 16 2019" -A x64 ."
+        shell: powershell
+        if: matrix.os == 'windows-latest'
+
+
+
 
 ########################################################################################################################
 
@@ -183,3 +206,4 @@ jobs:
         continue-on-error: true
         shell: powershell
         if: matrix.os == 'windows-latest'
+
