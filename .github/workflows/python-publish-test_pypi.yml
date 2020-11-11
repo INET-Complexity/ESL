@@ -98,26 +98,6 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "[Windows] Diagnostics"
-        run: |
-          dir "C:\Program Files (x86)\"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-        continue-on-error: true
-
-      - name: "[Windows] Configuration "
-        run: |
-          cmake -G "Visual Studio 16 2019" -A x64 .
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-
-########################################################################################################################
-
       - name: "[MacOS | Python 3.8] Install boost"
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
