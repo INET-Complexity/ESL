@@ -39,20 +39,7 @@ jobs:
           Install-Package -Force gsl-msvc-x64
           Install-Package -Force CMake
           Install-Package -Force Python3${{matrix.python_minor_version}}
-          Install-Package -Force boost-vc142
-          Install-Package -Force boost_atomic-vc142
-          Install-Package -Force boost_chrono-vc142
-          Install-Package -Force boost_date_time-vc142
-          Install-Package -Force boost_filesystem-vc142
-          Install-Package -Force boost_log-vc142
-          Install-Package -Force boost_log_setup-vc142
-          Install-Package -Force boost_serialization-vc142
-          Install-Package -Force boost_system-vc142
-          Install-Package -Force boost_timer-vc142
-          Install-Package -Force boost_unit_test_framework-vc142
-          Install-Package -Force boost_program_options-vc142
-          Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
-          Install-Package -Force boost_wserialization-vc142
+          Install-Package -Force boost-vc142,boost_atomic-vc142,boost_chrono-vc142,boost_date_time-vc142,boost_filesystem-vc142,boost_log-vc142,boost_log_setup-vc142,boost_serialization-vc142,boost_system-vc142,boost_timer-vc142,boost_unit_test_framework-vc142,boost_program_options-vc142,boost_python3${{matrix.python_minor_version}}-vc142,boost_wserialization-vc142
           nuget locals all -list
         shell: powershell
         if: matrix.os == 'windows-latest'
@@ -125,7 +112,7 @@ jobs:
 
       - name: "[Windows] Configuration "
         run: |
-          cmake -G "Visual Studio 16 2019" -A x64 ."
+          cmake -G "Visual Studio 16 2019" -A x64 .
         shell: powershell
         if: matrix.os == 'windows-latest'
 
