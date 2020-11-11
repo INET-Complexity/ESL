@@ -79,12 +79,33 @@ jobs:
         run: |
           dir
         if: matrix.os == 'windows-latest'
+        continue-on-error: true
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir C:\Users\
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
+
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir $ENV:UserProfile\.nuget\packages
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir C:\Users\runneradmin\.nuget\packages\
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
+
 
       - name: "[Windows] Diagnostics"
         run: |
           pwd
         if: matrix.os == 'windows-latest'
-
+        continue-on-error: true
 
 ########################################################################################################################
 
