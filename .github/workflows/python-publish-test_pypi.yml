@@ -32,15 +32,12 @@ jobs:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
 
-
 ########################################################################################################################
 
       - name: "[Windows] Diagnostics"
         run: |
           $env:PATH
         if: matrix.os == 'windows-latest'
-
-
 
 ########################################################################################################################
 
@@ -187,10 +184,11 @@ jobs:
 
         run: |
           $env:PATH
-
+          $env:CMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe"
+          $env:CMAKE_GENERATOR="Visual Studio 16 2019"
+          #env:CMAKE_GENERATOR_PLATFORM="x64"
           python -m cibuildwheel --output-dir distribution
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
         shell: powershell
         if: matrix.os == 'windows-latest'
-
