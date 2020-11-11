@@ -14,6 +14,7 @@ jobs:
         os: [windows-latest] # macos-latest, ubuntu-20.04,
         python_minor_version: [8]
     steps:
+
 ########################################################################################################################
 
       - name: "[Windows] Setup NuGet"
@@ -30,6 +31,16 @@ jobs:
         with:
           xcode-version: latest-stable
         if: matrix.os == 'macos-latest'
+
+
+########################################################################################################################
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          $env:PATH
+        if: matrix.os == 'windows-latest'
+
+
 
 ########################################################################################################################
 
@@ -175,6 +186,8 @@ jobs:
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
 
         run: |
+          $env:PATH
+
           python -m cibuildwheel --output-dir distribution
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
