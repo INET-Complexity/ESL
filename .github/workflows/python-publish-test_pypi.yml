@@ -41,17 +41,14 @@ jobs:
           Install-Package -Force boost-vc142
           Install-Package -Force boost_atomic-vc142
           Install-Package -Force boost_chrono-vc142
-          Install-Package -Force boost_date_time-vc142
+          Install-Package -Force boost_date_time-vc142,boost_timer-vc142
           Install-Package -Force boost_filesystem-vc142
-          Install-Package -Force boost_log-vc142
-          Install-Package -Force boost_log_setup-vc142
-          Install-Package -Force boost_serialization-vc142
+          Install-Package -Force boost_log-vc142, boost_log_setup-vc142
+          Install-Package -Force boost_serialization-vc142,boost_wserialization-vc142
           Install-Package -Force boost_system-vc142
-          Install-Package -Force boost_timer-vc142
           Install-Package -Force boost_unit_test_framework-vc142
           Install-Package -Force boost_program_options-vc142
           Install-Package -Force boost_python3${{matrix.python_minor_version}}-vc142
-          Install-Package -Force boost_wserialization-vc142
           nuget locals all -list
         shell: powershell
         if: matrix.os == 'windows-latest'
