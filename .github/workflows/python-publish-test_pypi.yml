@@ -175,12 +175,8 @@ jobs:
         run: |
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
-          cd msvc2015_64/include
           pwd
-          $env:PATH += ";."
-          cd ../lib/gsl
-          $env:PATH += ";."
-          cd ../..
+          $env:PATH += ";D:\a\ESL\ESL\msvc2015_64\include;D:\a\ESL\ESL\msvc2015_64\lib\gsl"
           $env:PATH
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           #env:CMAKE_GENERATOR_PLATFORM="x64"
