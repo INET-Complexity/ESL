@@ -151,14 +151,6 @@ jobs:
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
-          wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
-          tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
-          cd msvc2015_64/include
-          pwd
-          $env:path += ";."
-          cd ../lib/gsl
-          $env:path += ";."
-
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0
@@ -181,6 +173,14 @@ jobs:
 
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
         run: |
+          wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
+          tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
+          cd msvc2015_64/include
+          pwd
+          $env:PATH += ";."
+          cd ../lib/gsl
+          $env:PATH += ";."
+          cd ../..
           $env:PATH
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           #env:CMAKE_GENERATOR_PLATFORM="x64"
