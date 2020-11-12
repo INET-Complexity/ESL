@@ -151,7 +151,7 @@ jobs:
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
-          choco install wget
+          choco install wget,gsl-msvc-x64
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0

@@ -281,11 +281,7 @@ ENDIF()
 
 
 # GSL is required for optimisation routines
-IF(MSVC)
-    # TODO: see GSL linking above
-ELSE()
-    FIND_PACKAGE(GSL REQUIRED)
-ENDIF()
+FIND_PACKAGE(GSL REQUIRED)
 
 ################################################################################
 MESSAGE("----------------------------------------")
