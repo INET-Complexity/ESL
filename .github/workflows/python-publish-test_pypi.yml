@@ -33,13 +33,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         continue-on-error: true
 
-      - name: "[Windows] Diagnostics"
-        run: |
-          type C:\Users\runneradmin\AppData\Roaming\NuGet\nuget.config
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-        continue-on-error: true
-
 ########################################################################################################################
 
       - name: "[Windows] Diagnostics"
@@ -64,6 +57,13 @@ jobs:
         shell: powershell
         if: matrix.os == 'windows-latest'
         # Install-Package -Force Python3${{matrix.python_minor_version}}
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          type C:\Users\runneradmin\AppData\Roaming\NuGet\nuget.config
+        shell: powershell
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
 
 ########################################################################################################################
 
