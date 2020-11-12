@@ -154,6 +154,7 @@ jobs:
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
           cd msvc2015_64/include
+          pwd
           $env:path += ";."
           cd ../lib/gsl
           $env:path += ";."
