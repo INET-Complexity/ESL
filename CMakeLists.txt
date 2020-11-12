@@ -190,6 +190,14 @@ ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
 
+
+
+
+
+
+
+
+
 IF(FALSE) # MSVC AND IDE BUILD
     # Install-Package gsl-msvc-x64 -Version 2.4.0.8788
     # Install-Package boost -Version 1.72.0
@@ -281,6 +289,7 @@ ENDIF()
 
 
 # GSL is required for optimisation routines
+
 FIND_PACKAGE(GSL REQUIRED)
 
 ################################################################################

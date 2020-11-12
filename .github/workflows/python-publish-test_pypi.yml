@@ -151,7 +151,13 @@ jobs:
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
-          choco install wget,gsl-msvc-x64
+          wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
+          tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
+          cd msvc2015_64/include
+          $env:path += ";."
+          cd ../lib/gsl
+          $env:path += ";."
+
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0
