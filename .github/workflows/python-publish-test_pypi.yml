@@ -156,7 +156,7 @@ jobs:
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0
           ./bootstrap.bat
-          ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
+          ./b2 address-model=64 variant=release install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel
         if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
         shell: powershell
 
