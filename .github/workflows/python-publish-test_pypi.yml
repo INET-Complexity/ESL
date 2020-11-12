@@ -151,9 +151,18 @@ jobs:
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
-          choco install boost-msvc-14.1
+          Install-ChocolateyPackage `
+              -packageName 'boost-msvc14.2' `
+              -installerType 'exe' `
+              -silentArgs '/VERYSILENT' `
+              -url 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-32.exe' `
+              -url64bit 'https://sourceforge.net/projects/boost/files/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' `
+          	-checksum 529579fe4448f63f4e780338e4075c142604e40cd2c5901d5187160660b4ae48 `
+          	-checksumType sha256 `
+          	-checksum64 74229a45b1e13f05c5bbdca7a268ac7723d97c33bec209e5f669b6cb3ffaeab6 `
+          	-checksumType64 sha256
 
-#            wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
+        #            wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
 #            tar -xzf boost_1_*
 #            cd boost_1_*
 #            ./bootstrap.sh
