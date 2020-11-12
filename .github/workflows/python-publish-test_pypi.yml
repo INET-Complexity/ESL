@@ -152,6 +152,7 @@ jobs:
       - name: "[Windows | Python 3.8] Install boost"
         run: |
           choco install boost-msvc-14.1
+
 #            wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
 #            tar -xzf boost_1_*
 #            cd boost_1_*
@@ -162,8 +163,13 @@ jobs:
 #            ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
         if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
 #          #cp -r bin.v2 /Users/runner/work/ESL/ESL/
+#
 
 
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir C:\Users\runneradmin\AppData\Local\Temp\chocolatey\boost-msvc-14.1\ /s
+        if: matrix.os == 'macos-latest'
 
 
 
