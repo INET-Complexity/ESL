@@ -148,6 +148,7 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
 
 ########################################################################################################################
+      -
       - name: "[Windows] Install Adept"
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
@@ -171,8 +172,17 @@ jobs:
 
       - name: "[Windows] Diagnostics"
         run: |
-          dir C:\Users\runneradmin\AppData\Local\Temp\chocolatey\boost-msvc-14.1\ /s
-        if: matrix.os == 'macos-latest'
+          dir D:\a\ESL\ESL\ /s
+        continue-on-error: true
+        shell: powershell
+        if: matrix.os == 'windows-latest'
+
+      - name: "[Windows] Diagnostics"
+        run: |
+          dir C:\Users\runneradmin\ /s
+        continue-on-error: true
+        shell: powershell
+        if: matrix.os == 'windows-latest'
 
 
       - name: "[Windows] Build and publish"
