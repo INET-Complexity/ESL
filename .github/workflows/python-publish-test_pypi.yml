@@ -148,7 +148,6 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
 
 ########################################################################################################################
-      -
       - name: "[Windows] Install Adept"
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
