@@ -190,7 +190,7 @@ ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
 
-IF(MSVC)
+IF(FALSE) # MSVC AND IDE BUILD
     # Install-Package gsl-msvc-x64 -Version 2.4.0.8788
     # Install-Package boost -Version 1.72.0
     # Install-Package boost_program_options-vc140 -Version 1.72.0
