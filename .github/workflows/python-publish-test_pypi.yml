@@ -148,6 +148,16 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
 
 ########################################################################################################################
+    - name: "[Windows] Install Adept"
+      run: |
+        wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
+        tar -xf adept-2.0.5.tar.gz
+        cd adept-2.0.5/include/
+        wget https://gist.githubusercontent.com/maartenscholl/98e77aa7e378f92a41b309c3718736a1/raw/c68cd4b553709bd471584ac579c2d82710355504/adept_source.h  -UseBasicParsing -OutFile adept_source.h
+        Copy-Item -Path * -Destination D:/a/ESL/ESL/adept -recurse -Force
+      shell: powershell
+      if: matrix.os == 'windows-latest'
+
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
@@ -165,7 +175,6 @@ jobs:
         if: matrix.os == 'macos-latest'
 
 
-
       - name: "[Windows] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
@@ -176,7 +185,7 @@ jobs:
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
           pwd
-          $env:PATH += ";D:\a\ESL\ESL\msvc2015_64\include;D:\a\ESL\ESL\msvc2015_64\lib\gsl"
+          $env:PATH += "C:/Boost/include/boost-1_73;D:\a\ESL\ESL\msvc2015_64\include;D:\a\ESL\ESL\msvc2015_64\lib\gsl;D:\a\ESL\ESL\adept"
           $env:PATH
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           #env:CMAKE_GENERATOR_PLATFORM="x64"

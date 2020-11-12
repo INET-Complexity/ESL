@@ -145,12 +145,12 @@ IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
 
-    #IF(ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
-    #    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
-    #            python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
-    #ELSE()
-    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python38)
-    #ENDIF()
+    IF(MSVC) #ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
+                python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    ELSE()
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
+    ENDIF()
 
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
         MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
@@ -184,6 +184,11 @@ IF(MSVC)
     SET(CMAKE_EXE_LINKER_FLAGS " -static")
     SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
     SET(Boost_USE_STATIC_LIBS        ON)
+
+    # Github actions specific:
+    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
+
+
 ELSE()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
 ENDIF()
@@ -192,18 +197,7 @@ SET(Boost_USE_MULTITHREADED      ON)
 
 
 
-
-
-
-
-
-
 IF(FALSE) # MSVC AND IDE BUILD
-    # Install-Package gsl-msvc-x64 -Version 2.4.0.8788
-    # Install-Package boost -Version 1.72.0
-    # Install-Package boost_program_options-vc140 -Version 1.72.0
-    #
-
     MESSAGE("################################################################################")
     MESSAGE("MSVC build detected, please use NuGet package manager to install dependencies if not yet satisfied: ")
     LIST(APPEND VS_DEPENDENCIES "")
@@ -289,7 +283,6 @@ ENDIF()
 
 
 # GSL is required for optimisation routines
-
 FIND_PACKAGE(GSL REQUIRED)
 
 ################################################################################
@@ -347,10 +340,6 @@ IF(WITH_MPI)
 ENDIF()
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
-ENDIF()
-
-IF(MSVC) # for now, assume all builds on windows are done using MSYS2 64 bit
-    # LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/msys64/usr/include")
 ENDIF()
 
 INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
