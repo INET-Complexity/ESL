@@ -148,15 +148,15 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
 
 ########################################################################################################################
-    - name: "[Windows] Install Adept"
-      run: |
-        wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
-        tar -xf adept-2.0.5.tar.gz
-        cd adept-2.0.5/include/
-        wget https://gist.githubusercontent.com/maartenscholl/98e77aa7e378f92a41b309c3718736a1/raw/c68cd4b553709bd471584ac579c2d82710355504/adept_source.h  -UseBasicParsing -OutFile adept_source.h
-        Copy-Item -Path * -Destination D:/a/ESL/ESL/adept -recurse -Force
-      shell: powershell
-      if: matrix.os == 'windows-latest'
+      - name: "[Windows] Install Adept"
+        run: |
+          wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
+          tar -xf adept-2.0.5.tar.gz
+          cd adept-2.0.5/include/
+          wget https://gist.githubusercontent.com/maartenscholl/98e77aa7e378f92a41b309c3718736a1/raw/c68cd4b553709bd471584ac579c2d82710355504/adept_source.h  -UseBasicParsing -OutFile adept_source.h
+          Copy-Item -Path * -Destination D:/a/ESL/ESL/adept -recurse -Force
+        shell: powershell
+        if: matrix.os == 'windows-latest'
 
 
       - name: "[Windows | Python 3.8] Install boost"
