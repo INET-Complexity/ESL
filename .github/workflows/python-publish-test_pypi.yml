@@ -158,7 +158,7 @@ jobs:
           ./bootstrap.bat
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
         if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
-
+        shell: powershell
 
       - name: "[Windows] Diagnostics"
         run: |
