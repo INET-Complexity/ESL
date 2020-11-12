@@ -38,6 +38,9 @@ jobs:
       - name: "[Windows] Diagnostics"
         run: |
           $env:PATH
+          Get-ChildItem -Recurse
+
+        shell: powershell
         if: matrix.os == 'windows-latest'
 
 ########################################################################################################################
@@ -61,12 +64,14 @@ jobs:
       - name: "[Windows] Diagnostics"
         run: |
           dir C:\Users\
+        shell: powershell
         if: matrix.os == 'windows-latest'
         continue-on-error: true
 
       - name: "[Windows] Diagnostics"
         run: |
-          dir C:\Users\runneradmin\ \s
+          Get-ChildItem -Recurse
+        shell: powershell
         if: matrix.os == 'windows-latest'
         continue-on-error: true
 
