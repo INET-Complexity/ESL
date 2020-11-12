@@ -63,6 +63,7 @@ jobs:
       - name: "[Windows] Diagnostics"
         run: |
           dir C:\Users\
+          C:\Users\runneradmin\AppData\Roaming\NuGet\nuget.config
         shell: powershell
         if: matrix.os == 'windows-latest'
         continue-on-error: true
