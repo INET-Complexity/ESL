@@ -294,22 +294,21 @@ namespace esl::economics::markets::order_book {
 
                     // execution report for liquidity taker
                     reports.emplace_back(execution_report
-                                             { .state      = execution_report::match
-                                                 , .quantity   = execution_size_
-                                                 , .identifier = basic_book::direct_order
-                                                 , .side       = order.side
-                                                 , .limit      = quote_
-                                                 , .owner      = order.owner
+                                             { execution_report::match
+                                             , execution_size_
+                                             , basic_book::direct_order
+                                             , order.side
+                                             , quote_
+                                             , order.owner
                                              });
 
                     // execution report for supplier
                     reports.emplace_back(execution_report
-                                             { .state      = execution_report::match
-                                                 , .quantity   = execution_size_
-                                                 , .identifier = ao->index
-                                                 , .side       = (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell)
-                                                 , .limit      = quote_
-                                                 , .owner      = ao->data.owner
+                                             { execution_report::match
+                                             , execution_size_
+                                             , ao->index
+                                             , (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell), quote_
+                                             , ao->data.owner
                                              });
 
                     if(!ao->data.successor){
@@ -351,12 +350,12 @@ namespace esl::economics::markets::order_book {
             {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity ){
                     reports.emplace_back(execution_report
-                                             { .state      = execution_report::invalid
-                                                 , .quantity   = order.quantity
-                                                 , .identifier = basic_book::direct_order
-                                                 , .side       = order.side
-                                                 , .limit      = order.limit
-                                                 , .owner      = order.owner
+                                             { execution_report::invalid
+                                             , order.quantity
+                                             , basic_book::direct_order
+                                             , order.side
+                                             , order.limit
+                                             , order.owner
                                              });
                     return;
                 }
@@ -398,12 +397,12 @@ namespace esl::economics::markets::order_book {
                            || order.lifetime == limit_order_message::fill_or_kill){
                     // cancel an immediate/fill order that could not be matched
                     reports.emplace_back(execution_report
-                                             { .state      = execution_report::cancel
-                                                 , .quantity   = order.quantity
-                                                 , .identifier = basic_book::direct_order
-                                                 , .side       = order.side
-                                                 , .limit      = order.limit
-                                                 , .owner      = order.owner
+                                             { execution_report::cancel
+                                             , order.quantity
+                                             , basic_book::direct_order
+                                             , order.side
+                                             , order.limit
+                                             , order.owner
                                              });
                     return;
                 }
@@ -415,30 +414,30 @@ namespace esl::economics::markets::order_book {
                 }
                 if(order.lifetime == limit_order_message::immediate_or_cancel){
                     reports.emplace_back(execution_report
-                                             { .state        = execution_report::cancel
-                                                 , .quantity     = remainder_
-                                                 , .identifier   = basic_book::direct_order
-                                                 , .side         = order.side
-                                                 , .limit        = order.limit
-                                                 , .owner        = order.owner
+                                             { execution_report::cancel
+                                             , remainder_
+                                             , basic_book::direct_order
+                                             , order.side
+                                             , order.limit
+                                             , order.owner
                                              });
                     return;
                 }
 
                 auto block_ = pool_.emplace(record
-                                                { .limit     = order.limit
-                                                    , .quantity  = remainder_
-                                                    , .owner     = order.owner
-                                                    , .successor = nullptr
+                                                { order.limit
+                                                , remainder_
+                                                , order.owner
+                                                , nullptr
                                                 });
 
                 reports.emplace_back(execution_report
-                                         { .state        = execution_report::placement
-                                             , .quantity     = remainder_
-                                             , .identifier   = block_.first
-                                             , .side         = order.side
-                                             , .limit        = order.limit
-                                             , .owner        = order.owner
+                                         { execution_report::placement
+                                         , remainder_
+                                         , block_.first
+                                         , order.side
+                                         , order.limit
+                                         , order.owner
                                          });
 
                 if(!limit_level_->first){
@@ -478,12 +477,12 @@ namespace esl::economics::markets::order_book {
                 }
 
                 reports.emplace_back(execution_report
-                                         { .state        = execution_report::cancel
-                                             , .quantity     = order_.quantity
-                                             , .identifier   = order
-                                             , .side         = side_
-                                             , .limit        = order_.limit
-                                             , .owner        = order_.owner
+                                         { execution_report::cancel
+                                         , order_.quantity
+                                         , order
+                                         , side_
+                                         , order_.limit
+                                         , order_.owner
                                          });
 
                 pool_.erase(index_);

@@ -109,23 +109,23 @@ namespace esl::economics::markets::order_book {
                     remainder_ -= executed_;
 
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::match,
-                        .quantity   = executed_,
-                        .identifier = direct_order,
-                        .side       = order.side,
-                        .limit      = i->second.second.limit,
-                        .owner      = order.owner
+                        execution_report::match,
+                        executed_,
+                        direct_order,
+                        order.side,
+                        i->second.second.limit,
+                        order.owner
                         });
 
                     i->second.second.quantity -= executed_;
 
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::match,
-                        .quantity   = executed_,
-                        .identifier = direct_order,
-                        .side       = i->second.second.side,
-                        .limit      = i->second.second.limit,
-                        .owner      = i->second.second.owner
+                        execution_report::match,
+                        executed_,
+                        direct_order,
+                        i->second.second.side,
+                        i->second.second.limit,
+                        i->second.second.owner
                     });
 
                     if(0 == i->second.second.quantity){
@@ -141,12 +141,12 @@ namespace esl::economics::markets::order_book {
                     orders_bid.emplace(order.limit, pair_);
                     limit_orders_.emplace(next_, order.limit);
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::placement,
-                        .quantity   = order.quantity,
-                        .identifier = next_,
-                        .side       = order.side,
-                        .limit      = order.limit,
-                        .owner      = order.owner});
+                        execution_report::placement,
+                        order.quantity,
+                        next_,
+                        order.side,
+                        order.limit,
+                        order.owner});
                     ++next_;
                 }
             }else{
@@ -159,23 +159,23 @@ namespace esl::economics::markets::order_book {
                     remainder_ -= executed_;
 
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::match,
-                        .quantity   = executed_,
-                        .identifier = direct_order,
-                        .side       = order.side,
-                        .limit      = i->second.second.limit,
-                        .owner      = order.owner
+                        execution_report::match,
+                        executed_,
+                        direct_order,
+                        order.side,
+                        i->second.second.limit,
+                        order.owner
                     });
 
                     i->second.second.quantity -= executed_;
 
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::match,
-                        .quantity   = executed_,
-                        .identifier = direct_order,
-                        .side       = i->second.second.side,
-                        .limit      = i->second.second.limit,
-                        .owner      = i->second.second.owner
+                        execution_report::match,
+                        executed_,
+                        direct_order,
+                        i->second.second.side,
+                        i->second.second.limit,
+                        i->second.second.owner
                     });
 
                     if(0 == i->second.second.quantity){
@@ -192,12 +192,12 @@ namespace esl::economics::markets::order_book {
                     limit_orders_.emplace(next_, order.limit);
 
                     reports.emplace_back(execution_report {
-                        .state      = execution_report::placement,
-                        .quantity   = order.quantity,
-                        .identifier = next_,
-                        .side       = order.side,
-                        .limit      = order.limit,
-                        .owner      = order.owner});
+                        execution_report::placement,
+                        order.quantity,
+                        next_,
+                        order.side,
+                        order.limit,
+                        order.owner});
                     ++next_;
                 }
             }
