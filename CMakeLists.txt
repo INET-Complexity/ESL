@@ -410,7 +410,11 @@ ENDIF()
 # call before this to get it right
 
 IF(CONFIGURATION_SHARED)
-    ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
+    IF(MSVC)
+        ADD_LIBRARY(${ESL_TARGET_NAME} STATIC ${SOURCE_FILES} )
+    ELSE()
+        ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
+    ENDIF()
 
     SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
@@ -460,6 +464,7 @@ IF(WITH_TESTS AND CONFIGURATION_SHARED)
         SET_TARGET_PROPERTIES(${test_name} PROPERTIES
                 RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
+
         # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
         IF(${test_name} MATCHES "^(test_mpi_)")
             IF(WITH_MPI)
@@ -506,6 +511,14 @@ IF(WITH_PYTHON)
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
+
+
+        IF(MSVC)
+            # multi-processor compilation
+            TARGET_COMPILE_OPTIONS(_${python_module_name} PRIVATE "/MP")
+            SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+            SET_PROPERTY(TARGET _${python_module_name} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
+        ENDIF()
 
         IF(python_module_name STREQUAL "esl")
             SET(module_path_modified ".")
