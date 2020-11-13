@@ -25,11 +25,9 @@ IF(APPLE)
     # old version 10.9 for compatibility
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
     SET(CMAKE_MACOSX_RPATH 0)
-
     # If environment settings override this, you can enable force:
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
 ENDIF()
-
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
         DESCRIPTION "Economic Simulation Library"
@@ -48,18 +46,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
 OPTION(CONFIGURATION_SHARED "Build shared library" OFF)
-
 OPTION(WITH_TESTS "Build test cases" ON)
-
-
-
-if (MSVC)
-    ADD_COMPILE_OPTIONS("/std:c++latest")
-endif()
-
-
-
-
 
 IF(NOT ESL_TARGET_NAME)
     SET(ESL_TARGET_NAME "esl")
@@ -71,11 +58,12 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 IF(MSVC OR MINGW)
+    # this prevents windows from defining IN and OUT macros globally
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
 ENDIF()
 
-# ignore warnings about unavailable functions in standard library on older MacOS
 IF(APPLE)
+    # ignore warnings about unavailable functions in standard library on older MacOS
     ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
 ENDIF()
 
@@ -172,7 +160,7 @@ ENDIF()
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi)
 
-    # We can expose the python bindings for MPI as well, to permit direct
+    # We can expose the python bindings for MPI as well, to permit direct access
     # And enable MPI_Python
     #IF(WITH_PYTHON)
     #    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python)
@@ -196,86 +184,13 @@ IF(MSVC)
 
     # Github actions specific:
     LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
-
-
 ELSE()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
 ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
 
-
-
-IF(FALSE) # MSVC AND IDE BUILD
-    MESSAGE("################################################################################")
-    MESSAGE("MSVC build detected, please use NuGet package manager to install dependencies if not yet satisfied: ")
-    LIST(APPEND VS_DEPENDENCIES "")
-
-
-    # TODO: we hardcode it for github actions, but we should make this generic
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/adept")
-
-    # Github Actions setup:
-    # C:\Users\runneradmin\.nuget\packages\
-
-    SET(MSVC_GSL_VERSION "2.4.0.8788")
-    MESSAGE("\tInstall-Package gsl-msvc-x64 -Version ${MSVC_GSL_VERSION}")
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Users/runneradmin/.nuget/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native")
-    LIST(APPEND VS_DEPENDENCIES "gsl-msvc-x64_${MSVC_GSL_VERSION}") #MESSAGE("gsl-msvc-x64_${MSVC_GSL_VERSION}")
-    LIST(APPEND GSL_LIBRARY_DIRS "C:/Users/runneradmin/.nuget/packages/gsl-msvc-x64.${MSVC_GSL_VERSION}/build/native/lib/x64/Release")
-
-
-    SET(MSVC_VERSION_PACKAGE_MANAGER "vc142")
-    SET(MSVC_BOOST_VERSION "1.72.0")
-    LIST(APPEND VS_DEPENDENCIES "boost_${MSVC_BOOST_VERSION}")
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Users/runneradmin/.nuget/packages/boost.1.72.0.0/lib/native/include")
-
-    # to be compliant, we need to set most of the following variables:
-    # Boost_LIBRARIES
-    LIST(APPEND Boost_LIBRARIES )
-
-    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
-        MESSAGE("\tInstall-Package boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER} -Version ${MSVC_BOOST_VERSION}")
-        #MESSAGE("\tboost_${bll}_${MSVC_BOOST_VERSION}")
-        LIST(APPEND VS_DEPENDENCIES "boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}_${MSVC_BOOST_VERSION}")
-
-    ENDFOREACH()
-
-    # Boost_FOUND
-    SET(Boost_FOUND TRUE)
-    #Boost_INCLUDE_DIRS
-    SET(Boost_INCLUDE_DIRS "C:/Users/runneradmin/.nuget/packages/boost.1.72.0.0/lib/native/include/")
-    #Boost_LIBRARY_DIRS
-    LIST(APPEND Boost_LIBRARY_DIRS)
-    #Boost_LIBRARIES
-    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
-        LIST(APPEND Boost_LIBRARY_DIRS "C:/Users/runneradmin/.nuget/packages/boost_${bll}-${MSVC_VERSION_PACKAGE_MANAGER}.${MSVC_BOOST_VERSION}.0/lib/native/")
-        # Boost_<C>_FOUND
-        SET("Boost_${bll}_FOUND" TRUE)
-    ENDFOREACH()
-
-    MESSAGE("add library gsl.lib cblas.lib")
-    #ADD_LIBRARY("${bll}-vc142-mt-x64-1_72.lib" ALIAS "Boost::${bll}")
-    LIST(APPEND Boost_LIBRARIES gsl.lib cblas.lib)
-
-    FOREACH(bll ${Boost_LIBRARIES_DEPENDENCIES})
-        MESSAGE("add library libboost_${bll}-vc142-mt-s-x64-1_72.lib")
-        LIST(APPEND Boost_LIBRARIES "libboost_${bll}-vc142-mt-s-x64-1_72.lib")
-    ENDFOREACH()
-
-    #
-    #Boost_<C>_LIBRARY
-    #Boost_VERSION
-    #Boost_LIB_VERSION
-    #Boost_MAJOR_VERSION
-    #Boost_MINOR_VERSION
-    #Boost_SUBMINOR_VERSION
-    #Boost_LIB_DIAGNOSTIC_DEFINITIONS (Windows)
-ELSE()
-    FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
-ENDIF()
-
-#FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 
 ########################################################################################################################
 # Optimized linear algebra and scientific computing routines
