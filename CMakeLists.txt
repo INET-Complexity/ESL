@@ -177,19 +177,18 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
 
+LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{EnvironmentVariableName} )
+# "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
+
 IF(MSVC)
     SET(CMAKE_EXE_LINKER_FLAGS " -static")
     SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
     SET(Boost_USE_STATIC_LIBS        ON)
-
-    # Github actions specific:
-    LIST(APPEND ALL_INCLUDE_DIRECTORIES "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
 ELSE()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
 ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
-
 FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 
 ########################################################################################################################
