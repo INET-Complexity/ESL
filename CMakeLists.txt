@@ -78,9 +78,7 @@ IF(CCACHE_FOUND)
 ENDIF(CCACHE_FOUND)
 
 
-
-
-
+FIND_PATH(ADEPT_INCLUDE_DIRECTORY "adept.h")
 #LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{ESL_ADDITIONAL_INCLUDE_DIRECTORIES} )
 
 
@@ -114,14 +112,18 @@ ENDIF()
 # Python bindings configuration
 ################################################################################
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3 REQUIRED)     # for building python bindings
     FIND_PACKAGE(PythonInterp 3)            # for running tests on build machine, not required
+    FIND_PACKAGE(PythonLibs 3 REQUIRED)     # for building python bindings
 
     IF(SKBUILD)
         MESSAGE(STATUS "The project is built using scikit-build")
     ELSE()
         MESSAGE(STATUS "The project is not built using scikit-build")
     ENDIF()
+
+    GET_FILENAME_COMPONENT(ESL_PYTHON_LINK_DIRECTORY ${PYTHON_LIBRARY} DIRECTORY)
+
+
 
     # This reads the Python version that was found, and sets variables
     STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
@@ -189,7 +191,7 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 #
 ################################################################################
-LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
+LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE_DIRECTORY})
 
 IF(NOT MSVC)
     # TODO: test if we can do without, would be faster
@@ -363,10 +365,11 @@ IF(CONFIGURATION_SHARED)
 
     IF(MSVC)
         # this one is for the shared library only. For python, this needs to be called again separately
-        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${PYTHON_LIBRARY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} )
     ELSEIF(MINGW)
-        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
     ELSE()
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
@@ -439,7 +442,7 @@ IF(WITH_PYTHON)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${PYTHON_LIBRARY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
