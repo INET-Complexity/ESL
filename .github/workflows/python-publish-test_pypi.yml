@@ -178,14 +178,15 @@ jobs:
 
       - name: "[Windows] Diagnostics"
         run: |
-          dir D:\a\ESL\ESL\ /s
+          dir D:\a\ESL\ESL\
+          dir C:\
         continue-on-error: true
         shell: powershell
         if: matrix.os == 'windows-latest'
 
       - name: "[Windows] Diagnostics"
         run: |
-          dir C:\Users\runneradmin\ /s
+          dir C:\Users\runneradmin\
         continue-on-error: true
         shell: powershell
         if: matrix.os == 'windows-latest'
@@ -201,7 +202,7 @@ jobs:
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xvf .\gsl_2_4_msvc2015_64_r1.zip
           pwd
-          $env:PATH += ";C:\Boost\include\boost-1_73;C:\Boost\lib;D:\a\ESL\ESL\msvc2015_64\include;D:\a\ESL\ESL\msvc2015_64\lib\gsl;D:\a\ESL\ESL\adept"
+          $env:PATH += ";D:\a\ESL\ESL\boost_1_73_0;C:\Boost\include\boost-1_73;C:\Boost\lib;D:\a\ESL\ESL\msvc2015_64\include;D:\a\ESL\ESL\msvc2015_64\lib\gsl;D:\a\ESL\ESL\adept"
           $env:PATH
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           $env:CMAKE_GENERATOR_PLATFORM="x64"
