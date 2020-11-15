@@ -57,8 +57,6 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
 
-
-
 IF(MSVC OR MINGW)
     # this prevents windows from defining IN and OUT macros globally
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
@@ -79,26 +77,30 @@ IF(CCACHE_FOUND)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 ENDIF(CCACHE_FOUND)
 
-IF(MSVC)
-    ADD_DEFINITIONS(/MP)
-ENDIF()
+
+
+
+
+#LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{ESL_ADDITIONAL_INCLUDE_DIRECTORIES} )
+
 
 ################################################################################
 # Library optional add-ons
 ################################################################################
 OPTION(WITH_MPI "Enable MPI using Boost.MPI" OFF)
 IF(WITH_MPI)
-    FIND_PACKAGE(MPI REQUIRED)
-    ADD_DEFINITIONS(-DWITH_MPI)
+    FIND_PACKAGE(MPI REQUIRED)      # looks for MPI implementation
+    ADD_DEFINITIONS(-DWITH_MPI)     # enables ESL WITH_MPI code
 ENDIF()
 
 OPTION(WITH_PYTHON "Enables export of Python bindings using Boost.Python" ON)
 IF(WITH_PYTHON)
-    ADD_DEFINITIONS(-DWITH_PYTHON)
+    ADD_DEFINITIONS(-DWITH_PYTHON)  # enables ESL WITH_PYTHON code
 
     IF(SKBUILD)
         # No linking to python
     ELSE()
+        # TODO: confirm static linking is necessary if we are not creating a python package
         ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
     ENDIF()
 ENDIF()
@@ -112,25 +114,29 @@ ENDIF()
 # Python bindings configuration
 ################################################################################
 IF(WITH_PYTHON)
-    FIND_PACKAGE(PythonLibs 3 REQUIRED)  # for building bindings
-    FIND_PACKAGE(PythonInterp 3) # for running tests, not required
+    FIND_PACKAGE(PythonLibs 3 REQUIRED)     # for building python bindings
+    FIND_PACKAGE(PythonInterp 3)            # for running tests on build machine, not required
 
     IF(SKBUILD)
         MESSAGE(STATUS "The project is built using scikit-build")
     ELSE()
-        MESSAGE(STATUS "scikit-build disabled")
+        MESSAGE(STATUS "The project is not built using scikit-build")
     ENDIF()
 
+    # This reads the Python version that was found, and sets variables
     STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
     LIST(GET VERSION_LIST 0 ESL_PYTHON_BINDINGS_VERSION_MAJOR)
     LIST(GET VERSION_LIST 1 ESL_PYTHON_BINDINGS_VERSION_MINOR)
     LIST(GET VERSION_LIST 2 ESL_PYTHON_BINDINGS_VERSION_PATCH)
 ENDIF()
 
-INCLUDE_DIRECTORIES(SYSTEM ${PYTHON_INCLUDE_DIRS})
+# TODO:
+#INCLUDE_DIRECTORIES(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
-INCLUDE(GNUInstallDirs)
-
+IF(NOT MSVC)
+    # Gets the GNU standard insllation directories on this machine
+    INCLUDE(GNUInstallDirs)
+ENDIF()
 ################################################################################
 # In this section we set up the Boost libraries,
 # and inter-dependencies between Boost MPI and Python
@@ -141,13 +147,15 @@ LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
         serialization
         unit_test_framework
         thread
-        )
+        ) # NOTE: don't forget to match these to the build and deployment requirements
 
 # If Python is enabled, we add Boost.Python of the appropriate version
 IF(WITH_PYTHON)
     MESSAGE("################################################################################")
     MESSAGE("Compiling with Python ${ESL_PYTHON_BINDINGS_VERSION_MAJOR}.${ESL_PYTHON_BINDINGS_VERSION_MINOR}:")
 
+    # TODO: confirm that this is actually how its meant to be; it appears that for Python 3.8
+    #       windows has `python38` as a Boost dependency, and other platforms just have 'python'
     IF(MSVC) #ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
         LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
                 python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
@@ -155,6 +163,7 @@ IF(WITH_PYTHON)
         LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
     ENDIF()
 
+    # On non-release builds, inform the users about the chosen Python and its paths
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
         MESSAGE("include: /t" ${PYTHON_INCLUDE_DIRS})
         MESSAGE("library: /t" ${PYTHON_LIBRARY})
@@ -166,11 +175,10 @@ ENDIF()
 IF(WITH_MPI)
     LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi)
 
-    # We can expose the python bindings for MPI as well, to permit direct access
-    # And enable MPI_Python
-    #IF(WITH_PYTHON)
-    #    LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python)
-    #ENDIF()
+    # We can expose the python bindings for MPI as well, to permit direct access to MPI
+    IF(WITH_PYTHON)
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES mpi_python)
+    ENDIF()
 ENDIF()
 
 ################################################################################
@@ -181,39 +189,31 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 #
 ################################################################################
-LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM "C:/Boost/include/boost-1_73" "C:/adept" "C:/gsl/include")
+LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
 
-LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{ESL_ADDITIONAL_INCLUDE_DIRECTORIES} )
-
-message("ADDITIONALLY: " ${ALL_INCLUDE_DIRECTORIES})
-
-# "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
-
-IF(MSVC)
-    #SET(CMAKE_EXE_LINKER_FLAGS " -static")
-    #SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
-    #SET(Boost_USE_STATIC_LIBS        ON)
+IF(NOT MSVC)
+    # TODO: test if we can do without, would be faster
     SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
-ELSE()
-    SET(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
 ENDIF()
 
-SET(Boost_USE_MULTITHREADED      ON)
+SET(Boost_USE_MULTITHREADED         ON)
+
+# 1.53 is the lowest version we tested in 2020
 FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
 ########################################################################################################################
 # Optimized linear algebra and scientific computing routines
 MESSAGE("################################################################################")
 
 IF(MSVC)
-    SET(BLA_STATIC ON) # On windows, we will statically link a free blas package
+    SET(BLA_STATIC ON)      # On windows, we will statically link a free blas package
 ENDIF()
 
-FIND_PACKAGE(BLAS) # not required
+FIND_PACKAGE(BLAS)          # not required, can do with a fallback library
 IF(BLAS_FOUND)
-    FIND_PACKAGE(LAPACK) # also not required but nice to have
+    FIND_PACKAGE(LAPACK)    # also not required but nice to have
 ENDIF()
-
 
 # GSL is required for optimisation routines
 FIND_PACKAGE(GSL 2.2 REQUIRED)
@@ -225,11 +225,12 @@ MESSAGE("compiler " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} "
 MESSAGE("----------------------------------------")
 
 IF(MSVC)
+    # TODO: test if this works
     #TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
 
+    # multi-processor compilation on MSVC
+    ADD_DEFINITIONS(/MP)
 ELSE()
-    #ADD_COMPILE_OPTIONS(-m64) # should be the default with modern gccs
-
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
     SET(CMAKE_C_FLAGS_DEBUG "-g")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
@@ -237,8 +238,6 @@ ELSE()
 
     SET(CMAKE_C_FLAGS_RELEASE "-O3")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-    #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
         INCLUDE(CheckCXXCompilerFlag)
@@ -271,6 +270,7 @@ ENABLE_TESTING()
 IF(WITH_MPI)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_PATH})
 ENDIF()
+
 IF(WITH_PYTHON)
     list(APPEND ALL_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 ENDIF()
@@ -363,10 +363,10 @@ IF(CONFIGURATION_SHARED)
 
     IF(MSVC)
         # this one is for the shared library only. For python, this needs to be called again separately
-        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS "C:/Boost/lib" "C:/cibw/python/python.3.8.4/tools/libs" "C:/gsl/lib/gsl")
+        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} )
     ELSEIF(MINGW)
-        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS)
+        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
     ELSE()
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
@@ -439,11 +439,10 @@ IF(WITH_PYTHON)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS "C:/Boost/lib" "C:/cibw/python/python.3.8.4/tools/libs" "C:/gsl/lib/gsl")
+        LINK_DIRECTORIES(${PYTHON_LIBRARIES} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
-
 
         IF(MSVC)
             # multi-processor compilation
@@ -452,13 +451,17 @@ IF(WITH_PYTHON)
             #SET_PROPERTY(TARGET _${python_module_name} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
         ENDIF()
 
+        # We have a special case for the main module residing in the root
         IF(python_module_name STREQUAL "esl")
             SET(module_path_modified ".")
         ELSE()
+            # This replaces `esl/path1/path2/submodule` with `path1/path2/submodule
             STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
         ENDIF()
 
+        # Let user know we have detected the python module and processed it
         MESSAGE("PYTHON MODULE " _${python_module_name} ":/t/t " ${module_path_modified} "/t/t" ${source})
+        # We install it in the right submodule path
         INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
 
         SET(ignoreMe "${SKBUILD}")
