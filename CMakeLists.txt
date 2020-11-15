@@ -5,15 +5,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 ################################################################################
 FILE(READ "esl/version" version_header)
 
-STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ \t]*=[ \t]*([0-9]+)"
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MAJOR[ /t]*=[ /t]*([0-9]+)"
         _ ${version_header})
 SET(version_major ${CMAKE_MATCH_1})
 
-STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ \t]*=[ \t]*([0-9]+)"
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_MINOR[ /t]*=[ /t]*([0-9]+)"
         _ ${version_header})
 SET(version_minor ${CMAKE_MATCH_1})
 
-STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ \t]*=[ \t]*([0-9]+)"
+STRING(REGEX MATCH "[0-9a-zA-Z_]*ESL_VERSION_REVISION[ /t]*=[ /t]*([0-9]+)"
         _ ${version_header})
 SET(version_revision ${CMAKE_MATCH_1})
 
@@ -57,6 +57,8 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
 
+
+
 IF(MSVC OR MINGW)
     # this prevents windows from defining IN and OUT macros globally
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
@@ -68,7 +70,7 @@ IF(APPLE)
 ENDIF()
 
 ################################################################################
-# Caching
+# Compile time improvements
 ################################################################################
 
 FIND_PROGRAM(CCACHE_FOUND ccache)
@@ -76,6 +78,10 @@ IF(CCACHE_FOUND)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 ENDIF(CCACHE_FOUND)
+
+IF(MSVC)
+    ADD_DEFINITIONS(/MP)
+ENDIF()
 
 ################################################################################
 # Library optional add-ons
@@ -150,9 +156,9 @@ IF(WITH_PYTHON)
     ENDIF()
 
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
-        MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
-        MESSAGE("library: \t" ${PYTHON_LIBRARY})
-        MESSAGE("libraries: \t" ${PYTHON_LIBRARIES})
+        MESSAGE("include: /t" ${PYTHON_INCLUDE_DIRS})
+        MESSAGE("library: /t" ${PYTHON_LIBRARY})
+        MESSAGE("libraries: /t" ${PYTHON_LIBRARIES})
     ENDIF()
 ENDIF()
 
@@ -175,17 +181,21 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 #
 ################################################################################
-LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM)
+LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM "C:/Boost/include/boost-1_73" "C:/adept" "C:/gsl/include")
 
-LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{EnvironmentVariableName} )
+LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{ESL_ADDITIONAL_INCLUDE_DIRECTORIES} )
+
+message("ADDITIONALLY: " ${ALL_INCLUDE_DIRECTORIES})
+
 # "C:/Boost/include/boost-1_73" "D:/a/ESL/ESL/msvc2015_64/include" "D:/a/ESL/ESL/adept")
 
 IF(MSVC)
-    SET(CMAKE_EXE_LINKER_FLAGS " -static")
-    SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
-    SET(Boost_USE_STATIC_LIBS        ON)
+    #SET(CMAKE_EXE_LINKER_FLAGS " -static")
+    #SET(Boost_USE_STATIC_RUNTIME     ON) # not necessary on linux/macOS
+    #SET(Boost_USE_STATIC_LIBS        ON)
+    SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ELSE()
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
+    SET(CMAKE_POSITION_INDEPENDENT_CODE ON) # MINGW?
 ENDIF()
 
 SET(Boost_USE_MULTITHREADED      ON)
@@ -206,7 +216,7 @@ ENDIF()
 
 
 # GSL is required for optimisation routines
-FIND_PACKAGE(GSL REQUIRED)
+FIND_PACKAGE(GSL 2.2 REQUIRED)
 
 ################################################################################
 MESSAGE("----------------------------------------")
@@ -271,9 +281,10 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
 IF(MSVC)
-    LIST(APPEND ALL_LINKED_LIBRARIES)
+    LIST(APPEND ALL_LINKED_LIBRARIES GSL::gsl)
 ELSEIF(MINGW)
-    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm ) #GSL::gsl)
+    # TODO: check whether we actually have blas, even though most distributions have it
+    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm )
 ELSE()
     LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
 ENDIF()
@@ -325,7 +336,9 @@ ENDIF()
 
 IF(CONFIGURATION_SHARED)
     IF(MSVC)
-        ADD_LIBRARY(${ESL_TARGET_NAME} STATIC ${SOURCE_FILES} )
+        # ADD_LIBRARY(${ESL_TARGET_NAME} STATIC ${SOURCE_FILES} ) # 11-14 15:40
+
+        ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
     ELSE()
         ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
     ENDIF()
@@ -335,9 +348,12 @@ IF(CONFIGURATION_SHARED)
     IF(MSVC)
         # multi-processor compilation
         TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
-        SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-        SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
+        #SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+        #SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
     ENDIF()
+
+
+
 
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
         # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
@@ -346,7 +362,9 @@ IF(CONFIGURATION_SHARED)
     endif()
 
     IF(MSVC)
-        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+        # this one is for the shared library only. For python, this needs to be called again separately
+        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS "C:/Boost/lib" "C:/cibw/python/python.3.8.4/tools/libs" "C:/gsl/lib/gsl")
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} )
     ELSEIF(MINGW)
         LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS)
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
@@ -358,10 +376,10 @@ IF(CONFIGURATION_SHARED)
     ################################################################################
     # Copy library into testing folder, so it can be linked against by Python tests
     ################################################################################
-    ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:${ESL_TARGET_NAME}>
-            ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
+    #ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
+    #        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #        $<TARGET_FILE:${ESL_TARGET_NAME}>
+    #        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 ENDIF()
 
 ################################################################################
@@ -383,24 +401,24 @@ IF(WITH_TESTS AND CONFIGURATION_SHARED)
         IF(${test_name} MATCHES "^(test_mpi_)")
             IF(WITH_MPI)
                 IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
-                    MESSAGE("\t MPI PYTHON TEST" ${test_name})
+                    MESSAGE("/t MPI PYTHON TEST" ${test_name})
                     ADD_TEST(NAME ${test_name}
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                             COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
                 ELSE()
-                    MESSAGE("\t MPI TEST" ${test_name})
+                    MESSAGE("/t MPI TEST" ${test_name})
                     ADD_TEST(NAME ${test_name}
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                             COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
                 ENDIF()
             ENDIF()
         ELSEIF(${test_name} MATCHES "^(test_python_)")
-            MESSAGE("\t PYTHON TEST" ${test_name})
+            MESSAGE("/t PYTHON TEST" ${test_name})
             ADD_TEST(NAME ${test_name}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                     COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
         ELSE()
-            MESSAGE("\t C++ TEST " ${test_name})
+            MESSAGE("/t C++ TEST " ${test_name})
             ADD_TEST(NAME ${test_name}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                     COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})
@@ -421,7 +439,7 @@ IF(WITH_PYTHON)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-
+        LINK_DIRECTORIES(Boost_LIBRARY_DIRS GSL_LIBRARY_DIRS "C:/Boost/lib" "C:/cibw/python/python.3.8.4/tools/libs" "C:/gsl/lib/gsl")
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
@@ -429,9 +447,9 @@ IF(WITH_PYTHON)
 
         IF(MSVC)
             # multi-processor compilation
-            TARGET_COMPILE_OPTIONS(_${python_module_name} PRIVATE "/MP")
-            SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-            SET_PROPERTY(TARGET _${python_module_name} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
+            #TARGET_COMPILE_OPTIONS(_${python_module_name} PRIVATE "/MP")
+            #SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+            #SET_PROPERTY(TARGET _${python_module_name} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
         ENDIF()
 
         IF(python_module_name STREQUAL "esl")
@@ -440,7 +458,7 @@ IF(WITH_PYTHON)
             STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
         ENDIF()
 
-        MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
+        MESSAGE("PYTHON MODULE " _${python_module_name} ":/t/t " ${module_path_modified} "/t/t" ${source})
         INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
 
         SET(ignoreMe "${SKBUILD}")

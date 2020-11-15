@@ -76,6 +76,7 @@ namespace esl::economics::markets {
             assert(lot > 0);
         }
 
+
         explicit quote(double f, const quote &similar)
         {
             *this = std::visit([&] (const auto& k) {

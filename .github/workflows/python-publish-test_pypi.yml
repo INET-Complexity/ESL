@@ -56,7 +56,7 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "[MacOS] Install dependencies with brew"
+      - name: "[MacOS] Install dependencies with homebrew"
         run: |
           brew update >/dev/null
           brew install gfortran gsl
@@ -158,12 +158,12 @@ jobs:
         shell: powershell
         if: matrix.os == 'windows-latest'
 
-      - uses: actions/cache@v2
-        id: cache_boost_windows_cp38
-        with:
-          path: C:/Boost
-          key: ${{ runner.os }}-${{ hashFiles('C:/Boost/include/boost-1_73') }}
-        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
+#      - uses: actions/cache@v2
+#        id: cache_boost_windows_cp38
+#        with:
+#          path: C:/Boost/*
+#          key: ${{ runner.os }}-${{ hashFiles('C:/Boost/include/boost-1_73') }}
+#        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
 
       - name: "[Windows | Python 3.8] Install boost"
         run: |
@@ -172,8 +172,8 @@ jobs:
           cd boost_1_73_0
           ./bootstrap.bat
           ./b2 address-model=64 --toolset=msvc variant=release link=static threading=multi runtime-link=static install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel
-        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8 && steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
-
+        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
+        #&& steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
         shell: powershell
 
       - name: "[Windows] Diagnostics"

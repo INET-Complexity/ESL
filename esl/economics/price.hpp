@@ -92,8 +92,13 @@ namespace esl::economics {
 
         }
 
+        ///
+        /// \brief  Construct a price like the other price
+        ///
+        /// \param value_untruncated
+        /// \param similar
         constexpr price(double value_untruncated, const price &similar)
-            : price(value_untruncated, similar.valuation)
+        : price(price::approximate(value_untruncated, similar.valuation))
         {
 
         }
