@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-20.04,
+        os: [windows-latest, macos-latest, ubuntu-20.04]
         python_minor_version: [8]
     steps:
 
@@ -165,6 +165,8 @@ jobs:
 #          key: ${{ runner.os }}-${{ hashFiles('C:/Boost/include/boost-1_73') }}
 #        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
 
+########################################################################################################################
+
       - name: "[Windows | Python 3.8] Install boost"
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
@@ -176,43 +178,17 @@ jobs:
         #&& steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
         shell: powershell
 
-      - name: "[Windows] Diagnostics"
-        run: |
-          Get-ChildItem -Recurse C:/Boost
-        continue-on-error: true
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-
-      - name: "[Windows] Diagnostics"
-        run: |
-          dir D:/a/ESL/ESL/
-          dir C:/
-        continue-on-error: true
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-
-      - name: "[Windows] Diagnostics"
-        run: |
-          dir C:/Users/runneradmin/
-        continue-on-error: true
-        shell: powershell
-        if: matrix.os == 'windows-latest'
-
+########################################################################################################################
 
       - name: "[Windows] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
-
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
         run: |
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xf ./gsl_2_4_msvc2015_64_r1.zip
-          pwd
-          dir D:/a/ESL/ESL
-          Get-ChildItem -Recurse C:/Boost
           $env:PATH += ";C:/Boost;C:/Boost/include/boost-1_73;C:/Boost/lib;D:/a/ESL/ESL/boost_1_73_0;D:/a/ESL/ESL/msvc2015_64/include;D:/a/ESL/ESL/msvc2015_64/lib/gsl;D:/a/ESL/ESL/adept"
-          $env:PATH
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           $env:CMAKE_GENERATOR_PLATFORM="x64"
           python -m cibuildwheel --output-dir distribution
