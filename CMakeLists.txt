@@ -218,7 +218,9 @@ IF(BLAS_FOUND)
 ENDIF()
 
 # GSL is required for optimisation routines
-FIND_PACKAGE(GSL 2.2 REQUIRED)
+# 1.15 is the lowest working version we found to work (CentOS 7)
+
+FIND_PACKAGE(GSL 1.15 REQUIRED)
 
 ################################################################################
 MESSAGE("----------------------------------------")
