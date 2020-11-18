@@ -74,7 +74,9 @@ namespace esl {
                      //, data::producer
                      >>
             ( "agent", init<identity<agent>>());
-        
+
+
+        */
 
         class_<esl::exception>("exception", init<std::string>())
             .def("message", &esl::exception::what)
@@ -99,14 +101,13 @@ namespace esl {
 
                 // conversion to floating point type
             .def(float_(self))
-
+            .def("__repr__", &quantity::representation)
+            .def("__str__", &quantity::representation)
             .def(self *= std::uint64_t())
             .def(self * std::uint64_t())
             .def(self / std::uint64_t())
             ;
 
-
-        */
 
         ////////////////////////////////////////////////////////////////////////
 

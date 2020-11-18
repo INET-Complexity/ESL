@@ -29,6 +29,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <sstream>
 
 #include <iostream>
 
@@ -285,6 +286,13 @@ namespace esl {
         {
             stream << q.amount;
             return stream;
+        }
+
+        std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << (*this);
+            return stream_.str();
         }
 
         quantity& operator ++ ()
