@@ -198,7 +198,7 @@ namespace esl {
             return (amount == operand.amount);
         }
 
-        [[nodiscard]] constexpr bool operator!=(double operand) const
+        [[nodiscard]] constexpr bool operator != (const quantity &operand) const
         {
             return !((*this) == operand);
         }

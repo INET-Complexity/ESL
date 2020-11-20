@@ -74,8 +74,6 @@ namespace esl {
                      //, data::producer
                      >>
             ( "agent", init<identity<agent>>());
-
-
         */
 
         class_<esl::exception>("exception", init<std::string>())
@@ -84,7 +82,6 @@ namespace esl {
 
         register_exception_translator<esl::exception>(translate_exception);
 
-
         class_<quantity>(
             "quantity",init<>())
             .def(init<std::uint64_t>())
@@ -92,8 +89,16 @@ namespace esl {
             .def(self + self)
             .def(self -= self)
             .def(self - self)
-                //.def(self *= self)
+            //.def(self *= self)
             .def(self * self)
+
+            .def(self < self)
+            .def(self > self)
+            .def(self == self)
+            .def(self != self)
+            .def(self <= self)
+            .def(self >= self)
+
                 //.def(self /= self)
                 //.def(self / self)
                 //.def(self %= self)
@@ -107,6 +112,7 @@ namespace esl {
             .def(self * std::uint64_t())
             .def(self / std::uint64_t())
             ;
+
 
 
         ////////////////////////////////////////////////////////////////////////

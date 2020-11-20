@@ -91,67 +91,63 @@ namespace esl::simulation {
 
     BOOST_PYTHON_MODULE(_simulation)
     {
-        /*
         class_<esl::entity<object>, boost::noncopyable>(
             "entity", init<identity<object>>())
             .def_readonly("identifier", &esl::entity<object>::identifier)
             .def(self_ns::str(self_ns::self))
             .def("create", &esl::entity<object>::create<object>)
-            .def("__eq__", &esl::entity<object>::operator==<object>)
-            .def("__ne__", &esl::entity<object>::operator!=<object>);
-
+            .def(self == self)
+            .def(self != self)
+            ;
 
         class_<python_identity>("identity")
             .def("__init__", make_constructor(convert_digit_list))
             .def_readonly("digits", &python_identity::digits)
-
             .def("__str__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
             .def("__repr__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
-
-            .def("__eq__", &python_identity::operator== <object>)
-            .def("__ne__", &python_identity::operator!= <object>)
-            .def("__lt__", &python_identity::operator<  <object>)
-            .def("__le__", &python_identity::operator<= <object>)
-            .def("__gt__", &python_identity::operator>  <object>)
-            .def("__ge__", &python_identity::operator>= <object>);
-
-        class_<model>("model",
-                      init<esl::computation::environment &,
-                           parameter::parametrization>())
-            .def_readonly("start", &model::start)
-            .def_readwrite("end", &model::end)
-            .def_readwrite("time", &model::time);
-
-
-        def("time_point", python_time_point);
-
-        def("time_duration", python_time_duration);
-
-        class_<time_interval>("time_interval",
-                              init<time_point, time_point>())
-            .def_readwrite("lower", &time_interval::lower)
-            .def_readwrite("upper", &time_interval::upper)
-            .def("empty", &time_interval::empty)
-            .def("singleton", &time_interval::singleton)
-            .def("degenerate", &time_interval::degenerate)
-            .def("contains", &time_interval::contains)
-            .def("__repr__", &time_interval::representation)
-            .def("__str__", &time_interval::representation);
-
-
-        class_<world, bases<world_entity>>("world", init<>())
-            .def_readonly("identifier", &world::entity<world>::identifier)
-            //.def("create", &world::entity<world>::identifier)
-
-            .def("__repr__", &world::entity<world>::representation)
+            .def(self < self)
+            .def(self > self)
+            .def(self == self)
+            .def(self != self)
+            .def(self <= self)
+            .def(self >= self)
             ;
 
-        implicitly_convertible<world, identity<world>>();
-        */
-    }
+       class_<model>("model"
+                    ,init<esl::computation::environment &
+                    , parameter::parametrization>()
+                    )
+           .def_readonly("start", &model::start)
+           .def_readwrite("end", &model::end)
+           .def_readwrite("time", &model::time);
 
+       def("time_point", python_time_point);
+
+       def("time_duration", python_time_duration);
+
+       class_<time_interval>("time_interval",
+                             init<time_point, time_point>())
+           .def_readwrite("lower", &time_interval::lower)
+           .def_readwrite("upper", &time_interval::upper)
+           .def("empty", &time_interval::empty)
+           .def("singleton", &time_interval::singleton)
+           .def("degenerate", &time_interval::degenerate)
+           .def("contains", &time_interval::contains)
+           .def("__repr__", &time_interval::representation)
+           .def("__str__", &time_interval::representation);
+
+        /*
+       class_<world, bases<world_entity>>("world", init<>())
+           .def_readonly("identifier", &world::entity<world>::identifier)
+           //.def("create", &world::entity<world>::identifier)
+           .def("__repr__", &world::entity<world>::representation)
+           ;
+
+         implicitly_convertible<world, identity<world>>();
+         */
+    }
 }
 
 #endif

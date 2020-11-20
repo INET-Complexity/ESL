@@ -33,4 +33,4 @@ from esl.economics import *
 #from esl.interaction import *
 from esl.law import *
 from esl.mathematics import *
-#from esl.simulation import *
+from esl.simulation import *

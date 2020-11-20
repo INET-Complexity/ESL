@@ -29,49 +29,14 @@
 #include <memory>
 #include <string>
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/nvp.hpp>
-
 #include <esl/simulation/time.hpp>
+#include <esl/simulation/parameter/parameter.hpp>
+
 
 namespace esl::simulation::parameter {
 
     struct parametrization
     {
-        struct parameter_base
-        {
-            virtual ~parameter_base() = default;
-
-
-            template<class archive_t>
-            void serialize(archive_t & archive, const unsigned int version)
-            {
-                (void) version;
-                (void) archive;
-            }
-        };
-
-        template<typename parameter_t_>
-        struct constant
-        : public parameter_base
-        {
-            parameter_t_ choice;
-
-            constant(parameter_t_ choice)
-            : choice(choice)
-            {
-
-            }
-
-            template<class archive_t>
-            void serialize(archive_t & archive, const unsigned int version)
-            {
-                (void)version;
-                archive & BOOST_SERIALIZATION_BASE_OBJECT_NVP(parameter_base);
-                archive & BOOST_SERIALIZATION_NVP(choice);
-            }
-        };
-
         std::map<std::string, std::shared_ptr<parameter_base>> values;
 
         ///
