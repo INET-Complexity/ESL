@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-20.04]
-        python_minor_version: [8]
+        python_minor_version: [8, 9]
     steps:
 
       ########################################################################################################################
