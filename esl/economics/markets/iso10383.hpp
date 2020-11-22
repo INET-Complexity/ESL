@@ -1,7 +1,7 @@
-/// \file   security_market_identifier_code.hpp
+/// \file   iso_10383.hpp
 ///
-/// \brief  The MIC (ISO 10383) uniquely identifies a market; specifically, identify securities trading exchanges, not
-///         general markets
+/// \brief  The MIC (ISO 10383) uniquely identifies a market; specifically,
+///         identify securities trading exchanges, not general markets
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2019-04-10
@@ -21,19 +21,63 @@
 ///
 ///             You may obtain instructions to fulfill the attribution requirements in CITATION.cff
 ///
-#ifndef ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP
-#define ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP
+#ifndef ESL_ISO_10383_HPP
+#define ESL_ISO_10383_HPP
 
 #include <array>
-using std::array;
+#include <cassert>
 
+#include <esl/exception.hpp>
 
-///
-/// \brief  Defines an ISO 10383 market identifier codes
-///
-struct market_identifier_code
-{
-    const array<char, 4> code;
-};
+namespace esl::economics::markets {
+    ///
+    /// \brief  Defines an ISO 10383 market identifier code
+    ///
+    struct iso_10383
+    {
+        ///
+        /// \brief  4 symbol alphanumeric code, A-Z | 0-9
+        ///
+        const std::array<char, 4> code;
 
-#endif//ESL_SECURITY_MARKET_IDENTIFIER_CODE_HPP
+        ///
+        /// \brief Construct an ISO 10383 code from 4 symbols.
+        ///
+        /// \param code
+        explicit iso_10383(const std::array<char, 4> &code = {'M', 'K', 'T',
+                                                              '0'})
+        : code(code)
+        {
+            for(auto c : code) {
+                if(!('A' <= c && c <= 'Z') && !('0' <= c && c <= '9')) {
+                    throw esl::exception(std::string("invalid symbol '") + c
+                                         + "' in market identifier code");
+                }
+            }
+        }
+
+        ///
+        /// \brief Construct an ISO 10383 code from a 4 symbol string.
+        /// \param  code A  4 symbol alphanumeric code A-Z | 0-9
+        explicit iso_10383(const std::string &code)
+        : iso_10383(std::array<char, 4> {code[0], code[1], code[2], code[3]})
+        {
+
+        }
+
+        ///
+        /// \brief  render the code as a string
+        /// \return
+        [[nodiscard]] std::string representation() const
+        {
+            return (((std::string() + code[0]) + code[1]) + code[2]) + code[3];
+        }
+
+        std::ostream &operator<<(std::ostream &stream) const
+        {
+            return (stream << representation());
+        }
+    };
+} // namespace esl::economics::markets
+
+#endif//ESL_ISO_10383_HPP
