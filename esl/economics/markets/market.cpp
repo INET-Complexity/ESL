@@ -26,7 +26,6 @@
 
 
 namespace esl::economics {
-
     market::market()
     : market(identity<agent>())
     {
@@ -34,7 +33,7 @@ namespace esl::economics {
     }
 
     market::market( identity<agent> i
-                  , std::vector<esl::economics::markets::ticker> traded
+                  , std::vector<markets::ticker> traded
                   )
     : agent(i)
     , traded_properties(move(traded))

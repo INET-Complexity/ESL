@@ -34,7 +34,6 @@
 
 
 namespace esl::economics {
-
     ///
     /// \brief  A market intermediates between market participants (formally,
     /// property holders).
@@ -60,8 +59,6 @@ namespace esl::economics {
         std::unordered_set<identity<law::owner<law::property>>> participants;
 
         ///
-        ///     instantaneous settlement
-        ///
         /// \param  execution, the execution date of the transaction in the market
         /// \return the time_point on which the transacted assets are
         ///             received
@@ -76,23 +73,18 @@ namespace esl::economics {
         friend class boost::serialization::access;
 
         ///
-        /// \brief  default constructor is restricted
+        /// \brief  default constructor is restricted, because we need the
+        ///         identifier and ticker collection
         ///
         market();
 
     public:
-        ///
-        /// \brief
-        ///
-        using agent::agent;
-
         ///
         /// \brief  Construct a market with a collection of tickers
         ///
         explicit market( identity<agent> i
                        , std::vector<markets::ticker> traded = {}
                        );
-
 
         virtual ~market() = default;
 
@@ -125,11 +117,9 @@ namespace std {
     };
 }  // namespace std
 
-
 #ifdef WITH_MPI
 #include <boost/mpi.hpp>
 namespace boost::mpi {
-
     template<>
     struct is_mpi_datatype<esl::economics::market>
     : public mpl::false_
@@ -138,6 +128,5 @@ namespace boost::mpi {
     };
 }  // namespace boost::mpi
 #endif  // WITH_MPI
-
 
 #endif  // ESL_MARKET_HPP
