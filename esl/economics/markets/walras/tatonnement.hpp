@@ -38,14 +38,13 @@
 
 #include <adept.h>
 
-#include <esl/economics/markets/differentiable_demand_supply_function.hpp>
+#include <esl/law/property_collection.hpp>
 #include <esl/economics/markets/quote.hpp>
+#include <esl/economics/markets/differentiable_demand_supply_function.hpp>
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
-
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
-#include <esl/law/property_collection.hpp>
 
 ///
 /// The following functions defined callbacks for various optimisers used to
@@ -66,7 +65,6 @@ extern "C" double uniroot_function_value_and_gradient (double x, void *params);
 extern "C" void   uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
 
 
-
 namespace esl::economics::markets::tatonnement {
     ///
     /// \brief
@@ -74,21 +72,28 @@ namespace esl::economics::markets::tatonnement {
     class excess_demand_model
     {
     public:
+
         std::vector<std::shared_ptr<walras::differentiable_order_message>> excess_demand_functions_;
 
+        ///
+        /// \brief  Constructs the excess demand model given initial quotes.
+        ///
+        /// \param initial_quotes   Initial quote values that the solver
+        ///                         uses to start the tatonnement process
         explicit excess_demand_model(law::property_map<quote> initial_quotes);
 
         virtual ~excess_demand_model();
 
         ///
-        /// \brief
+        /// \brief  Types of solver that are offered
         ///
-        enum solver { minimization
-                    , root
+        enum solver
+        { minimization  // minimize q: (demand(q) - supply(q))^2
+        , root          // find a vector q: (demand(q) - supply(q))_i = 0 for all i
         };
 
         ///
-        /// \brief  Limit maximum price decrease/increase
+        /// \brief  Limits maximum price decrease/increase
         ///
         std::pair<double, double> circuit_breaker = {1./1.1, 1.1};
 
@@ -98,9 +103,11 @@ namespace esl::economics::markets::tatonnement {
         ///         root finding solver does not make progress towards a
         ///         solution.
         ///
-        std::vector<solver> methods = { root
-                                      , minimization};
+        std::vector<solver> methods = { root, minimization };
 
+        ///
+        /// \brief  The quotes to start the solving process from
+        ///
         law::property_map<quote> quotes;
 
     protected:
@@ -137,21 +144,25 @@ namespace esl::economics::markets::tatonnement {
         friend void ::c_minimizer_function_value_and_gradient(const gsl_vector *x, void *params, double *J, gsl_vector *gradJ);
         friend double ::c_minimizer_function_value(const gsl_vector *variables, void *params);
 
-        friend int ::multiroot_function_jacobian_cb(const gsl_vector *multipliers, void * params, gsl_matrix *derivatives);
-        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector *multipliers, void * params, gsl_vector * f, gsl_matrix *derivatives);
-        std::vector<double> multiroot_function_value_and_gradient(const double *multipliers, double *derivatives) ;
-
-        std::vector<double> multiroot_function_value(const double *multipliers);
         friend int ::multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f);
+        friend int ::multiroot_function_value_and_gradient_cb(const gsl_vector *multipliers, void * params, gsl_vector * f, gsl_matrix *derivatives);
+        friend int ::multiroot_function_jacobian_cb(const gsl_vector *multipliers, void * params, gsl_matrix *derivatives);
+        std::vector<double> multiroot_function_value_and_gradient(const double *multipliers, double *derivatives) ;
+        std::vector<double> multiroot_function_value(const double *multipliers);
 
-        friend double ::uniroot_function_value (double x, void *params);
+        friend double ::uniroot_function_value(double x, void *params);
         friend double ::uniroot_function_value_and_gradient (double x, void *params);
         friend void   ::uniroot_function_jacobian_cb (double x, void *parameters, double *y, double *dy);
 
     public:
+        ///
+        /// \param max_iterations   The maximum number of iterations to perform
+        ///                         while solving
+        /// \return
         std::optional<std::map<identity<law::property>, double>>
         compute_clearing_quotes(size_t max_iterations = 1000);
-    };  // model
-}  // namespace tatonnement
+
+    };
+} // namespace esl::economics::markets::tatonnement
 
 #endif  // PROJECT_TATONNEMENT_HPP

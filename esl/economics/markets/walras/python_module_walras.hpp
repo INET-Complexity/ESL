@@ -26,8 +26,4 @@
 #define ESL_PYTHON_MODULE_WALRAS_HPP
 
 
-class python_module_walras
-{ };
-
-
 #endif  // ESL_PYTHON_MODULE_WALRAS_HPP

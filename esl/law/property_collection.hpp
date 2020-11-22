@@ -118,11 +118,6 @@ namespace esl::law {
         return stream;
     }
 
-
-
-
-
-
     template<typename property_t_>
     using property_filter_set =
         std::unordered_set<std::shared_ptr<property_t_>,

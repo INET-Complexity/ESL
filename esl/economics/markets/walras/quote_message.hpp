@@ -36,7 +36,7 @@
 namespace esl::economics::markets::walras {
     struct quote_message
     : public markets::quote_message<
-          quote_message, esl::interaction::library_message_code<0x00A0U>()>
+          quote_message, interaction::library_message_code<0x00A0U>()>
     {
         explicit quote_message(
             identity<agent> sender            = identity<agent>(),
@@ -45,10 +45,12 @@ namespace esl::economics::markets::walras {
             simulation::time_point sent       = simulation::time_point(),
             simulation::time_point received   = simulation::time_point())
         : markets::quote_message<
-            quote_message, esl::interaction::library_message_code<0x00A0U>()>(
+            quote_message, interaction::library_message_code<0x00A0U>()>(
             std::move(sender), std::move(recipient), proposed,
             markets::indication::indicative, sent, received)
-        {}
+        {
+
+        }
 
         virtual ~quote_message() = default;
 

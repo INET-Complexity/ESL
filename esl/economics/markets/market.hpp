@@ -60,10 +60,11 @@ namespace esl::economics {
         std::unordered_set<identity<law::owner<law::property>>> participants;
 
         ///
-        /// default:    instantaneous settlement
-        /// \param      execution, the execution date of the transaction in the
-        /// market \return     the time_point on which the transacted assets are
-        /// received
+        ///     instantaneous settlement
+        ///
+        /// \param  execution, the execution date of the transaction in the market
+        /// \return the time_point on which the transacted assets are
+        ///             received
         ///
         virtual simulation::time_point
         settlement(const simulation::time_point &execution) const
@@ -80,12 +81,17 @@ namespace esl::economics {
         market();
 
     public:
+        ///
+        /// \brief
+        ///
         using agent::agent;
 
         ///
-        /// \brief  Create a market for a set of assets.
-
-        market(identity<agent> i, std::vector<esl::economics::markets::ticker> traded = {});
+        /// \brief  Construct a market with a collection of tickers
+        ///
+        explicit market( identity<agent> i
+                       , std::vector<markets::ticker> traded = {}
+                       );
 
 
         virtual ~market() = default;
@@ -104,7 +110,7 @@ namespace esl::economics {
 namespace std {
     ///
     /// \brief  Hash definition for market class. The implementation uses the
-    /// market-agent identifier.
+    ///         market-agent identifier.
     ///
     template<>
     struct hash<esl::economics::market>

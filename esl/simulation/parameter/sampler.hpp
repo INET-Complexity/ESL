@@ -1,9 +1,9 @@
-/// \file   execution_message.hpp
+/// \file   sampler.hpp
 ///
 /// \brief
 ///
-/// \authors    Maarten P. Scholl
-/// \date       2020-02-09
+/// \authors    maarten
+/// \date       2020-11-19
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -22,23 +22,18 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ME_EXECUTION_MESSAGE_HPP
-#define ME_EXECUTION_MESSAGE_HPP
+#ifndef ESL_SAMPLER_HPP
+#define ESL_SAMPLER_HPP
 
-#include <esl/economics/markets/walras/execution_message.hpp>
+#include <vector>
 
-namespace esl::economics::markets::walras {
-    ///
-    /// \brief  Used to inform market participants on the clearing prices, and absolute quantity of properties
-    ///         traded
-    ///
-    struct execution_message
-    : public esl::economics::markets::execution_message
-    {
+#include <esl/exception.hpp>
+#include <esl/simulation/parameter/parameter.hpp>
 
-    };
+
+namespace esl::simulation::parameter {
 
 }
 
 
-#endif //ME_EXECUTION_MESSAGE_HPP
+#endif  // ESL_SAMPLER_HPP

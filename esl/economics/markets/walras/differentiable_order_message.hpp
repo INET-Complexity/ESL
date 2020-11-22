@@ -41,16 +41,22 @@ namespace esl::economics::markets::walras {
     ///
     struct differentiable_order_message
     : differentiable_demand_supply_function
-    , public  order_message<
-          differentiable_order_message,
-          interaction::library_message_code<0x00A2U>()>
+    , public order_message< differentiable_order_message
+                          , interaction::library_message_code<0x00A2U>()
+                          >
     {
-        std::map<identity<law::property>, std::tuple<quantity, quantity> > supply;
+        ///
+        /// \brief  The amounts supplied: long positions and short positions
+        ///
+        std::map<identity<law::property>, std::tuple<quantity, quantity>> supply;
 
-        using order_message<
-            differentiable_order_message,
-            interaction::library_message_code<0x00A2U>()>::order_message;
-        
+        ///
+        ///
+        ///
+        using order_message< differentiable_order_message
+                           , interaction::library_message_code<0x00A2U>()
+                           >::order_message;
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

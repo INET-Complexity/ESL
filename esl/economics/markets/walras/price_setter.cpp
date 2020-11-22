@@ -64,7 +64,7 @@ namespace esl::economics::markets::walras {
     price_setter::price_setter(const identity<price_setter> &i,
                                law::property_map<quote>
                                traded_properties)
-     : agent(i)
+    : agent(i)
     , market(i)
     , state(sending_quotes)
     , traded_properties(traded_properties)

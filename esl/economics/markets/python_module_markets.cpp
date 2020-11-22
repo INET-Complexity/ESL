@@ -2,7 +2,7 @@
 ///
 /// \brief
 ///
-/// \authors    maarten
+/// \authors    Maarten P. Scholl
 /// \date       2020-11-20
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
