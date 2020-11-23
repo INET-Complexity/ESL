@@ -30,15 +30,11 @@
 using namespace boost::python;
 
 #include <esl/economics/markets/iso_10383.hpp>
-//#include <esl/economics/markets/order_book/basic_book.hpp>
-//#include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
-//#include <esl/economics/markets/order_book/static_order_book.hpp>
-//#include <esl/economics/markets/order_book/matching_engine.hpp>
-//#include <esl/economics/markets/order_book/python_module_order_book.hpp>
+#include <esl/economics/markets/ticker.hpp>
+#include <esl/economics/markets/market.hpp>
+using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets;
-//using namespace esl::economics::markets::order_book;
-
 
 
 BOOST_PYTHON_MODULE(_markets)
@@ -53,6 +49,31 @@ BOOST_PYTHON_MODULE(_markets)
         .def(self <= self)
         .def(self >= self)
         ;
+
+
+    class_<quote>("quote", init<>()
+    )
+
+        ;
+
+    class_<ticker>( "ticker"
+                  , init<identity<law::property>, identity<law::property>>()
+                  )
+        .def_readwrite("base", &ticker::base)
+        .def_readwrite("quote", &ticker::quote)
+        .def(self == self)
+        .def(self != self)
+        .def(self < self)
+        .def(self > self)
+        .def(self <= self)
+        .def(self >= self)
+        ;
+
+
+
+
+    //class_<market>("market", init<...>)
+
 }
 
 #endif

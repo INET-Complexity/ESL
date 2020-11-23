@@ -34,7 +34,14 @@ namespace esl::economics::markets {
     struct ticker
     {
     public:
+        ///
+        /// \brief  The property we are buying
+        ///
         identity<law::property> base;
+
+        ///
+        /// \brief  The property that is exchanged for it and thus sets the price
+        ///
         identity<law::property> quote;
 
         ticker(const identity<law::property> &base  = identity<law::property>(),
@@ -45,27 +52,33 @@ namespace esl::economics::markets {
 
         }
 
-        [[nodiscard]] constexpr bool operator==(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator==(const ticker &other) const
+        {
             return base == other.base && quote == other.quote;
         }
 
-        [[nodiscard]] constexpr bool operator!=(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator!=(const ticker &other) const
+        {
             return base != other.base || quote != other.quote;
         }
 
-        [[nodiscard]] constexpr bool operator<(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator<(const ticker &other) const
+        {
             return base < other.base || (base == other.base && quote < other.quote);
         }
 
-        [[nodiscard]] constexpr bool operator<=(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator<=(const ticker &other) const
+        {
             return (*this < other) || (*this == other);
         }
 
-        [[nodiscard]] constexpr bool operator>(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator>(const ticker &other) const
+        {
             return base > other.base || (base == other.base && quote > other.quote);
         }
 
-        [[nodiscard]] constexpr bool operator>=(const ticker &other) const {
+        [[nodiscard]] constexpr bool operator>=(const ticker &other) const
+        {
             return (*this > other) || (*this == other);
         }
     };
