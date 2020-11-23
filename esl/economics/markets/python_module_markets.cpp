@@ -37,6 +37,17 @@ using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets;
 
+price quote_helper_get_price(const quote &q)
+{
+    auto p = std::get_if<price>(&q.type);
+    return *p;
+}
+
+
+void quote_helper_set_price(quote &q, price p)
+{
+    q.type = p;
+}
 
 BOOST_PYTHON_MODULE(_markets)
 {
@@ -56,6 +67,7 @@ BOOST_PYTHON_MODULE(_markets)
 
     class_<quote>("quote", init<exchange_rate>())
         .def(init<price>())
+        .add_property("price", &quote_helper_get_price, &quote_helper_set_price)
         .def_readwrite("lot", &quote::lot)
 
         .def(self == self)
@@ -87,6 +99,9 @@ BOOST_PYTHON_MODULE(_markets)
         .value("firm", indication::firm)
         .value("indicative", indication::indicative)
     ;
+
+    ////////////////////////////////////////////////////////////////////////////
+    //class_<python_quote_message>("quote_message", )
 
     //class_<market>("market", init<...>)
 

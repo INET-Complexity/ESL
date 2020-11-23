@@ -25,4 +25,19 @@
 #ifndef ESL_PYTHON_MODULE_MARKETS_HPP
 #define ESL_PYTHON_MODULE_MARKETS_HPP
 
+#include <esl/economics/markets/quote_message.hpp>
+#include <esl/interaction/header.hpp>
+
+#ifdef WITH_PYTHON
+namespace esl::economics::markets {
+    struct python_quote_message
+    : quote_message<python_quote_message, interaction::library_message_code<0x0100>()>
+    {
+
+    };
+
+#endif
+
+}//namespace esl::economics::markets
+
 #endif  // ESL_PYTHON_MODULE_MARKETS_HPP

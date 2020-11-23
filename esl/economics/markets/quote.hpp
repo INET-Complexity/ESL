@@ -50,7 +50,7 @@ namespace esl::economics::markets {
         constexpr void assert_equal_type_(const quote& other) const
         {
             if(type.index() != other.type.index()){
-                throw std::logic_error("comparing quotes of different types");
+                throw esl::exception("comparing quotes of different types");
             }
         }
     public:
@@ -63,7 +63,9 @@ namespace esl::economics::markets {
         : type(er)
         , lot(lot)
         {
-            assert(lot > 0);
+            if(0 >= lot){
+                throw esl::exception("lot size must be strictly positive");
+            }
         }
 
         ///
@@ -73,7 +75,9 @@ namespace esl::economics::markets {
         : type(p)
         , lot(lot )
         {
-            assert(lot > 0);
+            if(0 >= lot){
+                throw esl::exception("lot size must be strictly positive");
+            }
         }
 
 
@@ -90,7 +94,9 @@ namespace esl::economics::markets {
         : type(q.type)
         , lot(q.lot)
         {
-            assert(lot > 0);
+            if(0 >= lot){
+                throw esl::exception("lot size must be strictly positive");
+            }
         }
 
         ///
@@ -107,8 +113,14 @@ namespace esl::economics::markets {
                 type);
         }
 
+        ///
+        /// \param o
+        /// \return
         quote &operator = (const quote &o) = default;
 
+        ///
+        /// \param other
+        /// \return
         [[nodiscard]] constexpr bool operator == (const quote &other) const
         {
             assert_equal_type_(other);
@@ -246,16 +258,16 @@ namespace esl::economics::markets {
             boost::serialization::split_member(archive, *this, version);
         }
 
-        std::ostream &operator << (std::ostream &stream) const
-        {
-            stream << lot << '@';
-            std::visit([&](const auto &elem)
-                       {
-                           stream << elem;
-                       },
-                       type);
-            return stream;
-        }
+//        std::ostream &operator << (std::ostream &stream) const
+//        {
+//            stream << lot << '@';
+//            std::visit([&](const auto &elem)
+//                       {
+//                           stream << elem;
+//                       },
+//                       type);
+//            return stream;
+//        }
 
         friend std::ostream &operator << (std::ostream &stream, const quote &q)
         {
@@ -279,7 +291,9 @@ namespace boost { namespace mpi {
     struct is_mpi_datatype<esl::economics::markets::quote>
     : public boost::mpl::true_//is_mpi_datatype<std::variant<esl::economics::exchange_rate
              //                             , esl::economics::price>>::value
-    { };
+    {
+
+    };
 }}      // namespace boost::mpi
 #endif  // WITH_MPI
 

@@ -30,9 +30,8 @@
 #include <esl/economics/markets/quote.hpp>
 #include <esl/economics/markets/indication.hpp>
 
+
 namespace esl::economics::markets {
-
-
     ///
     /// \brief
     /// \tparam message_type_
@@ -42,19 +41,18 @@ namespace esl::economics::markets {
     : public interaction::message<message_type_, type_code_>
     {
         ///
+        /// \brief  Quotes for each property
         ///
-        ///
-        // vector<quote> proposed;
         law::property_map<quote> proposed;
 
         ///
-        /// \brief Whether the sender is bound to deliver on the offered
-        /// quote (see @indication).
+        /// \brief  Whether the sender is bound to deliver on the offered
+        ///         quote (see @indication).
         ///
-        /*const */ indication binding;
+        indication binding;
 
         ///
-        ///
+        /// \brief
         ///
         explicit quote_message(
             identity<agent> sender            = identity<agent>(),
@@ -73,7 +71,6 @@ namespace esl::economics::markets {
 
         virtual ~quote_message() = default;
 
-
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
@@ -82,15 +79,8 @@ namespace esl::economics::markets {
                 "interaction〈message_type_,type_code_〉",
                 boost::serialization::base_object<
                     interaction::message<message_type_, type_code_>>(*this));
-
-
-            // archive & BOOST_SERIALIZATION_NVP(traded_properties);
-            // archive & BOOST_SERIALIZATION_NVP(participants);
-
             archive &BOOST_SERIALIZATION_NVP(proposed);
-            // archive & BOOST_SERIALIZATION_NVP(binding);
-            archive &boost::serialization::make_nvp(
-                "binding", const_cast<indication &>(binding));
+            archive & BOOST_SERIALIZATION_NVP(binding);
         }
     };
 }  // namespace esl::economics::markets
