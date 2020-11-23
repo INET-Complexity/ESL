@@ -34,7 +34,8 @@ namespace esl::economics::markets {
     ///         the sender, meaning that the sender must deliver at the quote
     ///         if the recipient accepts the offer.
     ///
-    enum indication : std::uint8_t
+    enum indication
+    : std::uint8_t
     {
         firm,
         indicative
@@ -53,6 +54,5 @@ namespace boost::mpi {
     };
 }  // namespace boost::mpi
 #endif  // WITH_MPI
-
 
 #endif  // ESL_INDICATION_HPP

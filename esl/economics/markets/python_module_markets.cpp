@@ -27,6 +27,7 @@
 #ifdef WITH_PYTHON
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
+#include <boost/python/overloads.hpp>
 using namespace boost::python;
 
 #include <esl/economics/markets/iso_10383.hpp>
@@ -39,6 +40,7 @@ using namespace esl::economics::markets;
 
 BOOST_PYTHON_MODULE(_markets)
 {
+    ////////////////////////////////////////////////////////////////////////////
     class_<iso_10383>("iso_10383", init<std::string>() )
         .def("__repr__", &iso_10383::representation)
         .def(self_ns::str(self_ns::self))
@@ -50,12 +52,23 @@ BOOST_PYTHON_MODULE(_markets)
         .def(self >= self)
         ;
 
+    ////////////////////////////////////////////////////////////////////////////
 
-    class_<quote>("quote", init<>()
-    )
+    class_<quote>("quote", init<exchange_rate>())
+        .def(init<price>())
+        .def_readwrite("lot", &quote::lot)
 
+        .def(self == self)
+        .def(self != self)
+        .def(self < self)
+        .def(self > self)
+        .def(self <= self)
+        .def(self >= self)
         ;
 
+    implicitly_convertible<quote, double>();
+
+    ////////////////////////////////////////////////////////////////////////////
     class_<ticker>( "ticker"
                   , init<identity<law::property>, identity<law::property>>()
                   )
@@ -69,8 +82,11 @@ BOOST_PYTHON_MODULE(_markets)
         .def(self >= self)
         ;
 
-
-
+    ////////////////////////////////////////////////////////////////////////////
+    enum_<indication>("indication")
+        .value("firm", indication::firm)
+        .value("indicative", indication::indicative)
+    ;
 
     //class_<market>("market", init<...>)
 
