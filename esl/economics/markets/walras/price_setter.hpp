@@ -27,12 +27,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include <esl/data/representation.hpp>
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/base_object.hpp>
 
+#include <esl/data/representation.hpp>
 #include <esl/economics/markets/market.hpp>
 #include <esl/economics/markets/walras/differentiable_order_message.hpp>
 #include <esl/economics/markets/walras/tatonnement.hpp>
@@ -46,7 +45,7 @@ namespace esl::economics::markets::walras {
     ///         form automatic differentiation.
     ///
     struct price_setter
-    : market
+    : public market
     {
     private:
     public:
@@ -61,37 +60,44 @@ namespace esl::economics::markets::walras {
         //tatonnement::excess_demand_model model_;
 
     public:
-        enum state_t
-        { sending_quotes
-        , clearing_market
-        };
 
-        state_t state;
+        ///
+        /// \brief Price setter agent state
+        ///
+        enum state_t
+        { sending_quotes    // the agent sends quotes to all market participants
+        , clearing_market   // the agent collects all orders and clears market
+        } state;
 
         law::property_map<quote> traded_properties;
-        ///
+
         ///
         /// \details    Initialises the differentiable variable context to 1.0 times the initial quotes. In essence, the
         ///             solver starts at 1.0 times the initial quote
         /// \param i
         /// \param traded_properties
-        explicit price_setter(const identity<price_setter> &i, law::property_map<quote> traded_properties = {});
-
+        explicit price_setter( const identity<price_setter> &i
+                             , law::property_map<quote> traded_properties = {}
+                             );
 
         ///
         /// \brief
         ///
         /// \param start
         /// \return
-        simulation::time_point act(simulation::time_interval step,
-                       std::seed_seq &seed) override;
+        simulation::time_point act( simulation::time_interval step
+                                  , std::seed_seq &seed
+                                  ) override;
 
 
         ///
         /// \brief
         ///
-        std::map<esl::identity<esl::law::property>, double> clear_market( const std::unordered_map<identity<agent>
-                                   , std::shared_ptr<walras::differentiable_order_message>> &orders, const esl::simulation::time_interval &step);
+        std::map<identity<law::property>, double> clear_market
+            ( const std::unordered_map<identity<agent>
+            , std::shared_ptr<walras::differentiable_order_message>> &orders
+            , const esl::simulation::time_interval &step
+            );
 
         ///
         /// \return friendly description of the agent mentioning the identifier

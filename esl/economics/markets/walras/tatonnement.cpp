@@ -1,12 +1,7 @@
 /// \file   tatonnement.hpp
 ///
 /// \brief  Implements the tâtonnement process (hill climbing), implemented as a
-///         numerical optimisation (L-BFGS) with
-///         automatic differentiation using the Stan-math library.
-///
-/// \remark This code uses the spelling `tatonnement`, as the accent on `â` can
-///         not be rendered in the default
-///         std::string.
+///         numerical optimisation.
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2018-02-02
@@ -45,7 +40,6 @@
 #include <esl/invalid_parameters.hpp>
 using esl::economics::markets::tatonnement::excess_demand_model;
 using esl::/*mathematics::*/variable;
-
 
 ///
 /// \brief  C compatible callback for the minimizer to find the function value.
@@ -88,12 +82,13 @@ multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f)
 /// \brief  C wrapper for minimization problem, gsl callback
 ///         Return gradient of function with respect to each state variable x
 ///
-extern "C" void c_minimizer_function_gradient(const gsl_vector *x, void *params,
-                     gsl_vector *gradJ)
+extern "C" void c_minimizer_function_gradient( const gsl_vector *x
+                                             , void *params
+                                             , gsl_vector *gradient)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
-    model_->minimizer_function_value_and_gradient(x->data, gradJ->data);
+    model_->minimizer_function_value_and_gradient(x->data, gradient->data);
 }
 
 ///
@@ -108,7 +103,6 @@ extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * param
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
     auto cb_ = model_->multiroot_function_value_and_gradient(x->data, df->data);
-
     return GSL_SUCCESS;
 }
 
@@ -118,21 +112,21 @@ extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * param
 extern "C" void c_minimizer_function_value_and_gradient
     ( const gsl_vector *x
     , void *params
-    , double *J
-    , gsl_vector *gradJ
+    , double *jacobian
+    , gsl_vector *gradient
     )
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
-    *J = model_->minimizer_function_value_and_gradient(x->data, gradJ->data);
+    *jacobian = model_->minimizer_function_value_and_gradient(x->data, gradient->data);
 }
 
 ///
 /// \brief
 ///
-extern "C" int multiroot_function_value_and_gradient_cb( const gsl_vector * x
-                                                       , void * params
-                                                       , gsl_vector * f
+extern "C" int multiroot_function_value_and_gradient_cb( const gsl_vector *x
+                                                       , void *params
+                                                       , gsl_vector *f
                                                        , gsl_matrix *df
                                                        )
 {
@@ -168,17 +162,18 @@ extern "C" double uniroot_function_value_and_gradient (double x, void *params)
     return df;
 }
 
-extern "C" void uniroot_function_jacobian_cb (double x, void * params, double * f, double * df)
+extern "C" void uniroot_function_jacobian_cb ( double x
+                                             , void *params
+                                             , double *f
+                                             , double *df)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
 
     double jacobian_ = 0.;
-
     auto cb_ = model_->multiroot_function_value_and_gradient(&x, &jacobian_);
 
     *f = cb_[0];
-
     if(!std::isfinite(jacobian_)){
         jacobian_ = (x-1);
     }
@@ -203,7 +198,6 @@ void handler ([[maybe_unused]] const char *reason,
 }
 
 namespace esl::economics::markets::tatonnement {
-
     ///
     /// \brief  Initializes a stack for automatic differentiation
     ///
@@ -272,7 +266,6 @@ namespace esl::economics::markets::tatonnement {
     excess_demand_model::excess_demand(const variable *x)
     {
         std::map<identity<law::property>, std::tuple<quote, variable>> quote_scalars_;
-
         size_t n = 0;
         for(auto [k, v]: quotes) {
             quote_scalars_.emplace(*k, std::make_tuple(v, x[n]));
@@ -281,10 +274,7 @@ namespace esl::economics::markets::tatonnement {
 
         std::map<identity<law::property>, variable> terms_map;
         for(const auto &f : excess_demand_functions_) {
-            //LOG(trace) << "f->excess_demand_m(quote_scalars_) " << f << std::endl;
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
-
-            //LOG(trace) << demand_per_property_ << std::endl;
             for(auto [k, ed]: demand_per_property_) {
                 auto i = terms_map.emplace(k, variable(0.));
                 auto long_ = double(std::get<0>(f->supply[k]));
@@ -294,7 +284,6 @@ namespace esl::economics::markets::tatonnement {
         }
 
         std::vector<variable> result_;
-
         for(auto [k, v]: quotes) {
             assert(terms_map.end() != terms_map.find(*k));
             result_.push_back(terms_map.find(*k)->second);
@@ -393,12 +382,10 @@ namespace esl::economics::markets::tatonnement {
         return result_;
     }
 
-
     ///
     /// \brief  Goes through the selected solution methods and applies them.
     ///
-    /// \return
-    ///
+    /// \return numerical approximate multipliers for the quotes
     std::optional<std::map<identity<law::property>, double>>
     excess_demand_model::compute_clearing_quotes(size_t max_iterations)
     {
@@ -428,74 +415,48 @@ namespace esl::economics::markets::tatonnement {
                 // if there is only one property traded, we specialize with
                 // algorithms that do well on univariate root finding
                 if(1 == quotes.size()){
+                    constexpr double delta_absolute_tolerance = 0.0000001;
+                    constexpr double delta_relative_tolerance = 0.000000001;
+
+                    // capture previous error handler to restore later
                     auto old_handler_ = gsl_set_error_handler (&handler);
-/*
-                    int status;
-                    int iteration_ = 0;
-                    int max_iter = 100;
-                    const gsl_root_fsolver_type *element_t_;
-                    gsl_root_fsolver *s;
-                    double x_lo = 0.01, x_hi = 100.0;
-                    gsl_function F;
 
-                    F.function = &uniroot_function_value;
-                    F.params =  static_cast<void *>(this);
-
-                    element_t_ = gsl_root_fsolver_brent;
-                    s = gsl_root_fsolver_alloc (element_t_);
-                    gsl_root_fsolver_set (s, &F, x_lo, x_hi);
-
-                    do
-                    {
-                        iteration_++;
-                        status = gsl_root_fsolver_iterate (s);
-                        auto r = gsl_root_fsolver_root (s);
-                        x_lo = gsl_root_fsolver_x_lower (s);
-                        x_hi = gsl_root_fsolver_x_upper (s);
-                        status = gsl_root_test_interval (x_lo, x_hi,
-                                                         0, 0.0001);
-                    }
-                    while (status == GSL_CONTINUE && iteration_ < max_iter);
-
-                    if (GSL_SUCCESS == status) {
-                        std::map<esl::identity<esl::law::property>, double> result_;
-                        auto solver_best_ = gsl_root_fsolver_root(s);
-
-                        result_.emplace(mapping_index_[0], solver_best_);
-                        gsl_root_fsolver_free(s);
-                        return result_;
-                    }
-
-                /*/
-                    int status = GSL_CONTINUE;
-                    size_t iteration_ = 0;
-
-                    const gsl_root_fdfsolver_type *T;
+                    // solver and solver type
+                    const gsl_root_fdfsolver_type *solver_type_;
                     gsl_root_fdfsolver *s;
                     // the initial guess is 1 times the previous quote
                     double xt = 1.;
-                    gsl_function_fdf FDF;
+                    // the function structure with gradient and jacobian
+                    gsl_function_fdf target_;
+                    target_.f = &uniroot_function_value;
+                    target_.df = &uniroot_function_value_and_gradient;
+                    target_.fdf = &uniroot_function_jacobian_cb;
+                    target_.params = static_cast<void *>(this);
 
-                    FDF.f = &uniroot_function_value;
-                    FDF.df = &uniroot_function_value_and_gradient;
-                    FDF.fdf = &uniroot_function_jacobian_cb;
-                    FDF.params = static_cast<void *>(this);
-                    T = gsl_root_fdfsolver_steffenson;
-                    s = gsl_root_fdfsolver_alloc (T);
-                    gsl_root_fdfsolver_set (s, &FDF, xt);
+                    // use steffenson's method
+                    // Newton algorithm with an Aitken "delta-squared" acceleration
+                    solver_type_ = gsl_root_fdfsolver_steffenson;
+                    s = gsl_root_fdfsolver_alloc (solver_type_);
+                    gsl_root_fdfsolver_set (s, &target_, xt);
+                    size_t iteration_ = 0;
+                    int status_;
                     do  {
                         ++iteration_;
-                        status = gsl_root_fdfsolver_iterate(s);
+                        // perform one solver step
+                        status_ = gsl_root_fdfsolver_iterate(s);
+                        // store initial position to compute delta
                         double x0 = xt;
                         xt = gsl_root_fdfsolver_root(s);
-                        status = gsl_root_test_delta (xt, x0, 0.0000001, 0.000000001);
-                    }
-                    while (GSL_CONTINUE == status && iteration_ < max_iterations);
+                        status_ = gsl_root_test_delta (xt, x0, delta_absolute_tolerance, delta_relative_tolerance);
+                    } while (GSL_CONTINUE == status_ && iteration_ < max_iterations);
 
-                    if (GSL_SUCCESS == status) {
+
+                    if (GSL_SUCCESS == status_) {
                         std::map<esl::identity<esl::law::property>, double> result_;
+                        // get the best result from the solver
                         auto solver_best_ = gsl_root_fdfsolver_root(s);
 
+                        // apply circuit breaker retro-actively
                         solver_best_ = std::max(solver_best_, circuit_breaker.first);
                         solver_best_ = std::min(solver_best_, circuit_breaker.second);
 
@@ -508,14 +469,15 @@ namespace esl::economics::markets::tatonnement {
                     gsl_set_error_handler(old_handler_);
                 } else {
                     // else, we solve for multiple roots at once
+                    // TODO: set adaptively
+                    constexpr double residual_tolerance =  1e-4;
 
-                    gsl_multiroot_function_fdf root_function;
-
-                    root_function.n = active_.size();
-                    root_function.f = &multiroot_function_value_cb;
-                    root_function.df = &multiroot_function_jacobian_cb;
-                    root_function.fdf = &multiroot_function_value_and_gradient_cb;
-                    root_function.params = static_cast<void *>(this);
+                    gsl_multiroot_function_fdf target_;
+                    target_.n = active_.size();
+                    target_.f = &multiroot_function_value_cb;
+                    target_.df = &multiroot_function_jacobian_cb;
+                    target_.fdf = &multiroot_function_value_and_gradient_cb;
+                    target_.params = static_cast<void *>(this);
 
                     gsl_vector *variables_ = gsl_vector_alloc(active_.size());
                     for (size_t i = 0; i < active_.size(); ++i) {
@@ -523,19 +485,18 @@ namespace esl::economics::markets::tatonnement {
                         gsl_vector_set(variables_, i, 1.);
                     }
 
+                    // modified version of Powell’s Hybrid method
                     const gsl_multiroot_fdfsolver_type *solver_t_ = gsl_multiroot_fdfsolver_hybridsj;
                     gsl_multiroot_fdfsolver *solver_ = gsl_multiroot_fdfsolver_alloc(solver_t_, active_.size());
-                    gsl_multiroot_fdfsolver_set(solver_, &root_function, variables_);
-
-                    auto max_iterations_ = size_t(std::pow(10, active_.size()));
+                    gsl_multiroot_fdfsolver_set(solver_, &target_, variables_);
 
                     int status = GSL_CONTINUE;
-                    for (size_t i = 0; i < max_iterations_ && GSL_CONTINUE == status; ++i) {
+                    for (size_t i = 0; i < max_iterations && GSL_CONTINUE == status; ++i) {
                         status = gsl_multiroot_fdfsolver_iterate(solver_);
                         if (GSL_SUCCESS != status) {
                             break;
                         }
-                        status = gsl_multiroot_test_residual(solver_->f, 1e-3);
+                        status = gsl_multiroot_test_residual(solver_->f, residual_tolerance);
                     }
 
                     if (GSL_SUCCESS == status) {
@@ -556,6 +517,8 @@ namespace esl::economics::markets::tatonnement {
                     gsl_vector_free(variables_);
                 }
 #else
+
+                constexpr double residual_tolerance =  1e-4;
                 gsl_multiroot_function root_function;
 
                 root_function.n      = active_.size();
@@ -569,17 +532,18 @@ namespace esl::economics::markets::tatonnement {
                     gsl_vector_set(variables_, i, 1.0);
                 }
 
+                // Powell's Hybrid method, but with finite-difference approximation
                 const gsl_multiroot_fsolver_type *solver_t_ = gsl_multiroot_fsolver_hybrids;
                 gsl_multiroot_fsolver *solver_ = gsl_multiroot_fsolver_alloc(solver_t_, active_.size());
                 gsl_multiroot_fsolver_set (solver_, &root_function, variables_);
 
                 int status = GSL_CONTINUE;
-                for(size_t iter = 0; iter < 100 && GSL_CONTINUE == status; ++iter){
+                for(size_t iter = 0; iter < max_iterations && GSL_CONTINUE == status; ++iter){
                     status = gsl_multiroot_fsolver_iterate  (solver_);
                     if (GSL_SUCCESS != status){
                         break;
                     }
-                    status = gsl_multiroot_test_residual (solver_->f, 1e-4);
+                    status = gsl_multiroot_test_residual (solver_->f, residual_tolerance);
                 }
 
                 std::map<esl::identity<esl::law::property>, double> result_;
@@ -590,25 +554,17 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multiroot_fsolver_free (solver_);
                 gsl_vector_free(variables_);
 #endif
-                //if(status == GSL_SUCCESS) {
-                //    return result_;
-                // }
-
-                // no progress to a new solution, so use the old solution
-                // n.b. this most frequently happens when we get the market clearing
-                // prices right on the first try
-                // if(status == GSL_ENOPROG) {
-                //     return result_;
-                // }
-                //LOG(notice)  << "multiple root solver failed: " << gsl_strerror(status) << std::endl;
                 continue;
             }else{
 // If Adept is absent, or
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+                // TODO: set adaptively
                 constexpr double initial_step_size       = 1.0e-5;
                 constexpr double line_search_tolerance   = 1.0e-5;
                 constexpr double converged_gradient_norm = 1.0e-4;
+                constexpr double error_tolerance         = 0.0001;
 
+                // we use the vector Broyden-Fletcher-Goldfarb-Shanno algorithm
                 const auto *minimizer_type = gsl_multimin_fdfminimizer_vector_bfgs2;
 
                 gsl_multimin_function_fdf target_;
@@ -628,7 +584,6 @@ namespace esl::economics::markets::tatonnement {
                     gsl_multimin_fdfminimizer_alloc(minimizer_type, active_.size());
                 gsl_multimin_fdfminimizer_set(minimizer, &target_, x,
                                               initial_step_size, line_search_tolerance);
-
                 size_t iteration_ = 0;
                 int status;
                 do {
@@ -639,16 +594,14 @@ namespace esl::economics::markets::tatonnement {
                     for(size_t param = 0; param < active_.size(); ++param){
                         solution_.push_back(gsl_vector_get (minimizer->x, param));
                     }
-                    auto checkval = excess_demand_function_value(&solution_[0]);
-                    if(checkval <= 0.0001){
+                    auto error_ = excess_demand_function_value(&solution_[0]);
+                    if(error_ <= error_tolerance){
                         status = GSL_SUCCESS;
                         break;
                     }
-
                     if(status != GSL_SUCCESS) {
                         break;
                     }
-
                     status = gsl_multimin_test_gradient(minimizer->gradient,
                                                         converged_gradient_norm);
                 } while(GSL_CONTINUE == status && iteration_ < max_iterations);
@@ -666,9 +619,6 @@ namespace esl::economics::markets::tatonnement {
 
                 gsl_multimin_fdfminimizer_free(minimizer);
                 gsl_vector_free(x);
-
-                //LOG(errorlog)  << "gradient-based minimizer failed after " << iteration_
-                //            << " iterations: " << gsl_strerror(status) << std::endl;
 #else
                 LOG(errorlog)  << "gradient-free minimizer failed after " << iteration_
                             << " iterations: " << gsl_strerror(status) << std::endl;

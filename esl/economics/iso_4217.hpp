@@ -34,10 +34,13 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 
+#include <esl/exception.hpp>
+
+
 namespace esl::economics {
 
     ///
-    /// \brief  INSTANCE ISO 4217 Currency Code
+    /// \brief ISO 4217 Currency Code
     ///
     struct iso_4217
     {
@@ -62,20 +65,28 @@ namespace esl::economics {
 
         }
 
-        //
+        ///
+        /// \brief construct ISO 4217 code from code and denominator
+        ///
+        /// \param isocode
+        /// \param denominator
         constexpr iso_4217(const std::array<char, 3> &isocode = {'X', 'X', 'X'},
                                     std::uint64_t denominator   = 100)
         : code(isocode), denominator(denominator)
         {
-            assert('A' <= isocode[0] && 'Z' >= isocode[0]);
-            assert('A' <= isocode[1] && 'Z' >= isocode[1]);
-            assert('A' <= isocode[2] && 'Z' >= isocode[2]);
-            assert(0 < denominator);
+            for(auto c:isocode){
+                if(!('A' <= c && 'Z' >= c)){
+                    throw esl::exception(std::string("unexpected symbol ") + c + " in code");
+                }
+            }
+            if(0 >= denominator){
+                throw esl::exception("denominator must be strictly positive");
+            }
         }
 
         ~iso_4217() = default;
 
-        inline iso_4217 &operator = (const iso_4217 &operand)
+        iso_4217 &operator = (const iso_4217 &operand)
         {
             for(size_t i = 0; i < code.size(); ++i) {
                 code[i] = operand.code[i];
@@ -84,16 +95,14 @@ namespace esl::economics {
             return *this;
         }
 
-        [[nodiscard]] inline constexpr bool
-        operator == (const iso_4217 &operand) const
+        [[nodiscard]] constexpr bool operator == (const iso_4217 &operand) const
         {
             return code[0] == operand.code[0] && code[1] == operand.code[1]
                    && code[2] == operand.code[2]
                    && denominator == operand.denominator;
         }
 
-        [[nodiscard]] inline constexpr bool
-        operator != (const iso_4217 &operand) const
+        [[nodiscard]] constexpr bool operator != (const iso_4217 &operand) const
         {
             return code[0] != operand.code[0] || code[1] != operand.code[1]
                    || code[2] != operand.code[2]
@@ -101,8 +110,7 @@ namespace esl::economics {
         }
 
 
-        [[nodiscard]] inline constexpr bool
-        operator < (const iso_4217 &operand) const
+        [[nodiscard]] constexpr bool operator < (const iso_4217 &operand) const
         {
             for(size_t i = 0; i < code.size(); ++i) {
                 if(code[i] < operand.code[i]) {
@@ -131,34 +139,30 @@ namespace esl::economics {
         template<typename archive_t>
         void save(archive_t &archive, const unsigned int version) const
         {
+            (void) version;
             std::string code_;
-            for(char c : code) {
+            for(char c: code) {
                 code_.push_back(c);
             }
 
-            archive << boost::serialization::make_nvp(
-                    "code", code_);
-
-            archive << boost::serialization::make_nvp(
-                    "denominator", const_cast<std::uint64_t &>(denominator));
+            archive << boost::serialization::make_nvp("code", code_);
+            archive << BOOST_SERIALIZATION_NVP(denominator);
         }
 
         template<typename archive_t>
-        void load(archive_t &archive, const unsigned int version) const
+        void load(archive_t &archive, const unsigned int version)
         {
             (void) version;
             std::string code_;
 
-            archive >> boost::serialization::make_nvp(
-                    "code", code_);
+            archive >> boost::serialization::make_nvp("code", code_);
             assert(3 == code_.length());
 
             for(size_t i = 0; i < code.size(); ++i){
-                const_cast<char &>(code[i]) = code_[i];
+                code[i] = code_[i];
             }
 
-            archive >> boost::serialization::make_nvp(
-                    "denominator", const_cast<std::uint64_t &>(denominator));
+            archive >> BOOST_SERIALIZATION_NVP(denominator);
         }
 
         template<class archive_t>
@@ -166,8 +170,7 @@ namespace esl::economics {
             boost::serialization::split_member(archive, *this, file_version);
         }
 
-        inline friend std::ostream &operator << (std::ostream &o,
-                                               const iso_4217 &c)
+        friend std::ostream &operator << (std::ostream &o, const iso_4217 &c)
         {
             o.write(c.code.data(), c.code.size());
             return o;

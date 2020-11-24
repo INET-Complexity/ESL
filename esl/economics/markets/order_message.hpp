@@ -42,13 +42,15 @@ struct order_message
     : public interaction::message<message_type_, type_code_>
 {
     order_message(
-        const identity<agent> &sender          = identity<agent>(),
-        const identity<agent> recipient       = identity<agent>(),
-        simulation::time_point sent     = simulation::time_point(),
-        simulation::time_point received = simulation::time_point())
+        const identity<agent> &sender       = identity<agent>(),
+        const identity<agent> recipient     = identity<agent>(),
+        simulation::time_point sent         = simulation::time_point(),
+        simulation::time_point received     = simulation::time_point())
         : interaction::message<message_type_, type_code_>(sender, recipient,
                                                           sent, received)
-    {}
+    {
+
+    }
 
     ///
     /// Conventions: the order replies directly to the sender sending
