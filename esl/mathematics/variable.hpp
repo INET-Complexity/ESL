@@ -25,13 +25,28 @@
 #ifndef ESL_MATHEMATICS_VARIABLE_HPP
 #define ESL_MATHEMATICS_VARIABLE_HPP
 
+#if defined(_MSC_VER)
 #pragma warning(push, 0) // supress warnings in MSVC from external code
+#endif
+
 #include <adept.h>
+
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 namespace esl {
+
+    ///
+    /// \brief  Wrap the variable itself
+    ///
     typedef adept::adouble variable;
 
+    ///
+    /// \brief
+    /// \tparam t
+    /// \param value
+    /// \return
     template<typename t>
     inline double value(t value)
     {
