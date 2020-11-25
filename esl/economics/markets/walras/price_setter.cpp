@@ -132,13 +132,16 @@ namespace esl::economics::markets::walras {
                 auto scalars_ = clear_market(orders_, step);
                 LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
 
-
                 std::vector<price> prices_;
                 for(auto &[k, v]: traded_properties){
                     (void)v;
+                    // TODO: generalise to all types of quotes
                     prices_.emplace_back(std::get<price>(v.type));
                     quotes_.emplace_back(quote(v));
                 }
+
+                LOG(notice) << "quotes: " << quotes_ << std::endl;
+
                 output_clearing_prices_->put(step.lower, prices_);
 
             }else{  // restore previous prices
@@ -160,7 +163,7 @@ namespace esl::economics::markets::walras {
                 ++sequence_;
             }
         }
-        //LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
+        LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
 
         for(const auto &p : participants) {
             auto m = this->template create_message<walras::quote_message>(
@@ -224,7 +227,7 @@ namespace esl::economics::markets::walras {
     /// \param volumes_
     /// \param orders_
     /// \return
-    map<identity<property>, map<identity<agent>, int64_t>> compute_transfers
+    map<identity<property>, map<identity<agent>, int64_t>> price_setter::compute_transfers
         ( const law::property_map<quote> &traded_properties
             , const map<identity<property>, double> &volumes_
             , const map<identity<property>, map<identity<agent>, std::tuple<double, quantity, quantity>>> &orders_
@@ -258,7 +261,6 @@ namespace esl::economics::markets::walras {
                     std::get<1>(allocations_[ii % allocations_.size()]) += 1;
                 }
             }else{
-                // assert(allocations_.size() >= uint64_t(error_));
                 if(allocations_.size() < uint64_t(error_)) {
                     LOG(notice) << "clearing price beyond rounding error" << std::endl;
                 }
@@ -337,7 +339,9 @@ namespace esl::economics::markets::walras {
                 auto j = total_supply_.emplace(property_, 0.).first;
                 auto h = existingdemand_.emplace(property_, 0.).first;
 
-                if(excess_ >= -0.00001 && excess_ <= 0.00001) {
+                // TODO: the minimum transfer amount should be derived from the quote
+                constexpr double minimum_transfer_amount = 0.00001;
+                if(excess_ > -minimum_transfer_amount && excess_ < minimum_transfer_amount) {
                     continue;
                 }
                 auto quote_ = solution_.find(property_)->second;
@@ -367,8 +371,6 @@ namespace esl::economics::markets::walras {
         //std::cout << " total_supply_ = " << total_supply_ << std::endl;
         //std::cout << " existing_demand_ = " << existingdemand_ << std::endl;
         //std::cout << " demand(scale) = " << scales_ << std::endl;
-
-
 
         for(const auto &[participant, order_]: orders) {
             auto demand_ = order_->excess_demand(solution_);

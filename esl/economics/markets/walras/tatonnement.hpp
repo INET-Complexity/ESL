@@ -95,7 +95,7 @@ namespace esl::economics::markets::tatonnement {
         ///
         /// \brief  Limits maximum price decrease/increase
         ///
-        std::pair<double, double> circuit_breaker = {1./1.1, 1.1};
+        std::pair<double, double> circuit_breaker = {1./11, 11.};
 
         ///
         /// \brief  The default approach is to try the root-finding approach

@@ -279,7 +279,7 @@ namespace esl::economics::markets::tatonnement {
                 auto i = terms_map.emplace(k, variable(0.));
                 auto long_ = double(std::get<0>(f->supply[k]));
                 auto short_ = double(std::get<1>(f->supply[k]));
-                i.first->second += long_ + ed - short_;
+                i.first->second += ed;//long_ + ed - short_;
             }
         }
 
@@ -415,8 +415,9 @@ namespace esl::economics::markets::tatonnement {
                 // if there is only one property traded, we specialize with
                 // algorithms that do well on univariate root finding
                 if(1 == quotes.size()){
-                    constexpr double delta_absolute_tolerance = 0.0000001;
-                    constexpr double delta_relative_tolerance = 0.000000001;
+                    constexpr double absolute_tolerance = 1e-6;
+                    constexpr double delta_absolute_tolerance = 1e-6;
+                    constexpr double delta_relative_tolerance = 1e-8;
 
                     // capture previous error handler to restore later
                     auto old_handler_ = gsl_set_error_handler (&handler);
@@ -439,28 +440,35 @@ namespace esl::economics::markets::tatonnement {
                     s = gsl_root_fdfsolver_alloc (solver_type_);
                     gsl_root_fdfsolver_set (s, &target_, xt);
                     size_t iteration_ = 0;
+
                     int status_;
+                    double best_quote_ = 1.0;
+                    double best_error_ = uniroot_function_value(best_quote_, this);//std::numeric_limits<double>::max();
                     do  {
                         ++iteration_;
                         // perform one solver step
                         status_ = gsl_root_fdfsolver_iterate(s);
                         // store initial position to compute delta
-                        double x0 = xt;
                         xt = gsl_root_fdfsolver_root(s);
-                        status_ = gsl_root_test_delta (xt, x0, delta_absolute_tolerance, delta_relative_tolerance);
+                        auto errors_ = uniroot_function_value(xt, this);
+                        if(abs(errors_) < abs(best_error_)){
+                            best_error_ = errors_;
+                            best_quote_ = xt;
+                        }
+                        if(abs(errors_) < absolute_tolerance){
+                            status_ = GSL_SUCCESS;
+                            break;
+                        }
+                        //status_ = gsl_root_test_delta (xt, x0, delta_absolute_tolerance, delta_relative_tolerance);
                     } while (GSL_CONTINUE == status_ && iteration_ < max_iterations);
-
 
                     if (GSL_SUCCESS == status_) {
                         std::map<esl::identity<esl::law::property>, double> result_;
-                        // get the best result from the solver
-                        auto solver_best_ = gsl_root_fdfsolver_root(s);
-
                         // apply circuit breaker retro-actively
-                        solver_best_ = std::max(solver_best_, circuit_breaker.first);
-                        solver_best_ = std::min(solver_best_, circuit_breaker.second);
+                        best_quote_ = std::max(best_quote_, circuit_breaker.first);
+                        best_quote_ = std::min(best_quote_, circuit_breaker.second);
 
-                        result_.emplace(mapping_index_[0], solver_best_);
+                        result_.emplace(mapping_index_[0], best_quote_);
                         gsl_root_fdfsolver_free (s);
                         return result_;
                     }
@@ -470,7 +478,7 @@ namespace esl::economics::markets::tatonnement {
                 } else {
                     // else, we solve for multiple roots at once
                     // TODO: set adaptively
-                    constexpr double residual_tolerance =  1e-4;
+                    constexpr double residual_tolerance = 1e-4;
 
                     gsl_multiroot_function_fdf target_;
                     target_.n = active_.size();

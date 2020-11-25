@@ -45,7 +45,9 @@ SET(CMAKE_CXX_STANDARD              17)
 SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
-OPTION(CONFIGURATION_SHARED "Build shared library" OFF)
+# build as a shared library, as opposed to the Python bindings or a single experiment only
+OPTION(CONFIGURATION_SHARED "Build shared library" ON)
+
 OPTION(WITH_TESTS "Build test cases" ON)
 
 IF(NOT ESL_TARGET_NAME)
@@ -59,7 +61,7 @@ ENDIF()
 
 IF(MSVC OR MINGW)
     # this prevents windows from defining IN and OUT macros globally
-    ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS )
+    ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS)
 ENDIF()
 
 IF(APPLE)
@@ -77,10 +79,12 @@ IF(CCACHE_FOUND)
     SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 ENDIF(CCACHE_FOUND)
 
+################################################################################
+# Find automatic differentiation library
+################################################################################
 
+# it is not optional thus it can fail the build if not found
 FIND_PATH(ADEPT_INCLUDE_DIRECTORY "adept.h")
-#LIST(APPEND ALL_INCLUDE_DIRECTORIES $ENV{ESL_ADDITIONAL_INCLUDE_DIRECTORIES} )
-
 
 ################################################################################
 # Library optional add-ons
@@ -122,8 +126,6 @@ IF(WITH_PYTHON)
     ENDIF()
 
     GET_FILENAME_COMPONENT(ESL_PYTHON_LINK_DIRECTORY ${PYTHON_LIBRARY} DIRECTORY)
-
-
 
     # This reads the Python version that was found, and sets variables
     STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
@@ -352,12 +354,7 @@ IF(CONFIGURATION_SHARED)
     IF(MSVC)
         # multi-processor compilation
         TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
-        #SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-        #SET_PROPERTY(TARGET ${ESL_TARGET_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
     ENDIF()
-
-
-
 
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
         # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
@@ -390,7 +387,6 @@ ENDIF()
 ################################################################################
 #   Add tests
 ################################################################################
-
 IF(WITH_TESTS AND CONFIGURATION_SHARED)
     FILE(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/test_*.cpp)
     FOREACH(test_src ${TEST_SRCS})
@@ -401,29 +397,28 @@ IF(WITH_TESTS AND CONFIGURATION_SHARED)
         SET_TARGET_PROPERTIES(${test_name} PROPERTIES
                 RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/test/)
 
-
         # test_mpi_* and test_mpi_python_* need to be run using a MPI job runner
         IF(${test_name} MATCHES "^(test_mpi_)")
             IF(WITH_MPI)
                 IF(WITH_PYTHON AND ${test_name} MATCHES "^(test_mpi_python_)")
-                    MESSAGE("/t MPI PYTHON TEST" ${test_name})
+                    MESSAGE("\t MPI PYTHON TEST" ${test_name})
                     ADD_TEST(NAME ${test_name}
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                             COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
                 ELSE()
-                    MESSAGE("/t MPI TEST" ${test_name})
+                    MESSAGE("\t MPI TEST" ${test_name})
                     ADD_TEST(NAME ${test_name}
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                             COMMAND mpirun -np 2 ${CMAKE_BINARY_DIR}/test/${test_name})
                 ENDIF()
             ENDIF()
         ELSEIF(${test_name} MATCHES "^(test_python_)")
-            MESSAGE("/t PYTHON TEST" ${test_name})
+            MESSAGE("\t PYTHON TEST" ${test_name})
             ADD_TEST(NAME ${test_name}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
                     COMMAND ${CMAKE_BINARY_DIR}/python/test/${test_name})
         ELSE()
-            MESSAGE("/t C++ TEST " ${test_name})
+            MESSAGE("\t C++ TEST " ${test_name})
             ADD_TEST(NAME ${test_name}
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/
                     COMMAND ${CMAKE_BINARY_DIR}/test/${test_name})

@@ -69,7 +69,7 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def("compute_adjoint", &adept::Stack::compute_adjoint)
 
     ;
-    
+
     // TODO: verify that all opeartions on this are exported
     class_<binary_operation_t>("binary_operation_t", no_init)
         .def(self == self)
@@ -79,17 +79,13 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def(self > self)
         .def(self >= self)
         .def(self + self)
-        .def(self + variable())
-        //.def(self += self)
+       // .def(self + variable())
         .def(self - self)
-        .def(self - variable())
-        //.def(self -= self)
+     //   .def(self - variable())
         .def(self * self)
-        .def(self * variable())
-        //.def(self *= self)
+      //  .def(self * variable())
         .def(self / self)
-        .def(self / variable())
-        //.def(self /= self)
+    //    .def(self / variable())
         ;
 
 

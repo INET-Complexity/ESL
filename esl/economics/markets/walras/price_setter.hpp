@@ -91,13 +91,25 @@ namespace esl::economics::markets::walras {
 
 
         ///
-        /// \brief
+        /// \brief  Clear the market
         ///
         std::map<identity<law::property>, double> clear_market
             ( const std::unordered_map<identity<agent>
             , std::shared_ptr<walras::differentiable_order_message>> &orders
             , const esl::simulation::time_interval &step
             );
+
+        ///
+        /// \param traded_properties
+        /// \param volumes_
+        /// \param orders_
+        /// \return
+        std::map<identity<esl::law::property>, std::map<esl::identity<esl::agent>, int64_t>> compute_transfers
+            ( const law::property_map<quote> &traded_properties
+                , const std::map<identity<esl::law::property>, double> &volumes_
+                , const std::map<identity<esl::law::property>, std::map<identity<agent>, std::tuple<double, quantity, quantity>>> &orders_
+            );
+
 
         ///
         /// \return friendly description of the agent mentioning the identifier
