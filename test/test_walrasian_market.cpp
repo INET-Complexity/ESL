@@ -282,7 +282,6 @@ BOOST_AUTO_TEST_CASE(walras_market_quote_multiple_assets)
 }
 
 
-
 ///
 /// \brief  Tests that a market quotes the right number of prices for property,
 ///         and that these are delivered to participants.
@@ -377,7 +376,7 @@ BOOST_AUTO_TEST_CASE(walras_market_quote_multiple_assets)
         model_.step({1, 2});
 
         // prices are updated
-        BOOST_TEST(std::get<price>(market_->traded_properties.find(properties_[0])->second.type) == price(100, currencies::USD));
+        BOOST_TEST(std::get<price>(market_->traded_properties.find(properties_[0])->second.type) == price(200, currencies::USD));
 
         // the agent does not know the new prices until after one time step
         BOOST_CHECK_EQUAL(participants_[0]->prices.size(), assets);
@@ -388,10 +387,10 @@ BOOST_AUTO_TEST_CASE(walras_market_quote_multiple_assets)
         model_.step({2, 3});
         // the agent now knows the previous prices from step [1, 2)
         //log(notice) << participants_[0]->prices << std::endl;
-        BOOST_TEST(participants_[0]->prices.find(properties_[0])->second == price(100, currencies::USD));
+        BOOST_TEST(participants_[0]->prices.find(properties_[0])->second == price(200, currencies::USD));
 
         // the market prices are computed again
-        BOOST_TEST(std::get<price>(market_->traded_properties.find(properties_[0])->second.type) == price(100, currencies::USD));
+        BOOST_TEST(std::get<price>(market_->traded_properties.find(properties_[0])->second.type) == price(200, currencies::USD));
     }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL
