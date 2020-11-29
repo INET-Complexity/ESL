@@ -35,8 +35,17 @@ using namespace boost::python;
 
 #include <adept/Stack.h>
 
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Add, adept::Active<double> > binary_operation_add_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Subtract, adept::Active<double> > binary_operation_subtract_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Multiply, adept::Active<double> > binary_operation_multiply_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Divide, adept::Active<double> > binary_operation_divide_t;
 
-typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Multiply, adept::Active<double> > binary_operation_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Pow, adept::Active<double> > binary_operation_pow_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Atan2, adept::Active<double> > binary_operation_atan2_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Max, adept::Active<double> > binary_operation_max_t;
+typedef adept::internal::BinaryOperation<double, adept::Active<double>, adept::internal::Min, adept::Active<double> > binary_operation_min_t;
+
+
 
 using namespace esl;
 
@@ -59,6 +68,10 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def(self *= self)
         .def(self / self)
         .def(self /= self)
+
+
+
+
         //.def("value", &variable::value)
         ;
 
@@ -71,7 +84,7 @@ BOOST_PYTHON_MODULE(_mathematics)
     ;
 
     // TODO: verify that all opeartions on this are exported
-    class_<binary_operation_t>("binary_operation_t", no_init)
+    class_<binary_operation_add_t>("binary_operation_add_t", no_init)
         .def(self == self)
         .def(self != self)
         .def(self < self)
@@ -79,16 +92,48 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def(self > self)
         .def(self >= self)
         .def(self + self)
-       // .def(self + variable())
         .def(self - self)
-     //   .def(self - variable())
         .def(self * self)
-      //  .def(self * variable())
         .def(self / self)
-    //    .def(self / variable())
         ;
 
+    class_<binary_operation_subtract_t>("binary_operation_subtract_t", no_init)
+        .def(self == self)
+        .def(self != self)
+        .def(self < self)
+        .def(self <= self)
+        .def(self > self)
+        .def(self >= self)
+        .def(self + self)
+        .def(self - self)
+        .def(self * self)
+        .def(self / self)
+        ;
 
+    class_<binary_operation_multiply_t>("binary_operation_multiply_t", no_init)
+        .def(self == self)
+        .def(self != self)
+        .def(self < self)
+        .def(self <= self)
+        .def(self > self)
+        .def(self >= self)
+        .def(self + self)
+        .def(self - self)
+        .def(self * self)
+        .def(self / self)
+        ;
+    class_<binary_operation_divide_t>("binary_operation_divide_t", no_init)
+        .def(self == self)
+        .def(self != self)
+        .def(self < self)
+        .def(self <= self)
+        .def(self > self)
+        .def(self >= self)
+        .def(self + self)
+        .def(self - self)
+        .def(self * self)
+        .def(self / self)
+        ;
 // TODO: export these
 //    def("get_gradients", &adept::get_gradients);
 //    stack_.independent(&active_[0], active_.size());

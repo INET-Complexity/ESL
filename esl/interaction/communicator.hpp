@@ -77,23 +77,22 @@ namespace esl::interaction {
             ///
             /// \brief  A brief description that specifies what this action does
             ///
-            const std::string   description;
+            std::string   description;
 
             ///
             /// \brief  The message typename
             ///
-            const std::string   message; // typically the message typename
+            std::string   message; // typically the message typename
 
             ///
             /// \brief  The code file where this callback is defined.
             ///
-            const std::string   file;
+            std::string   file;
 
             ///
             /// \brief The line in the file where it is defined
             ///
-            const size_t        line;
-
+            size_t        line;
         };
 
         ///
@@ -110,11 +109,19 @@ namespace esl::interaction {
         typedef std::vector<message_t, boost::pool_allocator<message_t>> outbox_t;
 
         ///
+        /// How priorities are set, from -128 to +127
+        ///
         typedef std::int8_t priority_t;
 
         ///
+        /// \brief  The inbox contains messages the agent has received
+        ///
         inbox_t inbox;
 
+        ///
+        /// \brief  The outbox contains messages the agent has sent during the
+        ///         current time step, shortly before they are moved to the
+        ///         recipient's inbox.
         ///
         outbox_t outbox;
 
