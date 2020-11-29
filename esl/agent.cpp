@@ -31,15 +31,19 @@ namespace esl {
 
     agent::agent()
     : agent(identity<agent>())
-    {}
+    {
+
+    }
 
     agent::agent(identity<agent> i)
     : entity<agent>(std::move(i)), communicator()
-    {}
+    {
+
+    }
 
     agent::agent(const agent &o)
     : entity<agent>(o.identifier)
-    , interaction::communicator(o.schedule_)
+    , interaction::communicator(o.schedule)
     , data::producer()
     {
 

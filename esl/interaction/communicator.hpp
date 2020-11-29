@@ -146,10 +146,7 @@ namespace esl::interaction {
         {
             in_order = 0,
             random   = 1
-        };
-
-    protected:
-        scheduling schedule_;
+        } schedule;
 
     public:
         ///
@@ -284,7 +281,7 @@ namespace esl::interaction {
             archive &BOOST_SERIALIZATION_NVP(inbox);
             archive &BOOST_SERIALIZATION_NVP(outbox);
             archive &BOOST_SERIALIZATION_NVP(locked_);
-            archive &BOOST_SERIALIZATION_NVP(schedule_);
+            archive &BOOST_SERIALIZATION_NVP(schedule);
         }
     };
 }  // namespace esl::interaction

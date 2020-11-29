@@ -31,7 +31,7 @@ using std::chrono::high_resolution_clock;
 namespace esl::interaction {
     communicator::communicator(scheduling schedule)
     : locked_(false)
-    , schedule_(schedule)
+    , schedule(schedule)
     {
 
     }
@@ -127,7 +127,7 @@ namespace esl::interaction {
                 i = upper_;
             }
 
-            if(random == schedule_) {
+            if(random == schedule) {
                 std::minstd_rand g(seed);
                 std::shuffle(equal_.begin(), equal_.end(), g);
             }
