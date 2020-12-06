@@ -277,9 +277,7 @@ namespace esl::economics::markets::tatonnement {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
             for(auto [k, ed]: demand_per_property_) {
                 auto i = terms_map.emplace(k, variable(0.));
-                auto long_ = double(std::get<0>(f->supply[k]));
-                auto short_ = double(std::get<1>(f->supply[k]));
-                i.first->second += ed;//long_ + ed - short_;
+                i.first->second += ed;
             }
         }
 
@@ -467,7 +465,7 @@ namespace esl::economics::markets::tatonnement {
                         // apply circuit breaker retro-actively
                         best_quote_ = std::max(best_quote_, circuit_breaker.first);
                         best_quote_ = std::min(best_quote_, circuit_breaker.second);
-
+                        LOG(trace) << mapping_index_[0] << " multiplier: " << best_quote_ << std::endl;
                         result_.emplace(mapping_index_[0], best_quote_);
                         gsl_root_fdfsolver_free (s);
                         return result_;
