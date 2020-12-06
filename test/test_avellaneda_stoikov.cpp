@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         for(auto m: std::vector<double>{0.01, 1.00, 100.00, 1'000'000'000.00}){
 
-            auto ba_ = esl::economics::markets::order_book::avellaneda_stoikov( esl::economics::price(m, esl::economics::currencies::USD)
+            auto ba_ = esl::economics::markets::order_book::avellaneda_stoikov( esl::economics::price::approximate(m, esl::economics::currencies::USD)
                 , esl::quantity(0)
                 , esl::quantity(0)
                 , 0.
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
     BOOST_AUTO_TEST_CASE(volatility)
     {
-        auto middle_ = esl::economics::price(100.00, esl::economics::currencies::USD);
+        auto middle_ = esl::economics::price::approximate(100.00, esl::economics::currencies::USD);
 
 
         auto low_ = esl::economics::markets::order_book::avellaneda_stoikov( middle_
@@ -83,9 +83,10 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_LT(low_.second, high_.second);
     }
 
+
     BOOST_AUTO_TEST_CASE(risk_aversion)
     {
-        auto middle_ = esl::economics::price(100.00, esl::economics::currencies::USD);
+        auto middle_ = esl::economics::price::approximate(100.00, esl::economics::currencies::USD);
 
 
         auto low_ = esl::economics::markets::order_book::avellaneda_stoikov( middle_
@@ -109,10 +110,9 @@ BOOST_AUTO_TEST_SUITE(ESL)
     }
 
 
-
     BOOST_AUTO_TEST_CASE(end_of_session)
     {
-        auto middle_ = esl::economics::price( 100.00
+        auto middle_ = esl::economics::price::approximate( 100.00
                                             , esl::economics::currencies::USD);
 
 

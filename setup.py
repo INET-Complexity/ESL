@@ -1,6 +1,8 @@
 import os
 import pathlib
 import sys
+import subprocess
+import typing
 
 # The relative path of the source code to the setup file
 source_directory = 'esl'
@@ -34,6 +36,18 @@ def read_version():
         raise ValueError(f"Can not read {source_directory}/version file.")
 
 
+def read_commit() -> typing.Optional[str]:
+    """
+        Gets a commit
+    :return:
+    """
+    try:
+        return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip().decode()
+    except subprocess.CalledProcessError:
+        # likely git not installed, or not authorized to use
+        return None
+
+
 def get_packages():
     """
     Walks the source directory to find python modules. A module has an __init__.py file in the directory.
@@ -50,11 +64,13 @@ def get_packages():
 
 packages = get_packages()
 
+commit = read_commit()
+
 # Set up the package, together with metadata that will be visible on package repositories such as Pypi
 setup(
     name                = 'eslpy',
 
-    version             = '.'.join(map(str, read_version())),
+    version             = '.'.join(map(str, read_version())) + ('' if commit is None else '-' + commit),
     description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
 
     # This loads the README file, and allows repositories such as Pypi to render the readme using markdown

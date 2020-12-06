@@ -37,7 +37,6 @@
 
 
 namespace esl {
-
     class agent
     : public entity<agent>
     , public interaction::communicator
@@ -48,29 +47,32 @@ namespace esl {
         friend class boost::serialization::access;
 
     public:
+        ///
+        /// \brief  agent default constructor
+        ///
         agent();
 
+        ///
+        /// \brief
+        /// \param i    identity for
         explicit agent(esl::identity<agent> i);
 
         ///
         /// \brief  Copy constructor
         ///
-        /// \param o
+        /// \param o    other agent to copy
         agent(const agent &o);
 
         ///
-        /// \param start
-        /// \return
+        /// \param step The left-closed time interval [lower, upper), where
+        ///             lower denotes the current time.
+        ///
+        /// \return The time at which the agent expects the next event, where
+        ///         it is expected that for the return value v:
+        ///              lower <= v < +infinity
+        ///
         virtual simulation::time_point act(simulation::time_interval step,
                                            std::seed_seq &seed);
-
-        ///
-        /// \param rhs
-        /// \return
-        [[nodiscard]] constexpr bool operator==(const agent &rhs) const
-        {
-            return identifier == rhs.identifier;
-        }
 
         ///
         /// \param rhs

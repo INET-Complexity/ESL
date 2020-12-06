@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
 BOOST_AUTO_TEST_CASE(version_parsed)
 {
     auto version_ = esl::version();
-    BOOST_CHECK_EQUAL(version_.length(), 5);
+    BOOST_CHECK_GE(version_.length(), 5);
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

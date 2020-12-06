@@ -33,140 +33,136 @@
 #include <esl/simulation/time.hpp>
 
 namespace esl {
-
     class agent;
+}
 
-    namespace interaction {
 
-        typedef std::uint64_t message_code;
+namespace esl::interaction {
+
+    typedef std::uint64_t message_code;
+    ///
+    /// \brief
+    ///
+    constexpr message_code message_mask = 0x8000'0000'0000'0000;
+
+    ///
+    /// \tparam message_offset_
+    /// \return
+    template<message_code offset_>
+    constexpr message_code library_message_code()
+    {
+        static_assert(message_mask >= offset_,
+                      "maximum code offset exceeded");
+        return message_mask | offset_;
+    }
+
+    ///
+    /// \tparam message_code_
+    /// \return
+    template<message_code code_>
+    constexpr message_code library_message_offset()
+    {
+        static_assert(message_mask & code_, "not a library message code");
+        return (~message_mask) & code_;
+    }
+
+
+    ///
+    /// \brief  The basic components in a message that facilitate delivery
+    ///
+    struct header
+    {
         ///
-        /// \brief
+        /// \brief  The type of message being sent
         ///
-        constexpr message_code message_mask = 0x8000'0000'0000'0000;
+        message_code type;
 
         ///
-        /// \tparam message_offset_
+        /// \brief  identity of the agent sending the message
+        ///
+        identity<agent> sender;
+
+        ///
+        /// \brief  identity of the agent receiving the message
+        ///
+        identity<agent> recipient;
+
+        ///
+        /// \brief  The time point at which the message was sent by the sender.
+        ///
+        /// \details    Messages are not moved from the agent's outbox until
+        ///             this point in time has been reached
+        ///
+        simulation::time_point sent;
+
+        ///
+        /// \brief  The earliest time point at which the message may be received
+        ///         as determined by the sender. This point may lie far in the
+        ///         future.
+        ///
+        /// \details    Even if the time received is far in the future, the
+        ///             message will be physically moved to the recipient's
+        ///             inbox immediately after it is sent.
+        ///
+        simulation::time_point received;
+
+        ///
+        ///
+        ///
+        header(const header &) = default;
+
+        ///
+        ///
+        ///
+        header(header &&) = default;
+
+        ///
+        /// \param h    other header
         /// \return
-        template<message_code offset_>
-        constexpr message_code library_message_code()
+        header &operator = (const header &h) = default;
+
+        ///
+        /// \param type
+        /// \param sender
+        /// \param recipient
+        /// \param sent
+        /// \param received
+        header( message_code type               = 0
+              , identity<agent> sender          = identity<agent>()
+              , identity<agent> recipient       = identity<agent>()
+              , simulation::time_point sent     = simulation::time_point()
+              , simulation::time_point received = simulation::time_point()
+              )
+        : type(type)
+        , sender(std::move(sender))
+        , recipient(std::move(recipient))
+        , sent(sent)
+        , received(received)
         {
-            static_assert(message_mask >= offset_,
-                          "maximum code offset exceeded");
-            return message_mask | offset_;
+
         }
 
         ///
-        /// \tparam message_code_
-        /// \return
-        template<message_code code_>
-        constexpr message_code library_message_offset()
+        ///
+        ///
+        virtual ~header() = default;
+
+        ///
+        /// \tparam archive_t
+        /// \param archive
+        /// \param version
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
         {
-            static_assert(message_mask & code_, "not a library message code");
-            return (~message_mask) & code_;
+            (void)version;
+            archive &BOOST_SERIALIZATION_NVP(type);
+            archive &BOOST_SERIALIZATION_NVP(sender);
+            archive &BOOST_SERIALIZATION_NVP(recipient);
+            archive &BOOST_SERIALIZATION_NVP(sent);
+            archive &BOOST_SERIALIZATION_NVP(received);
         }
-
-
-        ///
-        /// \brief  The basic components in a message that facilitate delivery
-        ///
-        struct header
-        {
-            ///
-            /// \brief
-            ///
-            message_code type;
-
-            ///
-            ///
-            ///
-            identity<agent> sender;
-
-            ///
-            /// \brief
-            ///
-            identity<agent> recipient;
-
-            ///
-            /// The time point at which the message was sent by the sender.
-            ///
-            simulation::time_point sent;
-
-            ///
-            /// The earliest time point at which the message may be received as
-            /// determined by the sender. This point may lie far in the future.
-            ///
-            simulation::time_point received;
-
-            ///
-            /// \brief
-            ///
-            /// \param type
-            explicit header(message_code type = 0)
-            : type(type), sender(), recipient(), sent(), received()
-            {}
-
-            ///
-            ///
-            header(const header &) = default;
-
-            ///
-            ///
-            ///
-            header(header &&) = default;
-
-            ///
-            /// \param h
-            /// \return
-            header &operator = (const header &h)
-            {
-                type       = h.type;
-                sender     = h.sender;
-                recipient  = h.recipient;
-                sent       = h.sent;
-                received   = h.received;
-                return *this;
-            }
-
-            ///
-            /// \param type
-            /// \param sender
-            /// \param recipient
-            /// \param sent
-            /// \param received
-            header(uint64_t type, identity<agent> sender,
-                   identity<agent> recipient,
-                   simulation::time_point sent     = simulation::time_point(),
-                   simulation::time_point received = simulation::time_point())
-            : type(type)
-            , sender(std::move(sender))
-            , recipient(std::move(recipient))
-            , sent(sent)
-            , received(received)
-            {}
-
-            ///
-            ///
-            virtual ~header() = default;
-
-            ///
-            /// \tparam archive_t
-            /// \param archive
-            /// \param version
-            template<class archive_t>
-            void serialize(archive_t &archive, const unsigned int version)
-            {
-                (void)version;
-                archive &boost::serialization::make_nvp(
-                    "type", const_cast<message_code &>(type));
-
-                archive &BOOST_SERIALIZATION_NVP(sender);
-                archive &BOOST_SERIALIZATION_NVP(recipient);
-                archive &BOOST_SERIALIZATION_NVP(sent);
-                archive &BOOST_SERIALIZATION_NVP(received);
-            }
-        };
-    }  // namespace interaction
-}  // namespace esl
+    };
+}  // namespace esl::interaction
 
 // this is imported for the type computation below.
 #include <esl/simulation/identity.hpp>

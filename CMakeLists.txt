@@ -46,7 +46,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
 # build as a shared library, as opposed to the Python bindings or a single experiment only
-OPTION(CONFIGURATION_SHARED "Build shared library" ON)
+OPTION(CONFIGURATION_SHARED "Build shared library" OFF  )
 
 OPTION(WITH_TESTS "Build test cases" ON)
 
