@@ -49,7 +49,7 @@ using esl::/*mathematics::*/variable;
 ///
 extern "C" double c_minimizer_function_value
     ( const gsl_vector *variables
-    , void *model)
+        , void *model)
 {
     auto *model_ = static_cast<excess_demand_model *>(model);
     assert(model_ && "parameter must be (excess_demand_model *)");
@@ -83,8 +83,8 @@ multiroot_function_value_cb(const gsl_vector *x, void *params, gsl_vector *f)
 ///         Return gradient of function with respect to each state variable x
 ///
 extern "C" void c_minimizer_function_gradient( const gsl_vector *x
-                                             , void *params
-                                             , gsl_vector *gradient)
+    , void *params
+    , gsl_vector *gradient)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
@@ -111,9 +111,9 @@ extern "C" int multiroot_function_jacobian_cb(const gsl_vector * x, void * param
 ///
 extern "C" void c_minimizer_function_value_and_gradient
     ( const gsl_vector *x
-    , void *params
-    , double *jacobian
-    , gsl_vector *gradient
+        , void *params
+        , double *jacobian
+        , gsl_vector *gradient
     )
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
@@ -125,10 +125,10 @@ extern "C" void c_minimizer_function_value_and_gradient
 /// \brief
 ///
 extern "C" int multiroot_function_value_and_gradient_cb( const gsl_vector *x
-                                                       , void *params
-                                                       , gsl_vector *f
-                                                       , gsl_matrix *df
-                                                       )
+    , void *params
+    , gsl_vector *f
+    , gsl_matrix *df
+)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
@@ -163,9 +163,9 @@ extern "C" double uniroot_function_value_and_gradient (double x, void *params)
 }
 
 extern "C" void uniroot_function_jacobian_cb ( double x
-                                             , void *params
-                                             , double *f
-                                             , double *df)
+    , void *params
+    , double *f
+    , double *df)
 {
     auto *model_ = static_cast<excess_demand_model *>(params);
     assert(model_ && "parameter must be (excess_demand_model *)");
@@ -204,9 +204,9 @@ namespace esl::economics::markets::tatonnement {
     /// \param initial_quotes
     excess_demand_model::excess_demand_model(
         law::property_map<quote> initial_quotes)
-    : quotes(initial_quotes)
+        : quotes(initial_quotes)
 #if defined(ADEPT_VERSION)
-    , stack_()
+        , stack_()
 #endif
     {
 
@@ -223,7 +223,7 @@ namespace esl::economics::markets::tatonnement {
     adept::adouble excess_demand_model::demand_supply_mismatch(const adept::adouble *x)
     {
         std::map<identity<law::property>,
-                 std::tuple<quote, adept::adouble>>
+            std::tuple<quote, adept::adouble>>
             quote_scalars_;
 
         size_t n = 0;
@@ -277,7 +277,9 @@ namespace esl::economics::markets::tatonnement {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
             for(auto [k, ed]: demand_per_property_) {
                 auto i = terms_map.emplace(k, variable(0.));
-                i.first->second += ed;
+                auto long_ = double(std::get<0>(f->supply[k]));
+                auto short_ = double(std::get<1>(f->supply[k]));
+                i.first->second += ed;//long_ + ed - short_;
             }
         }
 
@@ -359,7 +361,7 @@ namespace esl::economics::markets::tatonnement {
     std::vector<double>
     excess_demand_model::multiroot_function_value_and_gradient
         ( const double *multipliers
-        , double *jacobian
+            , double *jacobian
         )
     {
         for(unsigned int i = 0; i < active_.size(); ++i) {
@@ -465,7 +467,7 @@ namespace esl::economics::markets::tatonnement {
                         // apply circuit breaker retro-actively
                         best_quote_ = std::max(best_quote_, circuit_breaker.first);
                         best_quote_ = std::min(best_quote_, circuit_breaker.second);
-                        LOG(trace) << mapping_index_[0] << " multiplier: " << best_quote_ << std::endl;
+
                         result_.emplace(mapping_index_[0], best_quote_);
                         gsl_root_fdfsolver_free (s);
                         return result_;
