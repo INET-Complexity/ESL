@@ -132,7 +132,7 @@ namespace esl::economics::markets::walras {
                 // there is at least one order so we clear the market
                 auto before_ = std::chrono::high_resolution_clock::now();
                 auto scalars_ = clear_market(orders_, step);
-                LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
+//                LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
 
                 std::vector<price> prices_;
                 for(auto &[k, v]: traded_properties){
@@ -142,7 +142,7 @@ namespace esl::economics::markets::walras {
                     quotes_.emplace_back(quote(v));
                 }
 
-                LOG(notice) << "quotes: " << quotes_ << std::endl;
+//                LOG(notice) << "quotes: " << quotes_ << std::endl;
 
                 output_clearing_prices_->put(step.lower, prices_);
 
@@ -165,7 +165,7 @@ namespace esl::economics::markets::walras {
                 ++sequence_;
             }
         }
-        LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
+//        LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
 
         for(const auto &p : participants) {
             auto m = this->template create_message<walras::quote_message>(
@@ -256,8 +256,8 @@ namespace esl::economics::markets::walras {
 
             if(error_ < 0){  // assigned too many
                 if(allocations_.size() < uint64_t(-error_)) {
-                    LOG(notice) << "excess demand non-zero: " << error_ << std::endl;
-                    //LOG(notice) << "clearing price beyond rounding error" << std::endl;
+//                    LOG(notice) << "excess demand non-zero: " << error_ << std::endl;
+
                 }
 
                 for(size_t ii = 0; ii < uint64_t(-error_); ++ii) {
@@ -265,8 +265,8 @@ namespace esl::economics::markets::walras {
                 }
             }else{
                 if(allocations_.size() < uint64_t(error_)) {
-                    LOG(notice) << "excess demand non-zero: " << error_ << std::endl;
-                    //LOG(notice) << "clearing price beyond rounding error" << std::endl;
+//                    LOG(notice) << "excess demand non-zero: " << error_ << std::endl;
+
                 }
 
                 for(size_t ii = 0; ii < uint64_t(error_); ++ii) {
@@ -547,8 +547,8 @@ namespace esl::economics::markets::walras {
 
 
         for(auto [p, i] : send_) {
-            LOG(trace) << "market sends to " << p << " items " << i
-                       << std::endl;
+            //LOG(trace) << "market sends to " << p << " items " << i
+            //           << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, identifier, p,
                 reinterpret_identity_cast<law::owner<law::property>>(
@@ -557,8 +557,8 @@ namespace esl::economics::markets::walras {
         }
 
         for(auto [p, i]: receive_) {
-            LOG(trace) << "market receives from " << p << " items " << i
-                       << std::endl;
+//            LOG(trace) << "market receives from " << p << " items " << i
+//                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, p, identifier,
                 reinterpret_identity_cast<law::owner<law::property>>(p),
