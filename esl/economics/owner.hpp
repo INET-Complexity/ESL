@@ -69,13 +69,17 @@ namespace esl::law {
                                     simulation::time_interval ti,
                                     std::seed_seq &seed) {
                 (void)seed;
+                if(msg->transferor == msg->transferee){
+                   return simulation::time_point(ti.upper);
+                }
+
                 if(this->identifier == msg->transferor) {
                     try {
                         LOG(trace) << this->name() << " sends " << msg->transferred << std::endl;
                         msg->transferred.erase_from(inventory);
                     }catch(const esl::economics::accounting::insufficent_inventory &e){
                         // ...
-                        LOG(errorlog) << this->name() << " (" << identifier  << ") insufficent_inventory " << e.what() << std::endl;
+                        LOG(errorlog) << this->name() << " (" << identifier  << ", " << msg->transferred <<") " << e.what() << std::endl;
                         throw e;
                     }
                 } else if(this->identifier == msg->transferee) {
