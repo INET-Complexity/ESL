@@ -249,7 +249,7 @@ namespace esl::economics::accounting {
                     throw insufficent_inventory(quantity(0), quantity(1), k->identifier, boost::core::demangle(typeid(property_t_).name()));
                 } else if(i->second < v) {
                     //LOG(errorlog) << "when looking for property " << boost::core::demangle(typeid(property_t_).name()) << " id: "<< k->identifier << " there were insufficient ("<<i->second<<") items to withdraw " << v << std::endl;
-                    throw insufficent_inventory(i->second, v, k->identifier, boost::core::demangle(typeid(property_t_).name()));
+                    throw insufficent_inventory(i->second, v, k->identifier, k->name());
                 } else if(i->second == v) {
                     m.erase(k);
                 } else {
