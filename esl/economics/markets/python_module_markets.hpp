@@ -28,8 +28,8 @@
 #include <esl/economics/markets/quote_message.hpp>
 #include <esl/interaction/header.hpp>
 
-#ifdef WITH_PYTHON
 namespace esl::economics::markets {
+#ifdef WITH_PYTHON
     struct python_quote_message
     : quote_message<python_quote_message, interaction::library_message_code<0x0100>()>
     {
