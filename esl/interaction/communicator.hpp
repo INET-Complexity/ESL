@@ -38,6 +38,7 @@
 #include <esl/computation/allocator.hpp>
 #include <esl/interaction/header.hpp>
 
+
 namespace esl::simulation {
     class agent_collection;
 }
@@ -110,6 +111,7 @@ namespace esl::interaction {
 
         ///
         /// How priorities are set, from -128 to +127
+        /// The higher the priority, the earlier the message-handler is used
         ///
         typedef std::int8_t priority_t;
 
@@ -139,13 +141,16 @@ namespace esl::interaction {
         ///
         bool locked_;
 
+        ///
+        /// \brief  Stores message callbacks, the higher the priority the
+        ///         earlier the callback is called when multiple callbacks exist
+        ///
         std::map<message_code, std::multimap<priority_t, callback_t>> callbacks_;
 
     public:
         enum scheduling
-        {
-            in_order = 0,
-            random   = 1
+        { in_order = 0,
+          random   = 1
         } schedule;
 
     public:

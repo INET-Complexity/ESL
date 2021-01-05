@@ -28,6 +28,8 @@
 
 #include <initializer_list>
 
+#include <boost/core/demangle.hpp>
+
 #include <esl/exception.hpp>
 #include <esl/economics/accounting/standard.hpp>
 #include <esl/economics/cash.hpp>
@@ -94,7 +96,9 @@ namespace esl::economics::accounting {
         const quantity invalid;
 
         explicit fractional_infungible(quantity q) : invalid(q)
-        {}
+        {
+
+        }
 
         const char *what() const throw()
         {
@@ -109,8 +113,11 @@ namespace esl::economics::accounting {
     public:
         const quantity invalid;
 
-        explicit duplicate_infungible(quantity q) : invalid(q)
-        {}
+        explicit duplicate_infungible(quantity q)
+        : invalid(q)
+        {
+
+        }
 
         const char *what() const throw()
         {
@@ -199,11 +206,11 @@ namespace esl::economics::accounting {
             auto iterator_ = items.find(item);
 
             if(items.end() == iterator_ && q.amount > 0) {
-                throw insufficent_inventory(quantity(0), q, item->identifier, typeid(property_t_).name());
+                throw insufficent_inventory(quantity(0), q, item->identifier, boost::core::demangle(typeid(property_t_).name()));
             }
 
             if(iterator_->second < q) {
-                throw insufficent_inventory(iterator_->second, q, item->identifier, typeid(property_t_).name());
+                throw insufficent_inventory(iterator_->second, q, item->identifier, boost::core::demangle(typeid(property_t_).name()));
             }
 
             iterator_->second -= q;
@@ -238,11 +245,11 @@ namespace esl::economics::accounting {
                 }
                 auto i = m.find(k);
                 if(m.end() == i) {
-                    LOG(errorlog) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " no entry was found" << std::endl;
-                    throw insufficent_inventory(quantity(0), quantity(1), k->identifier, typeid(property_t_).name());
+                    //LOG(errorlog) << "when looking for property " << boost::core::demangle(typeid(property_t_).name()) << " id: "<< k->identifier << " no entry was found" << std::endl;
+                    throw insufficent_inventory(quantity(0), quantity(1), k->identifier, boost::core::demangle(typeid(property_t_).name()));
                 } else if(i->second < v) {
-                    LOG(errorlog) << "when looking for property " << typeid(property_t_).name() << " id: "<< k->identifier << " there were insufficient items" << std::endl;
-                    throw insufficent_inventory(i->second, v, k->identifier, typeid(property_t_).name());
+                    //LOG(errorlog) << "when looking for property " << boost::core::demangle(typeid(property_t_).name()) << " id: "<< k->identifier << " there were insufficient ("<<i->second<<") items to withdraw " << v << std::endl;
+                    throw insufficent_inventory(i->second, v, k->identifier, boost::core::demangle(typeid(property_t_).name()));
                 } else if(i->second == v) {
                     m.erase(k);
                 } else {

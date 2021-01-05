@@ -108,7 +108,7 @@ namespace esl::economics::accounting {
         [[nodiscard]] price value(const finance::loan &l, const quantity &q) const
         {
             (void) l;
-            return price(-1.00 * double(q), reporting_currency);
+            return price(-std::int64_t(std::uint64_t(q)) * reporting_currency.denominator, reporting_currency);
         }
 
         [[nodiscard]] price value(const finance::securities_lending_contract &c, const quantity &q) const

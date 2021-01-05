@@ -27,6 +27,8 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <locale>
+
 
 #include <esl/economics/iso_4217.hpp>
 
@@ -40,6 +42,20 @@ namespace esl::economics {
                 throw std::invalid_argument("comparing price of with currencies");
             }
         }
+
+        struct separate_thousands
+        : std::numpunct<char> {
+            char_type do_thousands_sep() const override
+            {
+                return ',';
+            }  // separate with commas
+
+            string_type do_grouping() const override
+            {
+                return "\3";
+            } // groups of 3 digit
+        };
+
     }
 
     ///
@@ -126,23 +142,23 @@ namespace esl::economics {
             return value < operand.value;
         }
 
-        [[nodiscard]] constexpr bool operator<=(const price &operand) const
+        [[nodiscard]] constexpr bool operator <= (const price &operand) const
         {
             return (*this < operand) || (*this == operand);
         }
 
-        [[nodiscard]] constexpr bool operator>(const price &operand) const
+        [[nodiscard]] constexpr bool operator > (const price &operand) const
         {
             detail::assert_equal_currencies(valuation, operand.valuation);
             return value > operand.value;
         }
 
-        [[nodiscard]] constexpr bool operator>=(const price &operand) const
+        [[nodiscard]] constexpr bool operator >= (const price &operand) const
         {
             return (*this > operand) || (*this == operand);
         }
 
-        [[nodiscard]] constexpr price operator+(const price &operand) const
+        [[nodiscard]] constexpr price operator + (const price &operand) const
         {
             assert(valuation == operand.valuation);
             return price(value + operand.value, valuation);
@@ -160,13 +176,13 @@ namespace esl::economics {
             return price(-value, valuation);
         }
 
-        [[nodiscard]] constexpr price operator-(const price &operand) const
+        [[nodiscard]] constexpr price operator - (const price &operand) const
         {
             assert(valuation == operand.valuation);
             return price(value - operand.value, valuation);
         }
 
-        constexpr price &operator-=(const price &operand)
+        constexpr price &operator -= (const price &operand)
         {
             assert(valuation == operand.valuation);
             value -= operand.value;
@@ -198,9 +214,14 @@ namespace esl::economics {
         std::ostream &operator << (std::ostream &o) const
         {
             std::ios_base::fmtflags flags_(o.flags());
+            auto l = o.getloc();
+            //auto thousands = std::make_unique<detail::separate_thousands>();
+            //o.imbue(std::locale(o.getloc(), thousands.release()));
+
             int precision_ = static_cast<int>(ceil(log10(valuation.denominator)));
-            o << this->valuation << '(' << std::fixed
+            o << valuation << '(' << std::fixed
               << std::setprecision(precision_) << double(*this) << ')';
+            //o.imbue(l);
             o.flags(flags_);
             return o;
         }

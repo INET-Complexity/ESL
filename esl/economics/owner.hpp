@@ -70,8 +70,16 @@ namespace esl::law {
                                     std::seed_seq &seed) {
                 (void)seed;
                 if(this->identifier == msg->transferor) {
-                    msg->transferred.erase_from(inventory);
+                    try {
+                        LOG(trace) << this->name() << " sends " << msg->transferred << std::endl;
+                        msg->transferred.erase_from(inventory);
+                    }catch(const esl::economics::accounting::insufficent_inventory &e){
+                        // ...
+                        LOG(errorlog) << this->name() << " (" << identifier  << ") insufficent_inventory " << e.what() << std::endl;
+                        throw e;
+                    }
                 } else if(this->identifier == msg->transferee) {
+                    LOG(trace) << this->name() << " receives " << msg->transferred << std::endl;
                     msg->transferred.insert_into(inventory);
                 } else {
                     LOG(notice)

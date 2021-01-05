@@ -282,6 +282,15 @@ namespace esl {
             return double(amount);
         }
 
+        ///
+        /// \brief  explicit conversion operator
+        /// \return amount
+        ///
+        [[nodiscard]] explicit operator std::uint64_t() const
+        {
+            return std::uint64_t(amount);
+        }
+
         friend std::ostream &operator<<(std::ostream &stream, const quantity &q)
         {
             stream << q.amount;

@@ -400,12 +400,12 @@ namespace esl::economics::markets::walras {
                 if(order_->supply.end() == j){
                     orders_.find(property_)->second.emplace( participant, std::make_tuple(units_, 0, 0));
 
-                    //LOG(trace) << participant << " demands {" << property_ << ", "
-                    //           << units_ << "}" << std::endl;
+                    LOG(trace) << participant << " demands {" << property_ << ", "
+                               << units_ << "}" << std::endl;
                 }else{
-                    //LOG(trace) << participant << " demands {" << property_ << ", "
-                    //           << std::setprecision(5) << units_
-                    //           << "}" << std::endl;
+                    LOG(trace) << participant << " demands {" << property_ << ", "
+                               << std::setprecision(5) << units_
+                               << "}" << std::endl;
 
                     orders_.find(property_)->second.emplace(participant, std::make_tuple(units_, std::get<0>(j->second), std::get<1>(j->second)));
                 }
@@ -547,8 +547,8 @@ namespace esl::economics::markets::walras {
 
 
         for(auto [p, i] : send_) {
-            //LOG(trace) << "market sends to " << p << " items " << i
-            //           << std::endl;
+            LOG(trace) << "market sends to " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, identifier, p,
                 reinterpret_identity_cast<law::owner<law::property>>(
@@ -557,8 +557,8 @@ namespace esl::economics::markets::walras {
         }
 
         for(auto [p, i]: receive_) {
-//            LOG(trace) << "market receives from " << p << " items " << i
-//                       << std::endl;
+            LOG(trace) << "market receives from " << p << " items " << i
+                       << std::endl;
             this->template create_message<interaction::transfer>(
                 p, step.lower, p, identifier,
                 reinterpret_identity_cast<law::owner<law::property>>(p),

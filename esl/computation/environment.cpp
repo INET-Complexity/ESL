@@ -34,6 +34,8 @@ using std::chrono::high_resolution_clock;
 #include <boost/serialization/unordered_map.hpp>
 #endif
 
+#include <boost/core/demangle.hpp>
+
 #include <esl/agent.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/simulation/model.hpp>
@@ -210,7 +212,7 @@ namespace esl::computation {
         after_run(simulation);
         auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
         auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
-        LOG(notice) << "running simulation in " << typeid(decltype(*this)).name()
+        LOG(notice) << "running simulation in " << boost::core::demangle(typeid(decltype(*this)).name())
                     << " took " << (double(timer_total_.count()) / 1e+9)
                     << " seconds" << std::endl;
     }
