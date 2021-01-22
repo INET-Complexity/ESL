@@ -35,10 +35,8 @@
 #include <esl/simulation/time.hpp>
 #include <esl/simulation/world.hpp>
 
-
 #include <vector>
 using std::vector;
-
 
 #include <boost/make_shared.hpp>
 
@@ -47,24 +45,20 @@ using std::vector;
 using namespace boost::python;
 
 
-// as section of typedefs
-typedef esl::entity<boost::python::object> python_entity;
-typedef esl::identity<boost::python::object> python_identity;
-typedef esl::entity<esl::simulation::world> world_entity;
-
-
-boost::shared_ptr<python_identity>
+boost::shared_ptr<esl::simulation::python_module::python_identity>
 convert_digit_list(const boost::python::list &list)
 {
     vector<uint64_t> result_;
     for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
         result_.push_back(boost::python::extract<std::uint64_t>(list[i]));
     }
-    return boost::make_shared<python_identity>(result_);
+    return boost::make_shared<esl::simulation::python_module::python_identity>(result_);
 }
 
+
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( python_identity_representation_overload
-                                      , python_identity::representation
+                                      , esl::simulation::python_module::python_identity::representation
                                       , 0
                                       , 1);
 
@@ -100,12 +94,12 @@ namespace esl::simulation {
             .def(self != self)
             ;
 
-        class_<python_identity>("identity")
+        class_<esl::simulation::python_module::python_identity>("identity")
             .def("__init__", make_constructor(convert_digit_list))
-            .def_readonly("digits", &python_identity::digits)
-            .def("__str__", &python_identity::representation,
+            .def_readonly("digits", &esl::simulation::python_module::python_identity::digits)
+            .def("__str__", &esl::simulation::python_module::python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
-            .def("__repr__", &python_identity::representation,
+            .def("__repr__", &esl::simulation::python_module::python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
             .def(self < self)
             .def(self > self)

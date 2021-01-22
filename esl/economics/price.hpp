@@ -231,6 +231,12 @@ namespace esl::economics {
             return p.operator<<(o);
         }
 
+        /*c++20 constexpr*/ std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << (*this);
+            return stream_.str();
+        }
 
 //        friend std::istream &operator>>(std::istream &i, const price &p)
 //        {

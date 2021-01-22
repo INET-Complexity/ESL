@@ -279,6 +279,13 @@ namespace esl::economics::markets {
                        q.type);
             return stream;
         }
+
+        [[nodiscard]] std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << *this;
+            return stream_.str();
+        }
     };
 
 }  // namespace esl::economics

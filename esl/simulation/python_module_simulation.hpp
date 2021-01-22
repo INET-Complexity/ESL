@@ -35,6 +35,13 @@
 #include <boost/python/converter/shared_ptr_to_python.hpp>
 
 namespace esl::simulation::python_module {
+
+    // as section of typedefs
+    typedef esl::entity<boost::python::object> python_entity;
+    typedef esl::identity<boost::python::object> python_identity;
+
+
+
     ///
     /// \brief
     ///
@@ -44,10 +51,11 @@ namespace esl::simulation::python_module {
        // e.create<>()
     }
 
+
     ///
     /// \brief
     ///
-    void helper_create_child_entity(const boost::python::object& python_object)
+    inline void helper_create_child_entity(const boost::python::object& python_object)
     {
         boost::python::extract<boost::python::object> extractor_(python_object);
         boost::python::object object_ = extractor_();

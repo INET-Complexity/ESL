@@ -76,6 +76,9 @@ BOOST_PYTHON_MODULE(_markets)
         .def(self > self)
         .def(self <= self)
         .def(self >= self)
+
+        .def("__repr__", &quote::representation)
+        .def("__str__", &quote::representation)
         ;
 
     implicitly_convertible<quote, double>();
