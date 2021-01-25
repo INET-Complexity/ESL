@@ -58,7 +58,7 @@ jobs:
       - name: "[MacOS] Install dependencies with homebrew"
         run: |
           brew update >/dev/null
-          brew install gfortran gsl
+          brew install gsl
         shell: bash
         if: matrix.os == 'macos-latest'
 
