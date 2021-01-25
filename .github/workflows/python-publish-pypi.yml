@@ -55,13 +55,23 @@ jobs:
 
       ########################################################################################################################
 
-      - name: "[MacOS] Install dependencies with homebrew"
+      - name: "[MacOS] Install gfortran with homebrew"
         run: |
           brew update >/dev/null
           brew upgrade
-          brew install gfortran gsl
+          brew install gfortran
+        shell: bash
+        continue-on-error: true
+        if: matrix.os == 'macos-latest'
+
+
+      - name: "[MacOS] Install gsl with homebrew"
+        run: |
+          brew update >/dev/null
+          brew install gsl
         shell: bash
         if: matrix.os == 'macos-latest'
+
 
       ########################################################################################################################
 
