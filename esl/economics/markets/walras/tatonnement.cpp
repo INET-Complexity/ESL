@@ -411,6 +411,8 @@ namespace esl::economics::markets::tatonnement {
             //  root finding methods try to set excess demand to zero for
             //  all properties traded in the market
             if (method_ == root){
+// This compile time definition is here such that the library will still compile
+// when Adept is absent.
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
                 // if there is only one property traded, we specialize with
                 // algorithms that do well on univariate root finding
@@ -524,6 +526,8 @@ namespace esl::economics::markets::tatonnement {
                     gsl_multiroot_fdfsolver_free(solver_);
                     gsl_vector_free(variables_);
                 }
+
+
 #else
 
                 constexpr double residual_tolerance =  1e-4;
@@ -563,8 +567,8 @@ namespace esl::economics::markets::tatonnement {
                 gsl_vector_free(variables_);
 #endif
                 continue;
-            }else{
-// If Adept is absent, or
+            }else if (method_ == minimization){
+// If Adept is absent
 #if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
                 // TODO: set adaptively
                 constexpr double initial_step_size       = 1.0e-5;
@@ -631,6 +635,143 @@ namespace esl::economics::markets::tatonnement {
                 LOG(errorlog)  << "gradient-free minimizer failed after " << iteration_
                             << " iterations: " << gsl_strerror(status) << std::endl;
 #endif
+            }else if (method_ == derivative_free_minimization) {
+// TODO: set adaptively
+                auto initial_step_size         = gsl_vector_alloc(active_.size());
+
+                constexpr double error_tolerance         = 0.0001;
+
+                // we use the vector Broyden-Fletcher-Goldfarb-Shanno algorithm
+                const gsl_multimin_fminimizer_type *minimizer_type =
+                    gsl_multimin_fminimizer_nmsimplex2;
+                //const auto *minimizer_type = gsl_multimin_fdfminimizer_vector_bfgs2;
+
+                gsl_multimin_function  target_;
+                target_.n      = active_.size();
+                target_.f      = c_minimizer_function_value;
+                //target_.df     = c_minimizer_function_gradient;
+                //target_.fdf    = c_minimizer_function_value_and_gradient;
+                target_.params = static_cast<void *>(this);
+
+                gsl_vector *x = gsl_vector_alloc(active_.size());
+                for(size_t i = 0; i < active_.size(); ++i) {
+                    // initial solution is 1.0 * previous quote
+                    gsl_vector_set(x, i, 1.0);
+                }
+
+                auto *minimizer =
+                    gsl_multimin_fminimizer_alloc (minimizer_type, active_.size());
+                gsl_multimin_fminimizer_set (minimizer, &target_, x,
+                                              initial_step_size
+                                            //, line_search_tolerance
+                                            );
+                size_t iteration_ = 0;
+                int status;
+                do {
+                    ++iteration_;
+                    status = gsl_multimin_fminimizer_iterate(minimizer);
+
+                    std::vector<double> solution_;
+                    for(size_t param = 0; param < active_.size(); ++param){
+                        solution_.push_back(gsl_vector_get (minimizer->x, param));
+                    }
+                    auto error_ = excess_demand_function_value(&solution_[0]);
+
+                    if(error_ <= error_tolerance){
+                        status = GSL_SUCCESS;
+                        break;
+                    }
+                    if(status != GSL_SUCCESS) {
+                        break;
+                    }
+
+                    status = gsl_multimin_test_size (active_.size(), error_tolerance);
+
+                    //status = gsl_multimin_test_gradient(minimizer->gradient,
+                    //                                    converged_gradient_norm);
+                } while(GSL_CONTINUE == status && iteration_ < max_iterations);
+
+                if(status == GSL_SUCCESS){
+                    std::map<esl::identity<esl::law::property>, double> result_;
+                    for(size_t i = 0; i < active_.size(); ++i) {
+                        auto scalar_ = gsl_vector_get (minimizer->x, i);
+                        result_.insert({mapping_index_[i], scalar_});
+                    }
+                    gsl_multimin_fminimizer_free(minimizer);
+                    gsl_vector_free(x);
+                    gsl_vector_free(initial_step_size);
+                    return result_;
+                }
+
+                gsl_multimin_fminimizer_free(minimizer);
+                gsl_vector_free(x);
+                gsl_vector_free(initial_step_size);
+
+
+            }else if (method_ == derivative_free_root) {
+
+                constexpr double residual_tolerance =  1e-4;
+                gsl_multiroot_function root_function;
+
+                root_function.n      = active_.size();
+                root_function.f      = &multiroot_function_value_cb;
+                //root_function.df     = &multiroot_function_jacobian_cb;
+                //root_function.fdf    = &multiroot_function_value_and_gradient_cb;
+                root_function.params = static_cast<void *>(this);
+
+                std::vector<double> mults;
+                double best_residual_ = 0;
+                gsl_vector *variables_ = gsl_vector_alloc(active_.size());
+                for(size_t i = 0; i < active_.size(); ++i) {
+                    gsl_vector_set(variables_, i, 1.0);
+                    mults.push_back(1.0);
+                    best_residual_ += 1.0;
+                }
+
+                // Powell's Hybrid method, but with finite-difference approximation
+                const gsl_multiroot_fsolver_type *solver_t_ = gsl_multiroot_fsolver_hybrids;
+                gsl_multiroot_fsolver *solver_ = gsl_multiroot_fsolver_alloc(solver_t_, active_.size());
+                gsl_multiroot_fsolver_set (solver_, &root_function, variables_);
+
+
+
+
+                int status = GSL_CONTINUE;
+                for(size_t iter = 0; iter < max_iterations && GSL_CONTINUE == status; ++iter){
+                    status = gsl_multiroot_fsolver_iterate  (solver_);
+                    if (GSL_SUCCESS != status){
+                        break;
+                    }
+
+                    status = gsl_multiroot_test_residual (solver_->f, residual_tolerance);
+
+                    if(status != GSL_CONTINUE) {
+                        break;
+                    }
+
+                    double residual_ = 0.;
+                    for(size_t i = 0; i < active_.size(); ++i) {
+                        residual_ += gsl_vector_get(solver_->f, i);
+                    }
+
+                    if(residual_ < best_residual_) {
+                        best_residual_ = residual_;
+                        for(size_t i = 0; i < active_.size(); ++i) {
+                            mults[i] = gsl_vector_get(solver_->x, i);
+                        }
+                    }
+                }
+
+                std::map<esl::identity<esl::law::property>, double> result_;
+                for(size_t i = 0; i < active_.size(); ++i) {
+                    result_.emplace(mapping_index_[i], mults[i]);
+                }
+
+                gsl_multiroot_fsolver_free (solver_);
+                gsl_vector_free(variables_);
+
+
+                return result_;
             }
         }
         return std::nullopt;

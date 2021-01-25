@@ -49,6 +49,17 @@ void quote_helper_set_price(quote &q, price p)
     q.type = p;
 }
 
+double quote_helper_operator_double(const quote &q)
+{
+    return double(q);
+}
+
+
+//float quote_helper_operator_float(const quote &q)
+//{
+//    return float(q);
+//}
+
 BOOST_PYTHON_MODULE(_markets)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -76,6 +87,8 @@ BOOST_PYTHON_MODULE(_markets)
         .def(self > self)
         .def(self <= self)
         .def(self >= self)
+
+        .def("__float__", &quote_helper_operator_double)
 
         .def("__repr__", &quote::representation)
         .def("__str__", &quote::representation)

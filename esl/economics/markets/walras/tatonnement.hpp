@@ -105,7 +105,12 @@ namespace esl::economics::markets::tatonnement {
         ///         root finding solver does not make progress towards a
         ///         solution.
         ///
-        std::vector<solver> methods = { root, minimization, derivative_free_root, derivative_free_minimization  };
+        std::vector<solver> methods =
+            { root
+            , minimization
+            , derivative_free_root
+            , derivative_free_minimization
+            };
 
         ///
         /// \brief  The quotes to start the solving process from
