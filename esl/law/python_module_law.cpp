@@ -79,6 +79,15 @@ boost::shared_ptr<property_identity> convert_digit_list2(const boost::python::li
     return boost::make_shared<property_identity>(result_);
 }
 
+///
+/// \brief  This is needed because we need to deal with the default argument
+/// \param p
+/// \return
+std::string python_represent_property_identity(const esl::identity<esl::law::property> &p)
+{
+    return p.representation();
+}
+
 
 namespace esl::law {
     BOOST_PYTHON_MODULE(_law)
@@ -377,6 +386,9 @@ namespace esl::law {
 
         class_<identity<property>>( "property_identity")
             .def("__init__", make_constructor(convert_digit_list2))
+
+            .def("__str__", &python_represent_property_identity)
+            .def("__repr__", &python_represent_property_identity)
             ;
 
         class_< property
