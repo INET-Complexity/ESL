@@ -70,7 +70,7 @@ commit = read_commit()
 setup(
     name                = 'eslpy',
 
-    version             = '.'.join(map(str, read_version())) + ('' if commit is None else '-' + commit),
+    version             = '.'.join(map(str, read_version()))# + ('' if commit is None else '-' + commit),
     description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
 
     # This loads the README file, and allows repositories such as Pypi to render the readme using markdown
