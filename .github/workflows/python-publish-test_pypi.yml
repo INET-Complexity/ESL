@@ -177,7 +177,7 @@ jobs:
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0
           ./bootstrap.bat --prefix=C:/Boost
-          ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release link=shared threading=multi runtime-link=shared install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
+          ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release link=static threading=multi runtime-link=shared install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
         if: matrix.os == 'windows-latest'
         #&& steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
         shell: powershell
