@@ -100,7 +100,12 @@ IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DWITH_PYTHON)  # enables ESL WITH_PYTHON code
 
     IF(SKBUILD)
-        # No linking to python
+        # No static linking to python on manylinux, macos
+
+        if(MSVC)
+            ADD_DEFINITIONS(-DBoost_USE_STATIC_LIBS)
+            ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
+        ENDIF()
     ELSE()
         # TODO: confirm static linking is necessary if we are not creating a python package
         ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)

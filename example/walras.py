@@ -90,14 +90,14 @@ class my_order(differentiable_order_message):
                 is a real number that we can use to give demand in real numbers
                 (in essence, a continuous function rather than a function with discrete steps)
 
-            In this example, the demand function is simply 3. - p(t) for the first property, 4. - p(t) for the second,
+            In this example, the demand function is simply $3.00 - p(t) for the first property, $4.00 - p(t) for the second,
             and so on.
 
         :param quotes: A dict with property_identifier keys and pairs (quote, variable)
         :return:
         """
         print(f"The Walrasian price setter suggests the following prices: {quotes}")
-        ed = {k: ((i+2.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
+        ed = {k: ((i+300.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
         print(f"Agent {self.sender}'s demand at these prices is: {ed}")
         return ed
 
