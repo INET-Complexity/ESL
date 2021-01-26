@@ -24,13 +24,13 @@ jobs:
 
       ########################################################################################################################
 
-      - name: "[Windows] Setup NuGet"
-        # For windows, install latest nuget package manager
-        uses: nuget/setup-nuget@v1.0.2
-        with:
-          nuget-version: latest
-        if: matrix.os == 'windows-latest'
-        continue-on-error: true
+#      - name: "[Windows] Setup NuGet"
+#        # For windows, install latest nuget package manager
+#        uses: nuget/setup-nuget@v1.0.2
+#        with:
+#          nuget-version: latest
+#        if: matrix.os == 'windows-latest'
+#        continue-on-error: true
 
       ########################################################################################################################
 
@@ -39,6 +39,10 @@ jobs:
         name: "[All] Install Python 3.${{matrix.python_minor_version}}"
         with:
           python-version: '3.${{matrix.python_minor_version}}'
+
+      - name: "[All] Test Python installation"
+        run: |
+          python -c "import os, sys; from sysconfig import get_paths;  print(os.path.dirname(sys.executable)); print(get_paths())"
 
       ########################################################################################################################
 

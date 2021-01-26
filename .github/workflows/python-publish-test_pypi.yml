@@ -41,6 +41,10 @@ jobs:
         with:
           python-version: '3.${{matrix.python_minor_version}}'
 
+      - name: "[All] Test Python installation"
+        run: |
+          python -c "import os, sys; from sysconfig import get_paths; print(os.path.dirname(sys.executable)); print(get_paths())"
+
 ########################################################################################################################
 
       - name: "[Windows] Setup MSBuild"
