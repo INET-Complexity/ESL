@@ -25,16 +25,6 @@ jobs:
 
 ########################################################################################################################
 
-      - name: "[Windows] Setup NuGet"
-        # For windows, install latest nuget package manager
-        uses: nuget/setup-nuget@v1.0.2
-        with:
-          nuget-version: latest
-        if: matrix.os == 'windows-latest'
-        continue-on-error: true
-
-########################################################################################################################
-
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         name: "[All] Install Python 3.${{matrix.python_minor_version}}"
@@ -126,7 +116,7 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.0/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.0/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.0/x64/lib/python3.9/ ;" >> project-config.jam
+          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.1/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/lib/python3.9/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-latest' && matrix.python_minor_version == 9
