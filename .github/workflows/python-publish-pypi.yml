@@ -171,16 +171,18 @@ jobs:
 
       ########################################################################################################################
 
-      - name: "[Windows | Python 3.8] Install boost"
+
+      - name: "[Windows] Install boost"
         run: |
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
           tar -xzf boost_1_73_0.tar.gz
           cd boost_1_73_0
           ./bootstrap.bat --prefix=C:/Boost
           ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release link=shared threading=multi runtime-link=shared install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
+        if: matrix.os == 'windows-latest'
         #&& steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
         shell: powershell
+
 
       ########################################################################################################################
 
