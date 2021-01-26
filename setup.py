@@ -64,13 +64,13 @@ def get_packages():
 
 packages = get_packages()
 
-commit = read_commit()
+commit = None # read_commit()
 
 # Set up the package, together with metadata that will be visible on package repositories such as Pypi
 setup(
     name                = 'eslpy',
 
-    version             = '.'.join(map(str, read_version())),# + ('' if commit is None else '-' + commit),
+    version             = '.'.join(map(str, read_version())) + ('' if commit is None else '-' + commit),
     description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
 
     # This loads the README file, and allows repositories such as Pypi to render the readme using markdown
