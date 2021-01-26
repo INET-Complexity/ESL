@@ -68,10 +68,6 @@ BOOST_PYTHON_MODULE(_mathematics)
         .def(self *= self)
         .def(self / self)
         .def(self /= self)
-
-
-
-
         //.def("value", &variable::value)
         ;
 

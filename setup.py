@@ -64,7 +64,7 @@ def get_packages():
 
 packages = get_packages()
 
-commit = None # read_commit()
+commit = None #read_commit()
 
 # Set up the package, together with metadata that will be visible on package repositories such as Pypi
 setup(

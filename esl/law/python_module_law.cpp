@@ -92,6 +92,12 @@ std::string python_represent_property_identity(const esl::identity<esl::law::pro
 namespace esl::law {
     BOOST_PYTHON_MODULE(_law)
     {
+//        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
+//            .add_property("local", &python_legal_entity_local)
+//            .add_property("code", &python_legal_entity_code)
+//            .def("checksum", &python_legal_entity_checksum)
+//            ;
+
         /*
         class_<esl::law::contract>
         ( "contract", init<std::vector<esl::identity<esl::agent>>>())
@@ -99,7 +105,7 @@ namespace esl::law {
         ;
 
 
-          class_<esl::law::legal_entity>("legal_entity", init<std::string>())
+        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
         .add_property("local", &python_legal_entity_local)
         .add_property("code", &python_legal_entity_code)
         .def("checksum", &python_legal_entity_checksum)
