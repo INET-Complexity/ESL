@@ -60,6 +60,18 @@ double quote_helper_operator_double(const quote &q)
 //    return float(q);
 //}
 
+
+boost::shared_ptr<quote> construct_quote_from_price(const price &p)
+{
+    return boost::make_shared<quote>(p);
+}
+
+
+boost::shared_ptr<quote> construct_quote_from_exchange_rate(const exchange_rate &e)
+{
+    return boost::make_shared<quote>(e);
+}
+
 BOOST_PYTHON_MODULE(_markets)
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -76,8 +88,9 @@ BOOST_PYTHON_MODULE(_markets)
 
     ////////////////////////////////////////////////////////////////////////////
 
-    class_<quote>("quote", init<exchange_rate>())
-        .def(init<price>())
+    class_<quote>("quote", no_init)// init<exchange_rate>())
+        .def("__init__", boost::python::make_constructor(&construct_quote_from_price))
+        .def("__init__", boost::python::make_constructor(&construct_quote_from_exchange_rate))
         .add_property("price", &quote_helper_get_price, &quote_helper_set_price)
         .def_readwrite("lot", &quote::lot)
 

@@ -31,17 +31,22 @@
 #include <boost/python.hpp>
 using namespace boost::python;
 
+///
+/// \brief
+/// \param c
+/// \return
 std::string python_country_code(const esl::geography::iso_3166_1_alpha_2 &c)
 {
     return (std::string() + c.code[0]) + c.code[1];
 }
 
+
 BOOST_PYTHON_MODULE(_geography)
 {
     class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2")
         .add_property("code", python_country_code)
-        .add_property("__repr__", python_country_code)
-        .add_property("__str__", python_country_code)
+        .def("__repr__", &esl::geography::iso_3166_1_alpha_2::representation)
+        .def("__str__", &esl::geography::iso_3166_1_alpha_2::representation)
         ;
 
     scope().attr("AE") = esl::geography::countries::AE;

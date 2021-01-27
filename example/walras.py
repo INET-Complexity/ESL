@@ -47,7 +47,7 @@ initial_price = price(123, USD)
 # if we are not afraid of floating point truncation errors, we could also write:
 initial_price = price.approximate(1.23, USD)
 # or if we want to do a conversion ourselves:
-initial_price = price.approximate(int(1.23 * USD.denominator), USD)
+initial_price = price(int(1.23 * USD.denominator), USD)
 print(initial_price)
 
 # We are now going to construct a `quote`, which describes how exchanges in the market happen.
@@ -97,7 +97,7 @@ class my_order(differentiable_order_message):
         :return:
         """
         print(f"The Walrasian price setter suggests the following prices: {quotes}")
-        ed = {k: ((i+300.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
+        ed = {k: ((i+3.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
         print(f"Agent {self.sender}'s demand at these prices is: {ed}")
         return ed
 

@@ -25,12 +25,13 @@
 #ifndef ESL_ISO_3166_1_ALPHA_2_HPP
 #define ESL_ISO_3166_1_ALPHA_2_HPP
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // INSTANCE ISO 3166-1 alpha-2 Country Code
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #include <array>
 #include <iostream>
+#include <sstream>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -60,11 +61,19 @@ namespace esl::geography {
         ///
         ///
         ///
-        friend std::ostream &operator<<(std::ostream &o, const iso_3166_1_alpha_2 &c)
+        friend std::ostream &operator << (std::ostream &o, const iso_3166_1_alpha_2 &c)
         {
             o.write(c.code.data(), c.code.size());
             return o;
         }
+
+        [[nodiscard]] std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << *this;
+            return stream_.str();
+        }
+
 
         ///
         /// \tparam archive_t

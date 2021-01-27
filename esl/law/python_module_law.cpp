@@ -92,24 +92,27 @@ std::string python_represent_property_identity(const esl::identity<esl::law::pro
 namespace esl::law {
     BOOST_PYTHON_MODULE(_law)
     {
-//        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
-//            .add_property("local", &python_legal_entity_local)
-//            .add_property("code", &python_legal_entity_code)
-//            .def("checksum", &python_legal_entity_checksum)
-//            ;
+        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
+            .add_property("local", &python_legal_entity_local)
+            .add_property("code", &python_legal_entity_code)
+            .def("checksum", &python_legal_entity_checksum)
+            ;
 
         /*
         class_<esl::law::contract>
         ( "contract", init<std::vector<esl::identity<esl::agent>>>())
         .def_readwrite("parties", &esl::law::contract::parties)
         ;
+         */
 
 
-        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
-        .add_property("local", &python_legal_entity_local)
-        .add_property("code", &python_legal_entity_code)
-        .def("checksum", &python_legal_entity_checksum)
-        ;
+        class_<esl::law::jurisdiction>("jurisdiction", init<geography::iso_3166_1_alpha_2, economics::iso_4217>())
+            .add_property("sovereign", &esl::law::jurisdiction::sovereign)
+            .add_property("tender", &esl::law::jurisdiction::tender)
+            ;
+
+
+
 
         scope().attr("AF") = esl::law::jurisdictions::AF;
         scope().attr("AL") = esl::law::jurisdictions::AL;
@@ -362,7 +365,7 @@ namespace esl::law {
         ;
 
 
-
+        /*
         class_<esl::law::legal_person>(
             "legal_person",
             init<esl::identity<esl::agent>, esl::law::jurisdiction>())
@@ -377,13 +380,15 @@ namespace esl::law {
                 esl::law::jurisdiction>())
             .def_readonly("primary_jurisdiction",
                           &esl::law::legal_person::primary_jurisdiction);
-
+*/
 
         class_<natural_person>
             ( "natural_person", init<esl::geography::iso_3166_1_alpha_2>())
             .def_readonly("nationality", &natural_person::nationality)
             ;
 
+
+        /*
         class_<organization, bases<legal_person>>(
             "organization",
             init<const esl::identity<esl::agent> &,
@@ -403,9 +408,6 @@ namespace esl::law {
                , init<identity<property>>()
                )
             .def("name", &property::name);
-
-
-
     }
 }
 
