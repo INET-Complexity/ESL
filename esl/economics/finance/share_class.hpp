@@ -77,7 +77,25 @@ namespace esl::economics::finance {
 
         //    bool wind_up;
 
-        constexpr bool operator==(const share_class &s) const
+
+        constexpr explicit share_class( std::uint8_t rank = 0
+                                      , uint8_t votes     = 1
+                                      , float preference  = 0.0
+                                      , bool dividend = true
+                                      , bool cumulative = false
+                                      , bool redeemable = false
+                                      )
+        : rank(rank)
+        , votes(votes)
+        , preference(preference)
+        , dividend(dividend)
+        , cumulative(cumulative)
+        , redeemable(redeemable)
+        {
+
+        }
+
+        constexpr bool operator == (const share_class &s) const
         {
             return rank == s.rank
                 && votes == s.votes
@@ -87,7 +105,7 @@ namespace esl::economics::finance {
                 && redeemable == s.redeemable;
         }
 
-        constexpr bool operator<(const share_class &s) const
+        constexpr bool operator < (const share_class &s) const
         {
             return rank < s.rank;
         }

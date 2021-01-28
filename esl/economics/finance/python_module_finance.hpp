@@ -26,8 +26,5 @@
 #define MARKET_ECOLOGY_PYTHON_MODULE_FINANCE_HPP
 
 
-class python_module_finance
-{ };
-
 
 #endif  // MARKET_ECOLOGY_PYTHON_MODULE_FINANCE_HPP

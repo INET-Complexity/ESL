@@ -60,12 +60,25 @@ std::string get_isin_code(const esl::economics::finance::isin &i)
 
 BOOST_PYTHON_MODULE(_order_book)
 {
-
     class_<esl::economics::finance::isin>("isin", no_init)
         .def("issuer", &esl::economics::finance::isin::issuer)
-        .def_readonly("code", &isin_code)
+        .def_readonly("code", &get_isin_code)
+        .def_readonly("code")
+
+
+
+    class_<esl::economics::finance::share_class>("share_class", init<std::uint8_t, std::uint8_t, float, bool, bool, bool>())
+        .def("rank", &esl::economics::finance::share_class::rank)
+        .def("votes", &esl::economics::finance::share_class::votes)
+        .def("preference", &esl::economics::finance::share_class::preference)
+        .def("dividend", &esl::economics::finance::share_class::dividend)
+        .def("cumulative", &esl::economics::finance::share_class::cumulative)
+        .def("redeemable", &esl::economics::finance::share_class::redeemable)
+        .def(self == self)
+        .def(self < self)
+        ;
+
+
 }
-
-
 
 #endif
