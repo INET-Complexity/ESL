@@ -40,13 +40,13 @@ namespace esl::economics::finance {
         ///
         /// \brief
         ///
-        const geography::iso_3166_1_alpha_2 issuer;
+        geography::iso_3166_1_alpha_2 issuer;
 
         ///
         /// \brief  The National Securities Identifying Number
         ///         CUSIP/SEDOL/WKN/Valor
         ///
-        const std::array<char, 9> code;
+        std::array<char, 9> code;
 
         ///
         /// \brief  Constructs an ISIN from the country and the code part.
@@ -67,7 +67,9 @@ namespace esl::economics::finance {
         constexpr isin(const std::array<char, 11> &code = {'0'})
         : issuer(geography::iso_3166_1_alpha_2({code[0], code[1]}))
         , code(esl::array_slice<0, 9>(code))
-        {}
+        {
+
+        }
 
         ///
         /// \brief  Constructs an ISIN from the country and the code part.
@@ -220,7 +222,7 @@ namespace esl::economics::finance {
         /// \param stream
         /// \param i
         /// \return
-        friend std::ostream &operator<<(std::ostream &stream, const isin &i)
+        friend std::ostream &operator << (std::ostream &stream, const isin &i)
         {
             stream << i.issuer;
             for(auto c : i.code) {
@@ -228,6 +230,13 @@ namespace esl::economics::finance {
             }
             stream << i.checksum();
             return stream;
+        }
+
+        [[nodiscard]] std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << *this;
+            return stream_.str();
         }
     };
 }  // namespace esl::economics::finance
