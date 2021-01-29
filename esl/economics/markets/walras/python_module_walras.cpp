@@ -166,7 +166,9 @@ dict clear_market(python_excess_demand_model *e)
     dict result_;
 
     if(quotes_.has_value()){
+        //LOG(trace) << "clear_market has_value" << std::endl;
         for(const auto &[k,v]: quotes_.value()){
+            //LOG(trace) << k <<" = " << v << std::endl;
             result_.setdefault(k, v);
         }
     }

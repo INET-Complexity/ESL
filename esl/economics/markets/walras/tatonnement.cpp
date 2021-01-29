@@ -715,17 +715,17 @@ namespace esl::economics::markets::tatonnement {
 
                 root_function.n      = active_.size();
                 root_function.f      = &multiroot_function_value_cb;
-                //root_function.df     = &multiroot_function_jacobian_cb;
-                //root_function.fdf    = &multiroot_function_value_and_gradient_cb;
                 root_function.params = static_cast<void *>(this);
 
-                std::vector<double> mults;
+                constexpr auto start_multiplier_ = 1.0;
+                std::vector<double> multipliers_;
                 double best_residual_ = 0;
+
                 gsl_vector *variables_ = gsl_vector_alloc(active_.size());
                 for(size_t i = 0; i < active_.size(); ++i) {
-                    gsl_vector_set(variables_, i, 1.0);
-                    mults.push_back(1.0);
-                    best_residual_ += 1.0;
+                    gsl_vector_set(variables_, i, start_multiplier_);
+                    multipliers_.push_back(start_multiplier_);
+                    best_residual_ += abs(start_multiplier_);
                 }
 
                 // Powell's Hybrid method, but with finite-difference approximation
@@ -733,38 +733,64 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multiroot_fsolver *solver_ = gsl_multiroot_fsolver_alloc(solver_t_, active_.size());
                 gsl_multiroot_fsolver_set (solver_, &root_function, variables_);
 
-
-
-
                 int status = GSL_CONTINUE;
+                LOG(trace) << "initial status = " << status << std::endl;
+
                 for(size_t iter = 0; iter < max_iterations && GSL_CONTINUE == status; ++iter){
-                    status = gsl_multiroot_fsolver_iterate  (solver_);
+
+                    LOG(trace) << "iter = " << iter << "/" << max_iterations<< std::endl;
+                    status = gsl_multiroot_fsolver_iterate (solver_);
+
                     if (GSL_SUCCESS != status){
+                        LOG(trace) << "status = " << status << std::endl;
                         break;
                     }
 
                     status = gsl_multiroot_test_residual (solver_->f, residual_tolerance);
 
-                    if(status != GSL_CONTINUE) {
+                    if(GSL_SUCCESS == status){
+                        double residual_ = 0.;
+                        for(size_t i = 0; i < active_.size(); ++i) {
+                            residual_ += abs(gsl_vector_get(solver_->f, i));
+                        }
+                        LOG(trace) << "residual_" << residual_ << std::endl;
+
+                        if(residual_ < best_residual_) {
+                            best_residual_ = residual_;
+                            for(size_t i = 0; i < active_.size(); ++i) {
+                                multipliers_[i] = gsl_vector_get(solver_->x, i);
+                                LOG(trace) << "udating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
+                            }
+                        }
+                        break;
+                    }
+
+                    if(GSL_CONTINUE != status) {
                         break;
                     }
 
                     double residual_ = 0.;
                     for(size_t i = 0; i < active_.size(); ++i) {
-                        residual_ += gsl_vector_get(solver_->f, i);
+                        residual_ += abs(gsl_vector_get(solver_->f, i));
                     }
-
+                    LOG(trace) << "residual_" << residual_ << std::endl;
                     if(residual_ < best_residual_) {
                         best_residual_ = residual_;
                         for(size_t i = 0; i < active_.size(); ++i) {
-                            mults[i] = gsl_vector_get(solver_->x, i);
+
+                            multipliers_[i] = gsl_vector_get(solver_->x, i);
+
+                            LOG(trace) << "udating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
                         }
                     }
                 }
 
+                LOG(trace) << "final status = " << status << std::endl;
+
                 std::map<esl::identity<esl::law::property>, double> result_;
                 for(size_t i = 0; i < active_.size(); ++i) {
-                    result_.emplace(mapping_index_[i], mults[i]);
+                    LOG(trace) << "outcome: " << multipliers_[i] << std::endl;
+                    result_.emplace(mapping_index_[i], multipliers_[i]);
                 }
 
                 gsl_multiroot_fsolver_free (solver_);
