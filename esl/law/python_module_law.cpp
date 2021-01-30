@@ -89,6 +89,12 @@ std::string python_represent_property_identity(const esl::identity<esl::law::pro
 }
 
 
+size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
+{
+    return std::hash<esl::identity<esl::law::property>>()(p);
+}
+
+
 namespace esl::law {
     BOOST_PYTHON_MODULE(_law)
     {
@@ -395,19 +401,29 @@ namespace esl::law {
                 const esl::law::jurisdiction &>());
         */
 
+
         class_<identity<property>>( "property_identity")
             .def("__init__", make_constructor(convert_digit_list2))
 
             .def("__str__", &python_represent_property_identity)
             .def("__repr__", &python_represent_property_identity)
+
+            .def(self == self)
+            .def(self != self)
+            .def(self < self)
+            .def(self <= self)
+            .def(self > self)
+            .def(self >= self)
+
+            .def("__hash__", &python_property_identity_hash)
             ;
 
         class_< property
               //, bases<entity<property>>
-              >( "property"
-               , init<identity<property>>()
-               )
-            .def("name", &property::name);
+              >( "property", init<identity<property>>())
+            .def("name", &property::name)
+            .add_property("identifier", &property::identifier)
+            ;
     }
 }
 

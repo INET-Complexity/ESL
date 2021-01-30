@@ -64,8 +64,6 @@ print(f"The initial quote is {initial_quote}") # prints 1@USD(1.23)
 model = excess_demand_model({p: initial_quote})
 
 
-
-
 # In the absence of a fully defined agent based model, we need to cut some corners here to demonstrate the market
 # mechanism:
 
@@ -108,8 +106,16 @@ current_time = 0
 # The order is sent and received immediately
 message = my_order(trader_agent, market_agent, current_time, current_time)
 
-# give the message to the model. Normally, we'd use a market agent (price_setter) to do this
+# give the message to the model. Normally, we'd use a market agent (esl.economics.markets.walras.price_setter) to do this
 model.excess_demand_functions = [message]
 
 # compute solution and print the result
-print(model.compute_clearing_quotes())
+multipliers = model.compute_clearing_quotes()
+
+# multipliers
+# print(multipliers)
+
+# Since the result is a floating number multiplier to the initial price, we need to decide carefully
+# how to round the result back to dollars and cents
+new_price = price(round(float(initial_price) * multipliers[p.identifier] * USD.denominator), USD)
+print(f"New price: {new_price}")

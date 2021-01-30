@@ -62,6 +62,11 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( python_identity_representation_overload
                                       , 0
                                       , 1);
 
+size_t python_identity_hash(const esl::simulation::python_module::python_identity &p)
+{
+    return std::hash<esl::simulation::python_module::python_identity>()(p);
+}
+
 namespace esl::simulation {
     ///
     /// \brief  Export time_point constructor to Python.
@@ -107,6 +112,7 @@ namespace esl::simulation {
             .def(self != self)
             .def(self <= self)
             .def(self >= self)
+            .def("__hash__", &python_identity_hash)
             ;
 
        class_<model>("model"

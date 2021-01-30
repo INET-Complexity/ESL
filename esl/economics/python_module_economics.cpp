@@ -64,6 +64,10 @@ std::string python_currency_code(const esl::economics::iso_4217 &c)
     return (std::string() + c.code[0]) + c.code[1];
 }
 
+double python_price_to_floating_point(const price &p)
+{
+    return double(p);
+}
 
 BOOST_PYTHON_MODULE(_economics)
 {
@@ -265,6 +269,7 @@ BOOST_PYTHON_MODULE(_economics)
         .def(self >= self)
         .def("__repr__", &price::representation)
         .def("__str__", &price::representation)
+        .def("__float__", &python_price_to_floating_point)
         ;
 }
 

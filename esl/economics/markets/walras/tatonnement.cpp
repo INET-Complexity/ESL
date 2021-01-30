@@ -734,15 +734,15 @@ namespace esl::economics::markets::tatonnement {
                 gsl_multiroot_fsolver_set (solver_, &root_function, variables_);
 
                 int status = GSL_CONTINUE;
-                LOG(trace) << "initial status = " << status << std::endl;
+                //LOG(trace) << "initial status = " << status << std::endl;
 
                 for(size_t iter = 0; iter < max_iterations && GSL_CONTINUE == status; ++iter){
 
-                    LOG(trace) << "iter = " << iter << "/" << max_iterations<< std::endl;
+                    //LOG(trace) << "iter = " << iter << "/" << max_iterations<< std::endl;
                     status = gsl_multiroot_fsolver_iterate (solver_);
 
                     if (GSL_SUCCESS != status){
-                        LOG(trace) << "status = " << status << std::endl;
+                        //LOG(trace) << "status = " << status << std::endl;
                         break;
                     }
 
@@ -753,13 +753,13 @@ namespace esl::economics::markets::tatonnement {
                         for(size_t i = 0; i < active_.size(); ++i) {
                             residual_ += abs(gsl_vector_get(solver_->f, i));
                         }
-                        LOG(trace) << "residual_" << residual_ << std::endl;
+                        //LOG(trace) << "residual_" << residual_ << std::endl;
 
                         if(residual_ < best_residual_) {
                             best_residual_ = residual_;
                             for(size_t i = 0; i < active_.size(); ++i) {
                                 multipliers_[i] = gsl_vector_get(solver_->x, i);
-                                LOG(trace) << "udating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
+                                //LOG(trace) << "updating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
                             }
                         }
                         break;
@@ -773,23 +773,23 @@ namespace esl::economics::markets::tatonnement {
                     for(size_t i = 0; i < active_.size(); ++i) {
                         residual_ += abs(gsl_vector_get(solver_->f, i));
                     }
-                    LOG(trace) << "residual_" << residual_ << std::endl;
+                    //LOG(trace) << "residual_" << residual_ << std::endl;
                     if(residual_ < best_residual_) {
                         best_residual_ = residual_;
                         for(size_t i = 0; i < active_.size(); ++i) {
 
                             multipliers_[i] = gsl_vector_get(solver_->x, i);
 
-                            LOG(trace) << "udating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
+                            //LOG(trace) << "udating multipliers_["  << i << "] " << multipliers_[i] << std::endl;
                         }
                     }
                 }
 
-                LOG(trace) << "final status = " << status << std::endl;
+                //LOG(trace) << "final status = " << status << std::endl;
 
                 std::map<esl::identity<esl::law::property>, double> result_;
                 for(size_t i = 0; i < active_.size(); ++i) {
-                    LOG(trace) << "outcome: " << multipliers_[i] << std::endl;
+                    //LOG(trace) << "outcome: " << multipliers_[i] << std::endl;
                     result_.emplace(mapping_index_[i], multipliers_[i]);
                 }
 

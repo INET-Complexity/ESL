@@ -199,17 +199,13 @@ namespace esl::economics::markets::walras {
                     if constexpr(std::is_same_v<type_, price>) {
                         auto value_ = int64_t(quote.value
                                               * result_.find(p->identifier)->second);
-                        if(0 == value_){//} && POSITIVE){
+                        if(0 == value_){
                             value_ = 1;
                         }
-                        std::get<price>(traded_properties[p].type).value =value_
-                            ;
+                        std::get<price>(traded_properties[p].type).value = value_;
 
-                    } else if constexpr(std::is_same_v<type_, exchange_rate>) {
-                        quote = exchange_rate(
-                            uint64_t(quote.numerator()
-                                     * result_.find(p->identifier)->second),
-                            quote.denominator());
+                    } else if constexpr(std::is_same_v<type_, exchange_rate>){
+                        quote = exchange_rate( uint64_t(quote.numerator() * result_.find(p->identifier)->second), quote.denominator());
                         traded_properties[p].type = quote;
                     } else {
                         static_assert(always_false<type_>::value,
