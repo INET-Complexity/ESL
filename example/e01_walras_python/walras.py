@@ -24,6 +24,8 @@
 #
 import esl
 
+print(esl.version())
+
 # The market trades one (not further defined) propert for US Dollars
 from esl.law import property, property_identity
 
@@ -37,10 +39,13 @@ from esl.economics.markets import quote
 from esl.economics.markets.walras import excess_demand_model, differentiable_order_message
 
 
-# create an identifier for the property being traded in the market, so that we can tell one or more properties apart
-i = property_identity([1])
+# create an identifier for the economic property being traded in the market,
+# so that we can tell two or more properties apart
+i  = property_identity([1])
+i2 = property_identity([2])
 # create an abstract property with this identifier. Its details do not matter
-p = property(i)
+p  = property(i)
+p2 = property(i2)
 
 # note that by default, we use fixed precisions for prices! This is $1.23:
 initial_price = price(123, USD)
@@ -61,7 +66,7 @@ print(f"The initial quote is {initial_quote}") # prints 1@USD(1.23)
 
 # we now create the Walrasian market model, and give it a dictionary:
 # the property identifiers are keys,  and and initial quotes are the values
-model = excess_demand_model({p: initial_quote})
+model = excess_demand_model({p: initial_quote, p2: initial_quote})
 
 
 # In the absence of a fully defined agent based model, we need to cut some corners here to demonstrate the market
@@ -117,5 +122,7 @@ multipliers = model.compute_clearing_quotes()
 
 # Since the result is a floating number multiplier to the initial price, we need to decide carefully
 # how to round the result back to dollars and cents
-new_price = price(round(float(initial_price) * multipliers[p.identifier] * USD.denominator), USD)
-print(f"New price: {new_price}")
+for k, v in multipliers.items():
+
+    new_price = price(round(float(initial_price) * v * USD.denominator), USD)
+    print(f"New price for property {k}: {new_price}")
