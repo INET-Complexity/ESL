@@ -31,7 +31,7 @@
 
 namespace esl::simulation {
 
-    agent_collection::agent_collection(computation::environment &environment_)
+    agent_collection::agent_collection(std::reference_wrapper<computation::environment> environment_)
     : environment_(environment_)
     {
 
@@ -41,14 +41,14 @@ namespace esl::simulation {
     {
         global_agents_.insert(a->identifier);
         local_agents_.insert({a->identifier, a});
-        environment_.activate_agent(a->identifier);
+        environment_.get().activate_agent(a->identifier);
     }
 
     void agent_collection::deactivate(std::shared_ptr<agent> a)
     {
         global_agents_.erase(a->identifier);
         local_agents_.erase(a->identifier);
-        environment_.deactivate_agent(a->identifier);
+        environment_.get().deactivate_agent(a->identifier);
     }
 
     std::shared_ptr<agent>
