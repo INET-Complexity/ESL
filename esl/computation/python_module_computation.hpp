@@ -25,5 +25,84 @@
 #ifndef ESL_COMPUTATION_PYTHON_MODULE_HPP
 #define ESL_COMPUTATION_PYTHON_MODULE_HPP
 
+#ifdef WITH_PYTHON
+
+#include <esl/computation/environment.hpp>
+
+namespace esl::computation {
+
+    ///
+    /// \brief  This class enables access to the computation::environment
+    ///         internal functions for Python derived classes.
+    ///
+    /// \details    Python does not have access via inheritance of protected
+    ///             members, so we need to make everything public
+    ///
+    class python_environment
+    : public esl::computation::environment
+    {
+    public:
+        python_environment()
+        : esl::computation::environment()
+        {
+
+        }
+
+        virtual ~python_environment() = default;
+
+        void step(simulation::model &model) override
+        {
+            environment::step(model);
+        }
+
+        void run(simulation::model &simulation) override
+        {
+            environment::run(simulation);
+        }
+
+        size_t activate() override
+        {
+            return environment::activate();
+        }
+
+        size_t deactivate() override
+        {
+            return environment::deactivate();
+        }
+
+        void before_step() override
+        {
+            environment::before_step();
+        }
+
+        void after_step(simulation::model &simulation) override
+        {
+            environment::after_step(simulation);
+        }
+
+        void after_run(simulation::model &simulation) override
+        {
+            environment::after_run(simulation);
+        }
+
+        void activate_agent(const identity<agent> &a) override
+        {
+            environment::activate_agent(a);
+        }
+
+        void deactivate_agent(const identity<agent> &a) override
+        {
+            environment::deactivate_agent(a);
+        }
+
+        size_t send_messages(simulation::model &simulation) override
+        {
+            return environment::send_messages(simulation);
+        }
+    };
+
+
+}//namespace esl::computation
+#endif
 
 #endif  // ESL_COMPUTATION_PYTHON_MODULE_HPP

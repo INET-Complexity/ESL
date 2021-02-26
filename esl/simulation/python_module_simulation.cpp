@@ -34,6 +34,8 @@
 #include <esl/simulation/model.hpp>
 #include <esl/simulation/time.hpp>
 #include <esl/simulation/world.hpp>
+using esl::computation::environment;
+#include <esl/agent.hpp>
 
 #include <vector>
 using std::vector;
@@ -66,6 +68,52 @@ size_t python_identity_hash(const esl::simulation::python_module::python_identit
 {
     return std::hash<esl::simulation::python_module::python_identity>()(p);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+///
+///
+///
+/// \param agent_constructor
+/// \return
+boost::shared_ptr<esl::agent> python_agent_collection_create_identifier(
+    esl::simulation::agent_collection &a
+    , boost::python::object parent)
+{
+    (void)a;
+    (void)parent;
+    boost::shared_ptr<esl::agent> result_;
+    return result_;
+}
+
+///
+///
+///
+/// \param agent_constructor
+/// \return
+boost::shared_ptr<esl::agent> python_agent_collection_create(esl::simulation::agent_collection &
+                                                             , boost::python::object )
+{
+    boost::shared_ptr<esl::agent> result_;
+    //boost::python::call<int>(agent_constructor);
+    return result_;
+}
+
+///
+/// \param agent
+void python_agent_collection_activate(boost::shared_ptr<esl::agent> )
+{
+
+}
+
+///
+/// \param agent
+void python_agent_collection_deactivate(boost::shared_ptr<esl::agent> )
+{
+
+}
+
 
 namespace esl::simulation {
     ///
@@ -115,13 +163,26 @@ namespace esl::simulation {
             .def("__hash__", &python_identity_hash)
             ;
 
+
+        class_<agent_collection>("agent_collection", init<std::reference_wrapper<computation::environment>>())
+            .def("create_identifier", python_agent_collection_create_identifier)
+            .def("create", python_agent_collection_create)
+            .def("activate", python_agent_collection_activate)
+            .def("deactivate", python_agent_collection_deactivate)
+            ;
+
+
        class_<model>("model"
-                    ,init<esl::computation::environment &
-                    , parameter::parametrization>()
-                    )
+                    ,init<environment &, parameter::parametrization>())
            .def_readonly("start", &model::start)
            .def_readwrite("end", &model::end)
-           .def_readwrite("time", &model::time);
+           .def_readwrite("time", &model::time)
+           .def_readonly("sample", &model::sample)
+           .def_readonly("world", &model::world)
+           .def_readwrite("agents", &model::agents)
+           ;
+
+       //class_<time_point>("time_point", init<std::uint64_t>());
 
        def("time_point", python_time_point);
 
@@ -138,15 +199,14 @@ namespace esl::simulation {
            .def("__repr__", &time_interval::representation)
            .def("__str__", &time_interval::representation);
 
-        /*
-       class_<world, bases<world_entity>>("world", init<>())
+
+       class_<world, boost::noncopyable>("world", no_init)
            .def_readonly("identifier", &world::entity<world>::identifier)
            //.def("create", &world::entity<world>::identifier)
            .def("__repr__", &world::entity<world>::representation)
            ;
+        implicitly_convertible<world, identity<world>>();
 
-         implicitly_convertible<world, identity<world>>();
-         */
     }
 }
 

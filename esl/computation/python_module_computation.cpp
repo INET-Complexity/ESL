@@ -43,20 +43,25 @@ namespace esl::computation {
 
     BOOST_PYTHON_MODULE(_computation)
     {
-
         // export block_pool memory block
         class_<block_pool::block<object>>("block")
             .def_readwrite("data", &block_pool::block<object>::data)
             .def_readwrite("index", &block_pool::block<object>::index)
             ;
 
-
         // computational environment base class with default single thread
-        class_<environment>("environment")
-            .def("step", &environment::step)
-            .def("run", &environment::run)
+        class_<python_environment>("environment")
+            .def("step", &python_environment::step)
+            .def("run", &python_environment::run)
+            .def("activate", &python_environment::activate)
+            .def("deactivate", &python_environment::deactivate)
+            .def("before_step", &python_environment::before_step)
+            .def("after_step", &python_environment::after_step)
+            .def("after_run", &python_environment::after_run)
+            .def("activate_agent", &python_environment::activate_agent)
+            .def("deactivate_agent", &python_environment::deactivate_agent)
+            .def("send_messages", &python_environment::send_messages)
             ;
-
 
         // timing information
         class_<agent_timing>("agent_timing")
@@ -65,6 +70,7 @@ namespace esl::computation {
 
 
     }
+
 
 }
 
