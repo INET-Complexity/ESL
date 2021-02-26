@@ -60,7 +60,7 @@ print(initial_price)
 #   - 'type': what the prices are: are they monetary values, raw exchange rates like on a barter market, or interest rates or something else?
 #   - 'lot size': the quantity for which the prices are defined (this allows for prices with the correct precision, preventing rounding errors)
 # the lot size is 1 by default, so this quote means "buy 1 property in exchange for $1.23"
-initial_quote = quote(initial_price)
+initial_quote = quote(initial_price, 1)
 
 print(f"The initial quote is {initial_quote}") # prints 1@USD(1.23)
 
@@ -101,7 +101,7 @@ class my_order(differentiable_order_message):
         """
         print(f"The Walrasian price setter suggests the following prices: {quotes}")
         ed = {k: ((i+3.) - (float(v[0]) * v[1])) for i,  (k, v) in enumerate(quotes.items())}
-        print(f"Agent {self.sender}'s demand at these prices is: {ed}")
+        print(f"Agent {self.sender}'s excess demand at these prices is: {ed}")
         return ed
 
 
