@@ -34,112 +34,114 @@
 
 namespace esl {
     class agent;
+}
 
-    namespace simulation {
-        class model;
-        class agent_collection;
-    }  // namespace simulation
 
-    namespace computation {
+namespace esl::simulation {
+    class model;
+    class agent_collection;
+}
+
+
+namespace esl::computation {
+    ///
+    /// \brief  The basic computational environment computes models in a
+    ///         single process.
+    ///
+    class environment
+    {
+    protected:
+        // std::unordered_map<identity<agent>, timer<mean>>
+        // agent_action_time_;
+
         ///
-        /// \brief  The basic computational environment computes models in a
-        ///         single process.
+        /// \brief  Keeps track of agents that were newly created, so that
+        ///         all accounting can be done after the current timestep.
         ///
-        class environment
-        {
-        protected:
-            // std::unordered_map<identity<agent>, timer<mean>>
-            // agent_action_time_;
+        ///
+        std::vector<identity<agent>> activated_;
 
-            ///
-            /// \brief  Keeps track of agents that were newly created, so that
-            ///         all accounting can be done after the current timestep.
-            ///
-            ///
-            std::vector<identity<agent>> activated_;
+        ///
+        /// \brief  keeps track of agents that were recently deactivated, so
+        ///         that accounting and storing outputs can be handled after
+        ///         the current timestep has completed.
+        ///
+        std::vector<identity<agent>> deactivated_;
 
-            ///
-            /// \brief  keeps track of agents that were recently deactivated, so
-            ///         that accounting and storing outputs can be handled after
-            ///         the current timestep has completed.
-            ///
-            std::vector<identity<agent>> deactivated_;
+    public:
+        ///
+        ///
+        ///
+        environment();
 
-        public:
-            ///
-            ///
-            ///
-            environment();
+        ///
+        ///
+        ///
+        virtual ~environment() = default;
 
-            ///
-            ///
-            ///
-            virtual ~environment() = default;
+        ///
+        /// \brief  Progresses the model one timestep
+        ///
+        /// \details    One time step of the model (depending on its design)
+        ///             comprise one or more rounds of agent interactions.
+        ///
+        ///
+        virtual void step(simulation::model &);
 
-            ///
-            /// \brief  Progresses the model one timestep
-            ///
-            /// \details    One time step of the model (depending on its design)
-            ///             comprise one or more rounds of agent interactions.
-            ///
-            ///
-            virtual void step(simulation::model &);
-
-            ///
-            /// \brief  Simulates the model until completion, meaning the
-            ///         simulation time reaches the specified end or an exit
-            ///         condition is met.
-            ///
-            virtual void run(simulation::model &simulation);
+        ///
+        /// \brief  Simulates the model until completion, meaning the
+        ///         simulation time reaches the specified end or an exit
+        ///         condition is met.
+        ///
+        virtual void run(simulation::model &simulation);
 
 
-        protected:
-            // allows the model to call send_messages
-            friend class esl::simulation::model;
+    protected:
+        // allows the model to call send_messages
+        friend class esl::simulation::model;
 
-            // allows the agent collection to activate/deactive agents
-            friend class esl::simulation::agent_collection;
+        // allows the agent collection to activate/deactive agents
+        friend class esl::simulation::agent_collection;
 
-            ///
-            /// \brief  Activates all queued agents.
-            ///
-            /// \return number of activated agents
-            virtual size_t activate();
+        ///
+        /// \brief  Activates all queued agents.
+        ///
+        /// \return number of activated agents
+        virtual size_t activate();
 
-            ///
-            /// \return
-            virtual size_t deactivate();
+        ///
+        /// \return
+        virtual size_t deactivate();
 
-            ///
-            /// \brief  tasks that are to be executed before simulation::step
-            ///
-            virtual void before_step();
+        ///
+        /// \brief  tasks that are to be executed before simulation::step
+        ///
+        virtual void before_step();
 
-            ///
-            /// \brief  tasks that are to be executed after each
-            ///         simulation::step
-            ///
-            virtual void after_step(simulation::model &simulation);
+        ///
+        /// \brief  tasks that are to be executed after each
+        ///         simulation::step
+        ///
+        virtual void after_step(simulation::model &simulation);
 
 
-            virtual void after_run(simulation::model &simulation);
+        virtual void after_run(simulation::model &simulation);
 
-            ///
-            /// \param a
-            virtual void activate_agent(const identity<agent> &a);
+        ///
+        /// \param a
+        virtual void activate_agent(const identity<agent> &a);
 
-            ///
-            ///
-            /// \param a
-            virtual void deactivate_agent(const identity<agent> &a);
+        ///
+        ///
+        /// \param a
+        virtual void deactivate_agent(const identity<agent> &a);
 
-            ///
-            /// \param simulation
-            /// \return
-            virtual size_t send_messages(simulation::model &simulation);
-        };
-    }  // namespace computation
-}  // namespace esl
+        ///
+        /// \param simulation
+        /// \return
+        virtual size_t send_messages(simulation::model &simulation);
+    };
+}  // namespace esl::computation
 
 
 #endif  // ESL_COMPUTATION_ENVIRONMENT_HPP
