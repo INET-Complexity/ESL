@@ -54,7 +54,16 @@ namespace esl {
     template<typename derived_type_>
     struct identifiable_as
     {
-        virtual ~identifiable_as(){};
+        identifiable_as() = default;
+
+        virtual ~identifiable_as()
+        {
+
+        };
+
+
+        identifiable_as<derived_type_> &operator = (const identifiable_as<derived_type_> &) = default;
+
 
         ///
         /// \brief  Uses dynamic type information to cast to identifiers of a
