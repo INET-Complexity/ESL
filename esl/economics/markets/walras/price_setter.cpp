@@ -375,9 +375,6 @@ namespace esl::economics::markets::walras {
         for(const auto &[participant, order_]: orders) {
             auto demand_ = order_->excess_demand(solution_);
             for(const auto &[property_, excess_]: demand_) {
-                if(excess_ >= -0.00001 && excess_ <= 0.00001) {
-                    continue;
-                }
 
                 auto quote_ = solution_.find(property_)->second;
 
@@ -446,12 +443,11 @@ namespace esl::economics::markets::walras {
                         uint64_t cancel_ = std::min(uint64_t(v), short_);
                         //LOG(trace) << "cancel the short position of " << p <<" by " << cancel_ << std::endl;
 
-
                         auto short_contract_ = std::make_shared<securities_lending_contract>(identifier, p, property_->identifier, quantity(1));
                         auto r = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         r->second.insert(short_contract_, quantity(cancel_));
 
-                        // ???
+                        //
                         // auto s = send_.emplace(p, accounting::inventory_filter<law::property>()).first;
                         //
                         auto s = receive_.emplace(p, accounting::inventory_filter<law::property>()).first;

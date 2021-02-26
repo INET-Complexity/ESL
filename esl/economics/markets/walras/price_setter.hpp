@@ -147,9 +147,4 @@ namespace boost {
 }//namespace boost
 #endif//WITH_MPI
 
-
-
-
-
-
 #endif//ESL_MARKET_CLEARING_PRICES_HPP
