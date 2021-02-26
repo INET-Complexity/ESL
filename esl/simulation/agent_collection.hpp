@@ -47,7 +47,7 @@ namespace esl::simulation {
     class agent_collection
     {
     protected:
-        computation::environment &environment_;
+        std::reference_wrapper<computation::environment> environment_;
 
         ///
         /// \brief  The identities of all agents in the simulation.
@@ -56,12 +56,11 @@ namespace esl::simulation {
         ///         of a trie datastructure.
         ///
     public:
-
         std::unordered_set<identity<agent>> global_agents_;
 
         std::unordered_map<identity<agent>, std::shared_ptr<agent>> local_agents_;
 
-        explicit agent_collection(computation::environment &environment_);
+        explicit agent_collection(std::reference_wrapper<computation::environment> environment_);
 
         template<typename agent_derived_t_, typename entity_type_>
         esl::identity<agent_derived_t_> create_identifier(entity_type_ &parent)
@@ -84,7 +83,6 @@ namespace esl::simulation {
             activate(result_);
             return result_;
         }
-
 
         void activate(std::shared_ptr<agent> a);
 
