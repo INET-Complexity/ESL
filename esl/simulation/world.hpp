@@ -41,6 +41,8 @@ namespace esl::simulation {
         ///
         world();
 
+        world &operator = (const world &) = delete;
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
