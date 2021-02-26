@@ -32,94 +32,149 @@
 #include <future>
 
 
-
 namespace esl::computation {
+
+    ///
+    /// \brief  A datastructure that assigns tasks to a given number of threads.
+    ///
     class thread_pool
     {
     private:
-        using Proc = std::function<void(void)>;
-        using Queue = blocking_queue<Proc>;
-        using Queues = std::vector<Queue>;
-        Queues m_queues;
+        ///
+        /// \brief
+        ///
+        std::vector<blocking_queue<std::function<void(void)>>> queues_;
 
-        using Threads = std::vector<std::thread>;
-        Threads m_threads;
+        ///
+        /// \brief
+        ///
+        std::vector<std::thread> threads_;
 
-        const unsigned int threads_;
-        std::atomic_uint m_index = 0;
-
-        inline static const unsigned int K = 2;
-
+        ///
+        ///
+        ///
+        std::atomic<unsigned int> index_ = 0;
 
     public:
+        ///
+        /// \brief  The workload per thread
+        ///
+        constexpr static double load_factor = 2.;
+
+        const unsigned int threads;
+
         explicit thread_pool(unsigned int threads = std::thread::hardware_concurrency())
-                : m_queues(threads), threads_(threads) {
+        : queues_(threads)
+        , threads(threads)
+        {
             if (0 >= threads) {
-                throw std::invalid_argument("Invalid thread count!");
+                threads = std::thread::hardware_concurrency();
+                // hardware_concurrency is not guaranteed to work well on any OS
+                if (0 >= threads) {
+                    threads = 1;
+                }
             }
 
             auto worker_ = [this](auto i) {
                 while (true) {
-                    Proc f;
-                    for (unsigned int n = 0; n < threads_ * K; ++n)
-                        if (m_queues[(i + n) % threads_].try_pop(f))
+                    std::function<void(void)> function_;
+                    for(unsigned int n = 0; n < (unsigned int)(this->threads * load_factor); ++n) {
+                        if(queues_[(i + n) % this->threads].try_pop(function_)) {
                             break;
-                    if (!f && !m_queues[i].pop(f))
+                        }
+                    }
+
+                    if (!function_ && !queues_[i].pop(function_)) {
                         break;
-                    f();
+                    }
+
+                    function_();
                 }
             };
 
             for (unsigned int i = 0; i < threads; ++i) {
-                m_threads.emplace_back(worker_, i);
+                threads_.emplace_back(worker_, i);
             }
         }
 
-        ~thread_pool() {
-            for (auto &queue : m_queues) {
+        ///
+        /// \brief  Close all queues and wait for existing jobs to terminate.
+        ///
+        ~thread_pool()
+        {
+            for(auto &queue: queues_) {
                 queue.close();
             }
-            for (auto &thread : m_threads) {
+            for(auto &thread: threads_) {
                 thread.join();
             }
         }
 
-        template<typename F, typename... Args>
-        void enqueue_work(F &&f, Args &&... args) {
-            auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]() {
+        ///
+        /// \brief  Put a function in the queue to be executed later. Do nothing
+        ///         with the function's return value
+        ///
+        /// \tparam function_t_
+        /// \tparam arguments_
+        /// \param f
+        /// \param a
+        template<typename function_t_, typename... arguments_>
+        void enqueue_work(function_t_ &&f, arguments_ &&... a)
+        {
+            auto work_ = [ p = std::forward<function_t_>(f)
+                        , t = std::make_tuple(std::forward<arguments_>(a)...)]
+            ()
+            {
                 std::apply(p, t);
             };
 
-            auto i = m_index++;
+            auto i = index_++;
 
-            for (unsigned int n = 0; n < threads_ * K; ++n) {
-                if (m_queues[(i + n) % threads_].try_push(work)) {
+            for(unsigned int n = 0; n < (unsigned int)(threads * load_factor); ++n){
+                if (queues_[(i + n) % threads].try_push(work_)) {
                     return;
                 }
             }
 
-            m_queues[i % threads_].push(std::move(work));
+            queues_[i % threads].push(std::move(work_));
         }
 
-        template<typename F, typename... Args>
-        [[nodiscard]] auto enqueue_task(F &&f, Args &&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-            using task_return_type = std::invoke_result_t<F, Args...>;
-            using task_type = std::packaged_task<task_return_type()>;
+        ///
+        /// \brief  Put a task in the queue and return a future<> which
+        ///         contains the asynchronous task result
+        ///
+        /// \tparam function_t_
+        /// \tparam arguments_
+        /// \param f            task function
+        /// \param a            task arguments
+        /// \return
+        template<typename function_t_, typename... arguments_>
+        [[nodiscard]] auto enqueue_task(function_t_ &&f, arguments_ &&... a)
+            -> std::future<std::invoke_result_t<function_t_, arguments_...>>
+        {
+            using return_type_ = std::invoke_result_t<function_t_, arguments_...>;
+            auto task_ = std::make_shared<std::packaged_task<return_type_()>>
+                ( std::bind(std::forward<function_t_>(f)
+                , std::forward<arguments_>(a)...)
+                );
 
-            auto task = std::make_shared<task_type>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-            auto work = [task]() { (*task)(); };
-            auto result = task->get_future();
-            auto i = m_index++;
+            auto work = [task_]()
+            {
+                (*task_)();
+            };
 
-            for (auto n = 0; n < threads_ * K; ++n) {
-                if (m_queues[(i + n) % threads_].try_push(work)) {
-                    return result;
+            auto result_ = task_->get_future();
+            unsigned int i = index_++;
+
+            for(auto n = 0; n < (unsigned int)(threads * load_factor); ++n){
+                if(queues_[(i + n) % threads].try_push(work)){
+                    return result_;
                 }
             }
 
-            m_queues[i % threads_].push(std::move(work));
+            queues_[i % threads].push(std::move(work));
 
-            return result;
+            return result_;
         }
     };
 
