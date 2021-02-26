@@ -28,7 +28,9 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
 
+#include <vector>
 
+#include <esl/mathematics/interval.hpp>
 
 namespace esl::simulation::parameter {
     struct parameter_base
@@ -49,7 +51,8 @@ namespace esl::simulation::parameter {
     {
         parameter_t_ choice;
 
-        constexpr constant(parameter_t_ choice) : choice(choice)
+        constexpr constant(parameter_t_ choice)
+        : choice(choice)
         {
 
         }
@@ -67,6 +70,49 @@ namespace esl::simulation::parameter {
             archive &BOOST_SERIALIZATION_NVP(choice);
         }
     };
+
+
+    template<typename parameter_t_>
+    struct categorical
+    : public parameter_base
+    {
+        std::vector<parameter_t_> categories;
+
+        constexpr categorical(const std::vector<parameter_t_> &categories)
+        : categories(categories)
+        {
+
+        }
+
+        constexpr parameter_t_ operator [] (size_t index) const
+        {
+            return categories[index];
+        }
+
+
+        template<class archive_t>
+        void serialize(archive_t &archive, const unsigned int version)
+        {
+            (void)version;
+            archive &BOOST_SERIALIZATION_BASE_OBJECT_NVP(parameter_base);
+            archive &BOOST_SERIALIZATION_NVP(categories);
+        }
+    };
+
+
+    template<typename parameter_t_>
+    struct interval
+    : public parameter_base
+    , public mathematics::interval<parameter_t_, true, true>
+    {
+        interval(parameter_t_ lower, parameter_t_ upper)
+        : parameter_base()
+        , mathematics::interval<parameter_t_, true, true>(lower, upper)
+        {
+
+        }
+    };
+
 }
 
 
