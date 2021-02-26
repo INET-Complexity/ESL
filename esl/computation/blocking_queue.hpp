@@ -32,19 +32,17 @@
 
 
 namespace esl::computation {
-
-
     template<typename element_t_>
     class blocking_queue
     {
     private:
         ///
-        ///
+        /// \brief  Underlying, non-blocking queue datastructure
         ///
         std::queue<element_t_> queue_;
 
         ///
-        ///
+        /// \brief  Mutual exclusion
         ///
         mutable std::mutex mutex_;
 
@@ -54,17 +52,28 @@ namespace esl::computation {
         std::condition_variable variable_;
 
         ///
-        ///
-        ///
+        /// \brief  Flag used to signal that the data structure is about to be
+        ///         closed and can no longer be used.
+        /// \details    Booleans are implemented as atomic being already, but
+        ///             we would rather be explicit about its requirements
+        ///             should the flag be changed to some other status type.
         std::atomic<bool> closed_;
 
     public:
-        blocking_queue()
+        ///
+        /// \brief  The queue is open by default
+        ///
+        constexpr blocking_queue()
         : closed_(false)
         {
 
         }
 
+        ///
+        /// \brief  Puts a copy of the item in the queue in a thread-safe manner.
+        ///
+        /// \param item The item of type 'element_t_' to enqueue
+        /// \return     void
         typename std::enable_if<std::is_copy_constructible<element_t_>::value, void>::type
         push(const element_t_ &item)
         {
@@ -75,24 +84,33 @@ namespace esl::computation {
             variable_.notify_one();
         }
 
-        
+        ///
+        /// \brief  Puts the item in the queue in a thread-safe manner.
+        ///
+        /// \param item The item of type 'element_t_' to enqueue
+        /// \return     void
         typename std::enable_if<std::is_move_constructible<element_t_>::value, void>::type
         push(element_t_ &&item)
         {
             {
-                std::unique_lock lock(mutex_);
+                std::unique_lock lock_(mutex_);
                 queue_.emplace(std::forward<element_t_>(item));
             }
             variable_.notify_one();
         }
 
-        
+        ///
+        /// \brief  Tries to put a copy of an item at the end of the queue, but
+        ///         fails if the queue is locked.
+        ///
+        /// \param item
+        /// \return bool    'true' if item was put into the queue, false otherwise
         typename std::enable_if<std::is_copy_constructible<element_t_>::value, bool>::type
         try_push(const element_t_ &item)
         {
             {
-                std::unique_lock lock(mutex_, std::try_to_lock);
-                if(!lock) {
+                std::unique_lock lock_(mutex_, std::try_to_lock);
+                if(!lock_) {
                     return false;
                 }
                 queue_.push(item);
@@ -101,14 +119,19 @@ namespace esl::computation {
             return true;
         }
 
-        
+        ///
+        /// \brief  Tries to put an item at the end of the queue, but
+        ///         fails if the queue is locked.
+        ///
+        /// \param item
+        /// \return bool    'true' if item was put into the queue, false otherwise
         typename std::enable_if<std::is_move_constructible<element_t_>::value,
                                 bool>::type
         try_push(element_t_ &&item)
         {
             {
-                std::unique_lock lock(mutex_, std::try_to_lock);
-                if(!lock) {
+                std::unique_lock lock_(mutex_, std::try_to_lock);
+                if(!lock_) {
                     return false;
                 }
                 queue_.emplace(std::forward<element_t_>(item));
@@ -117,16 +140,21 @@ namespace esl::computation {
             return true;
         }
 
-
+        ///
+        ///
+        ///
+        /// \tparam specialization_
+        /// \param item
+        /// \return
         template<typename specialization_ = element_t_>
         typename std::enable_if<std::is_copy_assignable<specialization_>::value
                                     && !std::is_move_assignable<specialization_>::value,
                                 bool>::type
         pop(element_t_ &item)
         {
-            std::unique_lock lock(mutex_);
+            std::unique_lock lock_(mutex_);
             while(queue_.empty() && !closed_) {
-                variable_.wait(lock);
+                variable_.wait(lock_);
             }
             if(queue_.empty()) {
                 return false;
@@ -139,9 +167,9 @@ namespace esl::computation {
         typename std::enable_if<std::is_move_assignable<element_t_>::value, bool>::type
         pop(element_t_ &item)
         {
-            std::unique_lock lock(mutex_);
+            std::unique_lock lock_(mutex_);
             while(queue_.empty() && !closed_) {
-                variable_.wait(lock);
+                variable_.wait(lock_);
             }
             if(queue_.empty()) {
                 return false;
@@ -151,7 +179,16 @@ namespace esl::computation {
             return true;
         }
 
-
+        ///
+        /// \brief  Tries to remove an element at the head of the queue, copying
+        ///         it into the variable reference 'item'. If the queue is empty
+        ///         or the queue is already locked, it fails.
+        ///
+        /// \tparam specialization_ Enabled for element_t_ with copy-assignment
+        /// \param item Variable to assign a copy of the head-of-the-queue
+        ///             element into.
+        /// \return bool    'true' if successfully removed and copied an element
+        ///                 'false' if the queue is empty or locked
         template<typename specialization_ = element_t_>
         typename std::enable_if<std::is_copy_assignable<specialization_>::value
                                     && !std::is_move_assignable<specialization_>::value,
@@ -167,7 +204,15 @@ namespace esl::computation {
             return true;
         }
 
-
+        ///
+        /// \brief  Tries to remove an element at the head of the queue, copying
+        ///         it into the variable reference 'item'. If the queue is empty
+        ///         or the queue is already locked, it fails.
+        ///
+        /// \tparam specialization_ Enabled for element_t_ with move semantics
+        /// \param item
+        /// \return bool    'true' if successfully removed and copied an element
+        ///                 'false' if the queue is empty or locked
         template<typename specialization_ = element_t_>
         typename std::enable_if<std::is_move_assignable<element_t_>::value, bool>::type
         try_pop(element_t_ &item)
@@ -181,24 +226,34 @@ namespace esl::computation {
             return true;
         }
 
+        ///
+        /// \brief  Closes the queue, so that in the future it no longer
+        ///         accepts new elements.
+        ///
         void close() noexcept
         {
             {
-                std::unique_lock lock(mutex_);
+                std::unique_lock lock_(mutex_);
                 closed_ = true;
             }
             variable_.notify_all();
         }
 
+        ///
+        /// \brief  Returns whether or not there are any elements in the queue
+        ///
+        /// \return
         bool empty() const noexcept
         {
-            std::scoped_lock lock(mutex_);
+            std::scoped_lock lock_(mutex_);
             return queue_.empty();
         }
 
+        ///
+        /// \return
         unsigned int size() const noexcept
         {
-            std::scoped_lock lock(mutex_);
+            std::scoped_lock lock_(mutex_);
             return queue_.size();
         }
     };
