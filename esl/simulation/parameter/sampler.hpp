@@ -206,6 +206,156 @@ namespace esl::simulation::parameter {
 
             return result_;
         }
+
+        constexpr unsigned int get_best_distance( unsigned int dimensions
+            , unsigned int samples
+            , unsigned int duplication
+            , const std::vector<std::vector<unsigned int>> &result
+            , const std::vector<unsigned int> &point
+            , unsigned int count)
+        {
+            const auto adjustment_ = std::pow<double>(samples,1 - 1.0 / dimensions );
+
+            auto min_all = std::numeric_limits<double>::max() ;
+            unsigned int best = 0;
+
+            for (unsigned int  k = 0; k < duplication * count; ++k){
+                auto min_can = std::numeric_limits<double>::max();
+
+                for (unsigned int j = count; j < samples; ++j){
+                    auto distance_ = 0.0;
+                    for (unsigned int i = 0; i < dimensions; ++i){
+                        distance_ +=  ( point[i+k* dimensions] - result[i][j] )
+                                      * ( point[i+k* dimensions] - result[i][j] );
+                    }
+                    if (distance_ < min_can ){
+                        min_can = distance_;
+                    }
+                }
+                min_can = fabs (  sqrt ( min_can ) - adjustment_);
+                if (min_can < min_all ){
+                    min_all =min_can;
+                    best = k;
+                }
+
+            }
+
+            return best;
+        }
+
+///
+/// \brief
+///
+/// \details    Brian Beachkofski, Ramana Grandhi,
+///             Improved Distributed Hypercube Sampling,
+///             American Institute of Aeronautics and Astronautics Paper
+///             2002-1274.
+///
+/// \param dimensions
+/// \param samples
+/// \param seed
+/// \param duplication  Hyperparameter, default = 5, the larger the number
+///                     the better the result but the more costly the
+///                     computational cost which is linearly dependent on this
+///                     parameter
+/// \return for each dimension,
+        std::vector<std::vector<unsigned int>>
+        improved_hypercube_sampling( unsigned int dimensions
+            , unsigned int samples
+            , std::seed_seq &seed
+            , unsigned int duplication = 5
+        )
+        {
+            auto result_ = std::vector<std::vector<unsigned int>>(dimensions, std::vector<unsigned int>(samples, 0));
+
+            std::mt19937_64 generator_(seed);
+            {
+                std::uniform_int_distribution<unsigned int> distribution_(1, samples);
+                for(unsigned int i = 0; i < dimensions; i++) {
+                    result_[i][samples - 1] = distribution_(generator_);
+                }
+            }
+
+            typedef std::tuple<unsigned int,unsigned int> key_t_;
+
+            struct key_hash
+                : public std::unary_function<key_t_, std::size_t>
+            {
+                std::size_t operator()(const key_t_ &k) const
+                {
+                    return (std::get<0>(k) << 16) | std::get<1>(k);
+                }
+            };
+
+            std::unordered_map<key_t_, std::tuple<unsigned int,unsigned int>, key_hash> reverse_;
+
+            // holds points that can still be selected to add to the set of valid points
+            auto options_ = std::vector<std::vector<unsigned int>>(dimensions, std::vector<unsigned int>(samples,0));
+
+            for(unsigned int j = 0; j < samples; ++j){
+                for(unsigned int  i = 0; i < dimensions; ++i){
+                    options_[i][j] = j + 1;
+                    reverse_.insert({{i,j + 1}, {i,j}});
+                }
+            }
+
+            for (unsigned int i = 0; i < dimensions; ++i){
+                auto j = (result_[i][samples - 1] - 1);
+                options_[i][j] = samples;
+                reverse_[{i, samples}] = {i,j};
+            }
+
+            auto point = std::vector<unsigned int>(dimensions * duplication * samples, 0);
+
+            for(unsigned int count = samples - 1; 2 <= count; count--) {
+
+                auto list  = std::vector<unsigned int>(duplication * samples, 0);
+
+                for(unsigned int i = 0; i < dimensions; ++i) {
+
+                    for(unsigned int k = 0; k < duplication; ++k) {
+                        for(unsigned int j = 0; j < count; ++j) {
+                            list[j + k * count] = options_[i][j];
+                        }
+                    }
+
+                    for(unsigned int k = count * duplication; 0 < k; --k) {
+                        std::uniform_int_distribution<unsigned int> distribution_(0, k-1);
+
+                        unsigned int point_index               = distribution_(generator_);
+                        point[i + (k-1) * dimensions] = list[point_index];
+                        list[point_index]         = list[k-1];
+                    }
+                }
+
+                auto best = get_best_distance(dimensions, samples, duplication, result_, point, count);
+
+                for (unsigned int i = 0; i < dimensions; ++i){
+                    result_[i][(count-1)] = point[i+best* dimensions];
+                }
+
+                for (unsigned int i = 0; i < dimensions; ++i){
+                    auto iterator_ = reverse_.find({i, result_[i][(count-1)]});
+                    if(reverse_.end() == iterator_){
+                        throw std::exception();
+                    }
+                    if (options_[i][std::get<1>(iterator_->second)] != result_[i][(count-1)] ) {
+                        throw std::exception();
+                    }
+
+                    auto j = std::get<1>(iterator_->second);
+
+                    auto v = options_[i][(count-1)];
+                    options_[i][j] = v;
+                    reverse_[{i, v}] = {i, j};
+                }
+            }
+            for (unsigned int  i = 0; i < dimensions; ++i){
+                result_[i][0] = options_[i][0];
+            }
+            return result_;
+        }
+
     }
 ////////////////////////////////////////////////////////////////////////////////
 }
