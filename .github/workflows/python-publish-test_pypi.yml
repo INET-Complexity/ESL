@@ -49,6 +49,13 @@ jobs:
           python -m pip install cibuildwheel twine
 
 ########################################################################################################################
+      - name: "[MacOS] diagnostics"
+        run: |
+          ls /Users/runner/hostedtoolcache/Python/
+        shell: bash
+        continue-on-error: true
+        if: matrix.os == 'macos-latest'
+
 
       - name: "[MacOS] Install gfortran with homebrew"
         run: |
@@ -116,7 +123,7 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.1/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/lib/python3.9/ ;" >> project-config.jam
+          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.2/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.2/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.2/x64/lib/python3.9/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-latest' && matrix.python_minor_version == 9
