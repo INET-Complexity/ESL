@@ -78,9 +78,9 @@ jobs:
 
       - name: "[MacOS] Install Adept"
         run: |
-          wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.8.tar.gz
-          tar -xf adept-2.0.8.tar.gz
-          cd adept-2.0.8/
+          wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
+          tar -xf adept-2.0.5.tar.gz
+          cd adept-2.0.5/
           ./configure  --silent
           make -j2 --silent
           sudo make install --silent
