@@ -63,7 +63,7 @@ jobs:
         run: |
           brew update >/dev/null
           brew upgrade
-          brew install automake gfortran
+          brew install automake
           which gfortran
         shell: bash
         continue-on-error: true
@@ -81,21 +81,20 @@ jobs:
 
       - name: "[MacOS] Install Adept"
         run: |
-          wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
-          tar -xf adept-2.0.5.tar.gz
-          cd adept-2.0.5/
-          autoreconf -i
-          ./configure F77=gfortran
-          /Users/runner/work/ESL/ESL/adept-2.0.5/missing --help
-          make -j2 --silent
-          sudo make install --silent
+          wget http://www.met.reading.ac.uk/clouds/adept/adept-2.1.tar.gz
+          tar -xf adept-2.1.tar.gz
+          cd adept-2.1/
+          F77=gfortran F90=gfortran ./configure --disable-fortran
+#          /Users/runner/work/ESL/ESL/adept-2.1/missing --help
+          make -j2
+          sudo make install
           cd include
           ./create_adept_source_header
           sudo cp adept_source.h /usr/local/include/
           cd ~
         shell: bash
         if: matrix.os == 'macos-10.15'
-        continue-on-error: true
+        # continue-on-error: true
 
 ########################################################################################################################
 
