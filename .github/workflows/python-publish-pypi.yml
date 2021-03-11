@@ -1,8 +1,9 @@
 name: build publish Pypi
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - '*'
 
 jobs:
   build_wheels:
@@ -10,19 +11,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-20.04]
+        os: [windows-latest, macos-10.15, ubuntu-20.04]
         python_minor_version: [8, 9]
     steps:
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS] Configure XCode"
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-10.15'
 
-      ########################################################################################################################
+########################################################################################################################
 
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -32,66 +33,76 @@ jobs:
 
       - name: "[All] Test Python installation"
         run: |
-          python -c "import os, sys; from sysconfig import get_paths;  print(os.path.dirname(sys.executable)); print(get_paths())"
+          python -c "import os, sys; from sysconfig import get_paths; print(os.path.dirname(sys.executable)); print(get_paths())"
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[Windows] Setup MSBuild"
         uses: microsoft/setup-msbuild@v1.0.2
         if: matrix.os == 'windows-latest'
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[All] Install Python dependencies"
         run: |
           python -m pip install --upgrade pip
           python -m pip install cibuildwheel twine
 
-      ########################################################################################################################
+########################################################################################################################
+      - name: "[MacOS] diagnostics"
+        run: |
+          ls /Users/runner/hostedtoolcache/Python/
+          sudo ls /Applications/
+        shell: bash
+        continue-on-error: true
+        if: matrix.os == 'macos-10.15'
+
 
       - name: "[MacOS] Install gfortran with homebrew"
         run: |
           brew update >/dev/null
           brew upgrade
-          brew install gfortran
+          brew reinstall gcc gfortran automake
+          which gfortran
         shell: bash
-        continue-on-error: true
-        if: matrix.os == 'macos-latest'
-
+        if: matrix.os == 'macos-10.15'
+      #continue-on-error: true
 
       - name: "[MacOS] Install gsl with homebrew"
         run: |
           brew update >/dev/null
           brew install gsl
         shell: bash
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-10.15'
 
-
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS] Install Adept"
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
           cd adept-2.0.5/
-          ./configure  --silent
-          make -j2 --silent
-          sudo make install --silent
+          F77=gfortran F90=gfortran ./configure
+          /Users/runner/work/ESL/ESL/adept-2.0.5/missing --help
+          make -j2
+          sudo make install
           cd include
           ./create_adept_source_header
           sudo cp adept_source.h /usr/local/include/
           cd ~
         shell: bash
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-10.15'
+        continue-on-error: true
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS] Diagnostics"
         run: |
+          cat ./adept-2.0.5/config.log
           xcodebuild -sdk -version
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-10.15'
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS | Python 3.8] Install boost"
         run: |
@@ -101,12 +112,12 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.8    :  /Users/runner/hostedtoolcache/Python/3.8.7/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.7/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.7/x64/lib/python3.8/ ;" >> project-config.jam
+          echo "using python    : 3.8    :  /Users/runner/hostedtoolcache/Python/3.8.8/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.8.8/x64/include/python3.8/    : /Users/runner/hostedtoolcache/Python/3.8.8/x64/lib/python3.8/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
-        if: matrix.os == 'macos-latest' && matrix.python_minor_version == 8
+        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 8
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS | Python 3.9] Install boost"
         run: |
@@ -116,12 +127,12 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.1/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.1/x64/lib/python3.9/ ;" >> project-config.jam
+          echo "using python    : 3.9    :  /Users/runner/hostedtoolcache/Python/3.9.2/x64/bin/python    : /Users/runner/hostedtoolcache/Python/3.9.2/x64/include/python3.9/    : /Users/runner/hostedtoolcache/Python/3.9.2/x64/lib/python3.9/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
-        if: matrix.os == 'macos-latest' && matrix.python_minor_version == 9
+        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 9
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[MacOS] Build and publish"
         env:
@@ -135,7 +146,7 @@ jobs:
         continue-on-error: true
         if: matrix.os == 'macos-latest'
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[Linux] Build and publish"
         env:
@@ -151,7 +162,7 @@ jobs:
         continue-on-error: true
         if: matrix.os == 'ubuntu-20.04'
 
-      ########################################################################################################################
+########################################################################################################################
       - name: "[Windows] Install Adept"
         run: |
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz -UseBasicParsing -OutFile adept-2.0.5.tar.gz
@@ -169,7 +180,7 @@ jobs:
       #          key: ${{ runner.os }}-${{ hashFiles('C:/Boost/include/boost-1_73') }}
       #        if: matrix.os == 'windows-latest' && matrix.python_minor_version == 8
 
-      ########################################################################################################################
+########################################################################################################################
 
 
       - name: "[Windows] Install boost"
@@ -184,7 +195,7 @@ jobs:
         shell: powershell
 
 
-      ########################################################################################################################
+########################################################################################################################
 
       - name: "[Windows] Build and publish"
         env:
