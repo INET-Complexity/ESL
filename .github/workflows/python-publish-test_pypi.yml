@@ -52,6 +52,8 @@ jobs:
       - name: "[MacOS] diagnostics"
         run: |
           ls /Users/runner/hostedtoolcache/Python/
+          sudo ls /Applications/
+          sudo xcode-select --switch /Applications/Xcode.app
         shell: bash
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
