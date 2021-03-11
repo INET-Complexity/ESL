@@ -81,6 +81,7 @@ jobs:
           wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz
           tar -xf adept-2.0.5.tar.gz
           cd adept-2.0.5/
+          autoreconf -i
           ./configure  --silent
           make -j2 --silent
           sudo make install --silent
