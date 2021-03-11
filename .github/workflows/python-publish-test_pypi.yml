@@ -64,6 +64,7 @@ jobs:
           brew update >/dev/null
           brew upgrade
           brew install automake gfortran
+          which gfortran
         shell: bash
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
