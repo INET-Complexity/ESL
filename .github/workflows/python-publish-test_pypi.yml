@@ -85,7 +85,6 @@ jobs:
           tar -xf adept-2.1.tar.gz
           cd adept-2.1/
           F77=gfortran F90=gfortran ./configure --disable-fortran
-#          /Users/runner/work/ESL/ESL/adept-2.1/missing --help
           make -j2
           sudo make install
           cd include
