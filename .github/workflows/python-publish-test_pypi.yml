@@ -90,11 +90,13 @@ jobs:
           cd ~
         shell: bash
         if: matrix.os == 'macos-10.15'
+        continue-on-error: true
 
 ########################################################################################################################
 
       - name: "[MacOS] Diagnostics"
         run: |
+          cat ./adept-2.0.5/config.log
           xcodebuild -sdk -version
         if: matrix.os == 'macos-10.15'
 
