@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15] # windows-latest, macos-10.15, ubuntu-20.04]
+        os: [windows-latest, macos-10.15, ubuntu-20.04]
         python_minor_version: [8, 9]
     steps:
 
@@ -134,12 +134,17 @@ jobs:
 
 ########################################################################################################################
 
+      # TODO: MACOSX_DEPLOYMENT_TARGET "10.13" or "10.14" (or higher) - macOS 10.13 offers partial C++17 support (e.g., the
+      # filesystem header is in experimental, offering #include <experimental/filesystem> instead of #include <filesystem>);
+      #  macOS 10.14 has full C++17 support.
+      # CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
       - name: "[MacOS] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
 
-          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64'
+          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
         run: |
           python -m cibuildwheel --output-dir distribution
           python -m twine upload --repository testpypi distribution/*
