@@ -84,7 +84,8 @@ jobs:
           tar -xf adept-2.0.5.tar.gz
           cd adept-2.0.5/
           autoreconf -i
-          ./configure  --silent
+          ./configure F77=gfortran
+          /Users/runner/work/ESL/ESL/adept-2.0.5/missing --help
           make -j2 --silent
           sudo make install --silent
           cd include
