@@ -84,7 +84,7 @@ namespace esl {
         typename identity<entity_type_>::digit_t children_;
 
         ///
-        ///
+        /// \
         ///
         entity()
         : entity(identity<entity_type_>())
@@ -123,6 +123,13 @@ namespace esl {
             prefix_.shrink_to_fit();
             return identity<child_t_>(move(prefix_));
         }
+
+
+        /*entity<entity_type_> &operator = (const entity<entity_type_> &e)
+        {
+            this->identifier = e.identifier;
+            this->children_ = e.children_;
+        }*/
 
     protected:
         ///

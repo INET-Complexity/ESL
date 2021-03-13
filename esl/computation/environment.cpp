@@ -60,7 +60,8 @@ namespace esl::computation {
     size_t environment::activate()
     {
         size_t result_ = 0;
-        for(auto a : activated_) {
+        for(auto a :activated_) {
+
             //activate_agent(a);
             ++result_;
         }
@@ -81,6 +82,9 @@ namespace esl::computation {
         return result_;
     }
 
+    ///
+    /// \brief
+    ///
     void environment::before_step()
     {
 
@@ -131,27 +135,24 @@ namespace esl::computation {
     size_t environment::send_messages(simulation::model &simulation)
     {
         size_t messages_ = 0;
-        if(simulation.threads <= 1) {
-            for(auto &[i, a] : simulation.agents.local_agents_) {
-                (void)i;
-                for(const auto &m : a->outbox) {
-                    auto iterator_ =
-                        simulation.agents.local_agents_.find(m->recipient);
-                    if(simulation.agents.local_agents_.end() == iterator_) {
-                        // not in distributed mode, and no local agent matching
-                        throw std::logic_error("agent not found "
-                                               + m->recipient.representation());
-                    }
-                    iterator_->second->inbox.insert({m->received, m});
-                    ++messages_;
+
+        // agent locality refers to memory locality. In the multi-threaded
+        // setting, we are still able to observe all agents from one thread
+        for(auto &[i, a] :simulation.agents.local_agents_){
+            (void)i;
+            for(const auto &m :a->outbox){
+                auto iterator_ = simulation.agents.local_agents_.find(m->recipient);
+                if(simulation.agents.local_agents_.end() == iterator_) {
+                    // not in distributed mode, and no local agent matching recipient
+                    throw esl::exception("message recipient agent not found "
+                                           + m->recipient.representation());
                 }
-                a->outbox.clear();
-                a->outbox.shrink_to_fit();
+                iterator_->second->inbox.insert({m->received, m});
+                ++messages_;
             }
-        }else{
 
-
-
+            a->outbox.clear();
+            //TODO: make a->outbox.shrink_to_fit(); optional
         }
         return messages_;
     }
@@ -202,16 +203,19 @@ namespace esl::computation {
 
             step_.lower = simulation.step(step_);
         } while(step_.lower < simulation.end);
-
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
+
         LOG(notice) << "simulation took "
                     << (double(timer_simulation_.count()) / 1e+9)
                     <<  " seconds" << std::endl;
+
         simulation.terminate();
         auto timer_termination_ = high_resolution_clock::now() - timer_simulation_;
+
         after_run(simulation);
         auto timer_processing_after_ = high_resolution_clock::now() - timer_termination_;
         auto timer_total_ = high_resolution_clock::now() - timer_start_run_;
+
         LOG(notice) << "running simulation in " << boost::core::demangle(typeid(decltype(*this)).name())
                     << " took " << (double(timer_total_.count()) / 1e+9)
                     << " seconds" << std::endl;

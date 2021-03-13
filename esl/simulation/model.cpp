@@ -68,17 +68,14 @@ namespace esl::simulation {
         environment_.before_step();
 
         // read the sample index from the parameter collection
-
         std::mutex mutex_first_event_;
         time_point first_event_   = step.upper;
         unsigned int round_ = 0;
         do {
-
             if (verbosity > 0 && 0 == (rounds_ % verbosity)){
                 LOG(notice) << "time " << step << " round " << round_  << std::endl;
             }
             first_event_   = step.upper;
-
 
             auto job_ = [&](std::shared_ptr<agent> a){
                 // double agent_cb_end_;
@@ -115,7 +112,6 @@ namespace esl::simulation {
                 a->inbox.clear();
                 // auto agent_end_ = high_resolution_clock::now() - agent_start_;
 
-
                 // timings_cb_[a->identifier] += agent_cb_end_;
                 // timings_act_[a->identifier] += double( (high_resolution_clock::now() - agent_act_).count());
                 // timings_[a->identifier] += (double(agent_end_.count()) );
@@ -138,7 +134,8 @@ namespace esl::simulation {
                         std::advance(iterator_, 1);
                     }
 
-                    threads_.emplace_back([&](std::vector<std::shared_ptr<agent>> ts){
+                    threads_.emplace_back([&](std::vector<std::shared_ptr<agent>> ts)
+                        {
                             for(const auto& a: ts){
                                 job_(a);
                             }
@@ -148,13 +145,12 @@ namespace esl::simulation {
                 for(auto &t: threads_){
                     t.join();
                 }
-
             }
 
             environment_.send_messages(*this);
             ++round_;
             ++rounds_;
-        } while(step.lower >= first_event_);
+        }while(step.lower >= first_event_);
 
         environment_.after_step(*this);
         auto total_ = high_resolution_clock::now() - timer_start_;
@@ -162,6 +158,9 @@ namespace esl::simulation {
         return first_event_;
     }
 
+    ///
+    /// \brief
+    ///
     void model::terminate()
     {
 

@@ -277,8 +277,6 @@ namespace esl::economics::markets::tatonnement {
             auto demand_per_property_ = f->excess_demand(quote_scalars_);
             for(auto [k, ed]: demand_per_property_) {
                 auto i = terms_map.emplace(k, variable(0.));
-                auto long_ = double(std::get<0>(f->supply[k]));
-                auto short_ = double(std::get<1>(f->supply[k]));
                 i.first->second += ed;//long_ + ed - short_;
             }
         }
@@ -413,13 +411,11 @@ namespace esl::economics::markets::tatonnement {
             if (method_ == root){
 // This compile time definition is here such that the library will still compile
 // when Adept is absent.
-#if !defined(ADEPT_VERSION) || !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
+#if defined(ADEPT_VERSION)  && !defined(ADEPT_NO_AUTOMATIC_DIFFERENTIATION)
                 // if there is only one property traded, we specialize with
                 // algorithms that do well on univariate root finding
                 if(1 == quotes.size()){
                     constexpr double absolute_tolerance = 1e-6;
-                    constexpr double delta_absolute_tolerance = 1e-6;
-                    constexpr double delta_relative_tolerance = 1e-8;
 
                     // capture previous error handler to restore later
                     auto old_handler_ = gsl_set_error_handler (&handler);
@@ -529,7 +525,6 @@ namespace esl::economics::markets::tatonnement {
 
 
 #else
-
                 constexpr double residual_tolerance =  1e-4;
                 gsl_multiroot_function root_function;
 
