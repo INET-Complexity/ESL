@@ -104,6 +104,7 @@ namespace esl::economics::markets::walras {
         if(state == sending_quotes){
             // send out initial quotes and wait for orders,
             // scheduled in the same time step
+            LOG(trace) << "blocking to send quotes and receive orders" << std::endl;
             next_ = step.lower;
             for(const auto &[k, v]: traded_properties) {
                 (void)k;
@@ -121,6 +122,8 @@ namespace esl::economics::markets::walras {
                         walras::differentiable_order_message>(message_);
 
                     if(message_->sent < step.lower) {
+
+                        LOG(trace) << "blocking because I received stale orders" << std::endl;
                         next_ = step.lower;
                         break;
                     }
@@ -152,6 +155,8 @@ namespace esl::economics::markets::walras {
                     quotes_.push_back(v);
                 }
                 if(step.lower > 1){
+
+                    LOG(trace) << "blocking to receive orders" << std::endl;
                     next_ = step.lower;
                 }
             }
