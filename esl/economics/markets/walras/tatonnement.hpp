@@ -167,7 +167,7 @@ namespace esl::economics::markets::tatonnement {
         ///                         while solving
         /// \return
         std::optional<std::map<identity<law::property>, double>>
-        compute_clearing_quotes(size_t max_iterations = 10);
+        compute_clearing_quotes(size_t max_iterations = 16);
 
     };
 } // namespace esl::economics::markets::tatonnement
