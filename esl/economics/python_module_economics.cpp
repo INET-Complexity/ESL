@@ -286,14 +286,9 @@ BOOST_PYTHON_MODULE(_economics)
         .def("__float__", &python_price_to_floating_point)
         ;
 
-    class_< decltype(company::shares_outstanding) >("shares_outstanding")
+    class_< std::map<finance::share_class, std::uint64_t> >("shareclass_map")
         .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::uint64_t> > () )
     ;
-
-
-    class_< decltype(company::shareholders) >("shareholders")
-        .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::uint64_t>>())
-        ;
 
     class_<std::map<finance::share_class, std::tuple<std::uint64_t, price>>>("dividends_per_share")
         .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::tuple<std::uint64_t, price>>>())
