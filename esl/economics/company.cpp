@@ -22,7 +22,7 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#include <esl/economics/finance/company.hpp>
+#include <esl/economics/company.hpp>
 
 #include <tuple>
 

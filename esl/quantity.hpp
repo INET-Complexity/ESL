@@ -41,7 +41,7 @@
 namespace esl {
     ///
     /// \brief  The quantity class is used to losslessly deal with quantities of
-    ///         economic goods in large quantities.
+    ///         economic goods in large amounts.
     ///
     struct quantity
     {

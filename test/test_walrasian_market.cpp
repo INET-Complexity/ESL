@@ -31,12 +31,12 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include <esl/economics/finance/company.hpp>
 #include <esl/computation/environment.hpp>
+#include <esl/data/log.hpp>
+#include <esl/economics/company.hpp>
 #include <esl/economics/markets/walras/price_setter.hpp>
 #include <esl/law/jurisdictions.hpp>
 #include <esl/simulation/model.hpp>
-#include <esl/data/log.hpp>
 
 #include <esl/economics/markets/walras/quote_message.hpp>
 

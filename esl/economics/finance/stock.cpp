@@ -22,7 +22,7 @@
 ///
 #include <esl/economics/finance/stock.hpp>
 
-#include <esl/economics/finance/company.hpp>
+#include <esl/economics/company.hpp>
 
 namespace esl::economics::finance {
 

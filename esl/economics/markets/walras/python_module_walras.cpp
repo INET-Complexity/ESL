@@ -280,6 +280,10 @@ BOOST_PYTHON_MODULE(_walras)
         .def("compute_clearing_quotes", &clear_market)
         .add_property("excess_demand_functions", &get_excess_demand_functions, &set_excess_demand_functions)
         ;
+
+
+
+
 }
 
 #endif

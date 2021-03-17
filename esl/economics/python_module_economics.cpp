@@ -54,10 +54,14 @@
 #include <boost/python.hpp>
 using namespace boost::python;
 
-#include <esl/economics/price.hpp>
+#include <esl/economics/company.hpp>
 #include <esl/economics/currencies.hpp>
+#include <esl/economics/price.hpp>
 using namespace esl::economics;
 
+
+#include <esl/python_module_esl.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
 std::string python_currency_code(const esl::economics::iso_4217 &c)
 {
@@ -68,6 +72,16 @@ double python_price_to_floating_point(const price &p)
 {
     return double(p);
 }
+
+boost::python::list python_company_unique_shareholders(const company &c)
+{
+    boost::python::list result_;
+    for(const auto &s : c.unique_shareholders()){
+        result_.append( esl::simulation::python_module::python_identity(s.digits) );
+    }
+    return result_;
+}
+
 
 BOOST_PYTHON_MODULE(_economics)
 {
@@ -271,6 +285,34 @@ BOOST_PYTHON_MODULE(_economics)
         .def("__str__", &price::representation)
         .def("__float__", &python_price_to_floating_point)
         ;
+
+    class_< decltype(company::shares_outstanding) >("shares_outstanding")
+        .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::uint64_t> > () )
+    ;
+
+
+    class_< decltype(company::shareholders) >("shareholders")
+        .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::uint64_t>>())
+        ;
+
+    class_<std::map<finance::share_class, std::tuple<std::uint64_t, price>>>("dividends_per_share")
+        .def(boost::python::map_indexing_suite<std::map<finance::share_class, std::tuple<std::uint64_t, price>>>())
+        ;
+
+    class_<company>("company", no_init)
+        .def("__init__", &esl::python_module::python_construct_agent<company, esl::law::jurisdiction>)
+        .def_readwrite("shares_outstanding", &company::shares_outstanding )
+        .def_readwrite("shareholders", &company::shareholders)
+
+        .def("unique_shareholders",  &python_company_unique_shareholders)
+        .def("total_shares", &company::total_shares)
+
+        .def("compute_dividend_per_share", &company::compute_dividend_per_share)
+
+        .def("upcoming_dividend", &company::upcoming_dividend)
+
+        .def("act", &company::act)
+    ;
 }
 
 

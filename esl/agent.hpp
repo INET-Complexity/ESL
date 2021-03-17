@@ -54,7 +54,7 @@ namespace esl {
 
         ///
         /// \brief
-        /// \param i    identity for
+        /// \param i    identity for the agent
         explicit agent(esl::identity<agent> i);
 
         ///
@@ -83,7 +83,9 @@ namespace esl {
         }
 
         ///
-        /// \return friendly description of the agent mentioning the identifier
+        /// \return friendly description of the agent, which should mention
+        ///         the identifier somewhere
+        ///
         [[nodiscard]] virtual std::string describe() const
         {
             std::stringstream stream_;
