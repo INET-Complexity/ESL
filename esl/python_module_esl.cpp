@@ -37,14 +37,24 @@
 
 #include <esl/agent.hpp>
 #include <esl/exception.hpp>
-#include <esl/quantity.hpp>
 #include <esl/version.hpp>
+#include <esl/quantity.hpp>
+#include <esl/simulation/python_module_simulation.hpp>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 using namespace boost::python;
 
+
 namespace esl {
+    static boost::shared_ptr<agent> python_construct_agent( object const &o )
+    {
+        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
+        return boost::make_shared<agent>(identity<agent>(e().digits));
+    }
+
+
+
     ///
     /// \brief  Translates C++ exceptions to Python errors, by setting the
     ///         Python error text equal to the C++ exception message.
@@ -67,14 +77,6 @@ namespace esl {
     ///
     BOOST_PYTHON_MODULE(_esl)
     {
-        /*
-        class_< agent
-              , bases< entity<agent>
-                     //, interaction::communicator
-                     //, data::producer
-                     >>
-            ( "agent", init<identity<agent>>());
-        */
 
         class_<esl::exception>("exception", init<std::string>())
             .def("message", &esl::exception::what)
@@ -113,7 +115,9 @@ namespace esl {
             .def(self / std::uint64_t())
             ;
 
-
+        class_<agent>("agent")
+            .def("__init__", boost::python::make_constructor(&python_construct_agent))
+            ;
 
         ////////////////////////////////////////////////////////////////////////
 

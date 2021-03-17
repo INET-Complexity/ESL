@@ -117,9 +117,6 @@ namespace esl::law {
             .add_property("tender", &esl::law::jurisdiction::tender)
             ;
 
-
-
-
         scope().attr("AF") = esl::law::jurisdictions::AF;
         scope().attr("AL") = esl::law::jurisdictions::AL;
         scope().attr("DZ") = esl::law::jurisdictions::DZ;

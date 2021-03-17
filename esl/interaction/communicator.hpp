@@ -197,6 +197,16 @@ namespace esl::interaction {
         }
 
         ///
+        /// \brief  Prepare a message for sending, putting a pointer to it in
+        ///         the outbox
+        ///
+        /// \param m
+        void send_message(const message_t &m)
+        {
+            outbox.push_back(m);
+        }
+
+        ///
         /// \brief  Registers `callback` to be called when receiving a message
         ///         of type `derived_message_t_`.
         ///

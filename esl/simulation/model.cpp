@@ -72,11 +72,6 @@ namespace esl::simulation {
         time_point first_event_   = step.upper;
         unsigned int round_ = 0;
         do {
-
-            if(round_ > 100){
-                std::cout << "ROUND " << round_ << std::endl;
-            }
-
             if (verbosity > 0 && 0 == (rounds_ % verbosity)){
                 LOG(notice) << "time " << step << " round " << round_  << std::endl;
             }
@@ -102,14 +97,7 @@ namespace esl::simulation {
                     first_event_ = std::min(first_event_,
                                             a->process_messages(step, seed_));
                     // agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count()); agent_act_ = high_resolution_clock::now();
-                    auto agent_event_ = a->act(step, seed_);
-
-                    if(agent_event_ <= first_event_){
-                        if(round_ > 100){
-                            std::cout << "ROUND " << round_ << " blocking by " << a->identifier << std::endl;
-                        }
-                    }
-                    first_event_ = std::min(first_event_, agent_event_);
+                    first_event_ = std::min(first_event_, a->act(step, seed_));
                 }
 
                 //} catch(const std::runtime_error &e) {
@@ -162,7 +150,7 @@ namespace esl::simulation {
             environment_.send_messages(*this);
             ++round_;
             ++rounds_;
-        }while(step.lower >= first_event_);
+        } while(step.lower >= first_event_);
 
         environment_.after_step(*this);
         auto total_ = high_resolution_clock::now() - timer_start_;

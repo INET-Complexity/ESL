@@ -138,6 +138,15 @@ namespace esl::simulation {
 
     BOOST_PYTHON_MODULE(_simulation)
     {
+//        class_<esl::entity<>, boost::noncopyable>(
+//            "entityv", init<identity<object>>())
+//            .def_readonly("identifier", &esl::entity<object>::identifier)
+//            .def(self_ns::str(self_ns::self))
+//            .def("create", &esl::entity<object>::create<object>)
+//            .def(self == self)
+//            .def(self != self)
+//            ;
+
         class_<esl::entity<object>, boost::noncopyable>(
             "entity", init<identity<object>>())
             .def_readonly("identifier", &esl::entity<object>::identifier)
@@ -171,7 +180,6 @@ namespace esl::simulation {
             .def("deactivate", python_agent_collection_deactivate)
             ;
 
-
        class_<model>("model"
                     ,init<environment &, parameter::parametrization>())
            .def_readonly("start", &model::start)
@@ -202,7 +210,6 @@ namespace esl::simulation {
 
        class_<world, boost::noncopyable>("world", no_init)
            .def_readonly("identifier", &world::entity<world>::identifier)
-           //.def("create", &world::entity<world>::identifier)
            .def("__repr__", &world::entity<world>::representation)
            ;
         implicitly_convertible<world, identity<world>>();

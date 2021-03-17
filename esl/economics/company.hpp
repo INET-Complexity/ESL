@@ -22,8 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_COMPANY_HPP
-#define ESL_COMPANY_HPP
+#ifndef ESL_ECONOMICS_COMPANY_HPP
+#define ESL_ECONOMICS_COMPANY_HPP
 
 #include <iostream>
 #include <map>
@@ -166,4 +166,4 @@ namespace boost::mpi {
 #endif  // WITH_MPI
 
 
-#endif  // ESL_COMPANY_HPP
+#endif  // ESL_ECONOMICS_COMPANY_HPP
