@@ -96,7 +96,8 @@ namespace esl::computation {
         virtual void run(simulation::model &simulation);
 
 
-    protected:
+    //protected:
+    public:
         // allows the model to call send_messages
         friend class esl::simulation::model;
 
