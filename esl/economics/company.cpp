@@ -26,9 +26,6 @@
 
 #include <tuple>
 
-//#include <esl/interaction/transfer.hpp>
-
-
 namespace esl::economics {
 
     std::set<identity<finance::shareholder>>
