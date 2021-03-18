@@ -338,7 +338,7 @@ IF(MSVC)
 ELSEIF(MINGW)
     LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
 ELSE()
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl stdc++fs)
 ENDIF()
 
 ################################################################################
