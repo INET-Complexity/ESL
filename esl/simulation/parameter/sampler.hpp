@@ -207,7 +207,7 @@ namespace esl::simulation::parameter {
             return result_;
         }
 
-        constexpr unsigned int get_best_distance( unsigned int dimensions
+        /*constexpr */ unsigned int get_best_distance( unsigned int dimensions
             , unsigned int samples
             , unsigned int duplication
             , const std::vector<std::vector<unsigned int>> &result
