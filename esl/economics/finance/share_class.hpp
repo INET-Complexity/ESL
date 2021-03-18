@@ -43,36 +43,36 @@ namespace esl::economics::finance {
         ///
         /// \brief
         ///
-        const std::uint8_t rank  = 0;
+        /*const */std::uint8_t rank;
 
         ///
         /// \brief  The number of votes per share, which can be zero.
         ///         Alternatively, some companies operate by assigning one vote
         ///         per individual shareholder that meets are certain threshold.
         ///
-        const uint8_t votes = 1;
+        /*const */uint8_t votes;
 
         ///
         /// \brief  If a share has non-zero dividend preference, the holder
         ///         receives a percentage before of dividends before other
         ///         shares are allocated a dividend payment
         ///
-        const /*dividend*/ float preference   = 0.0;
+        /*const */ /*dividend*/ float preference;
 
         ///
         /// \brief  Whether the share is eligible for dividend
         ///
-        const bool dividend = true;
+        /*const */ bool dividend;
 
         ///
         /// \brief
         ///
-        const bool cumulative = false;
+        /*const */bool cumulative;
 
         ///
         ///
         ///
-        const bool redeemable = false;
+        /*const */bool redeemable;
 
 
         //    bool wind_up;
@@ -81,9 +81,9 @@ namespace esl::economics::finance {
         constexpr explicit share_class( std::uint8_t rank = 0
                                       , uint8_t votes     = 1
                                       , float preference  = 0.0
-                                      , bool dividend = true
-                                      , bool cumulative = false
-                                      , bool redeemable = false
+                                      , bool dividend     = true
+                                      , bool cumulative   = false
+                                      , bool redeemable   = false
                                       )
         : rank(rank)
         , votes(votes)
@@ -94,6 +94,8 @@ namespace esl::economics::finance {
         {
 
         }
+
+        share_class &operator = (const share_class &) = default;
 
         constexpr bool operator == (const share_class &s) const
         {
@@ -113,11 +115,13 @@ namespace esl::economics::finance {
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {
+
             (void)version;
-            archive &BOOST_SERIALIZATION_NVP(rank);
-            archive &BOOST_SERIALIZATION_NVP(votes);
-            archive &BOOST_SERIALIZATION_NVP(dividend);
+            archive & BOOST_SERIALIZATION_NVP(rank);
+            archive & BOOST_SERIALIZATION_NVP(votes);
             archive &BOOST_SERIALIZATION_NVP(preference);
+
+            archive &BOOST_SERIALIZATION_NVP(dividend);
             archive &BOOST_SERIALIZATION_NVP(cumulative);
             archive &BOOST_SERIALIZATION_NVP(redeemable);
         }
