@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-10.15, ubuntu-20.04]
-        python_minor_version: [8, 9]
+        python_minor_version: [7, 8, 9]
     steps:
 
 ########################################################################################################################
@@ -142,7 +142,7 @@ jobs:
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_MACOS: "x86_64"
 
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
         run: |
