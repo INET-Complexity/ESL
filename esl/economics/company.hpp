@@ -89,9 +89,11 @@ namespace esl::economics {
 
         ///
         /// \warning: TODO advanced share rules including preference, cumulative
-        /// shares etc \warning: the rounding rule is in favor of the company,
-        /// fractional currency dividends are not paid out! \param
-        /// unappropriated_profit \return
+        /// shares etc
+        /// \warning: the rounding rule is in favor of the company,
+        /// fractional currency dividends are not paid out!
+        /// \param unappropriated_profit
+        /// \return
         std::map<finance::share_class, std::tuple<std::uint64_t, price>>
         compute_dividend_per_share(const price &unappropriated_profit);
 

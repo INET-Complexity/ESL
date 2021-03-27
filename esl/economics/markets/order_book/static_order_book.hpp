@@ -131,7 +131,7 @@ namespace esl::economics::markets::order_book {
             /// \param q
             /// \param out_limit
             /// \return
-            constexpr bool default_encode(const quote &q, limit &out_limit)
+            /*C++20 constexpr*/  bool default_encode(const quote &q, limit &out_limit)
             {
                 if(valid_limits.lower > q || valid_limits.upper < q){
                     return false;

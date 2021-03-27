@@ -102,7 +102,7 @@ namespace esl::economics::markets::impact_function {
 
             if(!orders_.empty()) {
                 // there is at least one order so we clear the market
-                auto before_ = std::chrono::high_resolution_clock::now();
+                //auto before_ = std::chrono::high_resolution_clock::now();
 
 
                 auto scalars_ = clear_market(orders_, step);
@@ -155,6 +155,7 @@ namespace esl::economics::markets::impact_function {
         , const esl::simulation::time_interval &step
         )
     {
+        (void)step;
         law::property_map<double> volumes_;
 
         for(const auto &[a, m]: orders){
