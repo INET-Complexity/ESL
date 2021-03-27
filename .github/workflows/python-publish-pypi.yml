@@ -1,8 +1,7 @@
 name: build publish Pypi
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [created]
 
 jobs:
   build_wheels:
