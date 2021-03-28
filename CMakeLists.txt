@@ -200,10 +200,10 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE_DIRECTORY})
 
-IF(NOT MSVC)
+#IF(NOT MSVC)
     # TODO: test if we can do without, would be faster
     SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
-ENDIF()
+#ENDIF()
 
 SET(Boost_USE_MULTITHREADED         ON)
 
@@ -215,10 +215,7 @@ LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 # Optimized linear algebra and scientific computing routines
 MESSAGE("################################################################################")
 
-IF(MSVC)
-    SET(BLA_STATIC ON)      # On windows, we will statically link a free blas package
-ENDIF()
-
+SET(BLA_STATIC ON)
 FIND_PACKAGE(BLAS)          # not required, can do with a fallback library
 IF(BLAS_FOUND)
     FIND_PACKAGE(LAPACK)    # also not required but nice to have
@@ -226,7 +223,6 @@ ENDIF()
 
 # GSL is required for optimisation routines
 # 1.15 is the lowest working version we found to work (CentOS 7)
-
 FIND_PACKAGE(GSL 1.15 REQUIRED)
 
 ################################################################################
@@ -292,12 +288,12 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
 ################################################################################
 
 IF(MSVC)
-    LIST(APPEND ALL_LINKED_LIBRARIES GSL::gsl)
+    LIST(APPEND ALL_LINKED_LIBRARIES -static GSL::gsl)
 ELSEIF(MINGW)
     # TODO: check whether we actually have blas, even though most distributions have it
     LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm )
 ELSE()
-    LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
+    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread GSL::gsl)
 ENDIF()
 
 IF(MSVC OR MINGW)
@@ -336,11 +332,11 @@ ENDIF()
 IF(MSVC)
 #    MESSAGE("LINKING WITH")
 #    MESSAGE(${ALL_LINKED_LIBRARIES})
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++)
 ELSEIF(MINGW)
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++ -static-libgcc)
 ELSE()
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} dl stdc++fs)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++ dl stdc++fs)
 ENDIF()
 
 ################################################################################
