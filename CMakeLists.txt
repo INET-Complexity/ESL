@@ -200,10 +200,6 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE_DIRECTORY})
 
-#IF(NOT MSVC)
-    # TODO: test if we can do without, would be faster
-    SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
-#ENDIF()
 
 SET(Boost_USE_MULTITHREADED         ON)
 
