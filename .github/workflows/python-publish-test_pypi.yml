@@ -178,7 +178,7 @@ jobs:
           python -m cibuildwheel --output-dir distribution --platform linux
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-20.04' && matrix.python_minor_version >= 8
 
 ########################################################################################################################
       - name: "[Windows] Install Adept"

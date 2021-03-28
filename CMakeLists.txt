@@ -102,10 +102,10 @@ IF(WITH_PYTHON)
     IF(SKBUILD)
         # No static linking to python on manylinux, macos
 
-        if(MSVC)
+        #if(MSVC)
             ADD_DEFINITIONS(-DBoost_USE_STATIC_LIBS)
             ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
-        ENDIF()
+        #ENDIF()
     ELSE()
         # TODO: confirm static linking is necessary if we are not creating a python package
         ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
@@ -307,6 +307,8 @@ ELSE()
 ENDIF()
 
 IF(WITH_PYTHON)
+    ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
+
 
     # pep-0513/#libpythonx-y-so-1
     IF(SKBUILD AND NOT APPLE)
