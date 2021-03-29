@@ -59,6 +59,11 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
 
+
+################################################################################
+# PLatform specific
+################################################################################
+
 IF(MSVC OR MINGW)
     # this prevents windows from defining IN and OUT macros globally
     ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS)
@@ -66,7 +71,7 @@ ENDIF()
 
 IF(APPLE)
     # ignore warnings about unavailable functions in standard library on older MacOS
-    ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
+    # ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
 ENDIF()
 
 ################################################################################
@@ -102,10 +107,10 @@ IF(WITH_PYTHON)
     IF(SKBUILD)
         # No static linking to python on manylinux, macos
 
-        #if(MSVC)
+        if(MSVC)
             ADD_DEFINITIONS(-DBoost_USE_STATIC_LIBS)
             ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
-        #ENDIF()
+        ENDIF()
     ELSE()
         # TODO: confirm static linking is necessary if we are not creating a python package
         ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
@@ -200,11 +205,10 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE_DIRECTORY})
 
-
 SET(Boost_USE_MULTITHREADED         ON)
 
 # 1.53 is the lowest version we tested in 2020
-FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
 ########################################################################################################################
@@ -236,8 +240,8 @@ IF(MSVC)
 ELSE()
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
-    SET(CMAKE_C_FLAGS_DEBUG "-g")#   --coverage -fprofile-arcs -ftest-coverage") #  -fanalyzer
-    SET(CMAKE_CXX_FLAGS_DEBUG "-g")#    --coverage -fprofile-arcs -ftest-coverage")
+    SET(CMAKE_C_FLAGS_DEBUG "-g")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 
     SET(CMAKE_C_FLAGS_RELEASE "-O3")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -245,13 +249,17 @@ ELSE()
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
 
     ELSE()
+        # allows for compile-time optimizations
+        ADD_DEFINITIONS(-DESL_RELEASE)
+
+        # Enable architecture-specific optimizations
         INCLUDE(CheckCXXCompilerFlag)
         CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
-        ADD_DEFINITIONS(-DESL_RELEASE)
         IF(COMPILER_SUPPORTS_MARCH_NATIVE)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
         ENDIF()
-    ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
+
+    ENDIF()
 ENDIF()
 
 
@@ -279,17 +287,15 @@ IF(WITH_PYTHON)
 ENDIF()
 
 INCLUDE_DIRECTORIES(SYSTEM ${ALL_INCLUDE_DIRECTORIES})
+
 ################################################################################
-# Include directories
+# Libraries
 ################################################################################
 
 IF(MSVC)
-    LIST(APPEND ALL_LINKED_LIBRARIES -static GSL::gsl)
-ELSEIF(MINGW)
-    # TODO: check whether we actually have blas, even though most distributions have it
-    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread -lgsl -lgslcblas -lm )
+    LIST(APPEND ALL_LINKED_LIBRARIES GSL::gsl)
 ELSE()
-    LIST(APPEND ALL_LINKED_LIBRARIES -static pthread GSL::gsl)
+    LIST(APPEND ALL_LINKED_LIBRARIES pthread GSL::gsl)
 ENDIF()
 
 IF(MSVC OR MINGW)
@@ -301,10 +307,10 @@ ENDIF()
 IF(WITH_PYTHON)
     ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
 
-
     # pep-0513/#libpythonx-y-so-1
-    IF(SKBUILD AND NOT APPLE)
+    IF(SKBUILD)
         # No linking to python
+
     ELSE()
         LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
     ENDIF()
@@ -326,13 +332,9 @@ IF(BLAS_FOUND)
 ENDIF()
 
 IF(MSVC)
-#    MESSAGE("LINKING WITH")
-#    MESSAGE(${ALL_LINKED_LIBRARIES})
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++)
-ELSEIF(MINGW)
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++ -static-libgcc)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
 ELSE()
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES} -static -static-libstdc++ dl stdc++fs)
+    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
 ENDIF()
 
 ################################################################################
@@ -356,7 +358,7 @@ IF(CONFIGURATION_SHARED)
     ENDIF()
 
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
-        # TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=0)
+
     elseif(CMAKE_BUILD_TYPE MATCHES Release)
         TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
     endif()
@@ -365,22 +367,13 @@ IF(CONFIGURATION_SHARED)
         # this one is for the shared library only. For python, this needs to be called again separately
 
         LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${PYTHON_LIBRARY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
-        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     ELSEIF(MINGW)
         LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
-        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} -static -static-libgcc -static-libstdc++)
+        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     ELSE()
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
     ENDIF()
-
-
-    ################################################################################
-    # Copy library into testing folder, so it can be linked against by Python tests
-    ################################################################################
-    #ADD_CUSTOM_COMMAND(TARGET ${ESL_TARGET_NAME} POST_BUILD
-    #        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    #        $<TARGET_FILE:${ESL_TARGET_NAME}>
-    #        ${CMAKE_BINARY_DIR}/test/esl/$<TARGET_FILE_NAME:${ESL_TARGET_NAME}>)
 ENDIF()
 
 ################################################################################
