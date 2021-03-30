@@ -46,7 +46,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED     ON)
 SET(CMAKE_CXX_EXTENSIONS            OFF)
 
 # build as a shared library, as opposed to the Python bindings or a single experiment only
-OPTION(CONFIGURATION_SHARED "Build shared library" OFF  )
+OPTION(CONFIGURATION_SHARED "Build shared library" OFF)
 
 OPTION(WITH_TESTS "Build test cases" ON)
 
@@ -106,15 +106,8 @@ IF(WITH_PYTHON)
 
     IF(SKBUILD)
         # No static linking to python on manylinux, macos
-
-        if(MSVC)
-            ADD_DEFINITIONS(-DBoost_USE_STATIC_LIBS)
-            ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
-        ENDIF()
-    ELSE()
-        # TODO: confirm static linking is necessary if we are not creating a python package
-        ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
     ENDIF()
+
 ENDIF()
 
 OPTION(WITH_QL  "Enables QuantLib" OFF)
@@ -171,17 +164,16 @@ IF(WITH_PYTHON)
     # TODO: confirm that this is actually how its meant to be; it appears that for Python 3.8
     #       windows has `python38` as a Boost dependency, and other platforms just have 'python'
     IF(MSVC) #ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES
-                python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
     ELSE()
         LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
     ENDIF()
 
     # On non-release builds, inform the users about the chosen Python and its paths
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
-        MESSAGE("include: /t" ${PYTHON_INCLUDE_DIRS})
-        MESSAGE("library: /t" ${PYTHON_LIBRARY})
-        MESSAGE("libraries: /t" ${PYTHON_LIBRARIES})
+        MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
+        MESSAGE("library: \t" ${PYTHON_LIBRARY})
+        MESSAGE("libraries: \t" ${PYTHON_LIBRARIES})
     ENDIF()
 ENDIF()
 
@@ -232,9 +224,6 @@ MESSAGE("compiler " ${CMAKE_CXX_COMPILER_ID} " " ${CMAKE_CXX_COMPILER_VERSION} "
 MESSAGE("----------------------------------------")
 
 IF(MSVC)
-    # TODO: test if this works
-    #TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
-
     # multi-processor compilation on MSVC
     ADD_DEFINITIONS(/MP)
 ELSE()
@@ -418,7 +407,7 @@ IF(WITH_TESTS AND CONFIGURATION_SHARED)
 
     ENDFOREACH(test_src)
 ENDIF()
-
+UNSET(CONFIGURATION_SHARED)
 
 IF(WITH_PYTHON)
     ####################################################################################################################
@@ -452,11 +441,11 @@ IF(WITH_PYTHON)
         ENDIF()
 
         # Let user know we have detected the python module and processed it
-        MESSAGE("PYTHON MODULE " _${python_module_name} ":/t/t " ${module_path_modified} "/t/t" ${source})
+        MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
         # We install it in the right submodule path
         INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
 
-        SET(ignoreMe "${SKBUILD}")
+        # SET(ignoreMe "${SKBUILD}")
     ENDFOREACH ()
 
     ####################################################################################################################

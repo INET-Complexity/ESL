@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04] # [windows-latest, macos-10.15, ubuntu-20.04]
-        python_minor_version: [7, 8] # , 8, 9]
+        os: [windows-latest, macos-10.15, ubuntu-20.04]
+        python_minor_version: [7, 8, 9]
     steps:
 
 ########################################################################################################################
@@ -201,7 +201,6 @@ jobs:
           ./bootstrap.bat --prefix=C:/Boost
           ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release link=static threading=multi runtime-link=shared install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
         if: matrix.os == 'windows-latest'
-        #&& steps.cache_boost_windows_cp38.outputs.cache-hit != 'true'
         shell: powershell
 
 ########################################################################################################################
