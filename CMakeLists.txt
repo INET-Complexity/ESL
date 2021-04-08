@@ -70,8 +70,8 @@ IF(MSVC OR MINGW)
 ENDIF()
 
 IF(APPLE)
-    # ignore warnings about unavailable functions in standard library on older MacOS
-    # ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
+    # ignore errors about unavailable functions in standard library on older MacOS
+    ADD_DEFINITIONS(-D_LIBCPP_DISABLE_AVAILABILITY)
 ENDIF()
 
 ################################################################################
