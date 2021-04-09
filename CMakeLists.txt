@@ -200,7 +200,7 @@ LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE
 SET(Boost_USE_MULTITHREADED         ON)
 
 # 1.53 is the lowest version we tested in 2020
-FIND_PACKAGE(Boost 1.65 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
+FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
 ########################################################################################################################
