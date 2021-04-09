@@ -132,7 +132,11 @@ public:
 
     static void set_item(multimap_t_ &container, index_type i, data_type const& v)
     {
-        //container[i] = v;
+        for(auto &[k,value_]: container){
+            if(k == i){
+                value_ = v;
+            }
+        }
     }
 
     static void
@@ -185,7 +189,9 @@ public:
 
 void send_message_python(communicator &c, boost::python::object o)
 {
-    extract<const communicator::message_t &> asdf(o);
+    (void)c;
+    (void)o;
+    extract<const communicator::message_t &> extractor_(o);
 
 }
 
@@ -267,3 +273,19 @@ BOOST_PYTHON_MODULE(_interaction)
 }
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
