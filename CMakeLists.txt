@@ -207,7 +207,7 @@ LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 # Optimized linear algebra and scientific computing routines
 MESSAGE("################################################################################")
 
-SET(BLA_STATIC ON)
+
 FIND_PACKAGE(BLAS)          # not required, can do with a fallback library
 IF(BLAS_FOUND)
     FIND_PACKAGE(LAPACK)    # also not required but nice to have
