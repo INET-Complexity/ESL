@@ -112,7 +112,7 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.7    :  ${{pythonLocation}}/bin/python    : ${{pythonLocation}}/include/python3.7m/    : ${{pythonLocation}}/lib/python3.7/ ;" >> project-config.jam
+          echo "using python    : 3.7    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.7m/    : ${{env.pythonLocation}}/lib/python3.7/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
@@ -127,7 +127,7 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.8    :  ${{pythonLocation}}/bin/python    : ${{pythonLocation}}/include/python3.8/    : ${{pythonLocation}}/lib/python3.8/ ;" >> project-config.jam
+          echo "using python    : 3.8    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.8/    : ${{env.pythonLocation}}/lib/python3.8/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 8
@@ -142,7 +142,7 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.9    :  ${{pythonLocation}}/bin/python    : ${{pythonLocation}}/include/python3.9/    : ${{pythonLocation}}/lib/python3.9/ ;" >> project-config.jam
+          echo "using python    : 3.9    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.9/    : ${{env.pythonLocation}}/lib/python3.9/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 9
