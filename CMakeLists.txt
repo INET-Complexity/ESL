@@ -23,9 +23,9 @@ CMAKE_POLICY(SET CMP0048 NEW)
 
 IF(APPLE)
     # TODO: this needs to match the build script/OS settings.
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
     SET(CMAKE_MACOSX_RPATH 0)
-    # If environment settings override this, you can enable force:
+    # If environment settings override this, you can force:
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
 ENDIF()
 
@@ -197,7 +197,9 @@ file(GLOB_RECURSE SOURCE_FILES "esl/**.cpp" "esl/**.hpp")
 ################################################################################
 LIST(APPEND ALL_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR} SYSTEM ${ADEPT_INCLUDE_DIRECTORY})
 
-SET(Boost_USE_MULTITHREADED         ON)
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 
 # 1.53 is the lowest version we tested in 2020
 FIND_PACKAGE(Boost 1.53 COMPONENTS ${Boost_LIBRARIES_DEPENDENCIES} REQUIRED)
@@ -206,7 +208,6 @@ LIST(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 ########################################################################################################################
 # Optimized linear algebra and scientific computing routines
 MESSAGE("################################################################################")
-
 
 FIND_PACKAGE(BLAS)          # not required, can do with a fallback library
 IF(BLAS_FOUND)

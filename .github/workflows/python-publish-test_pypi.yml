@@ -106,13 +106,14 @@ jobs:
 
       - name: "[MacOS | Python 3.7] Install boost"
         run: |
+          ls -R ${{env.pythonLocation}}/lib/
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.7    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.7m/    : ${{env.pythonLocation}}/lib/python3.7/ ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.7m/    : ${{env.pythonLocation}}/lib/python3.7/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
@@ -121,13 +122,14 @@ jobs:
 
       - name: "[MacOS | Python 3.8] Install boost"
         run: |
+          ls -R ${{env.pythonLocation}}/lib/
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.8    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.8/    : ${{env.pythonLocation}}/lib/python3.8/ ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 8
@@ -136,13 +138,14 @@ jobs:
 
       - name: "[MacOS | Python 3.9] Install boost"
         run: |
+          ls -R ${{env.pythonLocation}}/lib/
           wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.9    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.9/    : ${{env.pythonLocation}}/lib/python3.9/ ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 9
