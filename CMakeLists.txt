@@ -22,8 +22,8 @@ SET(version_revision ${CMAKE_MATCH_1})
 CMAKE_POLICY(SET CMP0048 NEW)
 
 IF(APPLE)
-    # old version 10.9 for compatibility
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+    # TODO: this needs to match the build script/OS settings.
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
     SET(CMAKE_MACOSX_RPATH 0)
     # If environment settings override this, you can enable force:
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
@@ -294,12 +294,9 @@ ELSE()
 ENDIF()
 
 IF(WITH_PYTHON)
-    #ADD_DEFINITIONS(-DBOOST_PYTHON_STATIC_LIB)
-
     # pep-0513/#libpythonx-y-so-1
     IF(SKBUILD)
         # No linking to python
-
     ELSE()
         LIST(APPEND ALL_LINKED_LIBRARIES ${PYTHON_LIBRARIES})
     ENDIF()
