@@ -90,7 +90,7 @@ BOOST_PYTHON_MODULE(_markets)
 
     ////////////////////////////////////////////////////////////////////////////
 
-    class_<quote>("quote", no_init)
+    class_<quote, boost::noncopyable, boost::shared_ptr<quote> >("quote", no_init)
         .def("__init__", boost::python::make_constructor(construct_quote_from_price))
         .def("__init__", boost::python::make_constructor(construct_quote_from_exchange_rate))
         .add_property("price", &quote_helper_get_price, &quote_helper_set_price)
