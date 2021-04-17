@@ -104,9 +104,6 @@ jobs:
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
 
-
-
-
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.8+] Install boost"
         run: |
