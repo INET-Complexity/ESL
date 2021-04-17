@@ -24,7 +24,7 @@ CMAKE_POLICY(SET CMP0048 NEW)
 IF(APPLE)
     # TODO: this needs to match the build script/OS settings.
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
-    SET(CMAKE_MACOSX_RPATH 0)
+  #  SET(CMAKE_MACOSX_RPATH 0)
     # If environment settings override this, you can force:
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
 ENDIF()
@@ -128,7 +128,13 @@ IF(WITH_PYTHON)
         MESSAGE(STATUS "The project is not built using scikit-build")
     ENDIF()
 
+    MESSAGE(STATUS " ")
+    MESSAGE(${PYTHON_LIBRARY})
+
     GET_FILENAME_COMPONENT(ESL_PYTHON_LINK_DIRECTORY ${PYTHON_LIBRARY} DIRECTORY)
+    MESSAGE(${ESL_PYTHON_LINK_DIRECTORY})
+
+    MESSAGE(STATUS "")
 
     # This reads the Python version that was found, and sets variables
     STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
