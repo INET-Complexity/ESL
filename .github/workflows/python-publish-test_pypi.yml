@@ -51,15 +51,6 @@ jobs:
           python -m pip install cibuildwheel twine
 
 ########################################################################################################################
-      - name: "[MacOS] diagnostics"
-        run: |
-          ls /Users/runner/hostedtoolcache/Python/
-          sudo ls /Applications/
-        shell: bash
-        continue-on-error: true
-        if: matrix.os == 'macos-10.15'
-
-
       - name: "[MacOS] Install gfortran with homebrew"
         run: |
           brew update >/dev/null
@@ -100,10 +91,8 @@ jobs:
 
       - name: "[MacOS] Diagnostics"
         run: |
-          cat ./adept-2.0.5/config.log
-          xcodebuild -sdk -version
-          ls ${{env.pythonLocation}}
-          ls ${{env.pythonLocation}} -R
+          ls ${{env.pythonLocation}}/
+          ls ${{env.pythonLocation}}/ -R
         if: matrix.os == 'macos-10.15'
 
 ########################################################################################################################
