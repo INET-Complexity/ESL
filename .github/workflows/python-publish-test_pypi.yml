@@ -87,9 +87,6 @@ jobs:
 
 ########################################################################################################################
 
-
-
-
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.7] Install boost"
         run: |
@@ -97,7 +94,17 @@ jobs:
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh > /dev/null 2>&1
-          echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
+          echo "import option ;" > project-config.jam
+          echo "import feature ;" >> project-config.jam
+          echo "if ! clang in [ feature.values <toolset> ]" >> project-config.jam
+          echo "{" >> project-config.jam
+          echo "    using clang ; " >> project-config.jam
+          echo "}" >> project-config.jam
+          echo "option.set prefix : /usr/local ;" >> project-config.jam
+          echo "option.set exec-prefix : /usr/local ;" >> project-config.jam
+          echo "option.set libdir : /usr/local/lib ;" >> project-config.jam
+          echo "option.set includedir : /usr/local/include ;" >> project-config.jam
+          echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}m/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
@@ -111,7 +118,17 @@ jobs:
           tar -xzf boost_1_*
           cd boost_1_*
           ./bootstrap.sh
-          echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
+          echo "import option ;" > project-config.jam
+          echo "import feature ;" >> project-config.jam
+          echo "if ! clang in [ feature.values <toolset> ]" >> project-config.jam
+          echo "{" >> project-config.jam
+          echo "    using clang ; " >> project-config.jam
+          echo "}" >> project-config.jam
+          echo "option.set prefix : /usr/local ;" >> project-config.jam
+          echo "option.set exec-prefix : /usr/local ;" >> project-config.jam
+          echo "option.set libdir : /usr/local/lib ;" >> project-config.jam
+          echo "option.set includedir : /usr/local/include ;" >> project-config.jam
+          echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
