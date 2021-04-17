@@ -1,5 +1,7 @@
 name: build publish Test Pypi
 
+# [windows-latest, macos-10.15, ubuntu-20.04]
+
 on:
   push:
     tags:
@@ -11,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-10.15, ubuntu-20.04]
+        os: [macos-10.15]
         python_minor_version: [7, 8, 9]
     steps:
 
@@ -115,7 +117,8 @@ jobs:
           ./bootstrap.sh
           cat project-config.jam
           echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}} ;" >> project-config.jam
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
+          cat project-config.jam
           ./b2 cxxflags=-std=c++17 install -j 8 --without-context --without-coroutine --without-fiber --without-thread
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15'
