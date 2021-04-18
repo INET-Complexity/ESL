@@ -416,6 +416,13 @@ IF(WITH_PYTHON)
     # with python_module as prefix of the filename
     FILE(GLOB_RECURSE ESL_PYTHON_SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} esl/**python_module**.cpp)
     FOREACH (source ${ESL_PYTHON_SOURCE})
+
+        # unity module 2021-04-18
+        IF(NOT ${source} STREQUAL "esl/python_module_esl.cpp")
+            CONTINUE()
+        ENDIF()
+
+
         GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 

@@ -1,0 +1,35 @@
+name: build publish Test Pypi
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build_wheels:
+    name: "Package ${{ matrix.os }} | CP 3.${{matrix.python_minor_version}}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-10.15, ubuntu-20.04, windows-latest]
+        python_minor_version: [7, 8, 9]
+    steps:
+
+      ########################################################################################################################
+
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        name: "[All] Install Python 3.${{matrix.python_minor_version}}"
+        with:
+          python-version: '3.${{matrix.python_minor_version}}'
+
+      - name: "[All] Test Python installation"
+        run: |
+          python -c "import os, sys; from sysconfig import get_paths; print(os.path.dirname(sys.executable)); print(get_paths())"
+
+      ########################################################################################################################
+
+      - name: "[All] Install Library"
+        run: |
+          python -m pip install --index-url https://test.pypi.org/simple/ eslpy --force
+

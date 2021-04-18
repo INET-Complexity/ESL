@@ -26,23 +26,13 @@
 
 
 #ifdef WITH_PYTHON
-///
-/// https://docs.python.org/3.7/c-api/intro.html#include-files
-///
-#define PY_SSIZE_T_CLEAN
-
-
-///// #include <Python.h>
-///// #Include <boost/python/detail/wrap_python.hpp>
 
 #include <esl/agent.hpp>
 #include <esl/exception.hpp>
 #include <esl/version.hpp>
 #include <esl/quantity.hpp>
 #include <esl/simulation/python_module_simulation.hpp>
-
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include <boost/python.hpp>
+ 
 using namespace boost::python;
 
 
