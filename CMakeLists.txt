@@ -22,14 +22,11 @@ SET(version_revision ${CMAKE_MATCH_1})
 CMAKE_POLICY(SET CMP0048 NEW)
 
 IF(APPLE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
     # allow linking to libraries outside of build tree
     SET(CMAKE_MACOSX_RPATH 1)
 
-    # TODO: this needs to match the build script/OS settings.
-    #SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
-  #  SET(CMAKE_MACOSX_RPATH 0)
-    # If environment settings override this, you can force:
-    # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
 ENDIF()
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
@@ -431,6 +428,11 @@ IF(WITH_PYTHON)
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
+
+        IF(APPLE)
+            SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+        ENDIF()
+
 
         IF(MSVC)
             # multi-processor compilation
