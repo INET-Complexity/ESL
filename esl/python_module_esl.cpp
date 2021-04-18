@@ -65,16 +65,16 @@ namespace esl {
 //                        , e.what()
 //                        );
 //    }
-//
-//    ///
-//    /// \brief  Python module structure follows directory structure and
-//    ///         C++ namespaces. We use __init__.py for submodules, so we can mix
-//    ///         native code and Python-binding specific Python code. Thus, we
-//    ///         protect the name of the module with an underscore, and import it
-//    ///         from __init__.py
-//    ///
-//    BOOST_PYTHON_MODULE(_esl)
-//    {
+
+    ///
+    /// \brief  Python module structure follows directory structure and
+    ///         C++ namespaces. We use __init__.py for submodules, so we can mix
+    ///         native code and Python-binding specific Python code. Thus, we
+    ///         protect the name of the module with an underscore, and import it
+    ///         from __init__.py
+    ///
+    BOOST_PYTHON_MODULE(_esl)
+    {
 //        class_<esl::exception>("exception", init<std::string>())
 //            .def("message", &esl::exception::what)
 //            ;
