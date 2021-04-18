@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, ubuntu-20.04, windows-latest]
+        os: [windows-latest]
         python_minor_version: [7, 8, 9]
     steps:
 
@@ -49,6 +49,7 @@ jobs:
           python -m pip install cibuildwheel twine
 
 ########################################################################################################################
+
       - name: "[MacOS] Install gfortran with homebrew"
         run: |
           brew update >/dev/null
@@ -57,7 +58,6 @@ jobs:
           which gfortran
         shell: bash
         if: matrix.os == 'macos-10.15'
-      #continue-on-error: true
 
       - name: "[MacOS] Install gsl with homebrew"
         run: |
@@ -223,6 +223,7 @@ jobs:
           python -m cibuildwheel --output-dir distribution
           $files = Get-ChildItem "distribution"
           foreach ($file in $files){
+            delvewheel show distribution/$file
             delvewheel repair distribution/$file
           }
           python -m twine upload --repository testpypi D:/a/ESL/ESL/wheelhouse/*

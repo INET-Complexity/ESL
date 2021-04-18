@@ -27,7 +27,6 @@ IF(APPLE)
     # allow linking to libraries outside of build tree
     # use 0 for repairwheel
     SET(CMAKE_MACOSX_RPATH 0)
-
 ENDIF()
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
@@ -59,7 +58,6 @@ IF(NOT CMAKE_BUILD_TYPE)
     MESSAGE("CMAKE_BUILD_TYPE not set, defaulting to Release build.")
     SET(CMAKE_BUILD_TYPE    Release)
 ENDIF()
-
 
 ################################################################################
 # PLatform specific
@@ -146,6 +144,7 @@ IF(NOT MSVC)
     # Gets the GNU standard insllation directories on this machine
     INCLUDE(GNUInstallDirs)
 ENDIF()
+
 ################################################################################
 # In this section we set up the Boost libraries,
 # and inter-dependencies between Boost MPI and Python
@@ -229,6 +228,8 @@ MESSAGE("----------------------------------------")
 IF(MSVC)
     # multi-processor compilation on MSVC
     ADD_DEFINITIONS(/MP)
+    # allows for compile-time optimizations
+    ADD_DEFINITIONS(-DESL_RELEASE)
 ELSE()
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
 
@@ -331,10 +332,10 @@ IF(CONFIGURATION_SHARED)
 
     SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
-    IF(MSVC)
+    #IF(MSVC)
         # multi-processor compilation
-        TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
-    ENDIF()
+        # TARGET_COMPILE_OPTIONS(${ESL_TARGET_NAME} PRIVATE "/MP")
+    #ENDIF()
 
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
 
@@ -344,7 +345,7 @@ IF(CONFIGURATION_SHARED)
 
     IF(MSVC OR MINGW)
         # this one is for the shared library only. For python, this needs to be called again separately
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY}  ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+    #    LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY}  ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     ELSE()
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
@@ -420,14 +421,6 @@ IF(WITH_PYTHON)
 
         IF(APPLE)
             SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-        ENDIF()
-
-
-        IF(MSVC)
-            # multi-processor compilation
-            #TARGET_COMPILE_OPTIONS(_${python_module_name} PRIVATE "/MP")
-            #SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-            #SET_PROPERTY(TARGET _${python_module_name} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
         ENDIF()
 
         # We have a special case for the main module residing in the root
