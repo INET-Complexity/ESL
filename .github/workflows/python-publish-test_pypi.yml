@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]
-        python_minor_version: [7, 8]
+        os: [macos-10.15, ubuntu-20.04, windows-latest]
+        python_minor_version: [7, 8, 9]
     steps:
 
 ########################################################################################################################
