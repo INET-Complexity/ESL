@@ -47,74 +47,74 @@ using namespace boost::python;
 
 
 namespace esl {
-    static boost::shared_ptr<agent> python_construct_agent( object const &o )
-    {
-        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
-        return boost::make_shared<agent>(identity<agent>(e().digits));
-    }
-
-    ///
-    /// \brief  Translates C++ exceptions to Python errors, by setting the
-    ///         Python error text equal to the C++ exception message.
-    ///
-    /// \param e
-    void translate_exception(const exception &e)
-    {
-        PyErr_SetString (   PyExc_RuntimeError
-                            //PyExc_UserWarning
-                        , e.what()
-                        );
-    }
-
-    ///
-    /// \brief  Python module structure follows directory structure and
-    ///         C++ namespaces. We use __init__.py for submodules, so we can mix
-    ///         native code and Python-binding specific Python code. Thus, we
-    ///         protect the name of the module with an underscore, and import it
-    ///         from __init__.py
-    ///
-    BOOST_PYTHON_MODULE(_esl)
-    {
-        class_<esl::exception>("exception", init<std::string>())
-            .def("message", &esl::exception::what)
-            ;
-
-        register_exception_translator<esl::exception>(translate_exception);
-
-        class_<quantity>(
-            "quantity",init<>())
-            .def(init<std::uint64_t>())
-            .def(self += self)
-            .def(self + self)
-            .def(self -= self)
-            .def(self - self)
-            //.def(self *= self)
-            .def(self * self)
-
-            .def(self < self)
-            .def(self > self)
-            .def(self == self)
-            .def(self != self)
-            .def(self <= self)
-            .def(self >= self)
-
-                //.def(self /= self)
-                //.def(self / self)
-                //.def(self %= self)
-                //.def(self % self)
-
-                // conversion to floating point type
-            .def(float_(self))
-            .def("__repr__", &quantity::representation)
-            .def("__str__", &quantity::representation)
-            .def(self *= std::uint64_t())
-            .def(self * std::uint64_t())
-            .def(self / std::uint64_t())
-            ;
-
-        class_<agent>("agent")
-            .def("__init__", boost::python::make_constructor(&python_construct_agent))
-            ;
+//    static boost::shared_ptr<agent> python_construct_agent( object const &o )
+//    {
+//        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
+//        return boost::make_shared<agent>(identity<agent>(e().digits));
+//    }
+//
+//    ///
+//    /// \brief  Translates C++ exceptions to Python errors, by setting the
+//    ///         Python error text equal to the C++ exception message.
+//    ///
+//    /// \param e
+//    void translate_exception(const exception &e)
+//    {
+//        PyErr_SetString (   PyExc_RuntimeError
+//                            //PyExc_UserWarning
+//                        , e.what()
+//                        );
+//    }
+//
+//    ///
+//    /// \brief  Python module structure follows directory structure and
+//    ///         C++ namespaces. We use __init__.py for submodules, so we can mix
+//    ///         native code and Python-binding specific Python code. Thus, we
+//    ///         protect the name of the module with an underscore, and import it
+//    ///         from __init__.py
+//    ///
+//    BOOST_PYTHON_MODULE(_esl)
+//    {
+//        class_<esl::exception>("exception", init<std::string>())
+//            .def("message", &esl::exception::what)
+//            ;
+//
+//        register_exception_translator<esl::exception>(translate_exception);
+//
+//        class_<quantity>(
+//            "quantity",init<>())
+//            .def(init<std::uint64_t>())
+//            .def(self += self)
+//            .def(self + self)
+//            .def(self -= self)
+//            .def(self - self)
+//            //.def(self *= self)
+//            .def(self * self)
+//
+//            .def(self < self)
+//            .def(self > self)
+//            .def(self == self)
+//            .def(self != self)
+//            .def(self <= self)
+//            .def(self >= self)
+//
+//                //.def(self /= self)
+//                //.def(self / self)
+//                //.def(self %= self)
+//                //.def(self % self)
+//
+//                // conversion to floating point type
+//            .def(float_(self))
+//            .def("__repr__", &quantity::representation)
+//            .def("__str__", &quantity::representation)
+//            .def(self *= std::uint64_t())
+//            .def(self * std::uint64_t())
+//            .def(self / std::uint64_t())
+//            ;
+//
+//        class_<agent>("agent")
+//            .def("__init__", boost::python::make_constructor(&python_construct_agent))
+//            ;
 
         ////////////////////////////////////////////////////////////////////////
 
