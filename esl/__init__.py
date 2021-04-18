@@ -26,11 +26,11 @@
 # This loads the top level binary library
 from esl._esl import *
 
-# from esl.computation import *
-# from esl.data import *
-# from esl.economics import *
-# from esl.geography import *
-# from esl.interaction import *
-# from esl.law import *
-# from esl.mathematics import *
-# from esl.simulation import *
+from esl.computation import *
+from esl.data import *
+from esl.economics import *
+from esl.geography import *
+from esl.interaction import *
+from esl.law import *
+from esl.mathematics import *
+from esl.simulation import *

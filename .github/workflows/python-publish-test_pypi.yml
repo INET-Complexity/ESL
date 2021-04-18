@@ -214,12 +214,15 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-win_amd64'
         run: |
+          pip install delvewheel
           wget https://www.bruot.org/hp/media/files/libraries/gsl_2_4_msvc2015_64_r1.zip -UseBasicParsing -OutFile gsl_2_4_msvc2015_64_r1.zip
           tar -xf ./gsl_2_4_msvc2015_64_r1.zip
           $env:PATH += ";C:/Boost;C:/Boost/include/boost-1_73;C:/Boost/lib;D:/a/ESL/ESL/boost_1_73_0;D:/a/ESL/ESL/msvc2015_64/include;D:/a/ESL/ESL/msvc2015_64/lib/gsl;D:/a/ESL/ESL/adept"
           $env:CMAKE_GENERATOR="Visual Studio 16 2019"
           $env:CMAKE_GENERATOR_PLATFORM="x64"
           python -m cibuildwheel --output-dir distribution
+          ls distribution
+          delvewheel repair distribution/*
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
         shell: powershell
