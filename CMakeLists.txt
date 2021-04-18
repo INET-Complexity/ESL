@@ -129,13 +129,8 @@ IF(WITH_PYTHON)
         MESSAGE(STATUS "The project is not built using scikit-build")
     ENDIF()
 
-    MESSAGE(STATUS " ")
-    MESSAGE(${PYTHON_LIBRARY})
-
     GET_FILENAME_COMPONENT(ESL_PYTHON_LINK_DIRECTORY ${PYTHON_LIBRARY} DIRECTORY)
-    MESSAGE(${ESL_PYTHON_LINK_DIRECTORY})
 
-    MESSAGE(STATUS "")
 
     # This reads the Python version that was found, and sets variables
     STRING(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
