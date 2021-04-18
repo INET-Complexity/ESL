@@ -178,7 +178,7 @@ IF(WITH_PYTHON)
     # On non-release builds, inform the users about the chosen Python and its paths
     IF(NOT CMAKE_BUILD_TYPE EQUAL "Release")
         MESSAGE("include: \t" ${PYTHON_INCLUDE_DIRS})
-        MESSAGE("library: \t" ${PYTHON_LIBRARY})
+        MESSAGE("library: \t" ${ESL_PYTHON_LINK_DIRECTORY})
         MESSAGE("libraries: \t" ${PYTHON_LIBRARIES})
     ENDIF()
 ENDIF()
@@ -359,7 +359,7 @@ IF(CONFIGURATION_SHARED)
     IF(MSVC)
         # this one is for the shared library only. For python, this needs to be called again separately
 
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${PYTHON_LIBRARY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     ELSEIF(MINGW)
         LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
@@ -424,7 +424,7 @@ IF(WITH_PYTHON)
         GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
 
         GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${PYTHON_LIBRARY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
 
         PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
