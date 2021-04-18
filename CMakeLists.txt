@@ -320,24 +320,14 @@ IF(BLAS_FOUND)
     ENDIF()
 ENDIF()
 
-IF(MSVC)
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
-ELSE()
-    LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
-ENDIF()
+LINK_LIBRARIES(${ALL_LINKED_LIBRARIES})
 
 ################################################################################
 # This needs to be at this position, because for MSVC we need to issue a LINK_DIRECTORIES
 # call before this to get it right
 
 IF(CONFIGURATION_SHARED)
-    IF(MSVC)
-        # ADD_LIBRARY(${ESL_TARGET_NAME} STATIC ${SOURCE_FILES} ) # 11-14 15:40
-
-        ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
-    ELSE()
-        ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
-    ENDIF()
+    ADD_LIBRARY(${ESL_TARGET_NAME} SHARED ${SOURCE_FILES} )
 
     SET_TARGET_PROPERTIES(${ESL_TARGET_NAME} PROPERTIES PREFIX "lib")
 
@@ -352,13 +342,9 @@ IF(CONFIGURATION_SHARED)
         TARGET_COMPILE_DEFINITIONS(${ESL_TARGET_NAME} PUBLIC ESL_RELEASE=1)
     endif()
 
-    IF(MSVC)
+    IF(MSVC OR MINGW)
         # this one is for the shared library only. For python, this needs to be called again separately
-
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
-        TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-    ELSEIF(MINGW)
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY}  ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
     ELSE()
         TARGET_LINK_LIBRARIES(${ESL_TARGET_NAME} ${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES} dl)
@@ -456,8 +442,6 @@ IF(WITH_PYTHON)
         MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
         # We install it in the right submodule path
         INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
-
-        # SET(ignoreMe "${SKBUILD}")
     ENDFOREACH ()
 
     ####################################################################################################################
@@ -471,13 +455,4 @@ IF(WITH_PYTHON)
     ENDFOREACH(test_src)
 
     ADD_CUSTOM_TARGET(pytest ALL COMMENT "pytest")
-
-    #SET_TARGET_PROPERTIES(pytest PROPERTIES
-    #    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python/test/)
-
-    #IF(PYTHONINTERP_FOUND)
-    #    ADD_TEST(NAME pytest
-    #            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/test/
-    #            COMMAND ${PYTHON_EXECUTABLE} -m pytest -r a -v ${CMAKE_BINARY_DIR}/python/test/)
-    #ENDIF()
 ENDIF()
