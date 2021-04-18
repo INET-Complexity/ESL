@@ -22,8 +22,11 @@ SET(version_revision ${CMAKE_MATCH_1})
 CMAKE_POLICY(SET CMP0048 NEW)
 
 IF(APPLE)
+    # allow linking to libraries outside of build tree
+    SET(CMAKE_MACOSX_RPATH 1)
+
     # TODO: this needs to match the build script/OS settings.
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+    #SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
   #  SET(CMAKE_MACOSX_RPATH 0)
     # If environment settings override this, you can force:
     # ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
