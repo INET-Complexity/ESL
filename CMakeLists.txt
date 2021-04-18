@@ -25,7 +25,8 @@ IF(APPLE)
     SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
     ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
     # allow linking to libraries outside of build tree
-    SET(CMAKE_MACOSX_RPATH 1)
+    # use 0 for repairwheel
+    SET(CMAKE_MACOSX_RPATH 0)
 
 ENDIF()
 
