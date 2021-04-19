@@ -32,7 +32,6 @@ jobs:
 
       - name: "[All] Install Library from test pypi and run tests"
         run: |
-          sleep 60m
           python -m pip install --index-url https://test.pypi.org/simple/ eslpy --force
           python -c "import esl; print(esl.version())"
 
