@@ -1,8 +1,10 @@
-name: build publish Test Pypi
+name: Integrate TestPypi package.
 
+#
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - '*'
 
 jobs:
   build_wheels:
@@ -28,7 +30,10 @@ jobs:
 
       ########################################################################################################################
 
-      - name: "[All] Install Library"
+      - name: "[All] Install Library from test pypi and run tests"
         run: |
+          sleep 60m
           python -m pip install --index-url https://test.pypi.org/simple/ eslpy --force
+          python -c "import esl; print(esl.version())"
+
 

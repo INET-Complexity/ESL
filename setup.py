@@ -93,9 +93,9 @@ setup(
     packages            = list(packages.keys()),
     package_dir         = packages,
 
-    # package_data        = { ''   : []
-    #                       , 'esl': ['version']
-    #                       },
+    package_data        = { ''   : []
+                          , 'esl': ['version']
+                          },
 
     cmake_install_dir   = 'esl'
 )
