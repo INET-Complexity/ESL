@@ -60,7 +60,7 @@ version = read_version()
 # by the delvewheel tool.
 if 'windows' == platform.system().lower():
     from ctypes import WinDLL
-    with open(os.path.join(libs_dir, '.load-order-eslpy-{version[0]}.{version[1]}.{version[2]}')) as file:
+    with open(os.path.join(libs_dir, f".load-order-eslpy-{version[0]}.{version[1]}.{version[2]}")) as file:
         load_order = file.read().split()
     # print(f"load order = {load_order}")
     for lib in load_order:
