@@ -25,7 +25,10 @@
 import os
 import platform
 
+bin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
 libs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'eslpy.libs'))
 
 #print(f"root_dir {root_dir}")
@@ -37,7 +40,7 @@ def read_version():
     :return:    Version tuple, in (major, minor, patch) format.
     """
     try:
-        with open(f"version", "r") as source_version:
+        with open(os.path.join(bin_dir, "version"), "r") as source_version:
             lines = source_version.readlines()
             version = []
             for line in lines:
@@ -50,8 +53,7 @@ def read_version():
         raise ValueError(f"Can not read version file.")
 
 version = read_version()
-
-
+#print(f"library version {version}")
 
 # On windows, we encounter some issues loading libraries, so we load them manually here.
 # The load-order-eslpy file, and the 'os.add_dll_directory(libs_dir)' call are assumed to be added
