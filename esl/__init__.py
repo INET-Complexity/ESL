@@ -22,60 +22,57 @@
 #               You may obtain instructions to fulfill the attribution
 #               requirements in CITATION.cff
 #
-import os
-import platform
-
-bin_dir = os.path.abspath(os.path.dirname(__file__))
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-libs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'eslpy.libs'))
-
-#print(f"root_dir {root_dir}")
-#print(f"libs_dir {libs_dir}")
-
-def read_version():
+def initialize_library():
     """
-    Reads the library version number from the unified version files, esl/version
-    :return:    Version tuple, in (major, minor, patch) format.
+    This function initializes the library by loading dependencies.
+    :return:
     """
-    try:
-        with open(os.path.join(bin_dir, "version"), "r") as source_version:
-            lines = source_version.readlines()
-            version = []
-            for line in lines:
-                if "ESL_VERSION_" in line:
-                    number = int(line.split(";")[0].split('=')[1].strip())
-                    version.append(number)
+    import os
+    import platform
 
-            return tuple(version)
-    except:
-        raise ValueError(f"Can not read version file.")
+    bin_dir = os.path.abspath(os.path.dirname(__file__))
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    libs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'eslpy.libs'))
 
-version = read_version()
-#print(f"library version {version}")
+    #print(f"root_dir {root_dir}")
+    #print(f"libs_dir {libs_dir}")
 
-# On windows, we encounter some issues loading libraries, so we load them manually here.
-# The load-order-eslpy file, and the 'os.add_dll_directory(libs_dir)' call are assumed to be added
-# by the delvewheel tool.
-if 'windows' == platform.system().lower():
-    from ctypes import WinDLL
-    with open(os.path.join(libs_dir, f".load-order-eslpy-{version[0]}.{version[1]}.{version[2]}")) as file:
-        load_order = file.read().split()
-    # print(f"load order = {load_order}")
-    for lib in load_order:
-        # print(f"\tloading {os.path.join(libs_dir, lib)}")
-        WinDLL(os.path.join(libs_dir, lib))
+    def read_version():
+        """
+        Reads the library version number from the unified version files, esl/version
+        :return:    Version tuple, in (major, minor, patch) format.
+        """
+        try:
+            with open(os.path.join(bin_dir, "version"), "r") as source_version:
+                lines = source_version.readlines()
+                version = []
+                for line in lines:
+                    if "ESL_VERSION_" in line:
+                        number = int(line.split(";")[0].split('=')[1].strip())
+                        version.append(number)
 
-# Regardless of platform, we should be all set up to load the shared library with native code
+                return tuple(version)
+        except:
+            raise ValueError(f"Can not read version file.")
 
-# This loads the top level binary library
+    version = read_version()
+    #print(f"library version {version}")
+
+    # On windows, we encounter some issues loading libraries, so we load them manually here.
+    # The load-order-eslpy file, and the 'os.add_dll_directory(libs_dir)' call are assumed to be added
+    # by the delvewheel tool.
+    if 'windows' == platform.system().lower():
+        from ctypes import WinDLL
+        with open(os.path.join(libs_dir, f".load-order-eslpy-{version[0]}.{version[1]}.{version[2]}")) as file:
+            load_order = file.read().split()
+        # print(f"load order = {load_order}")
+        for lib in load_order:
+            # print(f"\tloading {os.path.join(libs_dir, lib)}")
+            WinDLL(os.path.join(libs_dir, lib))
+
+
+initialize_library()   # initialize library before loading submodules
+del initialize_library # remove the function, removing all traces of initialization from the library interface
+
+# This loads the binary library containing all submodules
 from esl._esl import *
-
-# from esl.computation import *
-# from esl.data import *
-# from esl.economics import *
-# from esl.geography import *
-# from esl.interaction import *
-# from esl.law import *
-# from esl.mathematics import *
-# from esl.simulation import *
-

@@ -94,7 +94,7 @@ setup(
     package_dir         = packages,
 
     package_data        = { ''   : []
-                          , 'esl': ['version']
+                          , source_directory: ['version']
                           },
 
     cmake_install_dir   = 'esl'
