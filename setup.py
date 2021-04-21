@@ -77,8 +77,10 @@ setup(
     long_description    = (pathlib.Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
 
-    author              = 'Maarten P. Scholl',
+    author              = 'Maarten P. Scholl et al.',
     author_email        = 'maarten.scholl@cs.ox.ac.uk',
+
+    url                 = "https://www.inet.ox.ac.uk/"
 
     classifiers         = [ 'Development Status :: 3 - Alpha',
                             'License :: OSI Approved :: Apache Software License',
