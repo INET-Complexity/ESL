@@ -80,7 +80,7 @@ setup(
     author              = 'Maarten P. Scholl et al.',
     author_email        = 'maarten.scholl@cs.ox.ac.uk',
 
-    url                 = "https://www.inet.ox.ac.uk/"
+    url                 = "https://www.inet.ox.ac.uk/",
 
     classifiers         = [ 'Development Status :: 3 - Alpha',
                             'License :: OSI Approved :: Apache Software License',
