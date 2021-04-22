@@ -33,6 +33,10 @@ jobs:
       - name: "[All] Install Library from test pypi and run tests"
         run: |
           python -m pip install --index-url https://test.pypi.org/simple/ eslpy --force
+          python -c pip show eslpy
+
+      ########################################################################################################################
+
+      - name: "[All] Install Library from test pypi and run tests"
+        run: |
           python -c "import esl; print(esl.version())"
-
-
