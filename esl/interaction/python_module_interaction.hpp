@@ -36,55 +36,55 @@ using namespace boost::python;
 #include <esl/interaction/message.hpp>
 
 namespace esl::interaction {
-
-    ///
-    /// \brief  Takes a python function object and wraps it, so we can call it
-    ///         from C++
-    ///
-    /// \details    See communicator.hpp for callback_handle type definition
-    ///
-    ///
-    /// \param f The python function that handles the message
-    /// \return
-    communicator::callback_handle make_callback_handle(boost::python::object f)
-    {
-        //  std::function<simulation::time_point( message_t
-        //                                      , simulation::time_interval
-        //                                      , std::seed_seq &
-        //                                      )>;
-
-        return [&]( communicator::message_t m
-                  , simulation::time_interval i
-                  , std::seed_seq &s
-                  )
-        {
-            auto result_ = f(m, i, s);
-            return boost::python::extract<simulation::time_point>(result_);
-        };
-    }
-
-    ///
-    /// \brief  Since the main class is a template, we must expose a
-    ///         non-template to python.
-    ///
-    class python_message
-    : public message<python_message, library_message_code<0x1u>()>
-    {
-    public:
-        // this helps the linker resolve the message code
-        constexpr const static message_code python_code = code;
-
-        template<class archive_t>
-        void serialize(archive_t &archive, const unsigned int version)
-        {
-            (void)version;
-            //BOOST_SERIALIZATION_BASE_OBJECT_NVP(message);
-            archive &boost::serialization::make_nvp("message",
-                boost::serialization::base_object<message<python_message, library_message_code<0x1u>()>>(
-                    *this));
-
-        }
-    };
+//
+//    ///
+//    /// \brief  Takes a python function object and wraps it, so we can call it
+//    ///         from C++
+//    ///
+//    /// \details    See communicator.hpp for callback_handle type definition
+//    ///
+//    ///
+//    /// \param f The python function that handles the message
+//    /// \return
+//    communicator::callback_handle make_callback_handle(boost::python::object f)
+//    {
+//        //  std::function<simulation::time_point( message_t
+//        //                                      , simulation::time_interval
+//        //                                      , std::seed_seq &
+//        //                                      )>;
+//
+//        return [&]( communicator::message_t m
+//                  , simulation::time_interval i
+//                  , std::seed_seq &s
+//                  )
+//        {
+//            auto result_ = f(m, i, s);
+//            return boost::python::extract<simulation::time_point>(result_);
+//        };
+//    }
+//
+//    ///
+//    /// \brief  Since the main class is a template, we must expose a
+//    ///         non-template to python.
+//    ///
+//    class python_message
+//    : public message<python_message, library_message_code<0x1u>()>
+//    {
+//    public:
+//        // this helps the linker resolve the message code
+//        constexpr const static message_code python_code = code;
+//
+//        template<class archive_t>
+//        void serialize(archive_t &archive, const unsigned int version)
+//        {
+//            (void)version;
+//            //BOOST_SERIALIZATION_BASE_OBJECT_NVP(message);
+//            archive &boost::serialization::make_nvp("message",
+//                boost::serialization::base_object<message<python_message, library_message_code<0x1u>()>>(
+//                    *this));
+//
+//        }
+//    };
 }
 
 #endif  // WITH_PYTHON

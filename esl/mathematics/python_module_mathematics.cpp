@@ -76,7 +76,6 @@
 //        .def("continue_recording", &adept::Stack::continue_recording)
 //        .def("new_recording", &adept::Stack::new_recording)
 //        .def("compute_adjoint", &adept::Stack::compute_adjoint)
-//
 //    ;
 //
 //    // TODO: verify that all opeartions on this are exported
