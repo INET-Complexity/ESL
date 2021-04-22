@@ -164,8 +164,13 @@ IF(WITH_PYTHON)
 
     # TODO: confirm that this is actually how its meant to be; it appears that for Python 3.8
     #       windows has `python38` as a Boost dependency, and other platforms just have 'python'
-    IF(MSVC) #ESL_PYTHON_BINDINGS_VERSION_MINOR LESS 8)
-        LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+    IF(${ESL_PYTHON_BINDINGS_VERSION_MINOR} LESS 8)
+        IF(MSVC)
+            LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR}${ESL_PYTHON_BINDINGS_VERSION_MINOR})
+        ELSE()
+            # other platforms just link to libboost-python3
+            LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python${ESL_PYTHON_BINDINGS_VERSION_MAJOR})
+        ENDIF()
     ELSE()
         LIST(APPEND Boost_LIBRARIES_DEPENDENCIES python)
     ENDIF()
