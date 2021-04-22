@@ -213,66 +213,66 @@ using namespace esl::economics::markets::order_book;
 ////////////////////////////////////////////////////////////////////////////////
 // esl.economics.markets.walras
 ////////////////////////////////////////////////////////////////////////////////
-#include <esl/economics/markets/walras/python_module_walras.hpp>
+//#include <esl/economics/markets/walras/python_module_walras.hpp>
 #include <esl/economics/markets/walras/price_setter.hpp>
 #include <esl/economics/markets/walras/tatonnement.hpp>
 using namespace esl::economics::markets::walras;
 
-
-class python_differentiable_order_message
-    : public esl::economics::markets::walras::differentiable_order_message
-        , public wrapper<esl::economics::markets::walras::differentiable_order_message>
-{
-public:
-    python_differentiable_order_message(
-        const esl::simulation::python_module::python_identity &sender       = esl::simulation::python_module::python_identity(),
-        const esl::simulation::python_module::python_identity& recipient     = esl::simulation::python_module::python_identity(),
-        esl::simulation::time_point sent         = esl::simulation::time_point(),
-        esl::simulation::time_point received     = esl::simulation::time_point())
-        : esl::economics::markets::walras::differentiable_order_message
-              ( esl::reinterpret_identity_cast<esl::agent>(sender)
-                  , esl::reinterpret_identity_cast<esl::agent>(recipient)
-                  , sent
-                  , received)
-        , wrapper<esl::economics::markets::walras::differentiable_order_message>()
-    {
-
-    }
-
-    // the default implementation is to demand zero for all
-    [[nodiscard]] std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(const std::map<
-        esl::identity<esl::law::property>
-        , std::tuple<esl::economics::markets::quote, esl::variable>> &quotes) const override
-    {
-        dict quotes_;
-
-        for(const auto &[i, v]: quotes){
-            auto t = make_tuple(std::get<0>(v), esl::value(std::get<1>(v)));
-            quotes_.setdefault(i, t);
-        }
-
-        // specify the type, so that the return value is converted to python::object
-        object return_value_ = get_override("excess_demand")(quotes_);
-        dict excess_ = extract<dict>(return_value_);
-        auto keys = list(excess_.keys());
-        auto values = list(excess_.values());
-
-        std::map<esl::identity<esl::law::property>, esl::variable> result_;
-
-        for(int i = 0; i < len(keys); ++i) {
-            extract<esl::identity<esl::law::property>> extractor(keys[i]);
-            extract<double> value_extractor(values[i]);
-            if(extractor.check() && value_extractor.check()) {
-                auto key   = extractor();
-                auto value = value_extractor();
-
-                result_.emplace(key, esl::variable(value));
-            }
-        }
-
-        return result_;
-    }
-};
+//
+//class python_differentiable_order_message
+//    : public esl::economics::markets::walras::differentiable_order_message
+//        , public wrapper<esl::economics::markets::walras::differentiable_order_message>
+//{
+//public:
+//    python_differentiable_order_message(
+//        const esl::simulation::python_module::python_identity &sender       = esl::simulation::python_module::python_identity(),
+//        const esl::simulation::python_module::python_identity& recipient     = esl::simulation::python_module::python_identity(),
+//        esl::simulation::time_point sent         = esl::simulation::time_point(),
+//        esl::simulation::time_point received     = esl::simulation::time_point())
+//        : esl::economics::markets::walras::differentiable_order_message
+//              ( esl::reinterpret_identity_cast<esl::agent>(sender)
+//                  , esl::reinterpret_identity_cast<esl::agent>(recipient)
+//                  , sent
+//                  , received)
+//        , wrapper<esl::economics::markets::walras::differentiable_order_message>()
+//    {
+//
+//    }
+//
+//    // the default implementation is to demand zero for all
+//    [[nodiscard]] std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(const std::map<
+//        esl::identity<esl::law::property>
+//        , std::tuple<esl::economics::markets::quote, esl::variable>> &quotes) const override
+//    {
+//        dict quotes_;
+//
+//        for(const auto &[i, v]: quotes){
+//            auto t = make_tuple(std::get<0>(v), esl::value(std::get<1>(v)));
+//            quotes_.setdefault(i, t);
+//        }
+//
+//        // specify the type, so that the return value is converted to python::object
+//        object return_value_ = get_override("excess_demand")(quotes_);
+//        dict excess_ = extract<dict>(return_value_);
+//        auto keys = list(excess_.keys());
+//        auto values = list(excess_.values());
+//
+//        std::map<esl::identity<esl::law::property>, esl::variable> result_;
+//
+//        for(int i = 0; i < len(keys); ++i) {
+//            extract<esl::identity<esl::law::property>> extractor(keys[i]);
+//            extract<double> value_extractor(values[i]);
+//            if(extractor.check() && value_extractor.check()) {
+//                auto key   = extractor();
+//                auto value = value_extractor();
+//
+//                result_.emplace(key, esl::variable(value));
+//            }
+//        }
+//
+//        return result_;
+//    }
+//};
 
 
 ///
@@ -353,36 +353,36 @@ list get_differentiable_order_message(const excess_demand_model* e)
 }*/
 
 //
-typedef std::vector<boost::shared_ptr<walras::differentiable_order_message>> messages_t;
-
-///
-/// \brief  converts the list of demand messages to Python
-///
-/// \param e
-/// \return
-messages_t get_excess_demand_functions(const tatonnement::excess_demand_model &e)
-{
-    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
-    for(auto m: e.excess_demand_functions_){
-        result_.push_back(to_boost(m));
-    }
-    return result_;
-}
-
-///
-/// \brief  accepts Python list back to
-///
-/// \param e
-/// \param l
-void set_excess_demand_functions(tatonnement::excess_demand_model &e, const list& l)
-{
-    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
-    e.excess_demand_functions_.clear();
-    for(int i = 0; i < len(l); ++i){
-        extract<boost::shared_ptr<python_differentiable_order_message>> extractor(l[i]);
-        e.excess_demand_functions_.push_back(to_std(extractor()));
-    }
-}
+//typedef std::vector<boost::shared_ptr<walras::differentiable_order_message>> messages_t;
+//
+/////
+///// \brief  converts the list of demand messages to Python
+/////
+///// \param e
+///// \return
+//messages_t get_excess_demand_functions(const tatonnement::excess_demand_model &e)
+//{
+//    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
+//    for(auto m: e.excess_demand_functions_){
+//        result_.push_back(to_boost(m));
+//    }
+//    return result_;
+//}
+//
+/////
+///// \brief  accepts Python list back to
+/////
+///// \param e
+///// \param l
+//void set_excess_demand_functions(tatonnement::excess_demand_model &e, const list& l)
+//{
+//    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
+//    e.excess_demand_functions_.clear();
+//    for(int i = 0; i < len(l); ++i){
+//        extract<boost::shared_ptr<python_differentiable_order_message>> extractor(l[i]);
+//        e.excess_demand_functions_.push_back(to_std(extractor()));
+//    }
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // esl.geography

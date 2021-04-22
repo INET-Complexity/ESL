@@ -39,21 +39,21 @@
 #include <esl/simulation/python_module_simulation.hpp>
 
 namespace esl::python_module {
-    template<typename agent_t_, typename ... arguments_>
-    static boost::shared_ptr<agent_t_> python_construct_agent( boost::python::object const &o, arguments_ ... a )
-    {
-        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
-
-        if(!e.check()){
-
-        }
-
-        esl::simulation::python_module::python_identity pi = e();
-
-        //identity<agent_t_> i = esl::reinterpret_identity_cast<identity<agent_t_>>(pi);
-
-        return boost::make_shared<agent_t_>(identity<agent_t_>(pi.digits), a...);
-    }
+//    template<typename agent_t_, typename ... arguments_>
+//    static boost::shared_ptr<agent_t_> python_construct_agent( boost::python::object const &o, arguments_ ... a )
+//    {
+//        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
+//
+//        if(!e.check()){
+//
+//        }
+//
+//        esl::simulation::python_module::python_identity pi = e();
+//
+//        //identity<agent_t_> i = esl::reinterpret_identity_cast<identity<agent_t_>>(pi);
+//
+//        return boost::make_shared<agent_t_>(identity<agent_t_>(pi.digits), a...);
+//    }
 
 
 }

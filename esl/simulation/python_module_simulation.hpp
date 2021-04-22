@@ -35,38 +35,38 @@
 #include <boost/python/converter/shared_ptr_to_python.hpp>
 
 namespace esl::simulation::python_module {
-
-    // as section of typedefs
-    typedef esl::entity<boost::python::object> python_entity;
-    typedef esl::identity<boost::python::object> python_identity;
-
-
-
-    ///
-    /// \brief
-    ///
-    template<typename parent_t_>
-    void helper_create_child_identity(parent_t_ &e)
-    {
-       // e.create<>()
-    }
-
-
-    ///
-    /// \brief
-    ///
-    inline void helper_create_child_entity(const boost::python::object& python_object)
-    {
-        boost::python::extract<boost::python::object> extractor_(python_object);
-        boost::python::object object_ = extractor_();
-        auto name_ = boost::python::extract<std::string>(
-            object_.attr("__class__").attr("__name__"));
-
-        //return boost::python::converter::shared_ptr_to_python(
-        //    std::make_shared()
-        //);
-    }
-
+//
+//    // as section of typedefs
+//    typedef esl::entity<boost::python::object> python_entity;
+//    typedef esl::identity<boost::python::object> python_identity;
+//
+//
+//
+//    ///
+//    /// \brief
+//    ///
+//    template<typename parent_t_>
+//    void helper_create_child_identity(parent_t_ &e)
+//    {
+//       // e.create<>()
+//    }
+//
+//
+//    ///
+//    /// \brief
+//    ///
+//    inline void helper_create_child_entity(const boost::python::object& python_object)
+//    {
+//        boost::python::extract<boost::python::object> extractor_(python_object);
+//        boost::python::object object_ = extractor_();
+//        auto name_ = boost::python::extract<std::string>(
+//            object_.attr("__class__").attr("__name__"));
+//
+//        //return boost::python::converter::shared_ptr_to_python(
+//        //    std::make_shared()
+//        //);
+//    }
+//
 
 
 
