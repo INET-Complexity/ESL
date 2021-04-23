@@ -248,14 +248,14 @@ ELSE()
 
     ELSE()
         # allows for compile-time optimizations
-        ADD_DEFINITIONS(-DESL_RELEASE)
+#        ADD_DEFINITIONS(-DESL_RELEASE)
 
         # Enable architecture-specific optimizations
-        INCLUDE(CheckCXXCompilerFlag)
-        CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
-        IF(COMPILER_SUPPORTS_MARCH_NATIVE)
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-        ENDIF()
+#        INCLUDE(CheckCXXCompilerFlag)
+#        CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+#        IF(COMPILER_SUPPORTS_MARCH_NATIVE)
+#            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+#        ENDIF()
 
     ENDIF()
 ENDIF()
