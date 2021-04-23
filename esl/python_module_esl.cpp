@@ -218,61 +218,61 @@ using namespace esl::economics::markets::order_book;
 #include <esl/economics/markets/walras/tatonnement.hpp>
 using namespace esl::economics::markets::walras;
 
-//
-//class python_differentiable_order_message
-//    : public esl::economics::markets::walras::differentiable_order_message
-//        , public wrapper<esl::economics::markets::walras::differentiable_order_message>
-//{
-//public:
-//    python_differentiable_order_message(
-//        const esl::simulation::python_module::python_identity &sender       = esl::simulation::python_module::python_identity(),
-//        const esl::simulation::python_module::python_identity& recipient     = esl::simulation::python_module::python_identity(),
-//        esl::simulation::time_point sent         = esl::simulation::time_point(),
-//        esl::simulation::time_point received     = esl::simulation::time_point())
-//        : esl::economics::markets::walras::differentiable_order_message
-//              ( esl::reinterpret_identity_cast<esl::agent>(sender)
-//                  , esl::reinterpret_identity_cast<esl::agent>(recipient)
-//                  , sent
-//                  , received)
-//        , wrapper<esl::economics::markets::walras::differentiable_order_message>()
-//    {
-//
-//    }
-//
-//    // the default implementation is to demand zero for all
-//    [[nodiscard]] std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(const std::map<
-//        esl::identity<esl::law::property>
-//        , std::tuple<esl::economics::markets::quote, esl::variable>> &quotes) const override
-//    {
-//        dict quotes_;
-//
-//        for(const auto &[i, v]: quotes){
-//            auto t = make_tuple(std::get<0>(v), esl::value(std::get<1>(v)));
-//            quotes_.setdefault(i, t);
-//        }
-//
-//        // specify the type, so that the return value is converted to python::object
-//        object return_value_ = get_override("excess_demand")(quotes_);
-//        dict excess_ = extract<dict>(return_value_);
-//        auto keys = list(excess_.keys());
-//        auto values = list(excess_.values());
-//
-//        std::map<esl::identity<esl::law::property>, esl::variable> result_;
-//
-//        for(int i = 0; i < len(keys); ++i) {
-//            extract<esl::identity<esl::law::property>> extractor(keys[i]);
-//            extract<double> value_extractor(values[i]);
-//            if(extractor.check() && value_extractor.check()) {
-//                auto key   = extractor();
-//                auto value = value_extractor();
-//
-//                result_.emplace(key, esl::variable(value));
-//            }
-//        }
-//
-//        return result_;
-//    }
-//};
+
+class python_differentiable_order_message
+    : public esl::economics::markets::walras::differentiable_order_message
+        , public wrapper<esl::economics::markets::walras::differentiable_order_message>
+{
+public:
+    python_differentiable_order_message(
+        const esl::simulation::python_module::python_identity &sender       = esl::simulation::python_module::python_identity(),
+        const esl::simulation::python_module::python_identity& recipient     = esl::simulation::python_module::python_identity(),
+        esl::simulation::time_point sent         = esl::simulation::time_point(),
+        esl::simulation::time_point received     = esl::simulation::time_point())
+        : esl::economics::markets::walras::differentiable_order_message
+              ( esl::reinterpret_identity_cast<esl::agent>(sender)
+                  , esl::reinterpret_identity_cast<esl::agent>(recipient)
+                  , sent
+                  , received)
+        , wrapper<esl::economics::markets::walras::differentiable_order_message>()
+    {
+
+    }
+
+    // the default implementation is to demand zero for all
+    [[nodiscard]] std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(const std::map<
+        esl::identity<esl::law::property>
+        , std::tuple<esl::economics::markets::quote, esl::variable>> &quotes) const override
+    {
+        dict quotes_;
+
+        for(const auto &[i, v]: quotes){
+            auto t = make_tuple(std::get<0>(v), esl::value(std::get<1>(v)));
+            quotes_.setdefault(i, t);
+        }
+
+        // specify the type, so that the return value is converted to python::object
+        object return_value_ = get_override("excess_demand")(quotes_);
+        dict excess_ = extract<dict>(return_value_);
+        auto keys = list(excess_.keys());
+        auto values = list(excess_.values());
+
+        std::map<esl::identity<esl::law::property>, esl::variable> result_;
+
+        for(int i = 0; i < len(keys); ++i) {
+            extract<esl::identity<esl::law::property>> extractor(keys[i]);
+            extract<double> value_extractor(values[i]);
+            if(extractor.check() && value_extractor.check()) {
+                auto key   = extractor();
+                auto value = value_extractor();
+
+                result_.emplace(key, esl::variable(value));
+            }
+        }
+
+        return result_;
+    }
+};
 
 
 ///
@@ -352,37 +352,37 @@ list get_differentiable_order_message(const excess_demand_model* e)
     e->excess_demand_functions_
 }*/
 
-//
-//typedef std::vector<boost::shared_ptr<walras::differentiable_order_message>> messages_t;
-//
-/////
-///// \brief  converts the list of demand messages to Python
-/////
-///// \param e
-///// \return
-//messages_t get_excess_demand_functions(const tatonnement::excess_demand_model &e)
-//{
-//    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
-//    for(auto m: e.excess_demand_functions_){
-//        result_.push_back(to_boost(m));
-//    }
-//    return result_;
-//}
-//
-/////
-///// \brief  accepts Python list back to
-/////
-///// \param e
-///// \param l
-//void set_excess_demand_functions(tatonnement::excess_demand_model &e, const list& l)
-//{
-//    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
-//    e.excess_demand_functions_.clear();
-//    for(int i = 0; i < len(l); ++i){
-//        extract<boost::shared_ptr<python_differentiable_order_message>> extractor(l[i]);
-//        e.excess_demand_functions_.push_back(to_std(extractor()));
-//    }
-//}
+
+typedef std::vector<boost::shared_ptr<walras::differentiable_order_message>> messages_t;
+
+///
+/// \brief  converts the list of demand messages to Python
+///
+/// \param e
+/// \return
+messages_t get_excess_demand_functions(const tatonnement::excess_demand_model &e)
+{
+    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
+    for(auto m: e.excess_demand_functions_){
+        result_.push_back(to_boost(m));
+    }
+    return result_;
+}
+
+///
+/// \brief  accepts Python list back to
+///
+/// \param e
+/// \param l
+void set_excess_demand_functions(tatonnement::excess_demand_model &e, const list& l)
+{
+    std::vector<boost::shared_ptr<walras::differentiable_order_message>> result_;
+    e.excess_demand_functions_.clear();
+    for(int i = 0; i < len(l); ++i){
+        extract<boost::shared_ptr<python_differentiable_order_message>> extractor(l[i]);
+        e.excess_demand_functions_.push_back(to_std(extractor()));
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // esl.geography
@@ -832,21 +832,21 @@ BOOST_PYTHON_MODULE(_esl)
                            &computation::block_pool::block<object>::index);
 
         // computational environment base class with default single thread
-//        class_<computation::python_environment>(
-//            "environment", "The environment class runs models: it schedules agents and delivers messages sent between agents.")
-//            .def("step", &computation::python_environment::step)
-//            .def("run", &computation::python_environment::run)
-//            .def("activate", &computation::python_environment::activate)
-//            .def("deactivate", &computation::python_environment::deactivate)
-//            .def("before_step", &computation::python_environment::before_step)
-//            .def("after_step", &computation::python_environment::after_step)
-//            .def("after_run", &computation::python_environment::after_run)
-//            .def("activate_agent",
-//                 &computation::python_environment::activate_agent)
-//            .def("deactivate_agent",
-//                 &computation::python_environment::deactivate_agent)
-//            .def("send_messages",
-//                 &computation::python_environment::send_messages);
+        class_<computation::python_environment>(
+            "environment", "The environment class runs models: it schedules agents and delivers messages sent between agents.")
+            .def("step", &computation::python_environment::step)
+            .def("run", &computation::python_environment::run)
+            .def("activate", &computation::python_environment::activate)
+            .def("deactivate", &computation::python_environment::deactivate)
+            .def("before_step", &computation::python_environment::before_step)
+            .def("after_step", &computation::python_environment::after_step)
+            .def("after_run", &computation::python_environment::after_run)
+            .def("activate_agent",
+                 &computation::python_environment::activate_agent)
+            .def("deactivate_agent",
+                 &computation::python_environment::deactivate_agent)
+            .def("send_messages",
+                 &computation::python_environment::send_messages);
 
         // timing information
         class_<computation::agent_timing>(
@@ -1269,48 +1269,48 @@ BOOST_PYTHON_MODULE(_esl)
             {
                 boost::python::scope scope_walras_ = create_scope("walras");
 
-//                enum_<tatonnement::excess_demand_model::solver>("solver")
-//                    // TODO: implement automatic differentiation for Python
-//                    //.value("root", excess_demand_model::root)
-//                    //.value("minimization", excess_demand_model::minimization)
-//                    .value(
-//                        "derivative_free_root",
-//                        tatonnement::excess_demand_model::derivative_free_root)
-//                    .value("derivative_free_minimization",
-//                           tatonnement::excess_demand_model::
-//                               derivative_free_minimization)
-//                    .export_values();
-//
-//                class_<python_differentiable_order_message, boost::noncopyable>(
-//                    "differentiable_order_message",
-//                    init<esl::simulation::python_module::python_identity,
-//                         esl::simulation::python_module::python_identity,
-//                         esl::simulation::time_point,
-//                         esl::simulation::time_point>())
-//                    .add_property(
-//                        "supply",
-//                        &walras::differentiable_order_message::supply);
-//
-//                // expose vector of messages to Python
-//                class_<messages_t>("messages_t")
-//                    .def(vector_indexing_suite<messages_t>());
-//
-//                class_<python_excess_demand_model, boost::noncopyable>(
-//                    "excess_demand_model", no_init)  // non-trivial constructor
-//                    .def("__init__",
-//                         make_constructor(
-//                             &excess_demand_model_python_constructor))
-//                    .def_readwrite(
-//                        "circuit_breaker",
-//                        &tatonnement::excess_demand_model::circuit_breaker)
-//                    .def_readwrite("methods",
-//                                   &tatonnement::excess_demand_model::methods)
-//                    .def_readwrite("quotes",
-//                                   &tatonnement::excess_demand_model::quotes)
-//                    .def("compute_clearing_quotes", &clear_market)
-//                    .add_property("excess_demand_functions",
-//                                  &get_excess_demand_functions,
-//                                  &set_excess_demand_functions);
+                enum_<tatonnement::excess_demand_model::solver>("solver")
+                    // TODO: implement automatic differentiation for Python
+                    //.value("root", excess_demand_model::root)
+                    //.value("minimization", excess_demand_model::minimization)
+                    .value(
+                        "derivative_free_root",
+                        tatonnement::excess_demand_model::derivative_free_root)
+                    .value("derivative_free_minimization",
+                           tatonnement::excess_demand_model::
+                               derivative_free_minimization)
+                    .export_values();
+
+                class_<python_differentiable_order_message, boost::noncopyable>(
+                    "differentiable_order_message",
+                    init<esl::simulation::python_module::python_identity,
+                         esl::simulation::python_module::python_identity,
+                         esl::simulation::time_point,
+                         esl::simulation::time_point>())
+                    .add_property(
+                        "supply",
+                        &walras::differentiable_order_message::supply);
+
+                // expose vector of messages to Python
+                class_<messages_t>("messages_t")
+                    .def(vector_indexing_suite<messages_t>());
+
+                class_<python_excess_demand_model, boost::noncopyable>(
+                    "excess_demand_model", no_init)  // non-trivial constructor
+                    .def("__init__",
+                         make_constructor(
+                             &excess_demand_model_python_constructor))
+                    .def_readwrite(
+                        "circuit_breaker",
+                        &tatonnement::excess_demand_model::circuit_breaker)
+                    .def_readwrite("methods",
+                                   &tatonnement::excess_demand_model::methods)
+                    .def_readwrite("quotes",
+                                   &tatonnement::excess_demand_model::quotes)
+                    .def("compute_clearing_quotes", &clear_market)
+                    .add_property("excess_demand_functions",
+                                  &get_excess_demand_functions,
+                                  &set_excess_demand_functions);
             }
         }
     }
@@ -1589,55 +1589,55 @@ BOOST_PYTHON_MODULE(_esl)
     ////////////////////////////////////////////////////////////////////////////
     {
         boost::python::scope scope_interaction_ = create_scope("interaction");
-//
-//        def("make_callback_handle", &make_callback_handle);
-//
-//        class_<communicator::callback_handle>("callback_handle");
-//
-//        class_<communicator::callback_t>("callback_t")
-//            .def_readwrite("function", &communicator::callback_t::function)
-//            .def_readwrite("description",
-//                           &communicator::callback_t::description)
-//            .def_readwrite("message", &communicator::callback_t::message)
-//            .def_readwrite("file", &communicator::callback_t::file)
-//            .def_readwrite("line", &communicator::callback_t::line)
-//            //.def("__call__", &communicator::callback_t::operator ())
-//            ;
-//
-//        enum_<communicator::scheduling>("scheduling")
-//            .value("in_order", communicator::scheduling::in_order)
-//            .value("random", communicator::scheduling::random);
-//
-//        class_<communicator::inbox_t>("inbox_t").def(
-//            multimap_indexing_suite<communicator::inbox_t>());
-//
-//
-//        class_<communicator::outbox_t>("outbox_t")
-//            .def(
-//                boost::python::vector_indexing_suite<communicator::outbox_t>());
-//
-//        class_<communicator>("communicator")
-//            .def("send_message", send_message_python)
-//            .def_readwrite("inbox", &communicator::inbox)
-//            .def_readwrite("outbox", &communicator::outbox);
-//
-//        class_<header>("header",
-//                       init<message_code, identity<agent>, identity<agent>,
-//                            simulation::time_point, simulation::time_point>())
-//            .def(init<message_code, identity<agent>, identity<agent>,
-//                      simulation::time_point>())
-//            .def(init<message_code, identity<agent>, identity<agent>>())
-//            .def(init<message_code, identity<agent>>())
-//            .def(init<message_code>())
-//            .def(init<message_code>())
-//            .def_readwrite("type", &header::type)
-//            .def_readwrite("sender", &header::sender)
-//            .def_readwrite("recipient", &header::recipient)
-//            .def_readwrite("sent", &header::sent)
-//            .def_readwrite("received", &header::received);
-//
-//        class_<python_message, bases<header>>("message").def_readonly(
-//            "code", &python_message::python_code);
+
+        def("make_callback_handle", &make_callback_handle);
+
+        class_<communicator::callback_handle>("callback_handle");
+
+        class_<communicator::callback_t>("callback_t")
+            .def_readwrite("function", &communicator::callback_t::function)
+            .def_readwrite("description",
+                           &communicator::callback_t::description)
+            .def_readwrite("message", &communicator::callback_t::message)
+            .def_readwrite("file", &communicator::callback_t::file)
+            .def_readwrite("line", &communicator::callback_t::line)
+            //.def("__call__", &communicator::callback_t::operator ())
+            ;
+
+        enum_<communicator::scheduling>("scheduling")
+            .value("in_order", communicator::scheduling::in_order)
+            .value("random", communicator::scheduling::random);
+
+        class_<communicator::inbox_t>("inbox_t").def(
+            multimap_indexing_suite<communicator::inbox_t>());
+
+
+        class_<communicator::outbox_t>("outbox_t")
+            .def(
+                boost::python::vector_indexing_suite<communicator::outbox_t>());
+
+        class_<communicator>("communicator")
+            .def("send_message", send_message_python)
+            .def_readwrite("inbox", &communicator::inbox)
+            .def_readwrite("outbox", &communicator::outbox);
+
+        class_<header>("header",
+                       init<message_code, identity<agent>, identity<agent>,
+                            simulation::time_point, simulation::time_point>())
+            .def(init<message_code, identity<agent>, identity<agent>,
+                      simulation::time_point>())
+            .def(init<message_code, identity<agent>, identity<agent>>())
+            .def(init<message_code, identity<agent>>())
+            .def(init<message_code>())
+            .def(init<message_code>())
+            .def_readwrite("type", &header::type)
+            .def_readwrite("sender", &header::sender)
+            .def_readwrite("recipient", &header::recipient)
+            .def_readwrite("sent", &header::sent)
+            .def_readwrite("received", &header::received);
+
+        class_<python_message, bases<header>>("message").def_readonly(
+            "code", &python_message::python_code);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1669,17 +1669,17 @@ BOOST_PYTHON_MODULE(_esl)
 
         {
             boost::python::scope scope_parameter_ = create_scope("parameter");
-//
-//            class_<parameter_base>("parameter_base", init<>());
-//
-//            class_<constant<double>>("constant_double", init<double>());
-//            class_<constant<std::int64_t>>("constant_int64", init<int64_t>());
-//            class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
-//
-//            class_<parametrization>("parametrization", init<>())
-//                .def("get", get_helper)
-//
-//                ;
+
+            class_<parameter_base>("parameter_base", init<>());
+
+            class_<constant<double>>("constant_double", init<double>());
+            class_<constant<std::int64_t>>("constant_int64", init<int64_t>());
+            class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
+
+            class_<parametrization>("parametrization", init<>())
+                .def("get", get_helper)
+
+                ;
 
         }
 
