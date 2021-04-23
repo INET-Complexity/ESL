@@ -39,4 +39,6 @@ jobs:
 
       - name: "[All] Install Library from test pypi and run tests"
         run: |
+          mkdir pythontest
+          cd pythontest
           python -c "import esl; print(esl.version())"
