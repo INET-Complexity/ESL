@@ -416,36 +416,35 @@ IF(WITH_PYTHON)
     FOREACH (source ${ESL_PYTHON_SOURCE})
 
         # unity module 2021-04-18
-        IF(NOT ${source} STREQUAL "esl/python_module_esl.cpp")
-            CONTINUE()
+        IF(${source} STREQUAL "esl/python_module_esl.cpp")
+            GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
+            GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
+
+            GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
+            LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
+            LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
+
+            PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
+
+            IF(APPLE)
+                #SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+            ENDIF()
+
+            # We have a special case for the main module residing in the root
+            IF(python_module_name STREQUAL "esl")
+                SET(module_path_modified ".")
+            ELSE()
+                # This replaces `esl/path1/path2/submodule` with `path1/path2/submodule
+                STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
+            ENDIF()
+
+            # Let user know we have detected the python module and processed it
+            MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
+            # We install it in the right submodule path
+            INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
+
         ENDIF()
 
-
-        GET_FILENAME_COMPONENT(module_name ${source} NAME_WE)
-        GET_FILENAME_COMPONENT(module_path ${source} DIRECTORY)
-
-        GET_FILENAME_COMPONENT(python_module_name ${module_path} NAME)
-        LINK_DIRECTORIES(${ESL_PYTHON_LINK_DIRECTORY} ${ESL_PYTHON_LINK_DIRECTORY} ${Boost_LIBRARY_DIRS} ${GSL_LIBRARY} )
-        LINK_LIBRARIES(${Boost_LIBRARIES} ${ALL_LINKED_LIBRARIES})
-
-        PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
-
-        IF(APPLE)
-            SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-        ENDIF()
-
-        # We have a special case for the main module residing in the root
-        IF(python_module_name STREQUAL "esl")
-            SET(module_path_modified ".")
-        ELSE()
-            # This replaces `esl/path1/path2/submodule` with `path1/path2/submodule
-            STRING(SUBSTRING  ${module_path} 4 -1 module_path_modified)
-        ENDIF()
-
-        # Let user know we have detected the python module and processed it
-        MESSAGE("PYTHON MODULE " _${python_module_name} ":\t\t " ${module_path_modified} "\t\t" ${source})
-        # We install it in the right submodule path
-        INSTALL(TARGETS _${python_module_name} DESTINATION ${module_path_modified})
     ENDFOREACH ()
 
     ####################################################################################################################
