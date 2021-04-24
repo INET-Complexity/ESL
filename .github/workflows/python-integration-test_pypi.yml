@@ -36,6 +36,13 @@ jobs:
           python -m pip install --index-url https://test.pypi.org/simple/ eslpy --force
           python -m pip show eslpy
 
+      - name: "[MacOS] Delocate test"
+        run: |
+          python -m pip install delocate
+          wget https://test-files.pythonhosted.org/packages/8a/21/86c93b8ff2f08266d4cdfea0d4915fd0a210cfba34945555420e71cbe13e/eslpy-0.0.80-cp37-cp37m-macosx_10_9_x86_64.whl
+          delocate-listdeps --depending eslpy-0.0.80-cp37-cp37m-macosx_10_9_x86_64.whl
+        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
+
 
       - name: "[MacOS] Delocate test"
         run: |
@@ -52,3 +59,5 @@ jobs:
           mkdir pythontest
           cd pythontest
           python -c "import esl; print(esl.version())"
+        continue-on-error: true
+
