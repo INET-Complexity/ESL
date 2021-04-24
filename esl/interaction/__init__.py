@@ -1,4 +1,4 @@
-from esl.interaction._interaction import *
+#from esl.interaction._interaction import *
 
 from inspect import getframeinfo, stack
 
