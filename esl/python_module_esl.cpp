@@ -1067,7 +1067,6 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("XPF")                    = currencies::XPF;
             scope().attr("XPT")                    = currencies::XPT;
             scope().attr("XSU")                    = currencies::XSU;
-            // constexpr iso_4217 XTS
             scope().attr("XUA") = currencies::XUA;
             // scope().attr("XXX") = currencies::XXX;
             scope().attr("YER") = currencies::YER;
