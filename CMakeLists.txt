@@ -426,8 +426,8 @@ IF(WITH_PYTHON)
 
             PYTHON_ADD_MODULE(_${python_module_name} ${source} ${SOURCE_FILES})
 
-            IF(APPLE)
-                #SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+            IF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+                SET_TARGET_PROPERTIES(_${python_module_name} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
             ENDIF()
 
             # We have a special case for the main module residing in the root

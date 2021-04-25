@@ -822,7 +822,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.computation
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_computation_ = create_scope("computation");
+        boost::python::scope scope_computation_ = create_scope("_computation");
 
         class_<computation::block_pool::block<object>>(
             "block", "The block is a unit of memory used by the block_pool allocator, and has fixed size.")
@@ -858,7 +858,7 @@ BOOST_PYTHON_MODULE(_esl)
 
         {
             boost::python::scope scope_distributed_ =
-                create_scope("distributed");
+                create_scope("_distributed");
         }
     }
 
@@ -867,14 +867,14 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.data
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_data_ = create_scope("data");
+        boost::python::scope scope_data_ = create_scope("_data");
 
 
         ////////////////////////////////////////////////////////////////////////
         // esl.format
         ////////////////////////////////////////////////////////////////////////
         {
-            boost::python::scope scope_format_ = create_scope("format");
+            boost::python::scope scope_format_ = create_scope("_format");
         }
     }
 
@@ -883,7 +883,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.economics
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_economics_ = create_scope("economics");
+        boost::python::scope scope_economics_ = create_scope("_economics");
 
         class_<iso_4217>("iso_4217")
             .add_property("code", python_currency_code)
@@ -895,7 +895,7 @@ BOOST_PYTHON_MODULE(_esl)
         // esl.economics.currencies
         ////////////////////////////////////////////////////////////////////////////
         {
-            boost::python::scope scope_currencies_ = create_scope("currencies");
+            boost::python::scope scope_currencies_ = create_scope("_currencies");
             scope().attr("AED")                    = currencies::AED;
             scope().attr("AFN")                    = currencies::AFN;
             scope().attr("ALL")                    = currencies::ALL;
@@ -1095,14 +1095,14 @@ BOOST_PYTHON_MODULE(_esl)
         // esl.economics.accounting
         ////////////////////////////////////////////////////////////////////////
         {
-            boost::python::scope scope_accounting_ = create_scope("accounting");
+            boost::python::scope scope_accounting_ = create_scope("_accounting");
         }
 
         ////////////////////////////////////////////////////////////////////////
         // esl.economics.finance
         ////////////////////////////////////////////////////////////////////////
         {
-            boost::python::scope scope_finance = create_scope("finance");
+            boost::python::scope scope_finance = create_scope("_finance");
 
             class_<finance::isin>(
                 "isin", init<geography::iso_3166_1_alpha_2, std::string>())
@@ -1128,7 +1128,7 @@ BOOST_PYTHON_MODULE(_esl)
         // esl.economics.markets
         ////////////////////////////////////////////////////////////////////////
         {
-            boost::python::scope scope_markets_ = create_scope("markets");
+            boost::python::scope scope_markets_ = create_scope("_markets");
 
             class_<iso_10383>("iso_10383", init<std::string>())
                 .def("__repr__", &iso_10383::representation)
@@ -1186,7 +1186,7 @@ BOOST_PYTHON_MODULE(_esl)
             ////////////////////////////////////////////////////////////////////
             {
                 boost::python::scope scope_impact_function_ =
-                    create_scope("impact_function");
+                    create_scope("_impact_function");
             }
 
 
@@ -1195,7 +1195,7 @@ BOOST_PYTHON_MODULE(_esl)
             ////////////////////////////////////////////////////////////////////
             {
                 boost::python::scope scope_order_book_ =
-                    create_scope("order_book");
+                    create_scope("_order_book");
 
                 enum_<execution_report::state_t>("execution_state")
                     .value("invalid", execution_report::state_t::invalid)
@@ -1267,7 +1267,7 @@ BOOST_PYTHON_MODULE(_esl)
             // esl.economics.markets.walras
             ////////////////////////////////////////////////////////////////////
             {
-                boost::python::scope scope_walras_ = create_scope("walras");
+                boost::python::scope scope_walras_ = create_scope("_walras");
 
                 enum_<tatonnement::excess_demand_model::solver>("solver")
                     // TODO: implement automatic differentiation for Python
@@ -1320,7 +1320,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.geography
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_geography_ = create_scope("geography");
+        boost::python::scope scope_geography_ = create_scope("_geography");
 
         class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2")
             .add_property("code", python_country_code)
@@ -1330,7 +1330,7 @@ BOOST_PYTHON_MODULE(_esl)
                  &esl::geography::iso_3166_1_alpha_2::representation);
 
         {
-            boost::python::scope scope_countries_ = create_scope("countries");
+            boost::python::scope scope_countries_ = create_scope("_countries");
 
             scope().attr("AE") = esl::geography::countries::AE;
             scope().attr("AF") = esl::geography::countries::AF;
@@ -1588,7 +1588,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.interaction
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_interaction_ = create_scope("interaction");
+        boost::python::scope scope_interaction_ = create_scope("_interaction");
 
         def("make_callback_handle", &make_callback_handle);
 
@@ -1644,7 +1644,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.law
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_law_ = create_scope("law");
+        boost::python::scope scope_law_ = create_scope("_law");
 
         class_<esl::law::legal_entity>("legal_entity", init<std::string>())
             .add_property("local", &python_legal_entity_local)
@@ -1690,7 +1690,7 @@ BOOST_PYTHON_MODULE(_esl)
 
 
         {
-            boost::python::scope scope_jurisdictions_ = create_scope("jurisdictions");
+            boost::python::scope scope_jurisdictions_ = create_scope("_jurisdictions");
 
             scope().attr("AF") = esl::law::jurisdictions::AF;
             scope().attr("AL") = esl::law::jurisdictions::AL;
@@ -1945,7 +1945,7 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.mathematics
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_mathematics_ = create_scope("mathematics");
+        boost::python::scope scope_mathematics_ = create_scope("_mathematics");
 //        class_<adept::Stack>("stack", init<>())
 //            .def("pause_recording", &adept::Stack::pause_recording)
 //            .def("continue_recording", &adept::Stack::continue_recording)
@@ -1958,10 +1958,10 @@ BOOST_PYTHON_MODULE(_esl)
     // esl.simulation
     ////////////////////////////////////////////////////////////////////////////
     {
-        boost::python::scope scope_simulation_ = create_scope("simulation");
+        boost::python::scope scope_simulation_ = create_scope("_simulation");
 
         {
-            boost::python::scope scope_parameter_ = create_scope("parameter");
+            boost::python::scope scope_parameter_ = create_scope("_parameter");
 
             class_<parameter_base>("parameter_base", init<>());
 
