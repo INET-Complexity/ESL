@@ -76,3 +76,12 @@ del initialize_library # remove the function, removing all traces of initializat
 
 # This loads the binary library containing all submodules
 from esl._esl import *
+
+import computation
+import data
+import economics
+import geography
+import interaction
+import law
+import mathematics
+import simulation
