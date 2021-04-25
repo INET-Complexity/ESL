@@ -1,3 +1,3 @@
 from esl._esl._simulation import *
 
-import parameter
+import esl.simulation.parameter

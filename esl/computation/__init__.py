@@ -1,3 +1,3 @@
 from esl._esl._computation import *
 
-import distributed
+import esl.computation.distributed
