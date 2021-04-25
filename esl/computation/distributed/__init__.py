@@ -1,2 +1,2 @@
-from esl._computation._distributed import *
+from esl._esl._computation._distributed import *
 
