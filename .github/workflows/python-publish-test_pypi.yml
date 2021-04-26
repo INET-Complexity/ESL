@@ -90,9 +90,9 @@ jobs:
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.7] Install boost"
         run: |
-          wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
-          tar -xzf boost_1_*
-          cd boost_1_*
+          wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.73.0.tar.gz > /dev/null 2>&1
+          tar -xzf boost-*
+          cd boost-*
           ./bootstrap.sh > /dev/null 2>&1
           echo "import option ;" > project-config.jam
           echo "import feature ;" >> project-config.jam
@@ -114,9 +114,9 @@ jobs:
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.8+] Install boost"
         run: |
-          wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
-          tar -xzf boost_1_*
-          cd boost_1_*
+          wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.73.0.tar.gz > /dev/null 2>&1
+          tar -xzf boost-*
+          cd boost-*
           ./bootstrap.sh
           echo "import option ;" > project-config.jam
           echo "import feature ;" >> project-config.jam
@@ -160,7 +160,7 @@ jobs:
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-manylinux*'
           CIBW_SKIP: '*i686'
           CIBW_BUILD_VERBOSITY: 3
-          CIBW_BEFORE_ALL_LINUX: 'yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/include/python3.${{matrix.python_minor_version}}m/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && cat project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
+          CIBW_BEFORE_ALL_LINUX: 'yum install -y wget epel-release gsl gsl-devel && wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.73.0.tar.gz > /dev/null 2>&1 && tar -xzf boost-* && cd boost-* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/include/python3.${{matrix.python_minor_version}}m/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}m/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && cat project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
         run: |
           python -m cibuildwheel --output-dir distribution --platform linux
           python -m twine upload --repository testpypi distribution/*
@@ -176,7 +176,7 @@ jobs:
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-manylinux*'
           CIBW_SKIP: '*i686'
           CIBW_BUILD_VERBOSITY: 3
-          CIBW_BEFORE_ALL_LINUX: 'yum install -y wget epel-release gsl gsl-devel && wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1 && tar -xzf boost_1_* && cd boost_1_* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && cat project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
+          CIBW_BEFORE_ALL_LINUX: 'yum install -y wget epel-release gsl gsl-devel && wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.73.0.tar.gz > /dev/null 2>&1 && tar -xzf boost-* && cd boost-* && ./bootstrap.sh && echo "using gcc ;" > project-config.jam && echo "project : default-build <toolset>gcc ;" >> project-config.jam && echo "import python ;" >> project-config.jam &&   echo "using python    : 3.${{matrix.python_minor_version}}    :  /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/bin/python    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/include/python3.${{matrix.python_minor_version}}/    : /opt/python/cp3${{matrix.python_minor_version}}-cp3${{matrix.python_minor_version}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam && cat project-config.jam && ./b2 install -j 8 --with=all > /dev/null 2>&1 && cd ~ && wget http://www.met.reading.ac.uk/clouds/adept/adept-2.0.5.tar.gz && tar -xf adept-2.0.5.tar.gz && cd adept-2.0.5/ && ./configure && make -j2 && make install && cd include && ./create_adept_source_header && cp adept_source.h /usr/local/include/'
         run: |
           python -m cibuildwheel --output-dir distribution --platform linux
           python -m twine upload --repository testpypi distribution/*
@@ -198,9 +198,9 @@ jobs:
 
       - name: "[Windows] Install boost"
         run: |
-          wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
+          wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.73.0.tar.gz -UseBasicParsing -OutFile boost_1_73_0.tar.gz
           tar -xzf boost_1_73_0.tar.gz
-          cd boost_1_73_0
+          cd boost-boost-1.73.0
           ./bootstrap.bat --prefix=C:/Boost
           ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release  install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
         if: matrix.os == 'windows-latest'
