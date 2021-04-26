@@ -289,7 +289,7 @@ public:
 ///
 /// \param e
 /// \return
-dict clear_market(python_excess_demand_model *e)
+dict compute_clearing_quotes(python_excess_demand_model *e)
 {
     auto quotes_ = e->compute_clearing_quotes();
     dict result_;
@@ -1131,7 +1131,7 @@ BOOST_PYTHON_MODULE(_esl)
                 .def(self <= self)
                 .def(self >= self);
 
-            class_<quote, boost::noncopyable, boost::shared_ptr<quote>>("quote", no_init)
+            class_<quote, boost::shared_ptr<quote>>("quote", no_init)
                 .def("__init__", boost::python::make_constructor( construct_quote_from_price))
                 .def("__init__", boost::python::make_constructor( construct_quote_from_exchange_rate))
                 .add_property("price", &quote_helper_get_price, &quote_helper_set_price)
@@ -1287,7 +1287,7 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("circuit_breaker", &tatonnement::excess_demand_model::circuit_breaker)
                     .def_readwrite("methods", &tatonnement::excess_demand_model::methods)
                     .def_readwrite("quotes", &tatonnement::excess_demand_model::quotes)
-                    .def("compute_clearing_quotes", &clear_market)
+                    .def("compute_clearing_quotes", &compute_clearing_quotes)
                     .add_property("excess_demand_functions",
                                   &get_excess_demand_functions,
                                   &set_excess_demand_functions);
