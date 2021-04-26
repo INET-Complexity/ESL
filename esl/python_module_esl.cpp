@@ -181,13 +181,6 @@ double quote_helper_operator_double(const quote &q)
     return double(q);
 }
 
-
-//float quote_helper_operator_float(const quote &q)
-//{
-//    return float(q);
-//}
-
-
 boost::shared_ptr<quote> construct_quote_from_price(price p)
 {
     return boost::make_shared<quote>(p);
@@ -242,7 +235,7 @@ public:
     // the default implementation is to demand zero for all
     [[nodiscard]] std::map<esl::identity<esl::law::property>, esl::variable> excess_demand(const std::map<
         esl::identity<esl::law::property>
-        , std::tuple<esl::economics::markets::quote, esl::variable>> &quotes) const override
+        , std::tuple<quote, esl::variable>> &quotes) const override
     {
         dict quotes_;
 
@@ -462,12 +455,10 @@ public:
 };
 
 
-
-
-
-
-
-
+///
+/// \brief  Provides interface for a multimap<k,v> to Python
+///
+///
 template <class container_t_, bool NoProxy, class DerivedPolicies>
 class multimap_indexing_suite;
 
@@ -654,7 +645,6 @@ std::string python_legal_entity_checksum(esl::law::legal_entity &e)
     return stream_.str();
 }
 
-
 typedef esl::identity<esl::law::property> property_identity;
 
 boost::shared_ptr<property_identity> convert_digit_list2(const boost::python::list &list)
@@ -680,15 +670,6 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 {
     return std::hash<esl::identity<esl::law::property>>()(p);
 }
-
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -767,23 +748,11 @@ boost::python::object get_helper(parametrization &p, const std::string &name)
 
 
 
-
-
-
-
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTATION
 ////////////////////////////////////////////////////////////////////////////////
 
-
 namespace esl {
-
 
 scope create_scope(const std::string &name)
 {
@@ -1162,25 +1131,18 @@ BOOST_PYTHON_MODULE(_esl)
                 .def(self <= self)
                 .def(self >= self);
 
-            class_<quote, boost::noncopyable, boost::shared_ptr<quote>>("quote",
-                                                                        no_init)
-                .def("__init__", boost::python::make_constructor(
-                                     construct_quote_from_price))
-                .def("__init__", boost::python::make_constructor(
-                                     construct_quote_from_exchange_rate))
-                .add_property("price", &quote_helper_get_price,
-                              &quote_helper_set_price)
+            class_<quote, boost::noncopyable, boost::shared_ptr<quote>>("quote", no_init)
+                .def("__init__", boost::python::make_constructor( construct_quote_from_price))
+                .def("__init__", boost::python::make_constructor( construct_quote_from_exchange_rate))
+                .add_property("price", &quote_helper_get_price, &quote_helper_set_price)
                 .def_readwrite("lot", &quote::lot)
-
                 .def(self == self)
                 .def(self != self)
                 .def(self < self)
                 .def(self > self)
                 .def(self <= self)
                 .def(self >= self)
-
                 .def("__float__", &quote_helper_operator_double)
-
                 .def("__repr__", &quote::representation)
                 .def("__str__", &quote::representation);
 
@@ -1260,7 +1222,7 @@ BOOST_PYTHON_MODULE(_esl)
 
                 class_<static_order_book, bases<basic_book>>(
                     "static_order_book",
-                    init<markets::quote, markets::quote, size_t>())
+                    init<quote, quote, size_t>())
                     .def_readwrite("reports", &basic_book::reports)
                     .def("ask", &basic_book::ask)
                     .def("bid", &basic_book::bid)
@@ -1322,13 +1284,9 @@ BOOST_PYTHON_MODULE(_esl)
                     .def("__init__",
                          make_constructor(
                              &excess_demand_model_python_constructor))
-                    .def_readwrite(
-                        "circuit_breaker",
-                        &tatonnement::excess_demand_model::circuit_breaker)
-                    .def_readwrite("methods",
-                                   &tatonnement::excess_demand_model::methods)
-                    .def_readwrite("quotes",
-                                   &tatonnement::excess_demand_model::quotes)
+                    .def_readwrite("circuit_breaker", &tatonnement::excess_demand_model::circuit_breaker)
+                    .def_readwrite("methods", &tatonnement::excess_demand_model::methods)
+                    .def_readwrite("quotes", &tatonnement::excess_demand_model::quotes)
                     .def("compute_clearing_quotes", &clear_market)
                     .add_property("excess_demand_functions",
                                   &get_excess_demand_functions,
