@@ -691,7 +691,30 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+// esl.simulation
+////////////////////////////////////////////////////////////////////////////////
+boost::shared_ptr<esl::simulation::python_module::python_identity>
+convert_digit_list(const boost::python::list &list)
+{
+    std::vector<uint64_t> result_;
+    for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
+        result_.push_back(boost::python::extract<std::uint64_t>(list[i]));
+    }
+    return boost::make_shared<esl::simulation::python_module::python_identity>(result_);
+}
 
+
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( python_identity_representation_overload
+                                      , esl::simulation::python_module::python_identity::representation
+                                      , 0
+                                      , 1);
+
+size_t python_identity_hash(const esl::simulation::python_module::python_identity &p)
+{
+    return std::hash<esl::simulation::python_module::python_identity>()(p);
+}
 
 
 
@@ -1958,6 +1981,33 @@ BOOST_PYTHON_MODULE(_esl)
     ////////////////////////////////////////////////////////////////////////////
     {
         boost::python::scope scope_simulation_ = create_scope("_simulation");
+
+        class_<esl::entity<object>, boost::noncopyable>(
+            "entity", init<identity<object>>())
+            .def_readonly("identifier", &esl::entity<object>::identifier)
+            .def(self_ns::str(self_ns::self))
+            .def("create", &esl::entity<object>::create<object>)
+            .def(self == self)
+            .def(self != self)
+            ;
+
+        class_<esl::simulation::python_module::python_identity>("identity")
+            .def("__init__", make_constructor(convert_digit_list))
+            .def_readonly("digits", &esl::simulation::python_module::python_identity::digits)
+            .def("__str__", &esl::simulation::python_module::python_identity::representation,
+                 python_identity_representation_overload(args("width"), ""))
+            .def("__repr__", &esl::simulation::python_module::python_identity::representation,
+                 python_identity_representation_overload(args("width"), ""))
+            .def(self < self)
+            .def(self > self)
+            .def(self == self)
+            .def(self != self)
+            .def(self <= self)
+            .def(self >= self)
+            .def("__hash__", &python_identity_hash)
+            ;
+
+
 
         {
             boost::python::scope scope_parameter_ = create_scope("_parameter");
