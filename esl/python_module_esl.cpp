@@ -1,6 +1,13 @@
 /// \file   python_module.cpp
 ///
-/// \brief
+/// \brief  This contains the bindings
+///
+/// \details    To facilitate quick building, we create a single Python binary
+///             module. We programmatically create scopes to create submodules
+///             from a single file. This integrates with the Python code which
+///             follows the regular folder structure/submodule layout.
+///             We also flatten the esl namespaces through usage of the 'using'
+///             namespace declaration.
 ///
 /// \authors    Maarten P. Scholl
 /// \date       2020-08-30
@@ -30,15 +37,21 @@ using namespace boost::python;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// _utility
+// utility
 ////////////////////////////////////////////////////////////////////////////////
+
+///
+/// \brief  Convert
+///
+/// \tparam object_t_
 template<typename object_t_>
 void do_release(typename boost::shared_ptr<object_t_> const &, object_t_ *)
 {
+
 }
 
 template<typename object_t_>
-typename std::shared_ptr<object_t_> to_std(typename boost::shared_ptr<object_t_> const& p)
+typename std::shared_ptr<object_t_> to_std(typename boost::shared_ptr<object_t_> const &p)
 {
     return std::shared_ptr<object_t_>(p.get(), [p](auto &&PH1)
     {
@@ -105,8 +118,9 @@ void translate_exception(const exception &e)
 #include <esl/computation/block_pool.hpp>
 #include <esl/computation/environment.hpp>
 #include <esl/computation/timing.hpp>
-using esl::computation::agent_timing;
-
+using namespace esl::computation;
+#include <esl/computation/distributed/protocol.hpp>
+using namespace esl::computation::distributed;
 
 ////////////////////////////////////////////////////////////////////////////////
 //esl.economics
@@ -675,6 +689,11 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 ////////////////////////////////////////////////////////////////////////////////
 // esl.simulation
 ////////////////////////////////////////////////////////////////////////////////
+#include <esl/simulation/model.hpp>
+#include <esl/simulation/time.hpp>
+#include <esl/simulation/world.hpp>
+using namespace esl::simulation;
+
 boost::shared_ptr<esl::simulation::python_module::python_identity>
 convert_digit_list(const boost::python::list &list)
 {
@@ -697,6 +716,69 @@ size_t python_identity_hash(const esl::simulation::python_module::python_identit
     return std::hash<esl::simulation::python_module::python_identity>()(p);
 }
 
+
+
+
+///
+///
+///
+/// \param agent_constructor
+/// \return
+boost::shared_ptr<esl::agent> python_agent_collection_create_identifier(
+    esl::simulation::agent_collection &a
+    , boost::python::object parent)
+{
+    (void)a;
+    (void)parent;
+    boost::shared_ptr<esl::agent> result_;
+    return result_;
+}
+
+///
+///
+///
+/// \param agent_constructor
+/// \return
+boost::shared_ptr<esl::agent> python_agent_collection_create( agent_collection &
+                                                             , boost::python::object )
+{
+    boost::shared_ptr<esl::agent> result_;
+    //boost::python::call<int>(agent_constructor);
+    return result_;
+}
+
+///
+/// \param agent
+void python_agent_collection_activate(agent_collection &c, boost::shared_ptr<esl::agent> a)
+{
+    c.activate(to_std(a));
+}
+
+///
+/// \param agent
+void python_agent_collection_deactivate(agent_collection &c, boost::shared_ptr<esl::agent> a)
+{
+    c.deactivate(to_std(a));
+}
+
+/// \brief  Export time_point constructor to Python.
+///
+/// \param o
+/// \return
+time_point python_time_point(const object& o)
+{
+    return extract<time_point>(o);
+}
+
+///
+/// \brief  Export time_duration constructor to Python.
+///
+/// \param o
+/// \return
+time_duration python_time_duration(const object& o)
+{
+    return extract<time_duration>(o);
+}
 
 
 
@@ -851,6 +933,20 @@ BOOST_PYTHON_MODULE(_esl)
         {
             boost::python::scope scope_distributed_ =
                 create_scope("_distributed");
+
+            scope().attr("__doc__") = "submodule for distributed computing using MPI";
+
+            class_<activation>("activation")
+                .def_readwrite("location", &activation::location)
+                .def_readwrite("activated", &activation::activated);
+
+            class_<migration>("migration")
+                .def_readwrite("source", &migration::source)
+                .def_readwrite("target", &migration::target)
+                .def_readwrite("migrant", &migration::migrant);
+
+            class_<deactivation>("deactivation")
+                .def_readwrite("deactivated", &deactivation::deactivated);
         }
     }
 
@@ -1966,6 +2062,45 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
 
+        class_<agent_collection>("agent_collection", init<std::reference_wrapper<computation::environment>>())
+            .def("create_identifier", python_agent_collection_create_identifier)
+            .def("create", python_agent_collection_create)
+            .def("activate", python_agent_collection_activate)
+            .def("deactivate", python_agent_collection_deactivate)
+            ;
+
+       class_<model>("model"
+                    ,init<environment &, parameter::parametrization>())
+           .def_readonly("start", &model::start)
+           .def_readwrite("end", &model::end)
+           .def_readwrite("time", &model::time)
+           .def_readonly("sample", &model::sample)
+           .def_readonly("world", &model::world)
+           .def_readwrite("agents", &model::agents)
+           ;
+
+
+       def("time_point", python_time_point);
+
+       def("time_duration", python_time_duration);
+
+       class_<time_interval>("time_interval",
+                             init<time_point, time_point>())
+           .def_readwrite("lower", &time_interval::lower)
+           .def_readwrite("upper", &time_interval::upper)
+           .def("empty", &time_interval::empty)
+           .def("singleton", &time_interval::singleton)
+           .def("degenerate", &time_interval::degenerate)
+           .def("contains", &time_interval::contains)
+           .def("__repr__", &time_interval::representation)
+           .def("__str__", &time_interval::representation);
+
+
+       class_<world, boost::noncopyable>("world", no_init)
+           .def_readonly("identifier", &world::entity<world>::identifier)
+           .def("__repr__", &world::entity<world>::representation)
+           ;
+        implicitly_convertible<world, identity<world>>();
 
         {
             boost::python::scope scope_parameter_ = create_scope("_parameter");
