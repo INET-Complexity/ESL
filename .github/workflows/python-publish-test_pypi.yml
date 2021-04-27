@@ -147,7 +147,9 @@ jobs:
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
         run: |
           python -m cibuildwheel --output-dir distribution
-          otool -L distribution/
+          ls distribution/
+          otool -L distribution/eslpy*
+          delocate-wheel -w fixed_wheels -v distribution/*.whl
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
