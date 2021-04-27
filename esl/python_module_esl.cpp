@@ -1309,7 +1309,7 @@ BOOST_PYTHON_MODULE(_esl)
                         , const identity<agent> &
                         , limit_order_message::side_t
                         , const quote&
-                        , std::uint64_tetime_t
+                        , std::uint64_t
                     >())
                     .def_readwrite("lifetime", &limit_order_message::lifetime)
                     .def_readwrite("side", &limit_order_message::side)
