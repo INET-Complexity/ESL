@@ -41,7 +41,7 @@ using esl::economics::markets::order_book::limit_order_message;
 // A larger lot size enables small tick sizes
 constexpr size_t lot_size = 100;
 
-// helper function to create limit orders submitted to an exchange.
+// helper function to create limit orders submitted to to the order book.
 // note that ESL uses fixed-precision for prices internally, and that the use of
 // a floating point type here relies on the developer understanding the
 // conversion.

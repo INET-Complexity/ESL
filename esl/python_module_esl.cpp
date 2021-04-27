@@ -1296,13 +1296,28 @@ BOOST_PYTHON_MODULE(_esl)
                 /// \brief Export the abstract base class, so that python users too can
                 ///        implement new order books.
                 ///
-                class_<basic_book, boost::noncopyable>("basic_book", no_init)
-                    .def_readwrite("reports", &basic_book::reports)
-                    .def("ask", &basic_book::ask)
-                    .def("bid", &basic_book::bid)
-                    .def("insert", &basic_book::insert)
-                    .def("cancel", &basic_book::cancel)
-                    .def("display", &basic_book::display);
+                class_<limit_order_message>("limit_order_message"
+                                            , init< ticker
+                                                  , const identity<agent> &
+                                                  , limit_order_message::side_t
+                                                  , const quote&
+                                                  , std::uint64_t
+                                                  , limit_order_message::lifetime_t
+                                                  >())
+                    // second constructor
+                    .def(init< ticker
+                        , const identity<agent> &
+                        , limit_order_message::side_t
+                        , const quote&
+                        , std::uint64_tetime_t
+                    >())
+                    .def_readwrite("lifetime", &limit_order_message::lifetime)
+                    .def_readwrite("side", &limit_order_message::side)
+                    .def_readwrite("symbol", &limit_order_message::symbol)
+                    .def_readwrite("owner", &limit_order_message::owner)
+                    .def_readwrite("limit", &limit_order_message::limit)
+                    .def_readwrite("quantity", &limit_order_message::quantity)
+                    ;
 
                 ///
                 /// \brief Export the abstract base class, so that python users too can
@@ -1316,9 +1331,11 @@ BOOST_PYTHON_MODULE(_esl)
                     .def("cancel", &basic_book::cancel)
                     .def("display", &basic_book::display);
 
-                class_<static_order_book, bases<basic_book>>(
-                    "static_order_book",
-                    init<quote, quote, size_t>())
+                //
+                class_<static_order_book, bases<basic_book>>
+                    ( "static_order_book"
+                    , "Limit order book optimized for fast throughput. Uses statically allocated memory pool."
+                    , init<quote, quote, size_t>())
                     .def_readwrite("reports", &basic_book::reports)
                     .def("ask", &basic_book::ask)
                     .def("bid", &basic_book::bid)
