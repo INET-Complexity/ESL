@@ -191,7 +191,7 @@ jobs:
           install_name_tool -change @rpath/libboost_python37.dylib            $bindir/libboost_python37.dylib            _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           otool -L _esl.so
-          rm .dylibs -rf && cd .. && rm *.whl && zip -r $wheelfile .
+          rm -rf .dylibs && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-listdeps --all $wheelfile
           delocate-wheel -w fixed_wheels -v $wheelfile
           python -m twine upload --repository testpypi $wheelfile
