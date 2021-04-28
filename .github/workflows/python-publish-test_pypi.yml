@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-10.15]
-        python_minor_version: [7,8,9]
+        python_minor_version: [7]
     steps:
 
 ########################################################################################################################
@@ -125,19 +125,17 @@ jobs:
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}m/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-          mkdir boost_include
-          cp -rv /usr/local/include/boost/* boost_include
-          mkdir boost_lib
-          cp -rv /usr/local/lib/* boost_lib
-          cp -v /usr/local/lib/libboost_* .
-          cp -rv bin.v2 /Users/runner/work/ESL/ESL/
+          mkdir -p ~/boost_include
+          mkdir -p ~/boost_lib
+          cp -rv /usr/local/include/boost/* ~/boost_include
+          cp -rv /usr/local/lib/* ~/boost_lib
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit != 'true'
 
       - name: "[MacOS | Python 3.7] Install boost from cache"
         run: |
-          cp -rn boost_lib/* /usr/local/lib/
+          cp -rn ~/boost_lib/* /usr/local/lib/
           mkdir -p /usr/local/include/boost/
-          cp -rn boost_include/* /usr/local/include/boost/
+          cp -rn ~/boost_include/* /usr/local/include/boost/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit == 'true'
 
       # overwrite the config file that wrongly captures the Python installation directory
