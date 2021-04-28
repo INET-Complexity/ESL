@@ -127,8 +127,10 @@ jobs:
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
           mkdir -p ~/boost_include
           mkdir -p ~/boost_lib
-          cp -rv /usr/local/include/boost/* ~/boost_include
-          cp -rv /usr/local/lib/* ~/boost_lib
+          cp -r /usr/local/include/boost/* ~/boost_include
+          cp -rv /usr/local/lib/libboost* ~/boost_lib
+          mkdir -p ~/boost_lib/cmake
+          cp -rv /usr/local/lib/cmake/boost* ~/boost_lib/cmake
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit != 'true'
 
       - name: "[MacOS | Python 3.7] Install boost from cache"
@@ -189,7 +191,7 @@ jobs:
           install_name_tool -change @rpath/libboost_python37.dylib            $bindir/libboost_python37.dylib            _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           otool -L _esl.so
-           rm .dylibs -rf && cd .. && rm *.whl && zip -r $wheelfile .
+          rm .dylibs -rf && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-listdeps --all $wheelfile
           delocate-wheel -w fixed_wheels -v $wheelfile
           python -m twine upload --repository testpypi $wheelfile
