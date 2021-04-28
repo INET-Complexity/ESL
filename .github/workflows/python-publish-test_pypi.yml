@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, ubuntu-20.04, windows-latest]
+        os: [macos-10.15]
         python_minor_version: [7,8,9]
     steps:
 
@@ -146,10 +146,11 @@ jobs:
 
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
         run: |
+          python -m pip install delocate
           python -m cibuildwheel --output-dir distribution
           ls distribution/
-          otool -L distribution/eslpy*
-          delocate-wheel -w fixed_wheels -v distribution/*.whl
+          cd distribution && wheelfile=$(ls *.whl) && unzip eslpy* && cd esl && otool -L _esl.so && cd .. && rm *.whl && zip -r $wheelfile .
+          delocate-wheel -w fixed_wheels -v *.whl
           python -m twine upload --repository testpypi distribution/*
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
