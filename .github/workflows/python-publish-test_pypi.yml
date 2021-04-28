@@ -181,16 +181,17 @@ jobs:
           ls distribution/
           bindir=$(pwd)/distribution/esl
           cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && ls && otool -L _esl.so && cp -v ~/boost_lib/libboost*.dylib .
-          install_name_tool -change @rpath/libboost_program_options.dylib     $(bindir)/libboost_program_options.dylib     _esl.so
-          install_name_tool -change @rpath/libboost_date_time.dylib           $(bindir)/libboost_date_time.dylib           _esl.so
-          install_name_tool -change @rpath/libboost_serialization.dylib       $(bindir)/libboost_serialization.dylib       _esl.so
-          install_name_tool -change @rpath/libboost_unit_test_framework.dylib $(bindir)/libboost_unit_test_framework.dylib _esl.so
-          install_name_tool -change @rpath/libboost_thread.dylib              $(bindir)/libboost_thread.dylib              _esl.so
-          install_name_tool -change @rpath/libboost_python37.dylib            $(bindir)/libboost_python37.dylib            _esl.so
-          install_name_tool -change @rpath/libboost_date_time.dylib           $(bindir)/libboost_date_time.dylib           _esl.so
+          install_name_tool -change @rpath/libboost_program_options.dylib     $bindir/libboost_program_options.dylib     _esl.so
+          install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
+          install_name_tool -change @rpath/libboost_serialization.dylib       $bindir/libboost_serialization.dylib       _esl.so
+          install_name_tool -change @rpath/libboost_unit_test_framework.dylib $bindir/libboost_unit_test_framework.dylib _esl.so
+          install_name_tool -change @rpath/libboost_thread.dylib              $bindir/libboost_thread.dylib              _esl.so
+          install_name_tool -change @rpath/libboost_python37.dylib            $bindir/libboost_python37.dylib            _esl.so
+          install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           otool -L _esl.so
-          cd .. && rm *.whl && zip -r $wheelfile .
-          delocate-wheel -w fixed_wheels -v *.whl
+           rm .dylibs -rf && cd .. && rm *.whl && zip -r $wheelfile .
+          delocate-listdeps --all $wheelfile
+          delocate-wheel -w fixed_wheels -v $wheelfile
           python -m twine upload --repository testpypi $wheelfile
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
