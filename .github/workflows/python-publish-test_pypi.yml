@@ -127,6 +127,7 @@ jobs:
           cp -r /usr/local/include/boost/* boost_include
           mkdir boost_lib
           cp -r /usr/local/lib/* boost_lib
+          cp /usr/local/lib/libboost* .
           cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit != 'true'
 
