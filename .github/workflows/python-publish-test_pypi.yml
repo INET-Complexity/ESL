@@ -87,17 +87,19 @@ jobs:
 
 ########################################################################################################################
       - name: Cache Boost Libraries
-        id: cache-boost-lib
         uses: actions/cache@v2
+        env:
+          cache-name: cache-boost-lib
         with:
-          path: boost_lib
+          path: ~/boost_lib
           key: ${{ runner.os }}-3${{matrix.python_minor_version}}-boost_lib
 
       - name: Cache Boost Include Directory
-        id: cache-boost-include
         uses: actions/cache@v2
+        env:
+          cache-name: cache-boost-include
         with:
-          path: boost_include
+          path: ~/boost_include
           key: ${{ runner.os }}-3${{matrix.python_minor_version}}-boost_include
 
 
@@ -124,11 +126,11 @@ jobs:
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
           mkdir boost_include
-          cp -r /usr/local/include/boost/* boost_include
+          cp -rv /usr/local/include/boost/* boost_include
           mkdir boost_lib
-          cp -r /usr/local/lib/* boost_lib
-          cp /usr/local/lib/libboost* .
-          cp -r bin.v2 /Users/runner/work/ESL/ESL/
+          cp -rv /usr/local/lib/* boost_lib
+          cp -v /usr/local/lib/libboost_* .
+          cp -rv bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit != 'true'
 
       - name: "[MacOS | Python 3.7] Install boost from cache"
@@ -176,7 +178,7 @@ jobs:
           python -m pip install delocate
           python -m cibuildwheel --output-dir distribution
           ls distribution/
-          cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && cp ../../boost_lib/libboost* . && ls && otool -L _esl.so && install_name_tool -id _esl.so _esl.so && otool -L _esl.so && cd .. && rm *.whl && zip -r $wheelfile .
+          cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && cp -v ~/boost_lib/libboost* . && ls && otool -L _esl.so && install_name_tool -id _esl.so _esl.so && otool -L _esl.so && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-wheel -w fixed_wheels -v *.whl
           python -m twine upload --repository testpypi $wheelfile
         continue-on-error: true
