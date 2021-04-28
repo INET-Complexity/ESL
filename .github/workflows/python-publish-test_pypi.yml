@@ -176,7 +176,7 @@ jobs:
           python -m pip install delocate
           python -m cibuildwheel --output-dir distribution
           ls distribution/
-          cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && ls && otool -L _esl.so && install_name_tool -id _esl.so _esl.so && otool -L _esl.so && cd .. && rm *.whl && zip -r $wheelfile .
+          cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && cp ../../boost_lib/libboost* . && ls && otool -L _esl.so && install_name_tool -id _esl.so _esl.so && otool -L _esl.so && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-wheel -w fixed_wheels -v *.whl
           python -m twine upload --repository testpypi $wheelfile
         continue-on-error: true
