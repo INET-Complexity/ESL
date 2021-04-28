@@ -26,7 +26,9 @@ IF(APPLE)
     ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
     # allow linking to libraries outside of build tree
     # use 0 for repairwheel
-    SET(CMAKE_MACOSX_RPATH TRUE)
+    SET(CMAKE_MACOSX_RPATH FALSE)
+
+    SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--enable-new-dtags")
 ENDIF()
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
