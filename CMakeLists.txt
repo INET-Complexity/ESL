@@ -28,7 +28,7 @@ IF(APPLE)
     # use 0 for repairwheel
     SET(CMAKE_MACOSX_RPATH FALSE)
 
-    SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--enable-new-dtags")
+    SET(CMAKE_EXE_LINKER_FLAGS "-Wl")
 ENDIF()
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
