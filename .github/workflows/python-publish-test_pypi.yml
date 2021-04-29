@@ -103,9 +103,17 @@ jobs:
           echo "import python ;" >> project-config.jam
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}m/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
-          ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
+          ./b2  cxxflags="-arch arm64 -std=c++17" toolset=darwin address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
+          mkdir -p arm64 && cp stage/lib/*.dylib arm64
+          ./b2 toolset=clang cxxflags="-arch arm64 -arch x86_64 -std=c++17" toolset=darwin address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
+          mkdir x86_64 && cp stage/lib/*.dylib x86_64
+          mkdir universal
+          for dylib in arm64/*; do
+            lipo -create -arch arm64 $dylib -arch x86_64 x86_64/$(basename $dylib) -output universal/$(basename $dylib);
+          done
+          cp -rv universal/* /usr/local/lib/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
-
+      # ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
 
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.8+] Install boost"
