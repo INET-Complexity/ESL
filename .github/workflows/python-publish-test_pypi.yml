@@ -193,7 +193,7 @@ jobs:
           rm -rf .dylibs && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-listdeps --all $wheelfile
           delocate-wheel -w fixed_wheels -v $wheelfile
-          python -m twine upload --repository testpypi $wheelfile
+          python -m twine upload --repository testpypi fixed_wheels/*
         continue-on-error: true
         if: matrix.os == 'macos-10.15'
 
