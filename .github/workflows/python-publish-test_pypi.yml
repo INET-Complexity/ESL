@@ -1,6 +1,5 @@
 name: build publish Test Pypi
 
-# The cache gets invalidated on a new tag, so we trigger a test build per push
 on: push
 
 jobs:
@@ -10,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-10.15]
-        python_minor_version: [7]
+        python_minor_version: [7,8,9]
     steps:
 
 ########################################################################################################################
@@ -84,24 +83,6 @@ jobs:
         continue-on-error: true
 
 ########################################################################################################################
-      - name: Cache Boost Libraries
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-boost-lib
-        with:
-          path: ~/boost_lib
-          key: ${{ runner.os }}-3${{matrix.python_minor_version}}-boost_lib
-
-      - name: Cache Boost Include Directory
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-boost-include
-        with:
-          path: ~/boost_include
-          key: ${{ runner.os }}-3${{matrix.python_minor_version}}-boost_include
-
-
-
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.7] Install boost"
         run: |
@@ -123,20 +104,8 @@ jobs:
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}m/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-          mkdir -p ~/boost_include
-          mkdir -p ~/boost_lib
-          cp -r /usr/local/include/boost/* ~/boost_include
-          cp -rv /usr/local/lib/libboost* ~/boost_lib
-          mkdir -p ~/boost_lib/cmake
-          cp -rv /usr/local/lib/cmake/boost* ~/boost_lib/cmake
-        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit != 'true'
+        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
 
-      - name: "[MacOS | Python 3.7] Install boost from cache"
-        run: |
-          cp -rn ~/boost_lib/* /usr/local/lib/
-          mkdir -p /usr/local/include/boost/
-          cp -rn ~/boost_include/* /usr/local/include/boost/
-        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7 && steps.cache-boost-lib.outputs.cache-hit == 'true'
 
       # overwrite the config file that wrongly captures the Python installation directory
       - name: "[MacOS | Python 3.8+] Install boost"
@@ -159,7 +128,6 @@ jobs:
           echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-          cp -r bin.v2 /Users/runner/work/ESL/ESL/
         if: matrix.os == 'macos-10.15' && matrix.python_minor_version > 7
 
 ########################################################################################################################
@@ -180,13 +148,19 @@ jobs:
           python -m cibuildwheel --output-dir distribution
           ls distribution/
           bindir=$(pwd)/distribution/esl
-          cd distribution && wheelfile=$(ls *.whl) && delocate-listdeps $wheelfile && unzip eslpy* && cd esl && ls && otool -L _esl.so && cp -v ~/boost_lib/libboost*.dylib .
+          cd distribution && wheelfile=$(ls *.whl)
+          delocate-listdeps $wheelfile
+          unzip eslpy*
+          cd esl
+          ls
+          otool -L _esl.so
+          cp -v /usr/local/lib/libboost*.dylib .
           install_name_tool -change @rpath/libboost_program_options.dylib     $bindir/libboost_program_options.dylib     _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           install_name_tool -change @rpath/libboost_serialization.dylib       $bindir/libboost_serialization.dylib       _esl.so
           install_name_tool -change @rpath/libboost_unit_test_framework.dylib $bindir/libboost_unit_test_framework.dylib _esl.so
           install_name_tool -change @rpath/libboost_thread.dylib              $bindir/libboost_thread.dylib              _esl.so
-          install_name_tool -change @rpath/libboost_python37.dylib            $bindir/libboost_python37.dylib            _esl.so
+          install_name_tool -change @rpath/libboost_python3${{matrix.python_minor_version}}.dylib            $bindir/libboost_python3${{matrix.python_minor_version}}.dylib            _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           otool -L _esl.so
           cp -v .dylibs/* .
