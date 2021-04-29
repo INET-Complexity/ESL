@@ -191,8 +191,9 @@ jobs:
           otool -L _esl.so
           cp -v .dylibs/* .
           dylibs=$(ls .dylibs/)
-          for d in dylibs
+          for d in $dylibs
           do
+            echo $d
             install_name_tool -change @loader_path/.dylibs/$d $bindir/$d _esl.so
           done
           otool -L _esl.so
