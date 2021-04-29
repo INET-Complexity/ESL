@@ -1,9 +1,7 @@
 name: build publish Test Pypi
 
-on:
-  push:
-    tags:
-      - '*'
+# The cache gets invalidated on a new tag, so we trigger a test build per push
+on: push
 
 jobs:
   build_wheels:
@@ -191,6 +189,7 @@ jobs:
           install_name_tool -change @rpath/libboost_python37.dylib            $bindir/libboost_python37.dylib            _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
           otool -L _esl.so
+          cp -v .dylibs/* .
           rm -rf .dylibs && cd .. && rm *.whl && zip -r $wheelfile .
           delocate-listdeps --all $wheelfile
           delocate-wheel -w fixed_wheels -v $wheelfile
