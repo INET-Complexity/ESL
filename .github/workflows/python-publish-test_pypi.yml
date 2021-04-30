@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15]
+        os: [macos-10.15, macos-11.0]
         python_minor_version: [7,8,9]
     steps:
 
@@ -18,7 +18,7 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-        if: matrix.os == 'macos-10.15'
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
 ########################################################################################################################
 
@@ -54,14 +54,14 @@ jobs:
           brew reinstall gcc gfortran automake
           which gfortran
         shell: bash
-        if: matrix.os == 'macos-10.15'
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
       - name: "[MacOS] Install gsl with homebrew"
         run: |
           brew update >/dev/null
           brew install gsl
         shell: bash
-        if: matrix.os == 'macos-10.15'
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
 ########################################################################################################################
 
@@ -79,12 +79,12 @@ jobs:
           sudo cp adept_source.h /usr/local/include/
           cd ~
         shell: bash
-        if: matrix.os == 'macos-10.15'
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
         continue-on-error: true
 
 ########################################################################################################################
       # overwrite the config file that wrongly captures the Python installation directory
-      - name: "[MacOS | Python 3.7] Install boost"
+      - name: "[MacOS] Install boost"
         run: |
           wget   https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz > /dev/null 2>&1
           tar -xzf boost_1_*
@@ -101,42 +101,11 @@ jobs:
           echo "option.set libdir : /usr/local/lib ;" >> project-config.jam
           echo "option.set includedir : /usr/local/include ;" >> project-config.jam
           echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}m/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
-          cat project-config.jam
-          ./b2  cxxflags="-arch arm64 -std=c++17" toolset=darwin address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-          mkdir -p arm64 && cp stage/lib/*.dylib arm64
-          ./b2 toolset=clang cxxflags="-arch arm64 -arch x86_64 -std=c++17" toolset=darwin address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-          mkdir x86_64 && cp stage/lib/*.dylib x86_64
-          mkdir universal
-          for dylib in arm64/*; do
-            lipo -create -arch arm64 $dylib -arch x86_64 x86_64/$(basename $dylib) -output universal/$(basename $dylib);
-          done
-          cp -rv universal/* /usr/local/lib/
-        if: matrix.os == 'macos-10.15' && matrix.python_minor_version == 7
-      # ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-
-      # overwrite the config file that wrongly captures the Python installation directory
-      - name: "[MacOS | Python 3.8+] Install boost"
-        run: |
-          wget   https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.gz > /dev/null 2>&1
-          tar -xzf boost_1_*
-          cd boost_1_*
-          ./bootstrap.sh
-          echo "import option ;" > project-config.jam
-          echo "import feature ;" >> project-config.jam
-          echo "if ! clang in [ feature.values <toolset> ]" >> project-config.jam
-          echo "{" >> project-config.jam
-          echo "    using clang ; " >> project-config.jam
-          echo "}" >> project-config.jam
-          echo "option.set prefix : /usr/local ;" >> project-config.jam
-          echo "option.set exec-prefix : /usr/local ;" >> project-config.jam
-          echo "option.set libdir : /usr/local/lib ;" >> project-config.jam
-          echo "option.set includedir : /usr/local/include ;" >> project-config.jam
-          echo "import python ;" >> project-config.jam
-          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/python3.${{matrix.python_minor_version}}/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
+          python_variant=$(ls ${{env.pythonLocation}}/include/ | grep python3.${{matrix.python_minor_version}})
+          echo "using python    : 3.${{matrix.python_minor_version}}    :  ${{env.pythonLocation}}/bin/python    : ${{env.pythonLocation}}/include/$(python_variant)/    : ${{env.pythonLocation}}/lib/python3.${{matrix.python_minor_version}}/ ;" >> project-config.jam
           cat project-config.jam
           ./b2 cxxflags=-std=c++17 address-model=64 variant=release install -j 8 --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-        if: matrix.os == 'macos-10.15' && matrix.python_minor_version > 7
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
 ########################################################################################################################
 
@@ -184,7 +153,7 @@ jobs:
           delocate-wheel -w fixed_wheels -v $wheelfile
           python -m twine upload --repository testpypi fixed_wheels/*
         continue-on-error: true
-        if: matrix.os == 'macos-10.15'
+        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
 ########################################################################################################################
       - name: "[Linux] Build and publish"
