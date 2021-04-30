@@ -34,10 +34,6 @@
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/python.hpp>
 
-#include <esl/agent.hpp>
-
-#include <esl/simulation/python_module_simulation.hpp>
-
 namespace esl::python_module {
 //    template<typename agent_t_, typename ... arguments_>
 //    static boost::shared_ptr<agent_t_> python_construct_agent( boost::python::object const &o, arguments_ ... a )
@@ -54,7 +50,6 @@ namespace esl::python_module {
 //
 //        return boost::make_shared<agent_t_>(identity<agent_t_>(pi.digits), a...);
 //    }
-
 
 }
 

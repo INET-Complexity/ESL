@@ -31,12 +31,15 @@ namespace esl {
     ///
     /// \brief  Exception raised when the market mechanism fails
     ///
-    class invalid_parameters : esl::exception
+    class invalid_parameters
+    : esl::exception
     {
     public:
         explicit invalid_parameters(const std::string &message)
         : esl::exception(message)
-        { }
+        {
+
+        }
     };
 } // namespace esl
 
