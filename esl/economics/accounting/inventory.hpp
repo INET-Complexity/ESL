@@ -261,7 +261,6 @@ namespace esl::economics::accounting {
         friend std::ostream &
         operator<<(std::ostream &o, inventory_by_fungibility<property_t_, true> &i)
         {
-
             o << i.items;
             return o;
         }

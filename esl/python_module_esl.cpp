@@ -40,6 +40,7 @@ using namespace boost::python;
 // utility
 ////////////////////////////////////////////////////////////////////////////////
 #include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 
 
 ///
@@ -150,6 +151,13 @@ double python_price_to_floating_point(const price &p)
 //    }
 //    return result_;
 //}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//esl.economics.accounting
+////////////////////////////////////////////////////////////////////////////////
+#include <esl/economics/accounting/standard.hpp>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -980,6 +988,15 @@ BOOST_PYTHON_MODULE(_esl)
             .add_property("denominator", &iso_4217::denominator)
             .add_property("__repr__", python_currency_code)
             .add_property("__str__", python_currency_code);
+
+        ////////////////////////////////////////////////////////////////////////////
+        // esl.economics.accounting
+        ////////////////////////////////////////////////////////////////////////////
+        {
+            boost::python::scope scope_accounting_ = create_scope("_accounting");
+
+            class_<standard>("standard", init<std::int64_t, iso_4217>())
+        }
 
         ////////////////////////////////////////////////////////////////////////////
         // esl.economics.currencies
