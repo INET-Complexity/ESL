@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, macos-11.0]
+        os: [macos-10.15, windows-2019, ubuntu-20.04]
         python_minor_version: [7,8,9]
     steps:
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: "[Windows] Setup MSBuild"
         uses: microsoft/setup-msbuild@v1.0.2
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
 
 ########################################################################################################################
 
@@ -196,7 +196,7 @@ jobs:
           wget https://gist.githubusercontent.com/maartenscholl/98e77aa7e378f92a41b309c3718736a1/raw/c68cd4b553709bd471584ac579c2d82710355504/adept_source.h  -UseBasicParsing -OutFile adept_source.h
           Copy-Item -Path * -Destination D:/a/ESL/ESL/adept -recurse -Force
         shell: powershell
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
 
 ########################################################################################################################
 
@@ -207,7 +207,7 @@ jobs:
           cd boost_1_73_0
           ./bootstrap.bat --prefix=C:/Boost
           ./b2 --prefix=C:/Boost address-model=64 --toolset=msvc variant=release  install -j 8 --build-type=complete --without-atomic --without-context --without-coroutine --without-fiber --without-thread --without-graph --without-graph_parallel --without-wave
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
         shell: powershell
 
 ########################################################################################################################
@@ -233,4 +233,4 @@ jobs:
           python -m twine upload --repository testpypi D:/a/ESL/ESL/wheelhouse/*
         continue-on-error: true
         shell: powershell
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
