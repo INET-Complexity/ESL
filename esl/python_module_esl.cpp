@@ -2172,7 +2172,7 @@ BOOST_PYTHON_MODULE(_esl)
             .def("deactivate", python_agent_collection_deactivate)
             ;
 
-       class_<model>("model"
+        class_<model>("model"
                     ,init<environment &, parameter::parametrization>())
            .def_readonly("start", &model::start)
            .def_readwrite("end", &model::end)
@@ -2183,11 +2183,11 @@ BOOST_PYTHON_MODULE(_esl)
            ;
 
 
-       def("time_point", python_time_point);
+        def("time_point", python_time_point);
 
-       def("time_duration", python_time_duration);
+        def("time_duration", python_time_duration);
 
-       class_<time_interval>("time_interval",
+        class_<time_interval>("time_interval",
                              init<time_point, time_point>())
            .def_readwrite("lower", &time_interval::lower)
            .def_readwrite("upper", &time_interval::upper)
@@ -2199,24 +2199,36 @@ BOOST_PYTHON_MODULE(_esl)
            .def("__str__", &time_interval::representation);
 
 
-       class_<world, boost::noncopyable>("world", no_init)
-           .def_readonly("identifier", &world::entity<world>::identifier)
-           .def("__repr__", &world::entity<world>::representation)
-           ;
+        class_<world, boost::noncopyable>("world", no_init)
+            .def_readonly("identifier", &world::entity<world>::identifier)
+            .def("__repr__", &world::entity<world>::representation)
+            ;
+
         implicitly_convertible<world, identity<world>>();
 
+
         {
-            boost::python::scope scope_parameter_ = create_scope("_parameter");
+        ////////////////////////////////////////////////////////////////////
+        // esl.simulation.parameter
+        ////////////////////////////////////////////////////////////////////
+        boost::python::scope scope_parameter_ = create_scope("_parameter");
 
-            class_<parameter_base>("parameter_base", init<>());
+        class_<parameter_base>("parameter_base", init<>());
 
-            class_<constant<double>>("constant_double", init<double>());
-            class_<constant<std::int64_t>>("constant_int64", init<int64_t>());
-            class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
+        class_<constant<double>>("constant_double", init<double>());
+        class_<constant<std::int64_t>>("constant_int64", init<int64_t>());
+        class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
 
-            class_<parametrization>("parametrization", init<>())
-                .def("get", parametrization_get_helper)
-                ;
+
+        class_<communicator::inbox_t>("parameter_values_map").def(
+            boost::python::map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>());
+        ;
+
+
+        class_<parametrization>("parametrization", init<>())
+            .def("get", parametrization_get_helper)
+            .add_property("values", &parametrization::values)
+        ;
 
 
 
