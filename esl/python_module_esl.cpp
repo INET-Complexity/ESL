@@ -853,12 +853,19 @@ std::optional<boost::python::object> pack(std::shared_ptr<parameter_base> parame
     return {};
 }
 
-boost::python::object get_helper(parametrization &p, const std::string &name)
+///
+/// \brief  Because Python allows returning many types from a single function,
+///         we can wrap the function by packing the result in a python object.
+///
+/// \param p    The parameter set
+/// \param name The parameter name
+/// \return     The parameter value as a python object
+boost::python::object parametrization_get_helper(parametrization &p, const std::string &name)
 {
     auto parameter_ = p.values.find(name);
 
     if(p.values.end() == parameter_) {
-        throw esl::exception("parametrization[" + name + "]");
+        throw esl::exception("not a valid parameter: " + name + "");
     }
 
     auto result_ = pack<double>(parameter_->second);
@@ -876,7 +883,7 @@ boost::python::object get_helper(parametrization &p, const std::string &name)
         return result_.value();
     }
 
-    throw esl::exception("parametrization[" + name + "]");
+    throw esl::exception("parametrization[" + name + "] can't be converted to Python");
 }
 
 
@@ -949,7 +956,7 @@ BOOST_PYTHON_MODULE(_esl)
     {
         boost::python::scope scope_computation_ = create_scope("_computation");
 
-        class_<computation::block_pool::block<object>>(
+        class_<block_pool::block<object>>(
             "block", "The block is a unit of memory used by the block_pool allocator, and has fixed size.")
             .def_readwrite("data",
                            &computation::block_pool::block<object>::data)
@@ -957,7 +964,7 @@ BOOST_PYTHON_MODULE(_esl)
                            &computation::block_pool::block<object>::index);
 
         // computational environment base class with default single thread
-        class_<computation::python_environment>(
+        class_<python_environment>(
             "environment", "The environment class runs models: it schedules agents and delivers messages sent between agents.")
             .def("step", &computation::python_environment::step)
             .def("run", &computation::python_environment::run)
@@ -1052,9 +1059,6 @@ BOOST_PYTHON_MODULE(_esl)
             class_<std::map<identity<law::property>, markets::quote> >("map_property_identifier_quote")
                 .def(boost::python::map_indexing_suite<std::map<identity<law::property>, markets::quote>>())
                 ;
-
-
-
 
             class_<standard>("standard"
                             , "A basic accounting standard"
@@ -1266,14 +1270,6 @@ BOOST_PYTHON_MODULE(_esl)
             .def("__repr__", &price::representation)
             .def("__str__", &price::representation)
             .def("__float__", &python_price_to_floating_point);
-
-
-        ////////////////////////////////////////////////////////////////////////
-        // esl.economics.accounting
-        ////////////////////////////////////////////////////////////////////////
-        {
-            boost::python::scope scope_accounting_ = create_scope("_accounting");
-        }
 
         ////////////////////////////////////////////////////////////////////////
         // esl.economics.finance
@@ -2219,9 +2215,10 @@ BOOST_PYTHON_MODULE(_esl)
             class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
 
             class_<parametrization>("parametrization", init<>())
-                .def("get", get_helper)
-
+                .def("get", parametrization_get_helper)
                 ;
+
+
 
         }
 
