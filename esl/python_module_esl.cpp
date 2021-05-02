@@ -122,8 +122,13 @@ void translate_exception(const exception &e)
 #include <esl/computation/environment.hpp>
 #include <esl/computation/timing.hpp>
 using namespace esl::computation;
+
+////////////////////////////////////////////////////////////////////////////////
+// esl.computation.distributed
+////////////////////////////////////////////////////////////////////////////////
 #include <esl/computation/distributed/protocol.hpp>
 using namespace esl::computation::distributed;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //esl.economics
@@ -158,7 +163,42 @@ double python_price_to_floating_point(const price &p)
 //esl.economics.accounting
 ////////////////////////////////////////////////////////////////////////////////
 #include <esl/economics/accounting/standard.hpp>
+using namespace esl::economics::accounting;
 
+//we need to forward declare items from the finance submodule
+#include <esl/economics/finance/stock.hpp>
+#include <esl/economics/finance/bond.hpp>
+#include <esl/economics/cash.hpp>
+using namespace esl::economics::finance;
+
+
+// because python has no ad-hoc polymorphism for function overloads,
+// we need to wrap these.
+
+price value_money(standard &s, const money &p, const quantity &q)
+{
+    return s.value(p, q);
+}
+
+price value_cash(standard &s, const cash &p, const quantity &q)
+{
+    return s.value(p, q);
+}
+
+price value_stock(standard &s, const stock &p, const quantity &q)
+{
+    return s.value(p, q);
+}
+
+price value_loan(standard &s, const loan &p, const quantity &q)
+{
+    return s.value(p, q);
+}
+
+price value_securities_lending_contract(standard &s, const securities_lending_contract &p, const quantity &q)
+{
+    return s.value(p, q);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // esl.economics.finance
@@ -421,6 +461,7 @@ std::string python_country_code(const esl::geography::iso_3166_1_alpha_2 &c)
 
 # include <boost/python/suite/indexing/indexing_suite.hpp>
 # include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+# include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
 #include <esl/interaction/python_module_interaction.hpp>
 #include <esl/interaction/transfer.hpp>
@@ -958,6 +999,19 @@ BOOST_PYTHON_MODULE(_esl)
             class_<deactivation>("deactivation")
                 .def_readwrite("deactivated", &deactivation::deactivated);
         }
+
+        class_<environment>("environment")
+            .def("run", &environment::run)
+            .def("step", &environment::step)
+            .def("activate", &environment::activate)
+            .def("deactivate", &environment::deactivate)
+            .def("before_step", &environment::before_step)
+            .def("after_step", &environment::after_step)
+            .def("after_run", &environment::after_run)
+            .def("activate_agent", &environment::activate_agent)
+            .def("deactivate_agent", &environment::deactivate_agent)
+            .def("send_messages", &environment::send_messages)
+        ;
     }
 
 
@@ -995,7 +1049,24 @@ BOOST_PYTHON_MODULE(_esl)
         {
             boost::python::scope scope_accounting_ = create_scope("_accounting");
 
-            class_<standard>("standard", init<std::int64_t, iso_4217>())
+            class_<std::map<identity<law::property>, markets::quote> >("map_property_identifier_quote")
+                .def(boost::python::map_indexing_suite<std::map<identity<law::property>, markets::quote>>())
+                ;
+
+
+
+
+            class_<standard>("standard"
+                            , "A basic accounting standard"
+                            ,init<iso_4217>())
+                .add_property("reporting_currency", &standard::reporting_currency)
+                .add_property("foreign_currencies", &standard::foreign_currencies)
+                .def("value", &value_money)
+                .def("value", &value_cash)
+                .def("value", &value_stock)
+                .def("value", &value_loan)
+                .def("value", &value_securities_lending_contract)
+                ;
         }
 
         ////////////////////////////////////////////////////////////////////////////

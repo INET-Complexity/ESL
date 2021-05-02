@@ -22,13 +22,10 @@ SET(version_revision ${CMAKE_MATCH_1})
 CMAKE_POLICY(SET CMP0048 NEW)
 
 IF(APPLE)
-    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
-    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.15)
-    # allow linking to libraries outside of build tree
-    # use 0 for repairwheel
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+    ADD_COMPILE_OPTIONS(-mmacosx-version-min=10.9)
+    # We will add MacOS .dylibs manually to the package tree, and so disable @rpath resolution
     SET(CMAKE_MACOSX_RPATH FALSE)
-
-    SET(CMAKE_EXE_LINKER_FLAGS "-Wl")
 ENDIF()
 
 PROJECT(ESL VERSION ${version_major}.${version_minor}.${version_revision}
