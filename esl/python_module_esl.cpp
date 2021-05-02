@@ -860,7 +860,7 @@ std::optional<boost::python::object> pack(std::shared_ptr<parameter_base> parame
 /// \param p    The parameter set
 /// \param name The parameter name
 /// \return     The parameter value as a python object
-boost::python::object parametrization_get_helper(parametrization &p, const std::string &name)
+boost::python::object parametrization_get_helper(const parametrization &p, const std::string &name)
 {
     auto parameter_ = p.values.find(name);
 
@@ -869,17 +869,17 @@ boost::python::object parametrization_get_helper(parametrization &p, const std::
     }
 
     auto result_ = pack<double>(parameter_->second);
-    if(result_){
+    if(result_.has_value()){
         return result_.value();
     }
 
     result_ = pack<std::int64_t>(parameter_->second);
-    if(result_){
+    if(result_.has_value()){
         return result_.value();
     }
 
     result_ = pack<std::uint64_t>(parameter_->second);
-    if(result_){
+    if(result_.has_value()){
         return result_.value();
     }
 
@@ -2213,11 +2213,18 @@ BOOST_PYTHON_MODULE(_esl)
         ////////////////////////////////////////////////////////////////////
         boost::python::scope scope_parameter_ = create_scope("_parameter");
 
-        class_<parameter_base>("parameter_base", "Abstract base class of model parameters.",init<>());
+        class_<parameter_base, std::shared_ptr<parameter_base>>("parameter_base", "Abstract base class of model parameters.",init<>());
 
-        class_<constant<double>>("constant_double", "Floating point number model parameter.",init<double>());
-        class_<constant<std::int64_t>>("constant_int64", "Signed 64-bit integer model parameter.", init<int64_t>());
-        class_<constant<std::uint64_t>>("constant_uint64","Unsigned 64-bit integer model parameter.", init<uint64_t>());
+        class_<constant<double>,bases<parameter_base>>("constant_double", "Floating point number model parameter.",init<double>());
+        implicitly_convertible<std::shared_ptr<constant<double>>, std::shared_ptr<parameter_base>>();
+
+        class_<constant<std::int64_t>,bases<parameter_base>>("constant_int64", "Signed 64-bit integer model parameter.", init<int64_t>());
+        implicitly_convertible<std::shared_ptr<constant<std::int64_t>>, std::shared_ptr<parameter_base>>();
+
+
+
+        class_<constant<std::uint64_t>,bases<parameter_base>>("constant_uint64","Unsigned 64-bit integer model parameter.", init<uint64_t>());
+        implicitly_convertible<std::shared_ptr<constant<std::uint64_t>>, std::shared_ptr<parameter_base>>();
 
         class_<std::map<std::string, std::shared_ptr<parameter_base> > >("parameter_values_map", "Stores model parameters by parameter name.")
             .def(boost::python::map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>());
@@ -2225,8 +2232,8 @@ BOOST_PYTHON_MODULE(_esl)
 
 
         class_<parametrization>("parametrization", init<>())
-            .def("get", parametrization_get_helper)
-            .add_property("values", &parametrization::values)
+            .def("__getitem__", parametrization_get_helper)
+            .def_readwrite("values", &parametrization::values)
         ;
 
 

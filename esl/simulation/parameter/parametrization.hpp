@@ -61,7 +61,7 @@ namespace esl::simulation::parameter {
             values["start"]     = std::make_shared<constant<time_point>>(start);
             values["end"]       = std::make_shared<constant<time_point>>(end);
             values["verbosity"] = std::make_shared<constant<std::uint64_t>>(verbosity);
-            values["threads"]   = std::make_shared<constant<unsigned int>>(verbosity);
+            values["threads"]   = std::make_shared<constant<std::uint64_t>>(verbosity);
         }
 
 

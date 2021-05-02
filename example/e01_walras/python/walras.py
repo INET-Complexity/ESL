@@ -30,7 +30,9 @@ print(esl.version())
 from esl.law import property, property_identity
 
 # import the price class and the USD predefined currency
-from esl.economics import price, USD
+from esl.economics import price, currencies
+
+USD = currencies.USD
 
 # import the quote class that defines an economic exchange
 from esl.economics.markets import quote
@@ -60,7 +62,7 @@ print(initial_price)
 #   - 'type': what the prices are: are they monetary values, raw exchange rates like on a barter market, or interest rates or something else?
 #   - 'lot size': the quantity for which the prices are defined (this allows for prices with the correct precision, preventing rounding errors)
 # the lot size is 1 by default, so this quote means "buy 1 property in exchange for $1.23"
-initial_quote = quote(initial_price, 1)
+initial_quote = quote(initial_price)
 
 print(f"The initial quote is {initial_quote}") # prints 1@USD(1.23)
 
@@ -74,8 +76,8 @@ model = excess_demand_model({p: initial_quote, p2: initial_quote})
 
 # Here we create a dummy market agent, and a dummy trader agent,
 # because we need at least two agent identifiers for accounting purposes
-market_agent = esl.identity([0])
-trader_agent = esl.identity([1])
+market_agent = esl.simulation.identity([0])
+trader_agent = esl.simulation.identity([1])
 
 # Here we define an order message. In ESL, all messages are defined as a class
 class my_order(differentiable_order_message):
