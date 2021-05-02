@@ -2213,15 +2213,14 @@ BOOST_PYTHON_MODULE(_esl)
         ////////////////////////////////////////////////////////////////////
         boost::python::scope scope_parameter_ = create_scope("_parameter");
 
-        class_<parameter_base>("parameter_base", init<>());
+        class_<parameter_base>("parameter_base", "Abstract base class of model parameters.",init<>());
 
-        class_<constant<double>>("constant_double", init<double>());
-        class_<constant<std::int64_t>>("constant_int64", init<int64_t>());
-        class_<constant<std::uint64_t>>("constant_uint64", init<uint64_t>());
+        class_<constant<double>>("constant_double", "Floating point number model parameter.",init<double>());
+        class_<constant<std::int64_t>>("constant_int64", "Signed 64-bit integer model parameter.", init<int64_t>());
+        class_<constant<std::uint64_t>>("constant_uint64","Unsigned 64-bit integer model parameter.", init<uint64_t>());
 
-
-        class_<communicator::inbox_t>("parameter_values_map").def(
-            boost::python::map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>());
+        class_<std::map<std::string, std::shared_ptr<parameter_base> > >("parameter_values_map", "Stores model parameters by parameter name.")
+            .def(boost::python::map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>());
         ;
 
 
