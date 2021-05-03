@@ -92,11 +92,11 @@ boost::shared_ptr<object_t_> to_boost(std::shared_ptr<object_t_>& ptr)
 #include <esl/quantity.hpp>
 using namespace esl;
 
-//    static boost::shared_ptr<agent> python_construct_agent( object const &o )
-//    {
-//        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
-//        return boost::make_shared<agent>(identity<agent>(e().digits));
-//    }
+    static boost::shared_ptr<agent> python_construct_agent( object const &o )
+    {
+        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
+        return boost::make_shared<agent>(identity<agent>(e().digits));
+    }
 
 ///
 /// \brief  Translates C++ exceptions to Python errors, by setting the
@@ -944,9 +944,9 @@ BOOST_PYTHON_MODULE(_esl)
         .def(self * std::uint64_t())
         .def(self / std::uint64_t());
 
-    //        class_<agent>("agent")
-    //            .def("__init__", boost::python::make_constructor(&python_construct_agent))
-    //            ;
+        class_<agent>("agent")
+            .def("__init__", boost::python::make_constructor(&python_construct_agent))
+            ;
 
     def("version", version, "Print the library's version.");
 
@@ -1875,7 +1875,7 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("AL") = esl::law::jurisdictions::AL;
             scope().attr("DZ") = esl::law::jurisdictions::DZ;
             scope().attr("AS") = esl::law::jurisdictions::AS;
-            //    scope().attr("AD") = esl::law::jurisdictions::AD;
+            scope().attr("AD") = esl::law::jurisdictions::AD;
             scope().attr("AO") = esl::law::jurisdictions::AO;
             scope().attr("AI") = esl::law::jurisdictions::AI;
             scope().attr("AG") = esl::law::jurisdictions::AG;
@@ -2007,7 +2007,7 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("MT") = esl::law::jurisdictions::MT;
             scope().attr("MH") = esl::law::jurisdictions::MH;
             scope().attr("MQ") = esl::law::jurisdictions::MQ;
-            //   scope().attr("MR") = esl::law::jurisdictions::MR;
+            scope().attr("MR") = esl::law::jurisdictions::MR;
             scope().attr("MU") = esl::law::jurisdictions::MU;
             scope().attr("YT") = esl::law::jurisdictions::YT;
             scope().attr("MX") = esl::law::jurisdictions::MX;
@@ -2060,7 +2060,7 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("VC") = esl::law::jurisdictions::VC;
             scope().attr("WS") = esl::law::jurisdictions::WS;
             scope().attr("SM") = esl::law::jurisdictions::SM;
-            //    scope().attr("ST") = esl::law::jurisdictions::ST;
+            scope().attr("ST") = esl::law::jurisdictions::ST;
             scope().attr("SA") = esl::law::jurisdictions::SA;
             scope().attr("SN") = esl::law::jurisdictions::SN;
             scope().attr("RS") = esl::law::jurisdictions::RS;
@@ -2199,7 +2199,7 @@ BOOST_PYTHON_MODULE(_esl)
            .def("__str__", &time_interval::representation);
 
 
-        class_<world, boost::noncopyable>("world", no_init)
+        class_<world, boost::noncopyable>("world")
             .def_readonly("identifier", &world::entity<world>::identifier)
             .def("__repr__", &world::entity<world>::representation)
             ;
