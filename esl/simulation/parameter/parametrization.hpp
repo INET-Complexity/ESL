@@ -70,12 +70,12 @@ namespace esl::simulation::parameter {
         {
             auto iterator_ = values.find(name);
             if(values.end() == iterator_) {
-                throw std::out_of_range("parametrization[" + name + "]");
+                throw std::out_of_range("parametrization[" + name + "] does not exist");
             }
             auto value_ =
                 std::dynamic_pointer_cast<constant<parameter_t_>>(iterator_->second);
             if(!value_){
-                throw std::out_of_range("parametrization[" + name + "]");
+                throw std::out_of_range("parametrization[" + name + "] does not match type " + typeid(parameter_t_).name());
             }
             return value_->choice;
         }
