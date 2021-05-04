@@ -1052,6 +1052,39 @@ time_duration python_time_duration(const object& o)
 
 using namespace esl::simulation::parameter;
 
+class python_model
+: public model
+, public wrapper<model>
+{
+public:
+    python_model(environment &e, const parameter::parametrization &p)
+        : model(e, p)
+        , wrapper<model>()
+    {
+
+    }
+
+
+    ~python_model() override = default;
+
+    void initialize() override
+    {
+        get_override("initialize")();
+    }
+
+    time_point step(time_interval step) override
+    {
+
+        return get_override("step")(step);
+    }
+
+    void terminate() override
+    {
+        get_override("terminate")();
+    }
+};
+
+
 template<typename parameter_t_>
 std::optional<boost::python::object> pack(std::shared_ptr<parameter_base> parameter)
 {
@@ -2383,14 +2416,19 @@ BOOST_PYTHON_MODULE(_esl)
             .def("deactivate", python_agent_collection_deactivate)
             ;
 
-        class_<model>("model"
-                    ,init<environment &, parameter::parametrization>())
-           .def_readonly("start", &model::start)
-           .def_readwrite("end", &model::end)
-           .def_readwrite("time", &model::time)
-           .def_readonly("sample", &model::sample)
-           .def_readonly("world", &model::world)
-           .def_readwrite("agents", &model::agents)
+
+
+
+        class_<python_model, boost::noncopyable>("model",init<environment &, const parameter::parametrization &>())
+           .def_readonly("start", &python_model::start)
+           .def_readwrite("end", &python_model::end)
+           .def_readwrite("time", &python_model::time)
+           .def_readonly("sample", &python_model::sample)
+           .def("initialize", &python_model::initialize)
+           .def("step", &python_model::step)
+           .def("terminate", &python_model::terminate)
+           .def_readonly("world", &python_model::world)
+           .def_readwrite("agents", &python_model::agents)
            ;
 
 
