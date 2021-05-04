@@ -46,7 +46,7 @@ namespace esl::simulation {
         , sample(parameters.get<std::uint64_t>("sample"))
         , agents(e)
         , verbosity(parameters.get<std::uint64_t>("verbosity"))
-        , threads( std::max(1ul, parameters.get<std::uint64_t>("threads")))
+        , threads( std::max<std::uint64_t>(1, parameters.get<std::uint64_t>("threads")))
     {
 
     }
