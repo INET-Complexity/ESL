@@ -68,7 +68,7 @@ namespace esl::law {
         explicit legal_person(const identity<agent> &i,
                               esl::law::jurisdiction primary_jurisdiction)
         : agent(i)
-        , representation(legal_entity::create(i))
+        , representation(legal_entity())
         , primary_jurisdiction(primary_jurisdiction)
         {}
 

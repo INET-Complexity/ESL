@@ -38,11 +38,16 @@
 
 namespace esl::law {
 
+    struct legal_entity
+    {
+
+    };
+
     ///
     /// \brief  legal_entity implements the Legal Entity Identifier system
     /// described in ISO 17442.
     ///
-    struct legal_entity
+    struct iso_17442
     {
         ///
         /// \brief The local part describing the local issuing party of the LEI.
@@ -60,7 +65,7 @@ namespace esl::law {
         /// \param local    The local part describing the local issuing party of
         /// the LEI. \param code     The code part describing uniquely a firm
         /// that is in the issuing party's business area.
-        constexpr legal_entity(const std::array<char, 4> &local = {'0'},
+        constexpr iso_17442(const std::array<char, 4> &local = {'0'},
                                const std::array<char, 12> &code = {'0'})
         : local(local), code(code)
         {
@@ -73,7 +78,7 @@ namespace esl::law {
         ///             digits (which are assumed to be '00') and tests the
         ///             checksum (compared to computed value), when assertions
         ///             are enabled.
-        explicit legal_entity(const std::string &text)
+        explicit iso_17442(const std::string &text)
         : local {text[0], text[1], text[2], text[3]}
         , code {text[6],  text[7],  text[8],  text[9],  text[10], text[11],
                 text[12], text[13], text[14], text[15], text[16], text[17]}
@@ -106,7 +111,7 @@ namespace esl::law {
         /// @return Fictional LEI code based on the given hash.
         ///
         template<typename hashable_t_>
-        static legal_entity create(const hashable_t_ &h,
+        static iso_17442 create(const hashable_t_ &h,
                                    const std::array<char, 4> local = {'0', '0',
                                                                       '0', '0'})
         {
@@ -125,7 +130,7 @@ namespace esl::law {
                 integer_ /= table_.size();
             }
 
-            return legal_entity(local, code_);
+            return iso_17442(local, code_);
         }
 
         ///
@@ -184,7 +189,7 @@ namespace esl::law {
         /// \brief  Renders the LEI: this asserts the reserved digits are '00',
         /// and freshly computes the checksum. \param o \param le \return The
         /// modified output stream
-        friend std::ostream &operator<<(std::ostream &o, const legal_entity &le)
+        friend std::ostream &operator << (std::ostream &o, const iso_17442 &le)
         {
             o.write(le.local.data(), le.local.size());
             o << "00";
@@ -200,8 +205,15 @@ namespace esl::law {
 #ifdef WITH_MPI
 #include <boost/mpi.hpp>
 namespace boost::mpi {
-    template<>
+        template<>
     struct is_mpi_datatype<esl::law::legal_entity>
+    : mpl::true_
+    {
+
+    };
+
+    template<>
+    struct is_mpi_datatype<esl::law::iso_17442>
     : mpl::false_
     {
 

@@ -40,7 +40,9 @@ namespace esl::law {
 
         natural_person(geography::iso_3166_1_alpha_2 nationality = geography::iso_3166_1_alpha_2())
         : nationality(nationality)
-        {}
+        {
+
+        }
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

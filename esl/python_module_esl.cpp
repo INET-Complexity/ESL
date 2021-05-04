@@ -336,15 +336,6 @@ double python_price_to_floating_point(const price &p)
     return double(p);
 }
 
-//boost::python::list python_company_unique_shareholders(const company &c)
-//{
-//    boost::python::list result_;
-//    for(const auto &s : c.unique_shareholders()){
-//        result_.append( esl::simulation::python_module::python_identity(s.digits) );
-//    }
-//    return result_;
-//}
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -897,23 +888,24 @@ void send_message_python(communicator &c, boost::python::object o)
 #include <esl/law/government.hpp>
 #include <esl/law/jurisdictions.hpp>
 #include <esl/law/legal_entity.hpp>
+#include <esl/economics/company.hpp>
 using namespace esl::law;
 
-std::string python_legal_entity_local(esl::law::legal_entity &e)
+std::string python_iso_17442_local(esl::law::iso_17442 &e)
 {
     std::stringstream stream_;
     stream_.write(e.local.data(), e.local.size());
     return stream_.str();
 }
 
-std::string python_legal_entity_code(esl::law::legal_entity &e)
+std::string python_iso_17442_code(esl::law::iso_17442 &e)
 {
     std::stringstream stream_;
     stream_.write(e.code.data(), e.code.size());
     return stream_.str();
 }
 
-std::string python_legal_entity_checksum(esl::law::legal_entity &e)
+std::string python_iso_17442_checksum(esl::law::iso_17442 &e)
 {
     std::stringstream stream_;
     auto t = e.checksum();
@@ -923,14 +915,6 @@ std::string python_legal_entity_checksum(esl::law::legal_entity &e)
 
 typedef esl::identity<esl::law::property> property_identity;
 
-boost::shared_ptr<property_identity> convert_digit_list2(const boost::python::list &list)
-{
-    std::vector<uint64_t> result_;
-    for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
-        result_.push_back(boost::python::extract<std::uint64_t>(list[i]));
-    }
-    return boost::make_shared<property_identity>(result_);
-}
 
 ///
 /// \brief  This is needed because we need to deal with the default argument
@@ -948,6 +932,18 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 }
 
 
+
+boost::python::list python_company_unique_shareholders(const company &c)
+{
+    boost::python::list result_;
+    for(const auto &s : c.unique_shareholders()){
+        result_.append( esl::simulation::python_module::python_identity(s.digits) );
+    }
+    return result_;
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // esl.simulation
 ////////////////////////////////////////////////////////////////////////////////
@@ -956,15 +952,17 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 #include <esl/simulation/world.hpp>
 using namespace esl::simulation;
 
-boost::shared_ptr<esl::simulation::python_module::python_identity>
-convert_digit_list(const boost::python::list &list)
+template<typename identity_t_>
+boost::shared_ptr<identity_t_>
+convert_digit_list_generic(const boost::python::list &list)
 {
     std::vector<uint64_t> result_;
     for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
         result_.push_back(boost::python::extract<std::uint64_t>(list[i]));
     }
-    return boost::make_shared<esl::simulation::python_module::python_identity>(result_);
+    return boost::make_shared<identity_t_>(result_);
 }
+
 
 
 
@@ -1188,9 +1186,16 @@ BOOST_PYTHON_MODULE(_esl)
         .def(self * std::uint64_t())
         .def(self / std::uint64_t());
 
-        class_<agent>("agent")
+        //class_<entity<void>>("entity");
+
+        class_< agent
+              //, bases<entity<void>>
+              >("agent")
             .def("__init__", boost::python::make_constructor(&python_construct_agent))
+            .def_readonly("identifier", &agent::identifier)
             ;
+
+
 
     def("version", version, "Print the library's version.");
 
@@ -2069,12 +2074,14 @@ BOOST_PYTHON_MODULE(_esl)
     {
         boost::python::scope scope_law_ = create_scope("_law");
 
-        class_<esl::law::legal_entity>("legal_entity", init<std::string>())
-            .add_property("local", &python_legal_entity_local)
-            .add_property("code", &python_legal_entity_code)
-            .def("checksum", &python_legal_entity_checksum)
+        class_<esl::law::iso_17442>("iso_17442", init<std::string>())
+            .add_property("local", &python_iso_17442_local)
+            .add_property("code", &python_iso_17442_code)
+            .def("checksum", &python_iso_17442_checksum)
             ;
 
+        class_<esl::law::legal_entity>("legal_entity")
+            ;
 
         class_<esl::law::jurisdiction>("jurisdiction", init<geography::iso_3166_1_alpha_2, economics::iso_4217>())
             .add_property("sovereign", &esl::law::jurisdiction::sovereign)
@@ -2083,7 +2090,7 @@ BOOST_PYTHON_MODULE(_esl)
 
 
         class_<identity<property>>( "property_identity")
-            .def("__init__", make_constructor(convert_digit_list2))
+            .def("__init__", make_constructor(convert_digit_list_generic<identity<property>>))
 
             .def("__str__", &python_represent_property_identity)
             .def("__repr__", &python_represent_property_identity)
@@ -2099,8 +2106,8 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
         class_< property
-            //, bases<entity<property>>
-        >( "property", init<identity<property>>())
+              //, bases<entity<void>>
+              >( "property", init<identity<property>>())
             .def("name", &property::name)
             .add_property("identifier", &property::identifier)
             ;
@@ -2109,8 +2116,6 @@ BOOST_PYTHON_MODULE(_esl)
             ( "natural_person", init<esl::geography::iso_3166_1_alpha_2>())
             .def_readonly("nationality", &natural_person::nationality)
             ;
-
-
 
         {
             boost::python::scope scope_jurisdictions_ = create_scope("_jurisdictions");
@@ -2393,7 +2398,7 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
         class_<esl::simulation::python_module::python_identity>("identity")
-            .def("__init__", make_constructor(convert_digit_list))
+            .def("__init__", make_constructor(convert_digit_list_generic<esl::simulation::python_module::python_identity>))
             .def_readonly("digits", &esl::simulation::python_module::python_identity::digits)
             .def("__str__", &esl::simulation::python_module::python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
@@ -2416,9 +2421,6 @@ BOOST_PYTHON_MODULE(_esl)
             .def("deactivate", python_agent_collection_deactivate)
             ;
 
-
-
-
         class_<python_model, boost::noncopyable>("model",init<environment &, const parameter::parametrization &>())
            .def_readonly("start", &python_model::start)
            .def_readwrite("end", &python_model::end)
@@ -2430,7 +2432,6 @@ BOOST_PYTHON_MODULE(_esl)
            .def_readonly("world", &python_model::world)
            .def_readwrite("agents", &python_model::agents)
            ;
-
 
         def("time_point", python_time_point);
 
@@ -2483,8 +2484,6 @@ BOOST_PYTHON_MODULE(_esl)
             .def("__getitem__", parametrization_get_helper)
             .def_readwrite("values", &parametrization::values)
         ;
-
-
 
         }
 
