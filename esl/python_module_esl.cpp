@@ -75,11 +75,196 @@ boost::shared_ptr<object_t_> to_boost(std::shared_ptr<object_t_>& ptr)
 
 
 
-// todo: reorganize
 
-#include <esl/simulation/python_module_simulation.hpp>
-#include <esl/simulation/model.hpp>
-// todo: reorganize
+
+////////////////////////////////////////////////////////////////////////////////
+// map indexing suite
+
+# include <boost/python/suite/indexing/indexing_suite.hpp>
+
+
+// Forward declaration
+template <class Container, bool NoProxy, class DerivedPolicies>
+class map_indexing_suite;
+
+namespace detail2
+{
+    template <class Container, bool NoProxy>
+    class final_map_derived_policies
+        : public map_indexing_suite<Container,
+            NoProxy, final_map_derived_policies<Container, NoProxy> >
+    {
+
+    };
+}
+
+ // By default indexed elements are returned by proxy. This can be
+// disabled by supplying *true* in the NoProxy template parameter.
+//
+template <
+    class Container,
+    bool NoProxy = false,
+    class DerivedPolicies
+    = detail2::final_map_derived_policies<Container, NoProxy> >
+class map_indexing_suite
+: public indexing_suite<
+        Container
+        , DerivedPolicies
+        , NoProxy
+        , true
+        , typename Container::value_type::second_type
+        , typename Container::key_type
+        , typename Container::key_type
+    >
+{
+public:
+
+    typedef typename Container::value_type value_type;
+    typedef typename Container::value_type::second_type data_type;
+    typedef typename Container::key_type key_type;
+    typedef typename Container::key_type index_type;
+    typedef typename Container::size_type size_type;
+    typedef typename Container::difference_type difference_type;
+
+    template <class Class>
+    static void
+    extension_def(Class& cl)
+    {
+        cl.def("keys", &keys);
+        cl.def("values", &values);
+
+        //  Wrap the map's element (value_type)
+        std::string elem_name = "map_indexing_suite_";
+        object class_name(cl.attr("__name__"));
+        extract<std::string> class_name_extractor(class_name);
+        elem_name += class_name_extractor();
+        elem_name += "_entry";
+
+        typedef typename boost::mpl::if_<
+            boost::mpl::and_<boost::is_class<data_type>, boost::mpl::bool_<!NoProxy> >
+        , return_internal_reference<>
+            , default_call_policies
+              >::type get_data_return_policy;
+
+        class_<value_type>(elem_name.c_str())
+            .def("__repr__", &DerivedPolicies::print_elem)
+            .def("data", &DerivedPolicies::get_data, get_data_return_policy())
+            .def("key", &DerivedPolicies::get_key)
+            ;
+    }
+
+    static object
+    print_elem(typename Container::value_type const& e)
+    {
+        return "(%s, %s)" % boost::python::make_tuple(e.first, e.second);
+    }
+
+    static
+    typename boost::mpl::if_<
+        boost::mpl::and_<boost::is_class<data_type>, boost::mpl::bool_<!NoProxy> >
+    , data_type&
+    , data_type
+    >::type
+    get_data(typename Container::value_type& e)
+    {
+        return e.second;
+    }
+
+    static typename Container::key_type
+    get_key(typename Container::value_type& e)
+    {
+        return e.first;
+    }
+
+    static data_type&
+    get_item(Container& container, index_type i_)
+    {
+        auto i = container.find(i_);
+        if (i == container.end()){
+            PyErr_SetString(PyExc_KeyError, "Invalid key");
+            throw_error_already_set();
+        }
+        return i->second;
+    }
+
+    static void
+    set_item(Container& container, index_type i, data_type const& v)
+    {
+        container[i] = v;
+    }
+
+    static void
+    delete_item(Container& container, index_type i)
+    {
+        container.erase(i);
+    }
+
+    static size_t
+    size(Container& container)
+    {
+        return container.size();
+    }
+
+    static bool
+    contains(Container& container, key_type const& key)
+    {
+        return container.find(key) != container.end();
+    }
+
+    static bool
+    compare_index(Container& container, index_type a, index_type b)
+    {
+        return container.key_comp()(a, b);
+    }
+
+    [[nodiscard]] static std::vector<index_type> keys(const Container &container)
+    {
+        std::vector<index_type> result_;
+        for(const auto &[k, v]: container){
+            result_.push_back(k);
+        }
+        return result_;
+    }
+
+    [[nodiscard]] static std::vector<data_type> values(const Container &container)
+    {
+        std::vector<data_type> result_;
+        for(const auto &[k, v]: container){
+            result_.push_back(v);
+        }
+        return result_;
+    }
+
+
+
+    static index_type
+    convert_index(Container& /*container*/, PyObject* i_)
+    {
+        extract<key_type const&> i(i_);
+        if (i.check())
+        {
+            return i();
+        }else{
+            extract<key_type> i(i_);
+            if (i.check())
+                return i();
+        }
+
+        PyErr_SetString(PyExc_TypeError, "Invalid index type");
+        throw_error_already_set();
+        return index_type();
+    }
+};
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -91,6 +276,9 @@ boost::shared_ptr<object_t_> to_boost(std::shared_ptr<object_t_>& ptr)
 #include <esl/version.hpp>
 #include <esl/quantity.hpp>
 using namespace esl;
+
+
+#include <esl/simulation/python_module_simulation.hpp>
 
     static boost::shared_ptr<agent> python_construct_agent( object const &o )
     {
@@ -461,7 +649,7 @@ std::string python_country_code(const esl::geography::iso_3166_1_alpha_2 &c)
 
 # include <boost/python/suite/indexing/indexing_suite.hpp>
 # include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-# include <boost/python/suite/indexing/map_indexing_suite.hpp>
+//# include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
 #include <esl/interaction/python_module_interaction.hpp>
 #include <esl/interaction/transfer.hpp>
@@ -558,6 +746,9 @@ public:
 
     template <class Class> static void extension_def(Class& cl)
     {
+        cl.def("keys", &keys);
+        cl.def("values", &values);
+
         //  Wrap the map's element (value_type)
         std::string name_ = "multimap_indexing_suite_";
         object class_name(cl.attr("__name__"));
@@ -661,6 +852,26 @@ public:
         throw_error_already_set();
         return index_type();
     }
+
+    [[nodiscard]] static std::vector<index_type> keys(const multimap_t_ &container)
+    {
+        std::vector<index_type> result_;
+        for(const auto &[k, v]: container){
+            result_.push_back(k);
+        }
+        return result_;
+    }
+
+    [[nodiscard]] static std::vector<data_type> values(const multimap_t_ &container)
+    {
+        std::vector<data_type> result_;
+        for(const auto &[k, v]: container){
+            result_.push_back(v);
+        }
+        return result_;
+    }
+
+
 };
 
 ///
@@ -1057,7 +1268,7 @@ BOOST_PYTHON_MODULE(_esl)
             boost::python::scope scope_accounting_ = create_scope("_accounting");
 
             class_<std::map<identity<law::property>, markets::quote> >("map_property_identifier_quote")
-                .def(boost::python::map_indexing_suite<std::map<identity<law::property>, markets::quote>>())
+                .def(map_indexing_suite<std::map<identity<law::property>, markets::quote>>())
                 ;
 
             class_<standard>("standard"
@@ -2221,15 +2432,14 @@ BOOST_PYTHON_MODULE(_esl)
         class_<constant<std::int64_t>,bases<parameter_base>>("constant_int64", "Signed 64-bit integer model parameter.", init<int64_t>());
         implicitly_convertible<std::shared_ptr<constant<std::int64_t>>, std::shared_ptr<parameter_base>>();
 
-
-
         class_<constant<std::uint64_t>,bases<parameter_base>>("constant_uint64","Unsigned 64-bit integer model parameter.", init<uint64_t>());
         implicitly_convertible<std::shared_ptr<constant<std::uint64_t>>, std::shared_ptr<parameter_base>>();
 
         class_<std::map<std::string, std::shared_ptr<parameter_base> > >("parameter_values_map", "Stores model parameters by parameter name.")
-            .def(boost::python::map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>());
-        ;
+            .def(map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>())
+            //.def("keys", map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>::)
 
+        ;
 
         class_<parametrization>("parametrization", init<>())
             .def("__getitem__", parametrization_get_helper)
