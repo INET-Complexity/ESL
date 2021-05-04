@@ -217,20 +217,20 @@ public:
         return container.key_comp()(a, b);
     }
 
-    [[nodiscard]] static std::vector<index_type> keys(const Container &container)
+    [[nodiscard]] static boost::python::list keys(const Container &container)
     {
-        std::vector<index_type> result_;
+        boost::python::list result_;
         for(const auto &[k, v]: container){
-            result_.push_back(k);
+            result_.append(k);
         }
         return result_;
     }
 
-    [[nodiscard]] static std::vector<data_type> values(const Container &container)
+    [[nodiscard]] static boost::python::list values(const Container &container)
     {
-        std::vector<data_type> result_;
+        boost::python::list result_;
         for(const auto &[k, v]: container){
-            result_.push_back(v);
+            result_.append(v);
         }
         return result_;
     }
@@ -853,20 +853,20 @@ public:
         return index_type();
     }
 
-    [[nodiscard]] static std::vector<index_type> keys(const multimap_t_ &container)
+    [[nodiscard]] static boost::python::list keys(const multimap_t_ &container)
     {
-        std::vector<index_type> result_;
+        boost::python::list result_;
         for(const auto &[k, v]: container){
-            result_.push_back(k);
+            result_.append(k);
         }
         return result_;
     }
 
-    [[nodiscard]] static std::vector<data_type> values(const multimap_t_ &container)
+    [[nodiscard]] static boost::python::list values(const multimap_t_ &container)
     {
-        std::vector<data_type> result_;
+        boost::python::list result_;
         for(const auto &[k, v]: container){
-            result_.push_back(v);
+            result_.append(v);
         }
         return result_;
     }
