@@ -1665,21 +1665,21 @@ BOOST_PYTHON_MODULE(_esl)
                 /// \brief Export the abstract base class, so that python users too can
                 ///        implement new order books.
                 ///
-                class_<limit_order_message>("limit_order_message"
-                                            , init< ticker
-                                                  , const identity<agent> &
-                                                  , limit_order_message::side_t
-                                                  , const quote&
-                                                  , std::uint64_t
-                                                  , limit_order_message::lifetime_t
-                                                  >())
-                    // second constructor
+                class_<limit_order_message>("limit_order_message", no_init)
                     .def(init< ticker
-                        , const identity<agent> &
+                        , identity<agent>
                         , limit_order_message::side_t
-                        , const quote&
+                        , quote
+                        , std::uint64_t
+                        , limit_order_message::lifetime_t
+                    >())
+                    .def(init< ticker
+                        , identity<agent>
+                        , limit_order_message::side_t
+                        , quote
                         , std::uint64_t
                     >())
+
                     .def_readwrite("lifetime", &limit_order_message::lifetime)
                     .def_readwrite("side", &limit_order_message::side)
                     .def_readwrite("symbol", &limit_order_message::symbol)
