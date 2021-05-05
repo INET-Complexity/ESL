@@ -9,6 +9,11 @@
 ///             We also flatten the esl namespaces through usage of the 'using'
 ///             namespace declaration.
 ///
+///             We simplify the interface to the identity<t> system, by
+///             creating a python_identity type that can be converted without
+///             checking to all other identities.
+///
+///
 /// \authors    Maarten P. Scholl
 /// \date       2020-08-30
 /// \copyright  Copyright 2017-2020 The Institute for New Economic Thinking,
@@ -288,11 +293,13 @@ using namespace esl;
 
 #include <esl/simulation/python_module_simulation.hpp>
 
-    static boost::shared_ptr<agent> python_construct_agent( object const &o )
-    {
-        boost::python::extract<esl::simulation::python_module::python_identity> e(o);
-        return boost::make_shared<agent>(identity<agent>(e().digits));
-    }
+using esl::simulation::python_module::python_identity;
+
+static boost::shared_ptr<agent> python_construct_agent( object const &o )
+{
+    boost::python::extract<python_identity> e(o);
+    return boost::make_shared<agent>(identity<agent>(e().digits));
+}
 
 ///
 /// \brief  Translates C++ exceptions to Python errors, by setting the
@@ -412,6 +419,7 @@ void set_isin_code(finance::isin &i, const std::string &code)
 
 #include <esl/economics/markets/quote.hpp>
 #include <esl/economics/markets/iso_10383.hpp>
+#include <esl/economics/markets/ticker.hpp>
 using namespace esl::economics::markets;
 
 
@@ -444,6 +452,14 @@ boost::shared_ptr<quote> construct_quote_from_exchange_rate(const exchange_rate 
 }
 
 
+boost::shared_ptr<ticker> python_ticker_constructor(const python_identity &base_property = python_identity()
+             , const python_identity &quote_property = python_identity())
+{
+    return boost::make_shared<ticker>( reinterpret_identity_cast<esl::law::property>(base_property)
+                 , reinterpret_identity_cast<esl::law::property>(quote_property));
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // esl.economics.markets.order_book
 ////////////////////////////////////////////////////////////////////////////////
@@ -453,6 +469,20 @@ boost::shared_ptr<quote> construct_quote_from_exchange_rate(const exchange_rate 
 #include <esl/economics/markets/order_book/matching_engine.hpp>
 #include <esl/economics/markets/order_book/python_module_order_book.hpp>
 using namespace esl::economics::markets::order_book;
+
+boost::shared_ptr<limit_order_message> python_limit_order_message_constructor
+    ( ticker symbol
+    , const python_identity &owner
+    , limit_order_message::side_t side
+    , const quote &limit
+    , std::uint64_t quantity
+    , limit_order_message::lifetime_t lifetime // = good_until_cancelled
+    )
+{
+    return boost::make_shared<limit_order_message>(
+        symbol, reinterpret_identity_cast<agent>(owner), side, limit, quantity, lifetime
+        );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // esl.economics.markets.walras
@@ -469,8 +499,8 @@ class python_differentiable_order_message
 {
 public:
     python_differentiable_order_message(
-        const esl::simulation::python_module::python_identity &sender       = esl::simulation::python_module::python_identity(),
-        const esl::simulation::python_module::python_identity& recipient     = esl::simulation::python_module::python_identity(),
+        const python_identity &sender       = python_identity(),
+        const python_identity& recipient     = python_identity(),
         esl::simulation::time_point sent         = esl::simulation::time_point(),
         esl::simulation::time_point received     = esl::simulation::time_point())
         : esl::economics::markets::walras::differentiable_order_message
@@ -921,7 +951,6 @@ std::string python_iso_17442_checksum(esl::law::iso_17442 &e)
     return stream_.str();
 }
 
-typedef esl::identity<esl::law::property> property_identity;
 
 
 ///
@@ -945,7 +974,7 @@ boost::python::list python_company_unique_shareholders(const company &c)
 {
     boost::python::list result_;
     for(const auto &s : c.unique_shareholders()){
-        result_.append( esl::simulation::python_module::python_identity(s.digits) );
+        result_.append( python_identity(s.digits) );
     }
     return result_;
 }
@@ -975,13 +1004,13 @@ convert_digit_list_generic(const boost::python::list &list)
 
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( python_identity_representation_overload
-                                      , esl::simulation::python_module::python_identity::representation
+                                      , python_identity::representation
                                       , 0
                                       , 1);
 
-size_t python_identity_hash(const esl::simulation::python_module::python_identity &p)
+size_t python_identity_hash(const python_identity &p)
 {
-    return std::hash<esl::simulation::python_module::python_identity>()(p);
+    return std::hash<python_identity>()(p);
 }
 
 
@@ -1600,11 +1629,10 @@ BOOST_PYTHON_MODULE(_esl)
 
             implicitly_convertible<quote, double>();
 
+
             class_<ticker>(
                 "ticker", no_init)
-                .def(init<>())
-                .def(init<identity<law::property>>())
-                .def(init<identity<law::property>, identity<law::property>>())
+                .def("__init__", make_constructor(python_ticker_constructor))
                 .def_readwrite("base", &ticker::base)
                 .def_readwrite("quote", &ticker::quote)
                 .def(self == self)
@@ -1666,20 +1694,7 @@ BOOST_PYTHON_MODULE(_esl)
                 ///        implement new order books.
                 ///
                 class_<limit_order_message>("limit_order_message", no_init)
-                    .def(init< ticker
-                        , identity<agent>
-                        , limit_order_message::side_t
-                        , quote
-                        , std::uint64_t
-                        , limit_order_message::lifetime_t
-                    >())
-                    .def(init< ticker
-                        , identity<agent>
-                        , limit_order_message::side_t
-                        , quote
-                        , std::uint64_t
-                    >())
-
+                    .def("__init__", make_constructor(python_limit_order_message_constructor))
                     .def_readwrite("lifetime", &limit_order_message::lifetime)
                     .def_readwrite("side", &limit_order_message::side)
                     .def_readwrite("symbol", &limit_order_message::symbol)
@@ -1752,8 +1767,8 @@ BOOST_PYTHON_MODULE(_esl)
 
                 class_<python_differentiable_order_message, boost::noncopyable>(
                     "differentiable_order_message",
-                    init<esl::simulation::python_module::python_identity,
-                         esl::simulation::python_module::python_identity,
+                    init<python_identity,
+                         python_identity,
                          esl::simulation::time_point,
                          esl::simulation::time_point>())
                     .add_property(
@@ -2145,6 +2160,7 @@ BOOST_PYTHON_MODULE(_esl)
         class_< property
               //, bases<entity<void>>
               >( "property", init<identity<property>>())
+            .def("__init__", make_constructor(+[](const python_identity &i) { return boost::make_shared<property>(reinterpret_identity_cast<property>(i)); }))
             .def("name", &property::name)
             .add_property("identifier", &property::identifier)
             ;
@@ -2434,12 +2450,12 @@ BOOST_PYTHON_MODULE(_esl)
             .def(self != self)
             ;
 
-        class_<esl::simulation::python_module::python_identity>("identity")
-            .def("__init__", make_constructor(convert_digit_list_generic<esl::simulation::python_module::python_identity>))
-            .def_readonly("digits", &esl::simulation::python_module::python_identity::digits)
-            .def("__str__", &esl::simulation::python_module::python_identity::representation,
+        class_<python_identity>("identity")
+            .def("__init__", make_constructor(convert_digit_list_generic<python_identity>))
+            .def_readonly("digits", &python_identity::digits)
+            .def("__str__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
-            .def("__repr__", &esl::simulation::python_module::python_identity::representation,
+            .def("__repr__", &python_identity::representation,
                  python_identity_representation_overload(args("width"), ""))
             .def(self < self)
             .def(self > self)
