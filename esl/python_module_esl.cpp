@@ -73,7 +73,14 @@ boost::shared_ptr<object_t_> to_boost(std::shared_ptr<object_t_>& ptr)
 }
 
 
-
+template<typename element_t_>
+boost::python::object optional_to_python(const std::optional<element_t_> &o)
+{
+    if(o.has_value()){
+        return boost::python::object(o.value());
+    }
+    return boost::python::object(); // Python's None
+}
 
 
 
@@ -1687,8 +1694,8 @@ BOOST_PYTHON_MODULE(_esl)
                 ///
                 class_<basic_book, boost::noncopyable>("basic_book", no_init)
                     .def_readwrite("reports", &basic_book::reports)
-                    .def("ask", &basic_book::ask)
-                    .def("bid", &basic_book::bid)
+                    .def("ask", +[](const basic_book& b) { return optional_to_python<quote>(b.ask()); })
+                    .def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
                     .def("insert", &basic_book::insert)
                     .def("cancel", &basic_book::cancel)
                     .def("display", &basic_book::display);
