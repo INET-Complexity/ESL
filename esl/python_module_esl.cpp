@@ -1070,10 +1070,23 @@ public:
         get_override("initialize")();
     }
 
+    ///
+    /// \brief  Call Python code for user defined model logic.
+    ///         Because we can't enforce return type as we would in C++,
+    ///         we are more permissive and default to jumping over the entire
+    ///         interval if no next event has been specified.
+    ///
+    /// \param step
+    /// \return
     time_point step(time_interval step) override
     {
+        object result_ = get_override("step")(step);
 
-        return get_override("step")(step);
+        if(result_.is_none()){
+            return step.upper;
+        }
+
+        return boost::python::extract<time_point>(result_);
     }
 
     void terminate() override
@@ -1627,6 +1640,17 @@ BOOST_PYTHON_MODULE(_esl)
                     .def("__repr__", &execution_report::representation)
                     .def("__str__", &execution_report::representation);
 
+                enum_<limit_order_message::side_t>("side_t")
+                    .value("buy", limit_order_message::side_t::buy)
+                    .value("sell",  limit_order_message::side_t::sell)
+                    ;
+
+                enum_<limit_order_message::lifetime_t>("lifetime_t")
+                    .value("good_until_cancelled", limit_order_message::lifetime_t::good_until_cancelled)
+                    .value("fill_or_kill",  limit_order_message::lifetime_t::fill_or_kill)
+                    .value("immediate_or_cancel",  limit_order_message::lifetime_t::immediate_or_cancel)
+                    ;
+
                 ///
                 /// \brief Export the abstract base class, so that python users too can
                 ///        implement new order books.
@@ -1653,6 +1677,9 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("limit", &limit_order_message::limit)
                     .def_readwrite("quantity", &limit_order_message::quantity)
                     ;
+
+
+
 
                 ///
                 /// \brief Export the abstract base class, so that python users too can
