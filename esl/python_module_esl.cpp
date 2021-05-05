@@ -1601,8 +1601,10 @@ BOOST_PYTHON_MODULE(_esl)
             implicitly_convertible<quote, double>();
 
             class_<ticker>(
-                "ticker",
-                init<identity<law::property>, identity<law::property>>())
+                "ticker", no_init)
+                .def(init<>())
+                .def(init<identity<law::property>>())
+                .def(init<identity<law::property>, identity<law::property>>())
                 .def_readwrite("base", &ticker::base)
                 .def_readwrite("quote", &ticker::quote)
                 .def(self == self)
