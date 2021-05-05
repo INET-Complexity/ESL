@@ -72,6 +72,7 @@ boost::shared_ptr<object_t_> to_boost(std::shared_ptr<object_t_>& ptr)
     });
 }
 
+#include <optional>
 
 template<typename element_t_>
 boost::python::object optional_to_python(const std::optional<element_t_> &o)
@@ -1706,8 +1707,8 @@ BOOST_PYTHON_MODULE(_esl)
                     , "Limit order book optimized for fast throughput. Uses statically allocated memory pool."
                     , init<quote, quote, size_t>())
                     .def_readwrite("reports", &basic_book::reports)
-                    .def("ask", &basic_book::ask)
-                    .def("bid", &basic_book::bid)
+                    .def("ask", +[](const basic_book& b) { return optional_to_python<quote>(b.ask()); })
+                    .def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
                     .def("insert", &basic_book::insert)
                     .def("cancel", &basic_book::cancel)
                     .def("display", &basic_book::display);
