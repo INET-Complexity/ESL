@@ -1663,6 +1663,9 @@ BOOST_PYTHON_MODULE(_esl)
                 boost::python::scope scope_order_book_ =
                     create_scope("_order_book");
 
+                class_<std::vector<execution_report>>("execution_reports")
+                    .def(vector_indexing_suite<std::vector<execution_report>>());
+
                 enum_<execution_report::state_t>("execution_state")
                     .value("invalid", execution_report::state_t::invalid)
                     .value("cancel", execution_report::state_t::cancel)
@@ -1702,6 +1705,10 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("limit", &limit_order_message::limit)
                     .def_readwrite("quantity", &limit_order_message::quantity)
                     ;
+
+
+                class_<std::vector<limit_order_message>>("limit_order_messages")
+                    .def(vector_indexing_suite<std::vector<limit_order_message>>());
 
 
 

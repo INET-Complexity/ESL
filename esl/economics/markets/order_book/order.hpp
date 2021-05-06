@@ -79,6 +79,12 @@ namespace esl::economics::markets::order_book {
 
         }
 
+
+        [[nodiscard]] constexpr bool operator == (const limit_order_message &o) const
+        {
+            return lifetime == o.lifetime && side == o.side && symbol == o.symbol && owner == o.owner &  limit == o.limit && quantity == o.quantity;
+        }
+
         [[nodiscard]] constexpr bool closed() const
         {
             return 0 == quantity;

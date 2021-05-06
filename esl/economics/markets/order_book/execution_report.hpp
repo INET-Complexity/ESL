@@ -53,6 +53,11 @@ namespace esl::economics::markets::order_book {
             return stream_.str();
         }
 
+        [[nodiscard]] constexpr bool operator == (const execution_report &o) const
+        {
+            return state == o.state && quantity == o.quantity && identifier == o.identifier && side == o.side && limit == o.limit && owner == o.owner;
+        }
+
         friend std::ostream &operator<<(std::ostream &stream,
                                         const execution_report &e)
         {
