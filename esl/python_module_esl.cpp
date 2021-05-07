@@ -291,9 +291,9 @@ public:
 using namespace esl;
 
 
-#include <esl/simulation/python_module_simulation.hpp>
+#include <esl/simulation/identity.hpp>
 
-using esl::simulation::python_module::python_identity;
+using esl::python_identity;
 
 static boost::shared_ptr<agent> python_construct_agent( object const &o )
 {
@@ -1673,6 +1673,7 @@ BOOST_PYTHON_MODULE(_esl)
                     .value("placement", execution_report::state_t::placement);
 
                 class_<execution_report>("execution_report")
+                    .def_readwrite("state", &execution_report::state)
                     .def_readwrite("quantity", &execution_report::quantity)
                     .def_readwrite("identifier", &execution_report::identifier)
                     .def_readwrite("side", &execution_report::side)
@@ -1706,12 +1707,8 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("quantity", &limit_order_message::quantity)
                     ;
 
-
                 class_<std::vector<limit_order_message>>("limit_order_messages")
                     .def(vector_indexing_suite<std::vector<limit_order_message>>());
-
-
-
 
                 ///
                 /// \brief Export the abstract base class, so that python users too can
@@ -2515,6 +2512,14 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
         implicitly_convertible<world, identity<world>>();
+
+
+        implicitly_convertible<python_identity,identity<agent>>();
+        implicitly_convertible<identity<agent>,python_identity>();
+
+
+        implicitly_convertible<python_identity,identity<property>>();
+        implicitly_convertible<identity<property>,python_identity>();
 
 
         {

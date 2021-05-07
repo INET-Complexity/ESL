@@ -32,20 +32,46 @@ namespace esl::economics::markets::order_book {
 
     struct execution_report
     {
+        ///
+        /// \brief
+        ///
         enum state_t
-        {
-            invalid,
-            cancel,
-            match,
-            placement
-        } state : 2;
+        { invalid
+        , cancel
+        , match
+        , placement
+        } state;
 
-        std::uint32_t quantity;
-        std::uint64_t identifier;
+        ///
+        /// \brief  Buy or sell
+        ///
         limit_order_message::side_t side;
+
+        ///
+        /// \brief  Because a report can apply to only a part of the order,
+        ///         e.g. match in part, we specify the amount again.
+        ///
+        std::uint32_t quantity;
+
+        ///
+        /// \brief
+        ///
+        std::uint64_t identifier;
+
+        ///
+        /// \brief  We specify the limit again, because it is possible that
+        ///         the order is match at a better price than the limit.
+        ///
         quote limit;
+
+        ///
+        /// \brief
+        ///
         identity<agent> owner;
 
+        ///
+        /// \brief  Modeller friendly string representation of the report
+        /// \return
         [[nodiscard]] std::string representation() const
         {
             std::stringstream stream_;
@@ -53,13 +79,25 @@ namespace esl::economics::markets::order_book {
             return stream_.str();
         }
 
+        ///
+        /// \brief
+        ///
+        /// \details    Required for storage in certain datastructures.
+        ///
+        /// \param
+        /// \return
         [[nodiscard]] constexpr bool operator == (const execution_report &o) const
         {
-            return state == o.state && quantity == o.quantity && identifier == o.identifier && side == o.side && limit == o.limit && owner == o.owner;
+            return state == o.state
+                   && quantity == o.quantity
+                   && identifier == o.identifier
+                   && side == o.side
+                   && limit == o.limit
+                   && owner == o.owner;
         }
 
-        friend std::ostream &operator<<(std::ostream &stream,
-                                        const execution_report &e)
+        friend std::ostream &operator << ( std::ostream &stream
+                                         , const execution_report &e)
         {
             switch(e.state) {
             case invalid:
@@ -74,9 +112,12 @@ namespace esl::economics::markets::order_book {
             case placement:
                 stream << "placement";
                 break;
+            default:
+                throw esl::exception("invalid execution_report state");
             }
-            stream << " " << e.owner << " " << e.quantity << "@"
-                   << double(e.limit) * e.limit.lot;
+            stream << " " << e.owner
+                   << " " << e.quantity
+                   << "@" << double(e.limit) * e.limit.lot;
 
             return stream;
         }

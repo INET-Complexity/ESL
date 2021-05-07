@@ -38,9 +38,6 @@ namespace esl::simulation::python_module {
 
     // as section of typedefs
     typedef esl::entity<boost::python::object> python_entity;
-    typedef esl::identity<boost::python::object> python_identity;
-
-
 
     ///
     /// \brief
@@ -48,7 +45,6 @@ namespace esl::simulation::python_module {
     template<typename parent_t_>
     void helper_create_child_identity(parent_t_ &e)
     {
-       // e.create<>()
     }
 
 

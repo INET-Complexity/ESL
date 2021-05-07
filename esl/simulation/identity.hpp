@@ -40,7 +40,26 @@
 #include <boost/serialization/vector.hpp>
 
 
+
+
+
+
+
+
+#ifdef WITH_PYTHON
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
+#endif
+
+
+#include <type_traits>
+
+
+
 namespace esl {
+
+
     ///
     /// \brief  An identifier is a code used internally to distinguish entities.
     ///         It is designed to be deterministic, so that independent runs of
@@ -104,15 +123,39 @@ namespace esl {
         {
 
         }
+    public:
+#ifdef WITH_PYTHON
 
+        /*
+        template< typename T
+                , typename = typename std::enable_if< std::is_same<T, boost::python::object>::value
+                                                    || std::is_same< typename std::remove_const<typename std::remove_cv<T>::type>::type, identifiable_type_>::value
+                >>
+        identity(const identity<T> &i)
+        : digits(i.digits)
+        {
+
+        }*/
+
+        identity(const identity<identifiable_type_> &i)
+            : digits(i.digits)
+        {
+
+        }
+
+
+#else
         ///
         /// \param i    Other identity
         ///
+        /// \param i
         identity(const identity<identifiable_type_> &i)
         : digits(i.digits)
         {
 
         }
+#endif
+
 
         ///
         /// \param i    Other identity
@@ -291,6 +334,18 @@ namespace esl {
             archive &BOOST_SERIALIZATION_NVP(digits);
         }
 
+
+#ifdef WITH_PYTHON
+        ///
+        /// \brief  This conversion is always allowed
+        ///
+        /// \return
+        [[nodiscard]] operator identity<boost::python::object>() const
+        {
+            return identity<boost::python::object>(digits);
+        }
+#endif
+
         ///
         /// \brief  Up-casting implicit type conversion. Down-casting is
         /// prohibited, as this requires dynamic type
@@ -303,7 +358,11 @@ namespace esl {
         [[nodiscard]] operator identity<base_type_>() const
         {
             static_assert(
-                std::is_base_of<base_type_, identifiable_type_>::value,
+                std::is_base_of<base_type_, identifiable_type_>::value
+//#ifdef WITH_PYTON
+                    || std::is_base_of<boost::python::object, identifiable_type_>::value
+//#endif
+                ,
                 "can not cast identifier, please verify that this "
                 "conversion is allowed");
             return identity<base_type_>(this->digits);
@@ -373,7 +432,13 @@ namespace esl {
         }
     };
 
+#ifdef WITH_PYTHON
+    typedef identity<boost::python::object> python_identity;
+#endif
+
 }  // namespace esl
+
+
 
 namespace std {
     ///

@@ -295,9 +295,9 @@ namespace esl::economics::markets::order_book {
                     // execution report for liquidity taker
                     reports.emplace_back(execution_report
                                              { execution_report::match
+                                             , order.side
                                              , execution_size_
                                              , basic_book::direct_order
-                                             , order.side
                                              , quote_
                                              , order.owner
                                              });
@@ -305,9 +305,10 @@ namespace esl::economics::markets::order_book {
                     // execution report for supplier
                     reports.emplace_back(execution_report
                                              { execution_report::match
-                                             , execution_size_
+                                             , (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell)
+                                             ,  execution_size_
                                              , ao->index
-                                             , (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell), quote_
+                                             , quote_
                                              , ao->data.owner
                                              });
 
@@ -351,9 +352,9 @@ namespace esl::economics::markets::order_book {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity ){
                     reports.emplace_back(execution_report
                                              { execution_report::invalid
+                                             , order.side
                                              , order.quantity
                                              , basic_book::direct_order
-                                             , order.side
                                              , order.limit
                                              , order.owner
                                              });
@@ -398,9 +399,9 @@ namespace esl::economics::markets::order_book {
                     // cancel an immediate/fill order that could not be matched
                     reports.emplace_back(execution_report
                                              { execution_report::cancel
+                                             , order.side
                                              , order.quantity
                                              , basic_book::direct_order
-                                             , order.side
                                              , order.limit
                                              , order.owner
                                              });
@@ -415,9 +416,9 @@ namespace esl::economics::markets::order_book {
                 if(order.lifetime == limit_order_message::immediate_or_cancel){
                     reports.emplace_back(execution_report
                                              { execution_report::cancel
+                                             , order.side
                                              , remainder_
                                              , basic_book::direct_order
-                                             , order.side
                                              , order.limit
                                              , order.owner
                                              });
@@ -433,9 +434,9 @@ namespace esl::economics::markets::order_book {
 
                 reports.emplace_back(execution_report
                                          { execution_report::placement
+                                         , order.side
                                          , remainder_
                                          , block_.first
-                                         , order.side
                                          , order.limit
                                          , order.owner
                                          });
@@ -478,9 +479,9 @@ namespace esl::economics::markets::order_book {
 
                 reports.emplace_back(execution_report
                                          { execution_report::cancel
+                                         , side_
                                          , order_.quantity
                                          , order
-                                         , side_
                                          , order_.limit
                                          , order_.owner
                                          });

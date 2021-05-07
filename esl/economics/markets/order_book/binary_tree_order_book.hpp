@@ -110,9 +110,9 @@ namespace esl::economics::markets::order_book {
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
+                        order.side,
                         executed_,
                         direct_order,
-                        order.side,
                         i->second.second.limit,
                         order.owner
                         });
@@ -121,9 +121,9 @@ namespace esl::economics::markets::order_book {
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
+                        i->second.second.side,
                         executed_,
                         direct_order,
-                        i->second.second.side,
                         i->second.second.limit,
                         i->second.second.owner
                     });
@@ -142,9 +142,9 @@ namespace esl::economics::markets::order_book {
                     limit_orders_.emplace(next_, order.limit);
                     reports.emplace_back(execution_report {
                         execution_report::placement,
+                        order.side,
                         order.quantity,
                         next_,
-                        order.side,
                         order.limit,
                         order.owner});
                     ++next_;
@@ -160,9 +160,9 @@ namespace esl::economics::markets::order_book {
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
+                        order.side,
                         executed_,
                         direct_order,
-                        order.side,
                         i->second.second.limit,
                         order.owner
                     });
@@ -171,9 +171,9 @@ namespace esl::economics::markets::order_book {
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
+                        i->second.second.side,
                         executed_,
                         direct_order,
-                        i->second.second.side,
                         i->second.second.limit,
                         i->second.second.owner
                     });
@@ -193,9 +193,9 @@ namespace esl::economics::markets::order_book {
 
                     reports.emplace_back(execution_report {
                         execution_report::placement,
+                        order.side,
                         order.quantity,
                         next_,
-                        order.side,
                         order.limit,
                         order.owner});
                     ++next_;
