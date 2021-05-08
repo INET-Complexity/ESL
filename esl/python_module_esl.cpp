@@ -342,6 +342,11 @@ using namespace esl::computation::distributed;
 #include <esl/economics/company.hpp>
 using namespace esl::economics;
 
+#include <esl/law/jurisdiction.hpp>
+#include <esl/law/organization.hpp>
+using namespace esl::law;
+
+
 std::string python_currency_code(const iso_4217 &c)
 {
     return (std::string() + c.code[0]) + c.code[1];
@@ -351,6 +356,25 @@ double python_price_to_floating_point(const price &p)
 {
     return double(p);
 }
+
+
+
+
+struct python_organization
+: public organization
+, public wrapper<organization>
+{
+    python_organization(const identity<agent> &i, const jurisdiction &j)
+    : organization(i,j)
+    {
+
+    }
+};
+
+
+
+
+
 
 
 struct python_company
@@ -1394,6 +1418,12 @@ BOOST_PYTHON_MODULE(_esl)
         //class_<std::unordered_map<identity<shareholder>, std::map<finance::share_class, std::uint64_t>>>("unordered_map_shareholder_identity_share_class_uint64_t")
         //    .def(map_indexing_suite<std::unordered_map<identity<shareholder>, std::map<finance::share_class, std::uint64_t>>>())
         //**;
+
+
+
+        class_<python_organization /*, bases<legal_person>*/, boost::noncopyable>("organization", init<const identity<agent> &,const jurisdiction &>())
+            ;
+
 
         class_< python_company, bases<organization>, boost::noncopyable
                >( "company", init<const identity<company> &, const law::jurisdiction &>())
@@ -2531,9 +2561,6 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("AX") = esl::law::jurisdictions::AX;
         }
 
-
-        class_<organization, bases<legal_person>>("organization", init<const identity<agent> &,const jurisdiction &>())
-            ;
 
     }
 
