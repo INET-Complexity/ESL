@@ -69,6 +69,45 @@ namespace esl::economics::markets::order_book {
         ///
         identity<agent> owner;
 
+
+        execution_report( state_t state
+                        , limit_order_message::side_t side
+                        , std::uint32_t quantity
+                        , std::uint64_t identifier
+                        , quote limit
+                        , identity<agent> owner
+                        )
+        : state(state)
+        , side(side)
+        , quantity(quantity)
+        , identifier(identifier)
+        , limit(limit)
+        , owner(owner)
+        {
+
+        }
+
+        execution_report(const execution_report &r)
+        : state(r.state)
+        , quantity(r.quantity)
+        , identifier(r.identifier)
+        , limit(r.limit)
+        , owner(r.owner)
+        {
+
+        }
+
+
+        execution_report &operator = (const execution_report &r)
+        {
+            state = r.state;
+            quantity = r.quantity;
+            identifier = r.identifier;
+            limit = r.limit;
+            owner = r.owner;
+            return *this;
+        }
+
         ///
         /// \brief  Modeller friendly string representation of the report
         /// \return

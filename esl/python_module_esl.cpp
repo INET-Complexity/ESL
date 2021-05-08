@@ -1792,7 +1792,14 @@ BOOST_PYTHON_MODULE(_esl)
                     .value("match", execution_report::state_t::match)
                     .value("placement", execution_report::state_t::placement);
 
-                class_<execution_report>("execution_report")
+                class_<execution_report>("execution_report"
+                                         , init<execution_report::state_t
+                    , limit_order_message::side_t
+                    , std::uint32_t
+                    , std::uint64_t
+                    , quote
+                    , identity<agent> >())
+
                     .def_readwrite("state", &execution_report::state)
                     .def_readwrite("quantity", &execution_report::quantity)
                     .def_readwrite("identifier", &execution_report::identifier)

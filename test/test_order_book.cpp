@@ -63,12 +63,12 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         markets::order_book::static_order_book::limit l_;
 
-        book_.default_encode(quote(min_), l_);
+        book_.default_encode(book_.valid_limits, quote(min_), l_);
         BOOST_CHECK_EQUAL(l_,0);
 
         markets::order_book::static_order_book::limit u_;
 
-        book_.default_encode(quote(max_), u_);
+        book_.default_encode(book_.valid_limits, quote(max_), u_);
         BOOST_CHECK_EQUAL(u_,999 * 100 + 1);
     }
 
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             // use nextafter, because otherwise we make floating point errors
             auto q = quote(price::approximate(std::nextafter(p, p+0.01), currencies::USD)
                                    , 100 *  currencies::USD.denominator);
-            BOOST_CHECK(book_.encode(q, l));
+            BOOST_CHECK(book_.encode(book_.valid_limits, q, l));
             auto array_index_ = l;
 
             // testing this seems somewhat redundant, but this can
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
             BOOST_CHECK(unique_.find(array_index_) == unique_.end());
             unique_.insert(array_index_);
 
-            auto rtq_ = book_.decode(l);    // round trip value
+            auto rtq_ = book_.decode(book_.valid_limits, l);    // round trip value
             BOOST_CHECK_EQUAL(q, rtq_);
 
 

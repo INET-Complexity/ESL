@@ -41,6 +41,7 @@ namespace esl::economics::markets::order_book {
             typedef std::uint32_t quantity_t_;
 
             ///
+            /// \brief  An abbreviated record for orders in the order book.
             ///
             ///
             struct record
@@ -49,7 +50,6 @@ namespace esl::economics::markets::order_book {
                 /// \brief
                 ///
                 quote limit;
-
 
                 ///
                 /// \brief  Order quantity remaining
@@ -69,6 +69,9 @@ namespace esl::economics::markets::order_book {
 
             typedef computation::block_pool::static_block_pool<record> pool_t;
 
+            ///
+            /// \brief
+            ///
             pool_t pool_;
 
         public:
@@ -76,7 +79,16 @@ namespace esl::economics::markets::order_book {
 
             typedef std::int64_t limit;
 
+            ///
+            /// \brief  Used by the data-structure index the memory pool.
+            ///
             typedef computation::block_pool::block<record> *record_pointer;
+
+            ///
+            /// \brief  Used by the data-structure to index the most competitive
+            ///         order, and the order at the end of the queue at the
+            ///         given limit price.
+            ///
             typedef std::pair<record_pointer, record_pointer> limit_type;
 
             ///
@@ -98,11 +110,17 @@ namespace esl::economics::markets::order_book {
 
             ///
             /// \brief  pointer into the `limits_` datastructure to the best
-            ///         bid offer
+            ///         bid offer. Takes `nullptr` value when buy side of the
+            ///         order book is empty.
             ///
             limit_type *best_bid_;
 
 
+            ///
+            /// \brief  pointer into the `limits_` datastructure to the best
+            ///         ask offer. Takes `nullptr` value when sell side of the
+            //          order book is empty.
+            ///
             limit_type *best_ask_;
 
             ///
@@ -110,12 +128,23 @@ namespace esl::economics::markets::order_book {
             ///         structure.
             /// \returns    Success is communicated by the return value `true`.
             ///
-            std::function<bool(const quote &quote, limit &out_limit)> encode;
+            std::function<bool(const mathematics::interval<quote> &limits, const quote &quote, limit &out_limit)> encode;
 
             ///
-            /// \brief
+            /// \brief  Used to get the associated quote from a position in the
+            ///             data-structure.
             ///
-            std::function<quote(const limit &limit)> decode;
+            std::function<quote(const mathematics::interval<quote> &limits, const limit &limit)> decode;
+
+            ///
+            /// \brief  Computes the required number of tick levels
+            /// \return
+            size_t span(size_t lot, size_t ticks) const
+            {
+                return static_cast<size_t>(
+                    (double(valid_limits.upper) - double(valid_limits.lower)) * lot
+                    * ticks + 1);
+            }
 
         public:
             ///
@@ -131,14 +160,14 @@ namespace esl::economics::markets::order_book {
             /// \param q
             /// \param out_limit
             /// \return
-            /*C++20 constexpr*/  bool default_encode(const quote &q, limit &out_limit)
+            /*C++20 constexpr*/  bool default_encode(const mathematics::interval<quote> &limits, const quote &q, limit &out_limit)
             {
-                if(valid_limits.lower > q || valid_limits.upper < q){
+                if(limits.lower > q || limits.upper < q){
                     return false;
                 }
                 out_limit = static_cast<limit>(
-                    (double(q) - double(valid_limits.lower))
-                    / (double(valid_limits.upper) - double(valid_limits.lower))
+                    (double(q) - double(limits.lower))
+                    / (double(limits.upper) - double(limits.lower))
                     * limits_.size()
                 );
                 return true;
@@ -149,19 +178,18 @@ namespace esl::economics::markets::order_book {
             ///
             /// \param limit
             /// \return
-            /*C++20 constexpr*/ quote default_decode(const limit &limit)
+            /*C++20 constexpr*/ quote default_decode(const mathematics::interval<quote> &limits, const limit &limit)
             {
-                auto reverse = (double(limit) * (double(valid_limits.upper) - double(valid_limits.lower))) * valid_limits.lower.lot * valid_limits.lower.lot;
-                auto intercept_ = double(valid_limits.lower) * valid_limits.lower.lot * valid_limits.lower.lot;
-                return quote( ((reverse )/ (limits_.size()-1) +  intercept_) / valid_limits.lower.lot, valid_limits.lower);
+                auto reverse = (double(limit) * (double(valid_limits.upper) - double(valid_limits.lower))) * limits.lower.lot * limits.lower.lot;
+                auto intercept_ = double(valid_limits.lower) * limits.lower.lot * limits.lower.lot;
+                return quote( (reverse/ double(limits_.size()-1) +  intercept_) / limits.lower.lot, valid_limits.lower);
             }
 
             ///
             /// \brief
             ///
             /// \details    The tick-size is set to the minimum lot size taken
-            ///             from the minimum and maximum quotes, i.e.
-            ///             `ticks = min(minimum.lot, maximum.lot)`
+            ///             from the minimum and maximum quotes
             ///
             /// \param minimum
             /// \param maximum
@@ -180,9 +208,7 @@ namespace esl::economics::markets::order_book {
                 assert(!valid_limits.empty());
                 assert(minimum.lot == maximum.lot);
                 // +1 because the maximum value is included
-                auto span_ = static_cast<size_t>(
-                    (double(valid_limits.upper) - double(valid_limits.lower)) * minimum.lot
-                    * ticks + 1);
+                auto span_ = span(minimum.lot, ticks);
                 // since nullptr is used in the logic of the datastructure,
                 //  we make sure to set this explicitly
                 limits_.resize(span_, std::make_pair(nullptr, nullptr));
@@ -190,12 +216,12 @@ namespace esl::economics::markets::order_book {
                 best_bid_ = &limits_.front();
                 best_ask_ = &limits_.back();
 
-                encode = [&](const auto &q, auto &l) -> bool {
-                    return default_encode(q, l);
+                encode = [&](const mathematics::interval<quote> &limits, const auto &q, auto &l) -> bool {
+                    return default_encode(limits, q, l);
                 };
 
-                decode = [&](const auto &l) -> quote {
-                    return default_decode(l);
+                decode = [&](const mathematics::interval<quote> &limits, const auto &l) -> quote {
+                    return default_decode(limits, l);
                 };
             }
 
@@ -209,30 +235,17 @@ namespace esl::economics::markets::order_book {
             ///
             ///
             /// \param new_limits
-            void resize(mathematics::interval<quote> new_limits)
+            void resize(const mathematics::interval<quote> &new_limits)
             {
-                throw std::logic_error("Not implemented");
+                // this is a naive implementation, that may hit memory limits
+                // quickly (worst case, resizing from n to size m, it uses n+m
+                // while resizing).
 
-                /*
-                if(new_limits.lower > valid_limits.lower && new_limits.lower <= valid_limits.upper){
-                    // safely encode and erase orders in between
-                    limit lower_;
-                    encode(new_limits.lower, lower_);
+                std::vector<limit_type> new_limits_;
 
-                    for(auto i = &limits_[0]; i < lower_; ++i){
-                        for(auto j = i->first; nullptr != j; j = j->data.successor){
-                            // TODO: investigate fast memcpy
-                        }
-                    }
 
-                }
 
-                // other cases
-                if(new_limits.upper < valid_limits.upper && new_limits.upper > valid_limits.lower) {
-                    // TODO:
-                }
-
-                valid_limits = new_limits;*/
+                valid_limits = new_limits;
             }
 
             ///
@@ -245,7 +258,7 @@ namespace esl::economics::markets::order_book {
                     return {};
                 }
                 std::ptrdiff_t limit_ = best_bid_ - &limits_[0];
-                return decode(limit_);
+                return decode(valid_limits, limit_);
             }
 
             ///
@@ -259,7 +272,7 @@ namespace esl::economics::markets::order_book {
                 }
 
                 std::ptrdiff_t limit_ = best_ask_ - &limits_[0];
-                return decode(limit_);
+                return decode(valid_limits, limit_);
             }
 
             ///
@@ -290,7 +303,7 @@ namespace esl::economics::markets::order_book {
                         level->first = ao->data.successor;
                     }
 
-                    auto quote_ = decode(level - &limits_[0]);
+                    auto quote_ = decode(valid_limits, level - &limits_[0]);
 
                     // execution report for liquidity taker
                     reports.emplace_back(execution_report
@@ -363,7 +376,7 @@ namespace esl::economics::markets::order_book {
 
                 std::uint32_t remainder_ = order.quantity;
                 limit limit_index_;
-                auto encode_success_ = encode(order.limit, limit_index_);
+                auto encode_success_ = encode(valid_limits, order.limit, limit_index_);
                 assert( encode_success_
                         && limit_index_ >= 0
                         && limits_.size() > static_cast<uint64_t>(limit_index_));
@@ -390,7 +403,7 @@ namespace esl::economics::markets::order_book {
                         if(!bl->first){
                             continue;
                         }
-                        LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(bl - &limits_[0])) << std::endl;
+                        LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(valid_limits, bl - &limits_[0])) << std::endl;
                         remainder_ = match_at_level(order, remainder_, bl);
                     }
 
@@ -463,7 +476,7 @@ namespace esl::economics::markets::order_book {
             ///         the order book.
             ///
             /// \param order
-            void cancel(basic_book::order_identifier order)
+            void cancel(basic_book::order_identifier order) override
             {
                 auto index_ = (std::uint64_t)( order );
 
@@ -471,20 +484,20 @@ namespace esl::economics::markets::order_book {
 
                 auto side_ = limit_order_message::side_t::buy;
                 // if there is no bid, or the best bid is lower than this order,
-                // this must be a sell order
-                auto best_bid_ = bid();
-                if(!best_bid_.has_value() || best_bid_.value() < order_.limit){
+                // this must be a sell order.
+                auto bid_ = bid();
+                if(!bid_.has_value() || bid_.value() < order_.limit){
                     side_ = limit_order_message::side_t::sell;
                 }
 
                 reports.emplace_back(execution_report
-                                         { execution_report::cancel
+                                         ( execution_report::cancel
                                          , side_
                                          , order_.quantity
                                          , order
                                          , order_.limit
                                          , order_.owner
-                                         });
+                                         ));
 
                 pool_.erase(index_);
             }
@@ -514,10 +527,10 @@ namespace esl::economics::markets::order_book {
                         continue;
                     }
 
-                    ask_displayed_.emplace_back(quantity_,double(decode(i - &limits_[0]))*100*100);
+                    ask_displayed_.emplace_back(quantity_,double(decode(valid_limits, i - &limits_[0]))*100*100);
                     /*std::cout << "                | "
                               << std::left << std::setw(14)
-                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << double(decode(i - &limits_[0]))*100*100
+                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << double(decode(valid_limits, i - &limits_[0]))*100*100
                               << " | "
                               << std::left << std::setw(15)
                               << quantity_
@@ -553,7 +566,7 @@ namespace esl::economics::markets::order_book {
                     std::cout << std::right << std::setw(15)
                               << quantity_ << " | "
                               << std::left << std::setw(14)
-                              << std::setprecision(int(std::log10(valid_limits.lower.lot  ))) << double(decode(i - &limits_[0]))*100*100
+                              << std::setprecision(int(std::log10(valid_limits.lower.lot  ))) << double(decode(valid_limits, i - &limits_[0]))*100*100
                               << " | "
                               << std::endl;
                     ++displayed_;

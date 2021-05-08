@@ -108,14 +108,14 @@ namespace esl::economics::markets::order_book {
                     auto executed_ = std::min(order.quantity, i->second.second.quantity);
                     remainder_ -= executed_;
 
-                    reports.emplace_back(execution_report {
+                    reports.emplace_back(execution_report (
                         execution_report::match,
                         order.side,
                         executed_,
                         direct_order,
                         i->second.second.limit,
                         order.owner
-                        });
+                    ));
 
                     i->second.second.quantity -= executed_;
 
