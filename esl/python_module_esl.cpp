@@ -339,6 +339,7 @@ using namespace esl::computation::distributed;
 #include <esl/economics/iso_4217.hpp>
 #include <esl/economics/currencies.hpp>
 #include <esl/economics/price.hpp>
+#include <esl/economics/company.hpp>
 using namespace esl::economics;
 
 std::string python_currency_code(const iso_4217 &c)
@@ -350,6 +351,37 @@ double python_price_to_floating_point(const price &p)
 {
     return double(p);
 }
+
+
+struct python_company
+: public company
+, public wrapper<company>
+{
+public:
+
+    python_company(const identity<company> &i, const law::jurisdiction &j)
+    : company(i,j)
+    , wrapper<company>()
+    {
+
+    }
+
+
+    std::optional<finance::dividend_policy>
+    upcoming_dividend(simulation::time_interval interval,
+                      std::seed_seq &seed) override
+    {
+        object policy_ = get_override("upcoming_dividend")(interval, seed);
+
+
+        if(policy_.is_none()){
+            return {};
+        }
+
+        return extract<finance::dividend_policy>(policy_);
+    }
+
+};
 
 
 
@@ -969,18 +1001,6 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 }
 
 
-
-boost::python::list python_company_unique_shareholders(const company &c)
-{
-    boost::python::list result_;
-    for(const auto &s : c.unique_shareholders()){
-        result_.append( python_identity(s.digits) );
-    }
-    return result_;
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // esl.simulation
 ////////////////////////////////////////////////////////////////////////////////
@@ -1204,6 +1224,20 @@ scope create_scope(const std::string &name)
 ///
 BOOST_PYTHON_MODULE(_esl)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    // utility
+    ////////////////////////////////////////////////////////////////////////////
+    class_<std::seed_seq, boost::noncopyable>("seed", no_init)
+        .def("generate", +[](std::seed_seq &seed){
+                std::vector<std::uint32_t> seeds_(1);
+                seed.generate(seeds_.begin(), seeds_.end());
+                return seeds_[0];
+        });
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // top level module
+    ////////////////////////////////////////////////////////////////////////////
     class_<esl::exception>("exception", init<std::string>())
         .def("message", &esl::exception::what);
 
@@ -1238,11 +1272,15 @@ BOOST_PYTHON_MODULE(_esl)
 
         //class_<entity<void>>("entity");
 
-        class_< agent
+        class_<agent
               //, bases<entity<void>>
               >("agent")
             .def("__init__", boost::python::make_constructor(&python_construct_agent))
-            .def_readonly("identifier", &agent::identifier)
+            //.def_readonly("identifier", &agent::identifier)
+            .add_property("identifier"
+                , +[](const property &r){return (python_identity)(r.identifier); }
+                //, +[](property &r, const python_identity &i){ r.identifier = i; }
+            )
             ;
 
 
@@ -1348,6 +1386,36 @@ BOOST_PYTHON_MODULE(_esl)
             .add_property("denominator", &iso_4217::denominator)
             .add_property("__repr__", python_currency_code)
             .add_property("__str__", python_currency_code);
+
+        class_<std::map<finance::share_class, std::uint64_t>>("map_share_class_uint64_t")
+            .def(map_indexing_suite<std::map<finance::share_class, std::uint64_t>>())
+        ;
+
+        //class_<std::unordered_map<identity<shareholder>, std::map<finance::share_class, std::uint64_t>>>("unordered_map_shareholder_identity_share_class_uint64_t")
+        //    .def(map_indexing_suite<std::unordered_map<identity<shareholder>, std::map<finance::share_class, std::uint64_t>>>())
+        //**;
+
+        class_< python_company, bases<organization>, boost::noncopyable
+               >( "company", init<const identity<company> &, const law::jurisdiction &>())
+            .add_property("balance_sheet", &python_company::balance_sheet)
+            .add_property("shares_outstanding", &python_company::shares_outstanding)
+            .add_property("shareholders", &python_company::shareholders)
+            .def("unique_shareholders", +[](const python_company &c)
+                                       {
+                                           boost::python::list result_;
+                                           for(const auto &sh : c.unique_shareholders()){
+                                               result_.append((python_identity)sh);
+                                           }
+                                           return result_;
+                                       })
+            .def("total_shares", &python_company::total_shares)
+
+
+        ;
+
+
+
+
 
         ////////////////////////////////////////////////////////////////////////////
         // esl.economics.accounting
@@ -1594,6 +1662,22 @@ BOOST_PYTHON_MODULE(_esl)
                 .add_property("redeemable", &finance::share_class::redeemable)
                 .def(self == self)
                 .def(self < self);
+
+            class_<std::map<share_class, std::tuple<std::uint64_t, price>>>("map_share_class_uint64_t_price")
+                .def(map_indexing_suite<std::map<share_class, std::tuple<std::uint64_t, price>>>());
+
+            class_<finance::dividend_policy>("dividend_policy",
+                                             init<time_point, time_point,time_interval,time_point,iso_4217,std::map<share_class, std::tuple<std::uint64_t, price>>>()
+                                             )
+                .add_property("announcement_date", &dividend_policy::announcement_date)
+                .add_property("ex_dividend_date", &dividend_policy::ex_dividend_date)
+                .add_property("dividend_period", &dividend_policy::dividend_period)
+                .add_property("payable_date", &dividend_policy::payable_date)
+                .add_property("dividend_currency", &dividend_policy::dividend_currency)
+                .add_property("dividend_per_share", &dividend_policy::dividend_per_share)
+                .def("total_dividends", &dividend_policy::total_dividends)
+            ;
+
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -1633,8 +1717,14 @@ BOOST_PYTHON_MODULE(_esl)
             class_<ticker>(
                 "ticker", no_init)
                 .def("__init__", make_constructor(python_ticker_constructor))
-                .def_readwrite("base", &ticker::base)
-                .def_readwrite("quote", &ticker::quote)
+                .add_property("base"
+                    , +[](const ticker &r){return (python_identity)(r.base); }
+                    , +[](ticker &r, const python_identity &i){ r.base = i; }
+                               )
+                .add_property("quote"
+                    , +[](const ticker &r){return (python_identity)(r.quote); }
+                    , +[](ticker &r, const python_identity &i){ r.quote = i; }
+                )
                 .def(self == self)
                 .def(self != self)
                 .def(self < self)
@@ -1678,7 +1768,10 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("identifier", &execution_report::identifier)
                     .def_readwrite("side", &execution_report::side)
                     .def_readwrite("limit", &execution_report::limit)
-                    .def_readwrite("owner", &execution_report::owner)
+                    .add_property ("owner"
+                                  , +[](const execution_report &r){return (python_identity)(r.owner); }
+                                  , +[](execution_report &r, const python_identity &i){ r.owner = i; }
+                                  )
                     .def("__repr__", &execution_report::representation)
                     .def("__str__", &execution_report::representation);
 
@@ -1702,7 +1795,9 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("lifetime", &limit_order_message::lifetime)
                     .def_readwrite("side", &limit_order_message::side)
                     .def_readwrite("symbol", &limit_order_message::symbol)
-                    .def_readwrite("owner", &limit_order_message::owner)
+                    .add_property ( "owner"
+                                  , +[](const limit_order_message &r){return (python_identity)(r.owner); }
+                                  , +[](limit_order_message &r, const python_identity &i){ r.owner = i; } )
                     .def_readwrite("limit", &limit_order_message::limit)
                     .def_readwrite("quantity", &limit_order_message::quantity)
                     ;
@@ -2105,6 +2200,7 @@ BOOST_PYTHON_MODULE(_esl)
             .def_readwrite("inbox", &communicator::inbox)
             .def_readwrite("outbox", &communicator::outbox);
 
+
         class_<header>("header",
                        init<message_code, identity<agent>, identity<agent>,
                             simulation::time_point, simulation::time_point>())
@@ -2115,8 +2211,17 @@ BOOST_PYTHON_MODULE(_esl)
             .def(init<message_code>())
             .def(init<message_code>())
             .def_readwrite("type", &header::type)
-            .def_readwrite("sender", &header::sender)
-            .def_readwrite("recipient", &header::recipient)
+
+            .add_property("sender"
+                , +[](const header &r){return (python_identity)(r.sender); }
+                , +[](header &r, const python_identity &i){ r.sender = i; }
+            )
+
+            .add_property("recipient"
+                , +[](const header &r){return (python_identity)(r.recipient); }
+                , +[](header &r, const python_identity &i){ r.recipient = i; }
+            )
+
             .def_readwrite("sent", &header::sent)
             .def_readwrite("received", &header::received);
 
@@ -2130,16 +2235,16 @@ BOOST_PYTHON_MODULE(_esl)
     {
         boost::python::scope scope_law_ = create_scope("_law");
 
-        class_<esl::law::iso_17442>("iso_17442", init<std::string>())
+        class_<iso_17442>("iso_17442", init<std::string>())
             .add_property("local", &python_iso_17442_local)
             .add_property("code", &python_iso_17442_code)
             .def("checksum", &python_iso_17442_checksum)
             ;
 
-        class_<esl::law::legal_entity>("legal_entity")
+        class_<legal_entity>("legal_entity")
             ;
 
-        class_<esl::law::jurisdiction>("jurisdiction", init<geography::iso_3166_1_alpha_2, economics::iso_4217>())
+        class_<jurisdiction>("jurisdiction", init<geography::iso_3166_1_alpha_2, economics::iso_4217>())
             .add_property("sovereign", &esl::law::jurisdiction::sovereign)
             .add_property("tender", &esl::law::jurisdiction::tender)
             ;
@@ -2166,12 +2271,15 @@ BOOST_PYTHON_MODULE(_esl)
               >( "property", init<identity<property>>())
             .def("__init__", make_constructor(+[](const python_identity &i) { return boost::make_shared<property>(reinterpret_identity_cast<property>(i)); }))
             .def("name", &property::name)
-            .add_property("identifier", &property::identifier)
+            .add_property("identifier"
+                , +[](const property &r){return (python_identity)(r.identifier); }
+            )
+
             ;
 
         class_<natural_person>
             ( "natural_person", init<esl::geography::iso_3166_1_alpha_2>())
-            .def_readonly("nationality", &natural_person::nationality)
+            .add_property("nationality", &natural_person::nationality)
             ;
 
         {
@@ -2422,6 +2530,11 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("ZW") = esl::law::jurisdictions::ZW;
             scope().attr("AX") = esl::law::jurisdictions::AX;
         }
+
+
+        class_<organization, bases<legal_person>>("organization", init<const identity<agent> &,const jurisdiction &>())
+            ;
+
     }
 
 

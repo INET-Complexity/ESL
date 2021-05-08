@@ -131,13 +131,27 @@ namespace esl::economics {
         ///
         /// \param interval
         /// \return
-        simulation::time_point act(simulation::time_interval interval,
-                                   std::seed_seq &) override;
+        simulation::time_point act(simulation::time_interval interval, std::seed_seq &) override;
 
+        ///
+        /// \param o
+        /// \param c
+        /// \return
         friend inline std::ostream &operator<<(std::ostream &o, const company &c)
         {
             o << c.identifier;
             return o;
+        }
+
+        ///
+        ///
+        ///
+        /// \return
+        std::string representation() const
+        {
+            std::stringstream stream_;
+            stream_ << (*this);
+            return stream_.str();
         }
 
         template<class archive_t>
