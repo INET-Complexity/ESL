@@ -17,7 +17,7 @@ USD = currencies.USD
 lot_size = 100
 
 lower_price = price(    0, USD)
-upper_price = price(20000_00, USD)
+upper_price = price(20_00, USD)
 
 # we will create a simple equities central order book
 ob = static_order_book( quote(lower_price)
@@ -43,6 +43,8 @@ def create(trader_id: identity, limit: price, size: int, side:side_t  = side_t.s
 
 trader_a = identity([0,1])
 trader_b = identity([0,2])
+
+print(ob.valid_limits)
 
 
 ob.insert(create(trader_a, price(5_00, USD), 100, side_t.buy, ))

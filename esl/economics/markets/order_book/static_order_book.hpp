@@ -204,6 +204,7 @@ namespace esl::economics::markets::order_book {
                 , valid_limits(minimum, maximum)
                 , ticks(std::min(minimum.lot, maximum.lot))
             {
+                std::cout << "minimum " << minimum << " maximum " << maximum << " capacity " << capacity << std::endl;
                 reports.reserve(32);
                 assert(!valid_limits.empty());
                 assert(minimum.lot == maximum.lot);
@@ -287,6 +288,9 @@ namespace esl::economics::markets::order_book {
                 , std::uint32_t &remainder_
                 , limit_type *level)
             {
+                std::cout << "valid_limits " << valid_limits << " ticks " << this->ticks << std::endl;
+
+
                 for( auto ao = level->first
                     ; 0 < remainder_
                     ; ao = ao->data.successor){

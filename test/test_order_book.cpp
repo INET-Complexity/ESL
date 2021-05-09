@@ -255,6 +255,63 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
     }
 
+
+
+
+
+
+
+    BOOST_AUTO_TEST_CASE(statically_allocated_book_match2)
+    {
+        auto  min_ = quote(price::approximate(0.01, currencies::USD), 100 *  currencies::USD.denominator);
+        auto  max_ = quote(price::approximate(10.00, currencies::USD), 100 *  currencies::USD.denominator);
+        auto book_ = markets::order_book::static_order_book(min_, max_);
+
+        book_.insert(create_bid(5.00, 500));
+        book_.insert(create_bid(4.75, 500));
+        book_.insert(create_bid(4.74));
+        book_.insert(create_bid(4.76, 500));
+
+
+        book_.display(); std::cout << std::endl;
+
+
+        book_.insert(create_ask(4.69, 750));    // expect: execute 500 at 4.76 and remainder of 250 at 4.75, leaving 750
+
+        book_.display(); std::cout << std::endl;
+
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+
+        book_.insert(create_ask(4.75, 1000));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
+
+        book_.display(); std::cout << std::endl;
+
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.74, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+
+
+        book_.insert(create_bid(4.75, 200));   //  expect: execute 200 at 4.75
+        BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.reports.back().quantity, 200);
+
+
+        book_.display(); std::cout << std::endl;
+
+        book_.insert(create_bid(4.75, 51));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
+
+        book_.display(); std::cout << std::endl;
+
+        BOOST_CHECK(!book_.ask());
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+    }
+
+
+
+
+
+
+
+
     limit_order_message create(double p, size_t q = 1000, limit_order_message::side_t side = limit_order_message::side_t::sell)
     {
         esl::economics::markets::ticker ticker_dummy_;
