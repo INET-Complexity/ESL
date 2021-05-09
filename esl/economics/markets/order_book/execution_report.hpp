@@ -74,8 +74,8 @@ namespace esl::economics::markets::order_book {
                         , limit_order_message::side_t side
                         , std::uint32_t quantity
                         , std::uint64_t identifier
-                        , quote limit
-                        , identity<agent> owner
+                        , const quote& limit
+                        , const identity<agent>& owner
                         )
         : state(state)
         , side(side)
@@ -89,6 +89,7 @@ namespace esl::economics::markets::order_book {
 
         execution_report(const execution_report &r)
         : state(r.state)
+        , side(r.side)
         , quantity(r.quantity)
         , identifier(r.identifier)
         , limit(r.limit)
@@ -101,6 +102,7 @@ namespace esl::economics::markets::order_book {
         execution_report &operator = (const execution_report &r)
         {
             state = r.state;
+            side = r.side;
             quantity = r.quantity;
             identifier = r.identifier;
             limit = r.limit;
@@ -154,9 +156,10 @@ namespace esl::economics::markets::order_book {
             default:
                 throw esl::exception("invalid execution_report state");
             }
+
             stream << " " << e.owner
                    << " " << e.quantity
-                   << "@" << double(e.limit) * e.limit.lot;
+                   << "@" << e.limit << " x " << e.limit.lot;
 
             return stream;
         }

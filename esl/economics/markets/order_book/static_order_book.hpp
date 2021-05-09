@@ -304,26 +304,27 @@ namespace esl::economics::markets::order_book {
                     }
 
                     auto quote_ = decode(valid_limits, level - &limits_[0]);
-
+                    // 2021-05-09 debug
+                    std::cout << "match " << execution_size_ << "@" << quote_ << std::endl;
                     // execution report for liquidity taker
                     reports.emplace_back(execution_report
-                                             { execution_report::match
+                                             ( execution_report::match
                                              , order.side
                                              , execution_size_
                                              , basic_book::direct_order
                                              , quote_
                                              , order.owner
-                                             });
+                                             ));
 
                     // execution report for supplier
                     reports.emplace_back(execution_report
-                                             { execution_report::match
+                                             ( execution_report::match
                                              , (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell)
                                              ,  execution_size_
                                              , ao->index
                                              , quote_
                                              , ao->data.owner
-                                             });
+                                             ));
 
                     if(!ao->data.successor){
                         if(0 == ao->data.quantity){
@@ -360,17 +361,17 @@ namespace esl::economics::markets::order_book {
             ///
             /// \param order
             /// \return
-            void insert(const limit_order_message &order)
+            void insert(const limit_order_message &order) override
             {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity ){
                     reports.emplace_back(execution_report
-                                             { execution_report::invalid
+                                             ( execution_report::invalid
                                              , order.side
                                              , order.quantity
                                              , basic_book::direct_order
                                              , order.limit
                                              , order.owner
-                                             });
+                                             ));
                     return;
                 }
 
@@ -411,13 +412,13 @@ namespace esl::economics::markets::order_book {
                            || order.lifetime == limit_order_message::fill_or_kill){
                     // cancel an immediate/fill order that could not be matched
                     reports.emplace_back(execution_report
-                                             { execution_report::cancel
+                                             ( execution_report::cancel
                                              , order.side
                                              , order.quantity
                                              , basic_book::direct_order
                                              , order.limit
                                              , order.owner
-                                             });
+                                                 ));
                     return;
                 }
 
@@ -428,13 +429,13 @@ namespace esl::economics::markets::order_book {
                 }
                 if(order.lifetime == limit_order_message::immediate_or_cancel){
                     reports.emplace_back(execution_report
-                                             { execution_report::cancel
+                                             ( execution_report::cancel
                                              , order.side
                                              , remainder_
                                              , basic_book::direct_order
                                              , order.limit
                                              , order.owner
-                                             });
+                                             ));
                     return;
                 }
 
@@ -446,13 +447,13 @@ namespace esl::economics::markets::order_book {
                                                 });
 
                 reports.emplace_back(execution_report
-                                         { execution_report::placement
+                                         ( execution_report::placement
                                          , order.side
                                          , remainder_
                                          , block_.first
                                          , order.limit
                                          , order.owner
-                                         });
+                                         ));
 
                 if(!limit_level_->first){
                     limit_level_->first = block_.second;

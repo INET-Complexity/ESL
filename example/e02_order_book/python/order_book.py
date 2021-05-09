@@ -1,5 +1,7 @@
 import esl
 
+print(esl.version())
+
 from esl.economics import *
 from esl.simulation import *
 from esl.economics.markets import *
@@ -50,7 +52,7 @@ ob.insert(create(trader_a, price(4_74, USD), 250, side_t.sell,  ))
 ob.insert(create(trader_b, price(4_74, USD), 100, side_t.buy,  ))
 
 for r in ob.reports:
-    print(r.state, r.limit)
+    print(r.state, r.limit, r.owner)
 
 
 
