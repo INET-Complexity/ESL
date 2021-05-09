@@ -7,6 +7,7 @@ from esl.simulation import *
 from esl.economics.markets import *
 from esl.economics.markets.order_book import *
 
+import numpy as np
 
 
 USD = currencies.USD
@@ -14,7 +15,7 @@ USD = currencies.USD
 # trades in this market are in multiples of the lot size
 # e.g. a lot_size of 100 means that a buy order for a quantity of 3 buys 300 shares
 # A larger lot size enables small tick sizes
-lot_size = 100
+lot_size = 1
 
 lower_price = price(    0, USD)
 upper_price = price(20_00, USD)
@@ -22,7 +23,7 @@ upper_price = price(20_00, USD)
 # we will create a simple equities central order book
 ob = static_order_book( quote(lower_price)
                       , quote(upper_price)
-                      , 100)
+                      , 100000)
 
 
 
@@ -44,10 +45,8 @@ def create(trader_id: identity, limit: price, size: int, side:side_t  = side_t.s
 trader_a = identity([0,1])
 trader_b = identity([0,2])
 
-print(ob.valid_limits)
 
 
-ob.insert(create(trader_a, price(5_00, USD), 100, side_t.buy, ))
 ob.insert(create(trader_b, price(4_99, USD), 750, side_t.sell,  ))
 ob.insert(create(trader_b, price(4_75, USD), 500, side_t.sell,  ))
 ob.insert(create(trader_a, price(4_74, USD), 250, side_t.sell,  ))

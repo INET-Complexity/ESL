@@ -204,7 +204,7 @@ namespace esl::economics::markets::order_book {
                 , valid_limits(minimum, maximum)
                 , ticks(std::min(minimum.lot, maximum.lot))
             {
-                std::cout << "minimum " << minimum << " maximum " << maximum << " capacity " << capacity << std::endl;
+
                 reports.reserve(32);
                 assert(!valid_limits.empty());
                 assert(minimum.lot == maximum.lot);
@@ -288,9 +288,6 @@ namespace esl::economics::markets::order_book {
                 , std::uint32_t &remainder_
                 , limit_type *level)
             {
-                std::cout << "valid_limits " << valid_limits << " ticks " << this->ticks << std::endl;
-
-
                 for( auto ao = level->first
                     ; 0 < remainder_
                     ; ao = ao->data.successor){
@@ -308,8 +305,6 @@ namespace esl::economics::markets::order_book {
                     }
 
                     auto quote_ = decode(valid_limits, level - &limits_[0]);
-                    // 2021-05-09 debug
-                    std::cout << "match " << execution_size_ << "@" << quote_ << std::endl;
                     // execution report for liquidity taker
                     reports.emplace_back(execution_report
                                              ( execution_report::match
@@ -367,7 +362,20 @@ namespace esl::economics::markets::order_book {
             /// \return
             void insert(const limit_order_message &order) override
             {
-                if(!valid_limits.contains(order.limit) || 0 >= order.quantity ){
+                if(!valid_limits.contains(order.limit) || 0 >= order.quantity || order.limit.lot != valid_limits.lower.lot ){
+
+                    if(!valid_limits.contains(order.limit)){
+                        LOG(trace) << "Order invalid because it is outside the accepted range: " << this->valid_limits << std::endl;
+                    }
+
+                    if(0 >= order.quantity){
+                        LOG(trace) << "Order invalid because it does not have positive quantity " << order.quantity << std::endl;
+                    }
+
+                    if(order.limit.lot != valid_limits.lower.lot){
+                        LOG(trace) << "Order invalid because it does not use an acceptable lot size " << order.limit.lot << " !=  " << valid_limits.lower.lot << std::endl;
+                    }
+
                     reports.emplace_back(execution_report
                                              ( execution_report::invalid
                                              , order.side

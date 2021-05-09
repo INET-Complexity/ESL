@@ -63,12 +63,15 @@ def initialize_library():
     # by the delvewheel tool.
     if 'windows' == platform.system().lower():
         from ctypes import WinDLL
-        with open(os.path.join(libs_dir, f".load-order-eslpy-{version[0]}.{version[1]}.{version[2]}")) as file:
-            load_order = file.read().split()
-        # print(f"load order = {load_order}")
-        for lib in load_order:
-            # print(f"\tloading {os.path.join(libs_dir, lib)}")
-            WinDLL(os.path.join(libs_dir, lib))
+        import warnings
+
+        with warnings.catch_warnings():
+            with open(os.path.join(libs_dir, f".load-order-eslpy-{version[0]}.{version[1]}.{version[2]}")) as file:
+                load_order = file.read().split()
+            # print(f"load order = {load_order}")
+            for lib in load_order:
+                # print(f"\tloading {os.path.join(libs_dir, lib)}")
+                WinDLL(os.path.join(libs_dir, lib))
 
 
 initialize_library()   # initialize library before loading submodules
