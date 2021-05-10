@@ -364,7 +364,7 @@ struct python_organization
 : public organization
 , public wrapper<organization>
 {
-    python_organization(const identity<agent> &i, const jurisdiction &j)
+    python_organization(const python_identity &i, const jurisdiction &j)
     : organization(i,j)
     {
 
@@ -383,7 +383,7 @@ struct python_company
 {
 public:
 
-    python_company(const identity<company> &i, const law::jurisdiction &j)
+    python_company(const python_identity &i, const law::jurisdiction &j)
     : company(i,j)
     , wrapper<company>()
     {
@@ -1046,6 +1046,20 @@ convert_digit_list_generic(const boost::python::list &list)
 
 
 
+boost::python::dict agent_collection_local_agents(const agent_collection &c)
+{
+    boost::python::dict result_;
+
+    for(const auto &[k,v]: c.local_agents_){
+        result_[boost::python::object(k)] = boost::python::object(v);
+    }
+
+    return result_;
+}
+
+
+
+
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( python_identity_representation_overload
                                       , python_identity::representation
@@ -1421,12 +1435,12 @@ BOOST_PYTHON_MODULE(_esl)
 
 
 
-        class_<python_organization /*, bases<legal_person>*/, boost::noncopyable>("organization", init<const identity<agent> &,const jurisdiction &>())
+        class_<python_organization /*, bases<legal_person>*/, boost::noncopyable>("organization", init<const python_identity &,const jurisdiction &>())
             ;
 
 
         class_< python_company, bases<organization>, boost::noncopyable
-               >( "company", init<const identity<company> &, const law::jurisdiction &>())
+               >( "company", init<const python_identity &, const law::jurisdiction &>())
             .add_property("balance_sheet", &python_company::balance_sheet)
             .add_property("shares_outstanding", &python_company::shares_outstanding)
             .add_property("shareholders", &python_company::shareholders)
@@ -1798,7 +1812,7 @@ BOOST_PYTHON_MODULE(_esl)
                     , std::uint32_t
                     , std::uint64_t
                     , quote
-                    , identity<agent> >())
+                    , python_identity >())
 
                     .def_readwrite("state", &execution_report::state)
                     .def_readwrite("quantity", &execution_report::quantity)
@@ -2239,12 +2253,12 @@ BOOST_PYTHON_MODULE(_esl)
 
 
         class_<header>("header",
-                       init<message_code, identity<agent>, identity<agent>,
+                       init<message_code, python_identity, python_identity,
                             simulation::time_point, simulation::time_point>())
-            .def(init<message_code, identity<agent>, identity<agent>,
+            .def(init<message_code, python_identity, python_identity,
                       simulation::time_point>())
-            .def(init<message_code, identity<agent>, identity<agent>>())
-            .def(init<message_code, identity<agent>>())
+            .def(init<message_code, python_identity, python_identity>())
+            .def(init<message_code, python_identity>())
             .def(init<message_code>())
             .def(init<message_code>())
             .def_readwrite("type", &header::type)
@@ -2287,6 +2301,7 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
 
+        /*
         class_<identity<property>>( "property_identity")
             .def("__init__", make_constructor(convert_digit_list_generic<identity<property>>))
 
@@ -2302,10 +2317,11 @@ BOOST_PYTHON_MODULE(_esl)
 
             .def("__hash__", &python_property_identity_hash)
             ;
+        */
 
         class_< property
               //, bases<entity<void>>
-              >( "property", init<identity<property>>())
+              >( "property", init<python_identity>())
             .def("__init__", make_constructor(+[](const python_identity &i) { return boost::make_shared<property>(reinterpret_identity_cast<property>(i)); }))
             .def("name", &property::name)
             .add_property("identifier"
@@ -2593,7 +2609,7 @@ BOOST_PYTHON_MODULE(_esl)
         boost::python::scope scope_simulation_ = create_scope("_simulation");
 
         class_<esl::entity<object>, boost::noncopyable>(
-            "entity", init<identity<object>>())
+            "entity", init<python_identity>())
             .def_readonly("identifier", &esl::entity<object>::identifier)
             .def(self_ns::str(self_ns::self))
             .def("create", &esl::entity<object>::create<object>)
@@ -2623,6 +2639,7 @@ BOOST_PYTHON_MODULE(_esl)
             .def("create", python_agent_collection_create)
             .def("activate", python_agent_collection_activate)
             .def("deactivate", python_agent_collection_deactivate)
+            .def("local_agents", agent_collection_local_agents)
             ;
 
         class_<python_model, boost::noncopyable>("model",init<environment &, const parameter::parametrization &>())
@@ -2658,12 +2675,10 @@ BOOST_PYTHON_MODULE(_esl)
             .def("__repr__", &world::entity<world>::representation)
             ;
 
-        implicitly_convertible<world, identity<world>>();
 
 
         implicitly_convertible<python_identity,identity<agent>>();
         implicitly_convertible<identity<agent>,python_identity>();
-
 
         implicitly_convertible<python_identity,identity<property>>();
         implicitly_convertible<identity<property>,python_identity>();
