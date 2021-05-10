@@ -2670,7 +2670,7 @@ BOOST_PYTHON_MODULE(_esl)
            .def("__str__", &time_interval::representation);
 
 
-        class_<world, boost::noncopyable>("world")
+        class_<world,  bases< esl::entity<object> >, boost::noncopyable>("world")
             .def_readonly("identifier", &world::entity<world>::identifier)
             .def("__repr__", &world::entity<world>::representation)
             ;
