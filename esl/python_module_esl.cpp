@@ -46,7 +46,18 @@ using namespace boost::python;
 ////////////////////////////////////////////////////////////////////////////////
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
+#include <random>
 
+
+boost::shared_ptr<std::seed_seq> construct_seed_seq_from_list(boost::python::list list)
+{
+
+    std::vector<std::seed_seq::result_type> result_;
+    for(boost::python::ssize_t i = 0; i < boost::python::len(list); ++i) {
+        result_.push_back(boost::python::extract<std::seed_seq::result_type>(list[i]));
+    }
+    return boost::make_shared<std::seed_seq>(result_.begin(), result_.end());
+}
 
 ///
 /// \brief  Convert
@@ -295,11 +306,49 @@ using namespace esl;
 
 using esl::python_identity;
 
-static boost::shared_ptr<agent> python_construct_agent( object const &o )
+
+
+class python_agent
+: public agent
+, public boost::python::wrapper<agent>
 {
-    boost::python::extract<python_identity> e(o);
-    return boost::make_shared<agent>(identity<agent>(e().digits));
-}
+public:
+    python_agent(python_identity i)
+    : agent(i)
+    {
+
+    }
+
+
+    simulation::time_point act(simulation::time_interval step,
+                               std::seed_seq &seed) override
+    {
+        auto o = get_override("act");
+        if(o){
+            boost::python::object result_ = o(step, seed);
+            return boost::python::extract<simulation::time_point>(result_);
+        }
+        return agent::act(step, seed);
+    }
+
+    std::string describe() const override
+    {
+        auto o = get_override("describe");
+        if(o){
+            boost::python::object result_ = o();
+            return boost::python::extract<std::string>(result_);
+        }
+        return agent::describe();
+    }
+};
+
+
+
+
+
+
+
+
 
 ///
 /// \brief  Translates C++ exceptions to Python errors, by setting the
@@ -311,10 +360,7 @@ static boost::shared_ptr<agent> python_construct_agent( object const &o )
 /// \param e
 void translate_exception(const exception &e)
 {
-    PyErr_SetString (   PyExc_RuntimeError
-        //PyExc_UserWarning
-        , e.what()
-    );
+    PyErr_SetString (   PyExc_RuntimeError, e.what());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1265,7 +1311,11 @@ BOOST_PYTHON_MODULE(_esl)
     ////////////////////////////////////////////////////////////////////////////
     // utility
     ////////////////////////////////////////////////////////////////////////////
-    class_<std::seed_seq, boost::noncopyable>("seed", no_init)
+    class_<std::seed_seq, boost::noncopyable>("seed", no_init)\
+        .def("__init__", boost::python::make_constructor( construct_seed_seq_from_list))
+
+        .def_readonly("size", &std::seed_seq::size)
+
         .def("generate", +[](std::seed_seq &seed){
                 std::vector<std::uint32_t> seeds_(1);
                 seed.generate(seeds_.begin(), seeds_.end());
@@ -1310,10 +1360,14 @@ BOOST_PYTHON_MODULE(_esl)
 
         //class_<entity<void>>("entity");
 
-        class_<agent
+        class_<python_agent, boost::noncopyable
               //, bases<entity<void>>
-              >("agent")
-            .def("__init__", boost::python::make_constructor(&python_construct_agent))
+              >("agent", init<python_identity>())
+
+            .def("describe", &python_agent::describe)
+
+            .def("act", &python_agent::act)
+
             //.def_readonly("identifier", &agent::identifier)
             .add_property("identifier"
                 , +[](const property &r){return (python_identity)(r.identifier); }
@@ -1339,21 +1393,21 @@ BOOST_PYTHON_MODULE(_esl)
                            &computation::block_pool::block<object>::index);
 
         // computational environment base class with default single thread
-        class_<python_environment>(
+        class_<python_environment, boost::noncopyable>(
             "environment", "The environment class runs models: it schedules agents and delivers messages sent between agents.")
-            .def("step", &computation::python_environment::step)
-            .def("run", &computation::python_environment::run)
-            .def("activate", &computation::python_environment::activate)
-            .def("deactivate", &computation::python_environment::deactivate)
-            .def("before_step", &computation::python_environment::before_step)
-            .def("after_step", &computation::python_environment::after_step)
-            .def("after_run", &computation::python_environment::after_run)
+            .def("step", &python_environment::step)
+            .def("run", &python_environment::run)
+            .def("activate", &python_environment::activate)
+            .def("deactivate", &python_environment::deactivate)
+            .def("before_step", &python_environment::before_step)
+            .def("after_step", &python_environment::after_step)
+            .def("after_run", &python_environment::after_run)
             .def("activate_agent",
-                 &computation::python_environment::activate_agent)
+                 &python_environment::activate_agent)
             .def("deactivate_agent",
-                 &computation::python_environment::deactivate_agent)
+                 &python_environment::deactivate_agent)
             .def("send_messages",
-                 &computation::python_environment::send_messages);
+                 &python_environment::send_messages);
 
         // timing information
         class_<computation::agent_timing>(

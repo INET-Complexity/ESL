@@ -40,6 +40,7 @@ namespace esl::computation {
     ///
     class python_environment
     : public esl::computation::environment
+    , public wrapper<esl::computation::environment>
     {
     public:
         python_environment()
@@ -50,54 +51,74 @@ namespace esl::computation {
 
         virtual ~python_environment() = default;
 
-        void step(simulation::model &model) override
+        void step(boost::shared_ptr<simulation::model> simulation)
         {
-            environment::step(model);
+            if(auto o = get_override("step")){
+                o(simulation);
+                return;
+            }
+            environment::step(*simulation);
         }
 
-        void run(simulation::model &simulation) override
+        void run(boost::shared_ptr<simulation::model> simulation)
         {
-            environment::run(simulation);
+            if(auto o = get_override("run")){
+                o(simulation);
+                return;
+            }
+            environment::run(*simulation);
         }
 
         size_t activate() override
         {
-            return environment::activate();
+            boost::python::object result_ = get_override("activate")();
+            if(!result_){
+                return 0;
+            }
+            return boost::python::extract<size_t>(result_);
         }
 
         size_t deactivate() override
         {
-            return environment::deactivate();
+            boost::python::object result_ = get_override("deactivate")();
+            if(!result_){
+                return 0;
+            }
+            return boost::python::extract<size_t>(result_);
         }
 
         void before_step() override
         {
-            environment::before_step();
+            get_override("before_step")();
         }
 
-        void after_step(simulation::model &simulation) override
+        void after_step(boost::shared_ptr<simulation::model> simulation)
         {
-            environment::after_step(simulation);
+            get_override("after_step")(simulation);
         }
 
-        void after_run(simulation::model &simulation) override
+        void after_run(boost::shared_ptr<simulation::model> simulation)
         {
-            environment::after_run(simulation);
+            get_override("after_run")(simulation);
         }
 
-        void activate_agent(const identity<agent> &a) override
+        void activate_agent(const python_identity a)
         {
             environment::activate_agent(a);
         }
 
-        void deactivate_agent(const identity<agent> &a) override
+        void deactivate_agent(const python_identity a)
         {
             environment::deactivate_agent(a);
         }
 
-        size_t send_messages(simulation::model &simulation) override
+        size_t send_messages(boost::shared_ptr<simulation::model> simulation)
         {
-            return environment::send_messages(simulation);
+            boost::python::object result_ = get_override("send_messages")(simulation);
+            if(!result_){
+                return 0;
+            }
+            return boost::python::extract<size_t>(result_);
         }
     };
 
