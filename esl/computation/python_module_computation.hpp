@@ -49,11 +49,11 @@ namespace esl::computation {
 
         }
 
-        virtual ~python_environment() = default;
+        //~python_environment() = default;
 
         void step(boost::shared_ptr<simulation::model> simulation)
         {
-            if(auto o = get_override("step")){
+            if(boost::python::override o = get_override("step")){
                 o(simulation);
                 return;
             }
@@ -62,7 +62,7 @@ namespace esl::computation {
 
         void run(boost::shared_ptr<simulation::model> simulation)
         {
-            if(auto o = get_override("run")){
+            if(boost::python::override o = get_override("run")){
                 o(simulation);
                 return;
             }
@@ -71,7 +71,7 @@ namespace esl::computation {
 
         size_t activate() override
         {
-            boost::python::object result_ = get_override("activate")();
+            boost::python::override result_ = get_override("activate")();
             if(!result_){
                 return 0;
             }
@@ -80,7 +80,7 @@ namespace esl::computation {
 
         size_t deactivate() override
         {
-            boost::python::object result_ = get_override("deactivate")();
+            boost::python::override result_ = get_override("deactivate")();
             if(!result_){
                 return 0;
             }
@@ -114,7 +114,7 @@ namespace esl::computation {
 
         size_t send_messages(boost::shared_ptr<simulation::model> simulation)
         {
-            boost::python::object result_ = get_override("send_messages")(simulation);
+            boost::python::override result_ = get_override("send_messages")(simulation);
             if(!result_){
                 return 0;
             }
