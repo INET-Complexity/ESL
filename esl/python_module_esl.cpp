@@ -677,7 +677,7 @@ dict compute_clearing_quotes(python_excess_demand_model *e)
         //LOG(trace) << "clear_market has_value" << std::endl;
         for(const auto &[k,v]: quotes_.value()){
             //LOG(trace) << k <<" = " << v << std::endl;
-            result_.setdefault(python_identity(k), v);
+            result_[python_identity(k)] =  v;
         }
     }
 
