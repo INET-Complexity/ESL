@@ -60,7 +60,7 @@ boost::shared_ptr<std::seed_seq> construct_seed_seq_from_list(boost::python::lis
 }
 
 ///
-/// \brief  Convert
+/// \brief
 ///
 /// \tparam object_t_
 template<typename object_t_>
@@ -407,7 +407,7 @@ double python_price_to_floating_point(const price &p)
 
 
 struct python_organization
-: public organization
+: public virtual organization
 , public wrapper<organization>
 {
     python_organization(const python_identity &i, const jurisdiction &j)
@@ -416,10 +416,6 @@ struct python_organization
 
     }
 };
-
-
-
-
 
 
 
@@ -441,7 +437,7 @@ public:
     upcoming_dividend(simulation::time_interval interval,
                       std::seed_seq &seed) override
     {
-        object policy_ = get_override("upcoming_dividend")(interval, seed);
+        boost::python::override policy_ = wrapper<company>::get_override("upcoming_dividend")(interval, seed);
 
 
         if(policy_.is_none()){
@@ -681,7 +677,7 @@ dict compute_clearing_quotes(python_excess_demand_model *e)
         //LOG(trace) << "clear_market has_value" << std::endl;
         for(const auto &[k,v]: quotes_.value()){
             //LOG(trace) << k <<" = " << v << std::endl;
-            result_.setdefault(k, v);
+            result_.setdefault(python_identity(k), v);
         }
     }
 
@@ -1079,6 +1075,15 @@ size_t python_property_identity_hash(const esl::identity<esl::law::property> &p)
 #include <esl/simulation/world.hpp>
 using namespace esl::simulation;
 
+
+template<typename entity_t_>
+python_identity create_identity(entity_t_ &e)
+{
+    auto i = e.template create<object>();
+    return i;
+}
+
+
 template<typename identity_t_>
 boost::shared_ptr<identity_t_>
 convert_digit_list_generic(const boost::python::list &list)
@@ -1361,9 +1366,7 @@ BOOST_PYTHON_MODULE(_esl)
         class_<python_agent, boost::noncopyable
               //, bases<entity<void>>
               >("agent", init<python_identity>())
-
             .def("describe", &python_agent::describe)
-
             .def("act", &python_agent::act)
 
             //.def_readonly("identifier", &agent::identifier)
@@ -1371,6 +1374,8 @@ BOOST_PYTHON_MODULE(_esl)
                 , +[](const property &r){return (python_identity)(r.identifier); }
                 //, +[](property &r, const python_identity &i){ r.identifier = i; }
             )
+            .def("create", &create_identity<agent>)
+
             ;
 
 
@@ -1487,15 +1492,16 @@ BOOST_PYTHON_MODULE(_esl)
 
 
 
-        class_<python_organization /*, bases<legal_person>*/, boost::noncopyable>("organization", init<const python_identity &,const jurisdiction &>())
+        class_<python_organization /*, bases<legal_person>*/, boost::noncopyable>("organization"
+              , init<const python_identity &,const jurisdiction &>())
             ;
 
 
-        class_< python_company, bases<organization>, boost::noncopyable
+        class_< python_company, bases<python_organization>, boost::noncopyable
                >( "company", init<const python_identity &, const law::jurisdiction &>())
-            .add_property("balance_sheet", &python_company::balance_sheet)
-            .add_property("shares_outstanding", &python_company::shares_outstanding)
-            .add_property("shareholders", &python_company::shareholders)
+            .add_property("balance_sheet", +[](python_company &c) { return c.balance_sheet; })
+            .add_property("shares_outstanding", +[](python_company &c) { return c.shares_outstanding; })
+            .add_property("shareholders", +[](python_company &c) { return c.shareholders; })
             .def("unique_shareholders", +[](const python_company &c)
                                        {
                                            boost::python::list result_;
@@ -1504,8 +1510,7 @@ BOOST_PYTHON_MODULE(_esl)
                                            }
                                            return result_;
                                        })
-            .def("total_shares", &python_company::total_shares)
-
+            .def("total_shares", &python_company::company::total_shares)
 
         ;
 
@@ -2664,7 +2669,7 @@ BOOST_PYTHON_MODULE(_esl)
             "entity", init<python_identity>())
             .def_readonly("identifier", &esl::entity<object>::identifier)
             .def(self_ns::str(self_ns::self))
-            .def("create", &esl::entity<object>::create<object>)
+            .def("create", &create_identity<esl::entity<object>>)
             .def(self == self)
             .def(self != self)
             ;
@@ -2684,7 +2689,6 @@ BOOST_PYTHON_MODULE(_esl)
             .def(self >= self)
             .def("__hash__", &python_identity_hash)
             ;
-
 
         class_<agent_collection>("agent_collection", init<std::reference_wrapper<computation::environment>>())
             .def("create_identifier", python_agent_collection_create_identifier)
@@ -2722,9 +2726,11 @@ BOOST_PYTHON_MODULE(_esl)
            .def("__str__", &time_interval::representation);
 
 
-        class_<world,  bases< esl::entity<object> >, boost::noncopyable>("world")
-            .def_readonly("identifier", &world::entity<world>::identifier)
-            .def("__repr__", &world::entity<world>::representation)
+        class_<world, boost::noncopyable>("world")
+            .def_readonly("identifier", &world::identifier)
+            .def("__repr__", &world::representation)
+            .def("__str__", &world::representation)
+            .def("create", &create_identity<world>)
             ;
 
 
