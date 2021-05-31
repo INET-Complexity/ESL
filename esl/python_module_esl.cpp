@@ -2358,7 +2358,9 @@ BOOST_PYTHON_MODULE(_esl)
             ;
 
 
-        /*
+        //
+        //  \brief this is not to be used, it is there to complete the type system
+        //
         class_<identity<property>>( "property_identity")
             .def("__init__", make_constructor(convert_digit_list_generic<identity<property>>))
 
@@ -2374,7 +2376,7 @@ BOOST_PYTHON_MODULE(_esl)
 
             .def("__hash__", &python_property_identity_hash)
             ;
-        */
+
 
         class_< property
               //, bases<entity<void>>
