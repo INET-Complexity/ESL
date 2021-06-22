@@ -70,6 +70,16 @@ namespace esl {
 
         }
 
+        ///
+        /// \param q
+        ///
+        constexpr quantity(const quantity &&q)
+        : quantity(q.amount)
+        {
+
+        }
+
+
         ~quantity() = default;
 
         ///

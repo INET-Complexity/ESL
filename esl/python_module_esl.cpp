@@ -646,6 +646,43 @@ public:
     }
 };
 
+boost::python::dict get_differentiable_order_message_supply(const esl::economics::markets::walras::differentiable_order_message &m)
+{
+    boost::python::dict result_;
+
+    for(const auto &[k,v] : m.supply){
+
+        result_[k] = boost::python::make_tuple(std::get<0>(v), std::get<1>(v));
+
+    }
+
+    return result_;
+}
+
+void set_differentiable_order_message_supply(esl::economics::markets::walras::differentiable_order_message &m, boost::python::dict t)
+{
+    m.supply.clear();
+    auto items_ = t.items();
+
+    for(size_t i = 0; i < boost::python::len(items_); ++i){
+        boost::python::tuple tuple_ = boost::python::tuple(items_[i]);
+
+        python_identity k = boost::python::extract<python_identity>(tuple_[0]);
+
+        auto v = boost::python::tuple(tuple_[1]);
+        //tuple_
+
+        esl::quantity long_ = boost::python::extract<quantity>(v[0]);
+        esl::quantity short_ = boost::python::extract<quantity>(v[1]);
+
+        std::tuple<esl::quantity, esl::quantity> T = { long_, short_};
+
+        m.supply.insert({esl::identity<esl::law::property>(k.digits), T});
+    }
+
+
+}
+
 
 ///
 /// \brief  Excess demand model wrapper
@@ -1746,11 +1783,19 @@ BOOST_PYTHON_MODULE(_esl)
             boost::python::scope scope_finance = create_scope("_finance");
 
             class_<finance::isin>(
-                "isin", init<geography::iso_3166_1_alpha_2, std::string>())
+                "iso_6166", init<geography::iso_3166_1_alpha_2, std::string>())
                 .add_property("issuer", &finance::isin::issuer)
                 .add_property("code", &get_isin_code, &set_isin_code)
                 .def("__repr__", &finance::isin::representation)
                 .def("__str__", &finance::isin::representation);
+
+            class_<finance::isin>(
+                "iso_6166", init<geography::iso_3166_1_alpha_2, std::string>())
+                .add_property("issuer", &finance::isin::issuer)
+                .add_property("code", &get_isin_code, &set_isin_code)
+                .def("__repr__", &finance::isin::representation)
+                .def("__str__", &finance::isin::representation);
+
 
             class_<finance::share_class>(
                 "share_class",
@@ -1980,7 +2025,7 @@ BOOST_PYTHON_MODULE(_esl)
                          esl::simulation::time_point>())
                     .add_property(
                         "supply",
-                        &walras::differentiable_order_message::supply);
+                        &get_differentiable_order_message_supply, &set_differentiable_order_message_supply);
 
                 // expose vector of messages to Python
                 class_<messages_t>("messages_t")
