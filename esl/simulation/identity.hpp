@@ -156,6 +156,7 @@ namespace esl {
         }
 #endif
 
+        ~identity() = default;
 
         ///
         /// \param i    Other identity
@@ -180,7 +181,7 @@ namespace esl {
         /// \param rhs
         /// \return
         inline identity<identifiable_type_> &
-        operator=(identity<identifiable_type_> &&rhs) noexcept
+        operator = (identity<identifiable_type_> &&rhs) noexcept
         {
             digits = (rhs.digits);
             return *this;

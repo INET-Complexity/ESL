@@ -43,6 +43,8 @@ namespace esl::economics::finance {
 
         }
 
+        virtual ~debtor() = default;
+
     };
 
 }

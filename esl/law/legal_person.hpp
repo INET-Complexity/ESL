@@ -96,6 +96,8 @@ namespace esl::law {
         , primary_jurisdiction(primary_jurisdiction)
         {}
 
+        virtual ~legal_person() = default;
+
         template<class archive_t>
         void save(archive_t &archive, const unsigned int version) const
         {

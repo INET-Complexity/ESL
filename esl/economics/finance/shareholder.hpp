@@ -92,10 +92,7 @@ namespace esl::economics::finance {
 
         explicit shareholder(const identity<shareholder> &i);
 
-        virtual ~shareholder()
-        {
-
-        }
+        virtual ~shareholder() = default;
 
         simulation::time_point
         submit_dividend_record(simulation::time_interval interval);

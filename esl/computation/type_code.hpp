@@ -39,6 +39,8 @@ namespace esl {
     {
         static const std::uint64_t code = code_integer_;
 
+        virtual ~type_code() = default;
+
         ///
         /// \brief  Vestigial serialization, so that inheriting classes can
         ///         call serialization on this base class.

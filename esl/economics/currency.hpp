@@ -29,7 +29,7 @@
 namespace esl::economics {
 
     class currency {
-
+        virtual ~currency() = default;
     };
 
 }

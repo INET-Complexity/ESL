@@ -27,6 +27,9 @@ namespace esl::data {
         ///
         /// \param x
         explicit file(const std::filesystem::path &name, const std::filesystem::path &prefix);
+
+        virtual ~file() = default;
+
     };
 }//esl::data
 

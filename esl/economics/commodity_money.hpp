@@ -33,6 +33,7 @@ namespace esl::economics {
     : virtual commodity
     , virtual physical_money
     {
+        virtual ~commodity_money() = default;
 
     };
 

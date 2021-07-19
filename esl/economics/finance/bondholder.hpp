@@ -72,10 +72,7 @@ namespace esl::economics::finance {
 
         explicit bondholder(const identity<bondholder> &i);
 
-        virtual ~bondholder()
-        {
-
-        }
+        virtual ~bondholder() = default;
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

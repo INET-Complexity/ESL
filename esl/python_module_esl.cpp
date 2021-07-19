@@ -664,7 +664,7 @@ void set_differentiable_order_message_supply(esl::economics::markets::walras::di
     m.supply.clear();
     auto items_ = t.items();
 
-    for(size_t i = 0; i < boost::python::len(items_); ++i){
+    for(boost::python::ssize_t i = 0; i < boost::python::len(items_); ++i){
         boost::python::tuple tuple_ = boost::python::tuple(items_[i]);
 
         python_identity k = boost::python::extract<python_identity>(tuple_[0]);

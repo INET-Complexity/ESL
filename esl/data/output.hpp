@@ -73,6 +73,8 @@ namespace esl::data {
 
         }
 
+        virtual ~output() = default;
+
         ///
         /// \param t
         /// \param v

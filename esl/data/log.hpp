@@ -101,10 +101,7 @@ namespace esl::data {
 
         }
 
-        ~log() override
-        {
-
-        }
+        virtual ~log() = default;
 
         ///
         /// \brief  Returns the log channel for the specified severity.

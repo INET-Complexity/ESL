@@ -102,6 +102,8 @@ namespace esl::law {
                                   "process interaction::transfer");
         }
 
+        virtual ~owner() = default;
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

@@ -42,7 +42,7 @@ namespace esl::law {
     {
         explicit property(identity<property> i = identity<property>());
 
-        ~property() = default;
+        virtual ~property() = default;
 
         ///
         /// \brief  Names the type of property

@@ -41,7 +41,7 @@ namespace esl::economics {
         /// \param rate_over_duration
         /// \param duration
 #if BOOST_VERSION >= 106500
-        constexpr
+        //constexpr
 #endif
             interest_rate(rational rate_over_duration = 0,
                                 esl::simulation::time_duration duration = esl::simulation::time_duration(1))
@@ -51,7 +51,7 @@ namespace esl::economics {
         }
 
 #if BOOST_VERSION >= 106500
-        constexpr
+        //constexpr
 #endif
             interest_rate(rate<> rate_over_duration,
                                 esl::simulation::time_duration duration)
@@ -59,6 +59,8 @@ namespace esl::economics {
         {
 
         }
+
+        virtual ~interest_rate() = default;
 
         ///
         /// \tparam archive_t
@@ -81,6 +83,9 @@ namespace esl::economics {
     {
         using interest_rate::interest_rate;
 
+        virtual ~inflation_rate() = default;
+
+
         static inflation_rate from_consumer_prices(price begin, price end, esl::simulation::time_duration d)
         {
             return inflation_rate(rate<>((end - begin).value, begin.value), d );
@@ -91,12 +96,18 @@ namespace esl::economics {
     : public interest_rate
     {
         using interest_rate::interest_rate;
+
+        virtual ~nominal_interest_rate() = default;
+
     };
 
     struct real_interest_rate
     : public interest_rate
     {
         using interest_rate::interest_rate;
+
+        virtual ~real_interest_rate() = default;
+
     };
 }
 

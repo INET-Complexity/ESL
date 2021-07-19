@@ -60,7 +60,7 @@ namespace esl::economics {
         ///
         explicit asset(esl::identity<law::property> i = esl::identity<law::property>());
 
-        ~asset() override = default;
+        virtual ~asset() = default;
 
         ///
         /// \brief

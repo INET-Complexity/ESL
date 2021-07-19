@@ -49,6 +49,7 @@ namespace esl {
     template<>
     struct entity<void>
     {
+        virtual ~entity() = default;
     };
 
     ///
@@ -102,6 +103,8 @@ namespace esl {
         {
 
         }
+
+        virtual ~entity() = default;
 
         explicit entity(std::vector<typename identity<entity_type_>::digit_t> digits)
         : entity(identity<entity_type_>(digits))

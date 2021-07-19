@@ -41,12 +41,15 @@ namespace esl::economics {
     ///
     struct tangible
     {
+        virtual ~tangible() = default;
+
         /// \brief
         geography::location place;
     };
 
     struct intangible
     {
+        virtual ~intangible() = default;
 
     };
 }  // namespace esl::economics

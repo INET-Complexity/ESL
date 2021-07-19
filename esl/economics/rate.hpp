@@ -73,7 +73,9 @@ namespace esl::economics {
         {
 
         }
-        
+
+        virtual ~rate() = default;
+
         rate<integer_type_> &operator=(const rate<integer_type_> &o)
         {
             boost::rational<integer_type_>::operator=(o);
@@ -85,8 +87,6 @@ namespace esl::economics {
         {
             return boost::rational_cast<floating_point_t_>(*this);
         }
-
-        ~rate() = default;
 
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)

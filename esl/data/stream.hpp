@@ -41,6 +41,8 @@ namespace esl::data {
 
         }
 
+        virtual ~stream() = default;
+
         operator std::ostream &()
         {
             return stream_;

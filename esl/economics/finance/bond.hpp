@@ -94,6 +94,8 @@ namespace esl::economics::finance {
 
         }
 
+        virtual ~bond() = default;
+
         std::string name() const override
         {
             std::stringstream stream_;

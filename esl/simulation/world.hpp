@@ -41,6 +41,8 @@ namespace esl::simulation {
         ///
         world();
 
+        virtual ~world() = default;
+
         world &operator = (const world &) = delete;
 
         template<class archive_t>

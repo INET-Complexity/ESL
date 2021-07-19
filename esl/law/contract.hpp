@@ -51,6 +51,8 @@ namespace esl::law {
         {
 
         }
+
+        virtual ~contract() = default;
     };
 
 }

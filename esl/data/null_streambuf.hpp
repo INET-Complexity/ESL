@@ -41,6 +41,8 @@ namespace esl::data {
     : public std::streambuf
     {
     public:
+        virtual ~null_streambuf() = default;
+
         /// \brief  This overrides C++ streambuf spec `xpsutn` with
         ///         a function that ignores the input. It is marked final
         ///         and (TODO) can be marked constexpr in C++20, so that the

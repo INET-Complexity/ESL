@@ -65,6 +65,9 @@ namespace esl::economics::finance {
 
         }
 
+        virtual ~securities_lending_contract() = default;
+
+
         [[nodiscard]] std::string name() const override
         {
             std::stringstream stream_;

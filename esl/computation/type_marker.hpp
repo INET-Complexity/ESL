@@ -37,6 +37,8 @@ namespace esl {
         /// \brief Used for dependent lookups
         typedef type_argument_ type_;
 
+        virtual ~type_marker() = default;
+
         ///
         /// \brief  Vestigial serialization, so that inheriting classes can
         ///         call serialization on this base class.

@@ -97,6 +97,8 @@ namespace esl::data {
 
         }
 
+        virtual ~channel() = default;
+
         template<typename output_t>
         channel &operator << (output_t &&value)
         {

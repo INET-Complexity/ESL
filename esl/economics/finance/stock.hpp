@@ -78,6 +78,8 @@ namespace esl::economics::finance {
         //            const quantity &amount) const override;
 
 
+        virtual ~stock() = default;
+
         /*C++20 constexpr*/ std::string name() const override
         {
             std::stringstream stream_;

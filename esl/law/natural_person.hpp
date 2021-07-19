@@ -44,6 +44,8 @@ namespace esl::law {
 
         }
 
+        virtual ~natural_person() = default;
+
         template<class archive_t>
         void serialize(archive_t &archive, const unsigned int version)
         {

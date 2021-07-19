@@ -63,6 +63,8 @@ namespace esl {
         /// \param o    other agent to copy
         agent(const agent &o);
 
+        virtual ~agent() = default;
+
         ///
         /// \param step The left-closed time interval [lower, upper), where
         ///             lower denotes the current time.

@@ -38,7 +38,9 @@ namespace esl::economics {
     ///
     struct fungible
     {
-        constexpr bool is_fungible() const
+        virtual ~fungible() = default;
+
+        [[nodiscard]] constexpr bool is_fungible() const
         {
             return true;
         }
@@ -54,8 +56,9 @@ namespace esl::economics {
 
     struct infungible
     {
+        virtual ~infungible() = default;
 
-        constexpr bool is_fungible() const
+        [[nodiscard]] constexpr bool is_fungible() const
         {
             return false;
         }
