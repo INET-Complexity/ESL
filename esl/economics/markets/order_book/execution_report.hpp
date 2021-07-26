@@ -157,9 +157,11 @@ namespace esl::economics::markets::order_book {
                 throw esl::exception("invalid execution_report state");
             }
 
+            auto quote_ = quote(e.limit);
+            quote_.lot *= e.quantity;
+
             stream << " " << e.owner
-                   << " " << e.quantity
-                   << "@" << e.limit << " x " << e.limit.lot;
+                   << " " << e.limit;
 
             return stream;
         }

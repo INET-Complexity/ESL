@@ -206,11 +206,28 @@ namespace esl::economics {
             return p * operand;
         }
 
-        [[nodiscard]] explicit operator double() const
+        [[nodiscard]] constexpr explicit operator double() const
         {
-            return double(value) / valuation.denominator;
+            return (double)(value) / valuation.denominator;
         }
 
+        ///
+        /// \brief  Computes the ratios between two prices. Used to reduce
+        ///         syntax required to compute returns.
+        ///
+        /// \weakgroup  syntactic-sugar
+        /// \param      operand
+        /// \return ratio between first and second price
+        [[nodiscard]] constexpr double operator / (const price &operand) const
+        {
+            return (double)(*this) / (double)(operand);
+        }
+
+        ///
+        //  /
+        //
+        /// \param o
+        /// \return
         std::ostream &operator << (std::ostream &o) const
         {
             std::ios_base::fmtflags flags_(o.flags());
@@ -218,7 +235,7 @@ namespace esl::economics {
             //auto thousands = std::make_unique<detail::separate_thousands>();
             //o.imbue(std::locale(o.getloc(), thousands.release()));
 
-            int precision_ = static_cast<int>(ceil(log10(valuation.denominator)));
+            int precision_ = static_cast<int>(ceil(log10(double(valuation.denominator))));
             o << valuation << '(' << std::fixed
               << std::setprecision(precision_) << double(*this) << ')';
             //o.imbue(l);

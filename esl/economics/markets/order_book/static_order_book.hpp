@@ -206,8 +206,13 @@ namespace esl::economics::markets::order_book {
             {
 
                 reports.reserve(32);
-                assert(!valid_limits.empty());
-                assert(minimum.lot == maximum.lot);
+                if(valid_limits.empty()){
+                    throw esl::exception("invalid limits specified");
+                }
+                if(minimum.lot != maximum.lot){
+                    throw esl::exception("different lot sizes between minimum and maximum");
+                }
+
                 // +1 because the maximum value is included
                 auto span_ = span(minimum.lot, ticks);
                 // since nullptr is used in the logic of the datastructure,
@@ -242,12 +247,29 @@ namespace esl::economics::markets::order_book {
                 // quickly (worst case, resizing from n to size m, it uses n+m
                 // while resizing).
 
+                throw esl::exception("not implemented");
+
                 std::vector<limit_type> new_limits_;
 
-
+                // TODO:
 
                 valid_limits = new_limits;
             }
+
+            [[nodiscard]] std::vector<basic_book::order_identifier> orders() const
+            {
+                std::vector<basic_book::order_identifier> result_;
+
+                auto i = this->pool_.begin();
+
+                while(i->empty != pool_.end()){
+                    result_.push_back(i->index);
+                    i = i->empty;
+                }
+                return result_;
+            }
+
+
 
             ///
             /// \brief  Returns the best bid, the highest bid price, if any
@@ -335,14 +357,14 @@ namespace esl::economics::markets::order_book {
                             // if the aggressor was a buy order, it took away
                             // the best ask
                             if(order.side == limit_order_message::buy){
-                                LOG(trace) << quote_ << " ask level depleted" << std::endl;
+                                //LOG(trace) << quote_ << " ask level depleted" << std::endl;
                                 for(++best_ask_; best_ask_ <= &limits_.back(); ++best_ask_){
                                     if(best_ask_->first || best_ask_ == &limits_.back()){
                                         break;
                                     }
                                 }
                             }else{
-                                LOG(trace) << quote_ << " bid level depleted" << std::endl;
+                                //LOG(trace) << quote_ << " bid level depleted" << std::endl;
                                 for(--best_bid_; best_bid_ >= &limits_[0]; --best_bid_){
                                     if(best_bid_->first || best_bid_ == &limits_[0]){
                                         break;
@@ -365,15 +387,15 @@ namespace esl::economics::markets::order_book {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity || order.limit.lot != valid_limits.lower.lot ){
 
                     if(!valid_limits.contains(order.limit)){
-                        LOG(trace) << "Order invalid because it is outside the accepted range: " << this->valid_limits << std::endl;
+                        //LOG(trace) << "Order invalid because it is outside the accepted range: " << this->valid_limits << std::endl;
                     }
 
                     if(0 >= order.quantity){
-                        LOG(trace) << "Order invalid because it does not have positive quantity " << order.quantity << std::endl;
+                        //LOG(trace) << "Order invalid because it does not have positive quantity " << order.quantity << std::endl;
                     }
 
                     if(order.limit.lot != valid_limits.lower.lot){
-                        LOG(trace) << "Order invalid because it does not use an acceptable lot size " << order.limit.lot << " !=  " << valid_limits.lower.lot << std::endl;
+                        //LOG(trace) << "Order invalid because it does not use an acceptable lot size " << order.limit.lot << " !=  " << valid_limits.lower.lot << std::endl;
                     }
 
                     reports.emplace_back(execution_report
@@ -390,16 +412,29 @@ namespace esl::economics::markets::order_book {
                 std::uint32_t remainder_ = order.quantity;
                 limit limit_index_;
                 auto encode_success_ = encode(valid_limits, order.limit, limit_index_);
-                assert( encode_success_
-                        && limit_index_ >= 0
-                        && limits_.size() > static_cast<uint64_t>(limit_index_));
+
+                if(!encode_success_){
+                    throw esl::exception("quote not mapped to valid order book index");
+                }
+                if(limit_index_ < 0) {
+                    throw esl::exception("quote maps to index below zero");
+                }
+                if(limits_.size() <= static_cast<uint64_t>(limit_index_)){
+                    throw esl::exception("quote maps to index beyond maximum value");
+                }
+
+
+//                assert( encode_success_
+//                        && limit_index_ >= 0
+//                        && limits_.size() > static_cast<uint64_t>(limit_index_));
+
                 limit_type *limit_level_ = &limits_[limit_index_];
 
                 if( order.side == limit_order_message::buy
                     && ask().has_value()
                     && order.limit >= ask().value()) {
                     // direct execution: buyer aggressor
-                    LOG(trace) << "buyer aggressor" << std::endl;
+                    //LOG(trace) << "buyer aggressor" << std::endl;
                     for(auto al = best_ask_; al <= limit_level_ && 0 < remainder_; ++al){
                         if(!al->first){
                             continue;
@@ -411,12 +446,12 @@ namespace esl::economics::markets::order_book {
                            && bid().has_value()
                     ){
                     // direct execution: seller aggressor
-                    LOG(trace) << "seller aggressor" << std::endl;
+                    //LOG(trace) << "seller aggressor" << std::endl;
                     for(auto bl = best_bid_; bl >= limit_level_ && 0 < remainder_; --bl){
                         if(!bl->first){
                             continue;
                         }
-                        LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(valid_limits, bl - &limits_[0])) << std::endl;
+                        //LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(valid_limits, bl - &limits_[0])) << std::endl;
                         remainder_ = match_at_level(order, remainder_, bl);
                     }
 

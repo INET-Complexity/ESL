@@ -1772,6 +1772,7 @@ BOOST_PYTHON_MODULE(_esl)
             .def(self <= self)
             .def(self > self)
             .def(self >= self)
+            //.def(self * std::uint64_t)
             .def("__repr__", &price::representation)
             .def("__str__", &price::representation)
             .def("__float__", &python_price_to_floating_point);
@@ -1788,14 +1789,6 @@ BOOST_PYTHON_MODULE(_esl)
                 .add_property("code", &get_isin_code, &set_isin_code)
                 .def("__repr__", &finance::isin::representation)
                 .def("__str__", &finance::isin::representation);
-
-            class_<finance::isin>(
-                "iso_6166", init<geography::iso_3166_1_alpha_2, std::string>())
-                .add_property("issuer", &finance::isin::issuer)
-                .add_property("code", &get_isin_code, &set_isin_code)
-                .def("__repr__", &finance::isin::representation)
-                .def("__str__", &finance::isin::representation);
-
 
             class_<finance::share_class>(
                 "share_class",
@@ -1900,7 +1893,10 @@ BOOST_PYTHON_MODULE(_esl)
                     create_scope("_order_book");
 
                 class_<std::vector<execution_report>>("execution_reports")
-                    .def(vector_indexing_suite<std::vector<execution_report>>());
+                    .def(vector_indexing_suite<std::vector<execution_report>>())
+                    .def("clear", +[](std::vector<execution_report> &e){return e.clear();})
+                    //.def("size", +[](const std::vector<execution_report> &e){return e.size();}) // superseeded by len(e)
+                    ;
 
                 enum_<execution_report::state_t>("execution_state")
                     .value("invalid", execution_report::state_t::invalid)
@@ -1927,6 +1923,13 @@ BOOST_PYTHON_MODULE(_esl)
                                   )
                     .def("__repr__", &execution_report::representation)
                     .def("__str__", &execution_report::representation);
+
+                // for list of order identifiers
+                class_<std::vector<basic_book::order_identifier>>("order_identifier_list")
+                    .def(vector_indexing_suite<std::vector<basic_book::order_identifier>>())
+                    .def("clear", +[](std::vector<basic_book::order_identifier> &e){return e.clear();})
+                    ;
+
 
                 enum_<limit_order_message::side_t>("side_t")
                     .value("buy", limit_order_message::side_t::buy)
@@ -1968,6 +1971,13 @@ BOOST_PYTHON_MODULE(_esl)
                     .def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
                     .def("insert", &basic_book::insert)
                     .def("cancel", &basic_book::cancel)
+                    .def("cancel", +[](const basic_book& b) {
+                            boost::python::list result_;
+                            for(auto i: b.orders()){
+                                result_.append(i);
+                            }
+                            return result_;
+                        })
                     .def("display", &basic_book::display);
 
                 //
@@ -1976,11 +1986,13 @@ BOOST_PYTHON_MODULE(_esl)
                     , "Limit order book optimized for fast throughput. Uses statically allocated memory pool."
                     , init<quote, quote, size_t>())
                     .def_readwrite("reports", &basic_book::reports)
-                    .def("ask", +[](const basic_book& b) { return optional_to_python<quote>(b.ask()); })
-                    .def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
-                    .def("insert", &basic_book::insert)
-                    .def("cancel", &basic_book::cancel)
-                    .def("display", &basic_book::display);
+                    .def("orders", &static_order_book::orders)
+                    //.def("ask", +[](const basic_book& b) { return optional_to_python<quote>(b.ask()); })
+                    //.def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
+                    //.def("insert", &basic_book::insert)
+                    //.def("cancel", &basic_book::cancel)
+                    //.def("display", &basic_book::display)
+                    ;
 
                 class_<binary_tree_order_book, bases<basic_book>>(
                     "binary_tree_order_book", init<>())

@@ -38,7 +38,7 @@ def read_version():
 
 def read_commit() -> typing.Optional[str]:
     """
-        Gets a commit
+        Gets a commit identifier, so that it can be added to the library version
     :return:
     """
     try:
@@ -64,7 +64,8 @@ def get_packages():
 
 packages = get_packages()
 
-commit = None #read_commit()
+# disabled for now
+commit = None # read_commit()
 
 # Set up the package, together with metadata that will be visible on package repositories such as Pypi
 setup(
@@ -73,7 +74,7 @@ setup(
     version             = '.'.join(map(str, read_version())) + ('' if commit is None else '-' + commit),
     description         = 'Python package for the Economic Simulation Library (https://github.com/INET-Complexity/ESL/)',
 
-    # This loads the README file, and allows repositories such as Pypi to render the readme using markdown
+    # This loads the README file in a way that allows repositories such as Pypi to render the readme using markdown
     long_description    = (pathlib.Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
 

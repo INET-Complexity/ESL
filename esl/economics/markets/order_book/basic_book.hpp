@@ -95,6 +95,8 @@ namespace esl::economics::markets::order_book {
         /// \param order identifier the order book gave once the order was places
         virtual void cancel(order_identifier order) = 0;
 
+        [[nodiscard]] virtual std::vector<basic_book::order_identifier> orders() const = 0;
+
         ///
         /// \brief  Renders the order book to the console at 80 characters width
         ///         for debugging purposes. Prefer serialization for storage of

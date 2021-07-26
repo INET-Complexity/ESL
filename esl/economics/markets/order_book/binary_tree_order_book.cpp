@@ -50,14 +50,14 @@ namespace esl::economics::markets::order_book {
 
         void book::erase(index identifier)
         {
-            for(auto i = orders_bid.begin(); i != orders_bid.end(); ++i) {
+            for(auto i = orders_bid.begin_(); i != orders_bid.end(); ++i) {
                 if(i->second.first == identifier) {
                     orders_bid.erase(i);
                     return;
                 }
             }
 
-            for(auto i = orders_ask.begin(); i != orders_ask.end(); ++i) {
+            for(auto i = orders_ask.begin_(); i != orders_ask.end(); ++i) {
                 if(i->second.first == identifier) {
                     orders_ask.erase(i);
                     return;
@@ -72,8 +72,8 @@ namespace esl::economics::markets::order_book {
                     return !orders.empty();
                 }
 
-                auto i_bid_ = orders_bid.begin();
-                auto i_ask_ = orders_ask.begin();
+                auto i_bid_ = orders_bid.begin_();
+                auto i_ask_ = orders_ask.begin_();
 
                 if(i_bid_->second.second.limit >= i_ask_->second.second.limit) {
                     limit_order_message &bid = i_bid_->second.second;

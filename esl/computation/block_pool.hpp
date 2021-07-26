@@ -102,7 +102,12 @@ namespace esl::computation::block_pool {
         ///
         /// \brief  Points to first free element
         ///
-        block<element_t_> *end;
+        block<element_t_> *begin_;
+
+        ///
+        /// \brief  Points to first free element
+        ///
+        block<element_t_> *end_;
 
         ///
         /// \brief  Because indices are increasing and unique, index values can
@@ -129,7 +134,8 @@ namespace esl::computation::block_pool {
             for(size_t i = 1; i < capacity; ++i){
                 blocks[capacity - 1 - i].empty = &blocks[capacity - i];
             }
-            end     = &blocks[0];
+            begin_  = &blocks[0];
+            end_    = &blocks[0];
             round_  = 0;
             back_   = 0;
             size_   = 0;
@@ -157,6 +163,37 @@ namespace esl::computation::block_pool {
         }
 
         ///
+        /// \brief  Returns an iterator to the first element in the pool
+        /// \todo implement iterator class, currently not a valid iterator
+        ///
+        /// \return
+        block<element_t_> *begin()
+        {
+            return begin_;
+        }
+
+        const block<element_t_> *begin() const
+        {
+            return begin_;
+        }
+
+        ///
+        /// \brief  Returns an iterator that denotes the end of the container,
+        ///         in essence the first invalid element
+        /// \todo implement iterator class, currently not a valid iterator
+        ///
+        /// \return
+        block<element_t_> *end()
+        {
+            return end_;
+        }
+
+        const block<element_t_> *end() const
+        {
+            return end_;
+        }
+
+        ///
         /// \brief  Places a new element `e` into the block_pool
         ///
         /// \param e
@@ -172,7 +209,7 @@ namespace esl::computation::block_pool {
             }
             end->set = true;
 #endif
-            auto i        = end;
+            auto i        = end_;
             i->data       = e;
             // the offset is the number of positions since the start of the pool
             size_t offset_ = i - blocks.data();
@@ -189,7 +226,7 @@ namespace esl::computation::block_pool {
                 back_ = 0;
             }
 
-            end = end->empty;
+            end_ = end_->empty;
             ++size_;
 
             return {round_ * capacity() + offset_, i};
@@ -213,8 +250,12 @@ namespace esl::computation::block_pool {
             }
             removed->set = false;
 #endif
-            removed_->empty = end;
-            end             = removed_;
+            if(removed_ == begin_){
+                begin_ = removed_ ->empty;
+            }
+
+            removed_->empty = end_;
+            end_            = removed_;
 
             if(size_ == 0){
 #if DEBUG

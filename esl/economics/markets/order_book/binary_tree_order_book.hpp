@@ -208,10 +208,16 @@ namespace esl::economics::markets::order_book {
 
         }
 
+        [[nodiscard]] virtual std::vector<basic_book::order_identifier> orders() const
+        {
+
+        }
+
         void display(std::uint64_t levels) const override
         {
 
         }
+
     };
 }  // namespace esl::economics::markets::order_book
 
