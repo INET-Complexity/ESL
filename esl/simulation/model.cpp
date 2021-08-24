@@ -60,12 +60,45 @@ namespace esl::simulation {
     //std::map<esl::identity<esl::agent>, double> timings_cb_;
     //std::map<esl::identity<esl::agent>, double> timings_act_;
 
+
+    ///
+    /// \brief  Determines the next event as the minimum of the wake-up times of the agents.
+    ///
+    /// \return The first upcoming event
+    time_point model::determine_next_event() const
+    {
+        time_point result_ = end;
+        std::vector<identity<agent>> blockers_;
+        for(auto &[i, a] : agents.local_agents_) {
+            auto iterator_ = wake_up_times.find(i);
+            if(wake_up_times.end() == iterator_){
+                continue;
+            }else if(result_ > iterator_->second){
+                blockers_.clear();
+                result_ = std::min(result_ , iterator_->second);
+            }
+
+            if(result_ == iterator_->second){
+                blockers_.push_back(i);
+            }
+        }
+        LOG(trace) << "blockers at t=" << result_ << ": " << blockers_ << std::endl;
+        return result_;
+    }
+
+
+
+
     time_point model::step(time_interval step)
     {
-        assert(!step.empty());
+        if(step.empty()){
+            throw esl::exception("empty time interval passed");
+        }
 
         auto timer_start_ = high_resolution_clock::now();
         environment_.before_step();
+
+        //std::cout << "wake_up_times " << wake_up_times << std::endl;
 
         // read the sample index from the parameter collection
         std::mutex mutex_first_event_;
@@ -75,9 +108,13 @@ namespace esl::simulation {
             if (verbosity > 0 && 0 == (rounds_ % verbosity)){
                 LOG(notice) << "time " << step << " round " << round_  << std::endl;
             }
-            first_event_   = step.upper;
+
+            // the next event is the first time one of the agents wants to act
+            // in the future
+            first_event_   = determine_next_event();
 
             auto job_ = [&](std::shared_ptr<agent> a){
+LOG(trace) << "act " << a->identifier << std::endl;
                 // double agent_cb_end_;
                 // timings_.emplace(i, 0.);
                 // timings_cb_.emplace(i, 0.);
@@ -93,11 +130,26 @@ namespace esl::simulation {
                 // try {
 
                 {
-                    std::unique_lock lock_(mutex_first_event_);
-                    first_event_ = std::min(first_event_,
-                                            a->process_messages(step, seed_));
+                    auto message_time_ = a->process_messages(step, seed_);
                     // agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count()); agent_act_ = high_resolution_clock::now();
-                    first_event_ = std::min(first_event_, a->act(step, seed_));
+                    auto act_time_ = a->act(step, seed_);
+
+                    // from this part, we update the global first event, and update the wakeup time
+                    // it is important we don't touch the wake_up_times either without locking
+                    std::unique_lock lock_(mutex_first_event_);
+                    auto wake_up_ = std::min(message_time_, act_time_);
+                    if(wake_up_ < step.lower){
+                        std::stringstream stream_;
+                        stream_ << "Can't set next event to time_point (" << wake_up_ << ") before current time(" << step.lower << ")";
+                        throw std::logic_error(stream_.str());
+                    }
+
+                    //first_event_ = std::min(first_event_, wake_up_);
+
+                    //std::cout << a->identifier << " wakes up next at " << first_event_ << std::endl;
+                    wake_up_times[a->identifier] = wake_up_;
+
+                    first_event_   = determine_next_event();
                 }
 
                 //} catch(const std::runtime_error &e) {
@@ -109,7 +161,21 @@ namespace esl::simulation {
                 //} catch(...) {
                 //    throw;
                 //}
-                a->inbox.clear();
+
+                {
+                    esl::interaction::communicator::inbox_t to_be_received_;
+                    for(auto &[time_, message_]: a->inbox){
+                        if(time_ > step.lower){
+                            to_be_received_.insert({time_, message_});
+                        }
+                    }
+
+                    a->inbox = to_be_received_; //.clear();
+                }
+
+
+
+
                 // auto agent_end_ = high_resolution_clock::now() - agent_start_;
 
                 // timings_cb_[a->identifier] += agent_cb_end_;
@@ -119,18 +185,38 @@ namespace esl::simulation {
 
             };
 
+
+            std::vector<std::shared_ptr<agent>> acting_agents_;
+            acting_agents_.reserve(agents.local_agents_.size());
+            for(auto &[i, a]: agents.local_agents_) {
+                auto w = wake_up_times.find(i);
+                if(wake_up_times.end() == w){
+                    auto [ww, _] = wake_up_times.emplace(i, step.lower);
+                    w=ww;
+                }
+                // this comparison is strict equality, because an agent
+                // returning a time_point before the current time form act() is
+                // a logical error
+                if(w->second == step.lower){
+                    //std::cout << "active " << i << a->describe() << std::endl;
+                    acting_agents_.push_back(a);
+                }
+            }
+
+            //std::cout << "acting_agents_" << acting_agents_ << std::endl;
+
             // important: if using a single thread, run everything in main
             if(threads <= 1) {
-                for(auto &[i, a] : agents.local_agents_) {
+                for(auto &a: acting_agents_) {
                     job_(a);
                 }
             }else{
                 std::vector<std::thread> threads_;
-                auto iterator_ = agents.local_agents_.begin();
-                for(const auto& tasks_: quantity(agents.local_agents_.size()) / threads){
+                auto iterator_ = acting_agents_.begin();
+                for(const auto& tasks_: quantity(acting_agents_.size()) / threads){
                     std::vector<std::shared_ptr<agent>> task_split_;
                     for(auto i = quantity(0); i < tasks_; ++i){
-                        task_split_.push_back(iterator_->second);
+                        task_split_.push_back(*iterator_);
                         std::advance(iterator_, 1);
                     }
 
@@ -148,6 +234,8 @@ namespace esl::simulation {
             }
 
             environment_.send_messages(*this);
+            first_event_   = determine_next_event();
+
             ++round_;
             ++rounds_;
         } while(step.lower >= first_event_);

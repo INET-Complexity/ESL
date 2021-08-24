@@ -60,9 +60,8 @@ namespace esl::computation {
     size_t environment::activate()
     {
         size_t result_ = 0;
-        for(auto a :activated_) {
-
-            //activate_agent(a);
+        for(const auto &a: activated_) {
+            activate_agent(a);
             ++result_;
         }
         activated_.clear();
@@ -75,7 +74,7 @@ namespace esl::computation {
     size_t environment::deactivate()
     {
         size_t result_ = 0;
-        for(const auto &a : deactivated_) {
+        for(const auto &a: deactivated_) {
             deactivate_agent(a);
             ++result_;
         }
@@ -143,16 +142,27 @@ namespace esl::computation {
             for(const auto &m :a->outbox){
                 auto iterator_ = simulation.agents.local_agents_.find(m->recipient);
                 if(simulation.agents.local_agents_.end() == iterator_) {
-                    // not in distributed mode, and no local agent matching recipient
-                    throw esl::exception("message recipient agent not found "
-                                           + m->recipient.representation());
+                    // We are not in distributed mode, and no local agent matching recipient.
+                    // The only possible explanation is that the recipient identity is incorrect
+                    throw esl::exception("message recipient agent not found " + m->recipient.representation());
                 }
+                // insert into inbox
                 iterator_->second->inbox.insert({m->received, m});
+
+                // now that the recipient has a new message, make sure that they wake up on time to do something with it
+                auto recipient_iterator_ = simulation.wake_up_times.find(m->recipient);
+                if(simulation.wake_up_times.end() == recipient_iterator_){
+                    simulation.wake_up_times[m->recipient] = m->received;
+                }else{
+                    (*recipient_iterator_).second = std::min((*recipient_iterator_).second, m->received);
+                }
+
                 ++messages_;
             }
 
-            a->outbox.clear();
-            //TODO: make a->outbox.shrink_to_fit(); optional
+            a->outbox.clear();          // clear the outbox, so that messages are only sent once
+            a->outbox.shrink_to_fit();  // this is aggressively releasing the capacity, so that periods after intense
+                                        // messaging do not use too much memory
         }
         return messages_;
     }
@@ -200,7 +210,6 @@ namespace esl::computation {
             size_t changes_ = 0;
             changes_ += activate();
             changes_ += deactivate();
-
             step_.lower = simulation.step(step_);
         } while(step_.lower < simulation.end);
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;

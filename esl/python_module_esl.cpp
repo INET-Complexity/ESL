@@ -41,6 +41,9 @@
 using namespace boost::python;
 
 
+#include <boost/python/to_python_converter.hpp> // to_python
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // utility
 ////////////////////////////////////////////////////////////////////////////////
@@ -325,10 +328,15 @@ public:
     {
         auto o = get_override("act");
         if(o){
-            boost::python::object result_ = o(step, seed);
+            boost::python::object result_ = o(step, boost::ref(seed));
+
+            if(result_.is_none()){
+                return simulation::time_point(step.upper);
+            }
+
             return boost::python::extract<simulation::time_point>(result_);
         }
-        return agent::act(step, seed);
+        return agent::act(step, boost::ref(seed));
     }
 
     std::string describe() const override
@@ -372,12 +380,172 @@ void translate_exception(const exception &e)
 #include <esl/computation/timing.hpp>
 using namespace esl::computation;
 
+
+
+///
+/// \brief  This class enables access to the computation::environment
+///         internal functions for Python derived classes.
+///
+/// \details    Python does not have access via inheritance of protected
+///             members, so we need to make everything public
+///
+class python_environment
+: public esl::computation::environment
+, public wrapper<esl::computation::environment>
+{
+public:
+    python_environment()
+    : esl::computation::environment()
+    {
+
+    }
+
+    virtual ~python_environment() = default;
+
+
+
+
+
+
+    void step(simulation::model &simulation) override
+    {
+        boost::python::override method_ = get_override("step");
+
+        if(!method_.is_none()){
+            method_(simulation);
+            return;
+        }
+        environment::step(simulation);
+    }
+
+    void run(simulation::model &simulation) override
+    {
+        boost::python::override o = get_override("run");
+
+        if(!o.is_none()){
+            o(simulation);
+            return;
+        }
+        environment::run(simulation);
+    }
+
+    size_t activate() override
+    {
+        boost::python::override method_ = get_override("activate");
+        if(!method_.is_none()){
+            boost::python::object result_ = method_();
+            return boost::python::extract<size_t>(result_);
+        }
+        return environment::activate();
+    }
+
+
+    size_t deactivate() override
+    {
+        boost::python::override method_ = get_override("deactivate");
+        if(!method_.is_none()){
+            boost::python::object result_ = method_();
+            return boost::python::extract<size_t>(result_);
+        }
+        return environment::deactivate();
+    }
+
+    void before_step() override
+    {
+        boost::python::override method_ = get_override("before_step");
+        if(!method_.is_none()){
+            method_();
+        }else {
+            environment::before_step();
+        }
+    }
+
+    void after_step(simulation::model &simulation) override
+    {
+        boost::python::override method_ = get_override("after_step");
+        if(!method_.is_none()){
+            method_(simulation);
+        }else{
+            environment::after_step(simulation);
+        }
+    }
+
+    void after_run(simulation::model &simulation) override
+    {
+        boost::python::override method_ = get_override("after_run");
+        if(!method_.is_none()){
+            method_(simulation);
+        }else {
+            environment::after_run(simulation);
+        }
+    }
+
+    void activate_agent_python(const python_identity a)
+    {
+        environment::activate_agent(a);
+    }
+
+    void deactivate_agent_python(const python_identity a)
+    {
+        environment::deactivate_agent(a);
+    }
+
+    size_t send_messages(simulation::model &simulation)
+    {
+        boost::python::override method_ = get_override("send_messages");
+        if(!method_.is_none()){
+            boost::python::object result_ = method_(simulation);
+            return boost::python::extract<size_t>(result_);
+        }else {
+            return environment::send_messages(simulation);
+        }
+    }
+};
+
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // esl.computation.distributed
 ////////////////////////////////////////////////////////////////////////////////
 #include <esl/computation/distributed/protocol.hpp>
 using namespace esl::computation::distributed;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// esl.data
+////////////////////////////////////////////////////////////////////////////////
+#include <esl/data/severity.hpp>
+#include <esl/data/log.hpp>
+
+void python_log_detailed( esl::data::severity level
+                        , boost::python::object o
+                        , const std::string &function
+                        , const std::string &file
+                        , size_t line
+                        )
+{
+    auto render_ = boost::python::extract<const char *>(boost::python::str(o));
+    switch(level){
+    case severity::trace:
+        main_log.get<severity::trace>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        break;
+    case severity::notice:
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        break;
+    case severity::warning:
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        break;
+    case severity::errorlog:
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        break;
+
+    default:
+        break;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //esl.economics
@@ -624,7 +792,7 @@ public:
         }
 
         // specify the type, so that the return value is converted to python::object
-        object return_value_ = get_override("excess_demand")(quotes_);
+        boost::python::override return_value_ = get_override("excess_demand")(quotes_);
         dict excess_ = extract<dict>(return_value_);
         auto keys = list(excess_.keys());
         auto values = list(excess_.values());
@@ -1248,7 +1416,12 @@ public:
 
     void initialize() override
     {
-        get_override("initialize")();
+        boost::python::override method_ = get_override("initialize");
+        if(method_.is_none()){
+            model::initialize();
+        }else{
+            method_();
+        }
     }
 
     ///
@@ -1261,18 +1434,27 @@ public:
     /// \return
     time_point step(time_interval step) override
     {
-        object result_ = get_override("step")(step);
+        boost::python::override method_ = get_override("step");
 
+        if(method_.is_none()){
+            return model::step(step);
+        }
+
+        boost::python::object result_ = method_(step);
         if(result_.is_none()){
             return step.upper;
         }
-
         return boost::python::extract<time_point>(result_);
     }
 
     void terminate() override
     {
-        get_override("terminate")();
+        boost::python::override method_ = get_override("terminate");
+        if(method_.is_none()){
+            model::terminate();
+        }else{
+            method_();
+        }
     }
 };
 
@@ -1348,10 +1530,13 @@ scope create_scope(const std::string &name)
 ///
 BOOST_PYTHON_MODULE(_esl)
 {
+
     ////////////////////////////////////////////////////////////////////////////
     // utility
     ////////////////////////////////////////////////////////////////////////////
-    class_<std::seed_seq, boost::noncopyable>("seed", no_init)\
+
+
+    class_<std::seed_seq, boost::shared_ptr<std::seed_seq>,  boost::noncopyable>("seed", no_init)\
         .def("__init__", boost::python::make_constructor( construct_seed_seq_from_list))
 
         .def_readonly("size", &std::seed_seq::size)
@@ -1360,7 +1545,21 @@ BOOST_PYTHON_MODULE(_esl)
                 std::vector<std::uint32_t> seeds_(1);
                 seed.generate(seeds_.begin(), seeds_.end());
                 return seeds_[0];
-        });
+        })
+
+
+        .def("__str__", +[](std::seed_seq &seed){
+                std::stringstream stream_;
+            stream_ << "seed {";
+            seed.param(std::ostream_iterator<typename std::seed_seq::result_type>(stream_, ", "));
+            stream_ << "}";
+            return stream_.str();
+        })
+
+
+        ;
+
+
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1413,6 +1612,8 @@ BOOST_PYTHON_MODULE(_esl)
             )
             .def("create", &create_identity<agent>)
 
+            .def("__repr__", &python_agent::describe)
+            .def("__str__", &python_agent::describe)
             ;
 
 
@@ -1442,12 +1643,10 @@ BOOST_PYTHON_MODULE(_esl)
             .def("before_step", &python_environment::before_step)
             .def("after_step", &python_environment::after_step)
             .def("after_run", &python_environment::after_run)
-            .def("activate_agent",
-                 &python_environment::activate_agent)
-            .def("deactivate_agent",
-                 &python_environment::deactivate_agent)
-            .def("send_messages",
-                 &python_environment::send_messages);
+            .def("activate_agent", &python_environment::activate_agent)
+            .def("deactivate_agent", &python_environment::deactivate_agent)
+            .def("send_messages", &python_environment::send_messages)
+            ;
 
         // timing information
         class_<computation::agent_timing>(
@@ -1476,18 +1675,21 @@ BOOST_PYTHON_MODULE(_esl)
                 .def_readwrite("deactivated", &deactivation::deactivated);
         }
 
-        class_<environment>("environment")
-            .def("run", &environment::run)
-            .def("step", &environment::step)
-            .def("activate", &environment::activate)
-            .def("deactivate", &environment::deactivate)
-            .def("before_step", &environment::before_step)
-            .def("after_step", &environment::after_step)
-            .def("after_run", &environment::after_run)
-            .def("activate_agent", &environment::activate_agent)
-            .def("deactivate_agent", &environment::deactivate_agent)
-            .def("send_messages", &environment::send_messages)
-        ;
+//        class_<environment>("environment")
+//            .def("run", &environment::run)
+//            .def("step", &environment::step)
+//            .def("activate", &environment::activate)
+//            .def("deactivate", &environment::deactivate)
+//            .def("before_step", &environment::before_step)
+//            .def("after_step", &environment::after_step)
+//            .def("after_run", &environment::after_run)
+//            .def("activate_agent", &environment::activate_agent)
+//            .def("deactivate_agent", &environment::deactivate_agent)
+//            .def("send_messages", &environment::send_messages)
+//        ;
+//
+
+
     }
 
 
@@ -1497,6 +1699,17 @@ BOOST_PYTHON_MODULE(_esl)
     {
         boost::python::scope scope_data_ = create_scope("_data");
 
+
+        enum_<severity>("severity")
+            .value("trace",     severity::trace)
+            .value("notice",    severity::notice)
+            .value("warning",   severity::warning)
+            .value("error",  severity::errorlog)
+            ;
+
+        def("log_detailed", &python_log_detailed);
+
+        //     esl::data::main_log.get<level>(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__)
 
         ////////////////////////////////////////////////////////////////////////
         // esl.format
@@ -1971,7 +2184,7 @@ BOOST_PYTHON_MODULE(_esl)
                     .def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
                     .def("insert", &basic_book::insert)
                     .def("cancel", &basic_book::cancel)
-                    .def("cancel", +[](const basic_book& b) {
+                    .def("orders", +[](const basic_book& b) {
                             boost::python::list result_;
                             for(auto i: b.orders()){
                                 result_.append(i);
@@ -1986,12 +2199,6 @@ BOOST_PYTHON_MODULE(_esl)
                     , "Limit order book optimized for fast throughput. Uses statically allocated memory pool."
                     , init<quote, quote, size_t>())
                     .def_readwrite("reports", &basic_book::reports)
-                    .def("orders", &static_order_book::orders)
-                    //.def("ask", +[](const basic_book& b) { return optional_to_python<quote>(b.ask()); })
-                    //.def("bid", +[](const basic_book& b) { return optional_to_python<quote>(b.bid()); })
-                    //.def("insert", &basic_book::insert)
-                    //.def("cancel", &basic_book::cancel)
-                    //.def("display", &basic_book::display)
                     ;
 
                 class_<binary_tree_order_book, bases<basic_book>>(
@@ -2005,8 +2212,6 @@ BOOST_PYTHON_MODULE(_esl)
 
                 class_<matching_engine>("matching_engine", init<>())
                     .def_readwrite("books", &matching_engine::books)
-                    //.def("insert", &basic_book::insert)
-                    //.def("cancel", &basic_book::cancel)
                     ;
             }
 
@@ -2818,9 +3023,13 @@ BOOST_PYTHON_MODULE(_esl)
         class_<constant<std::uint64_t>,bases<parameter_base>>("constant_uint64","Unsigned 64-bit integer model parameter.", init<uint64_t>());
         implicitly_convertible<std::shared_ptr<constant<std::uint64_t>>, std::shared_ptr<parameter_base>>();
 
-        class_<std::map<std::string, std::shared_ptr<parameter_base> > >("parameter_values_map", "Stores model parameters by parameter name.")
-            .def(map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>())
-            //.def("keys", map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>::)
+        class_<constant<price>,bases<parameter_base>>("constant_price", "Price model parameter.", init<price>());
+        implicitly_convertible<std::shared_ptr<constant<price>>, std::shared_ptr<parameter_base>>();
+
+
+        class_<std::map<std::string, std::shared_ptr<parameter_base> > >("parameter_values", "Stores model parameters by parameter name.")
+        .def(map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>())
+        //.def("keys", map_indexing_suite<std::map<std::string, std::shared_ptr<parameter_base> >>::)
 
         ;
 

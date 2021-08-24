@@ -49,6 +49,8 @@ namespace esl::simulation {
         ///
         unsigned int rounds_;
 
+
+
     public:
         ///
         /// \brief
@@ -108,6 +110,12 @@ namespace esl::simulation {
         unsigned int threads;
 
         ///
+        /// \brief  Stores the next wake-up time for each agent.
+        ///
+        ///
+        std::map<identity<agent>, time_point> wake_up_times;
+
+        ///
         /// \brief
         ///
         /// \details    The model needs a reference to the computational
@@ -162,6 +170,15 @@ namespace esl::simulation {
         {
             return agents.template create<agent_derived_t_, simulation::world>(world, arguments ...);
         }
+
+        ///
+        /// \brief  Gathers
+        ///
+        ///
+        /// \return
+        time_point determine_next_event() const;
+
+
 
         ///
         /// \brief  Updates the model time to the next `event`.

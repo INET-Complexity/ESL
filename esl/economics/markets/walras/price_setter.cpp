@@ -76,6 +76,7 @@ namespace esl::economics::markets::walras {
     , market(i)
     , state(sending_quotes)
     , traded_properties(traded_properties)
+    , next_market_date(0)
     {
         output_clearing_prices_ = create_output<std::vector<price>>("clearing_prices");
         output_volumes_ = create_output<std::vector<uint64_t>>("volumes");
@@ -90,7 +91,9 @@ namespace esl::economics::markets::walras {
     }
 
     ///
-    /// \brief
+    /// \brief  The Walrasian Price Setter has two states:
+    ///         -   sending quotes: when it sends out its past prices and entices market participants to submit orders
+    ///         -   clearing the market: when it computes a new price, and then sets up the transactions that clear the market
     ///
     /// \param step
     /// \param seed
@@ -98,68 +101,48 @@ namespace esl::economics::markets::walras {
     simulation::time_point price_setter::act(simulation::time_interval step, std::seed_seq &seed)
     {
         (void)seed;
-        simulation::time_point next_ = step.upper;
         std::vector<quote> quotes_;
 
-        if(state == sending_quotes){
-            // send out initial quotes and wait for orders,
-            // scheduled in the same time step
-            LOG(trace) << "blocking to send quotes and receive orders" << std::endl;
-            next_ = step.lower;
-            for(const auto &[k, v]: traded_properties) {
+        simulation::time_point wake_up_ = step.upper;
+
+        std::unordered_map<identity<agent>, std::shared_ptr<differentiable_order_message>> orders_;
+        for(const auto &[k, message_]: inbox) {
+            (void)k;
+            if(walras::differentiable_order_message::code == message_->type) {
+                auto order_ = std::dynamic_pointer_cast<walras::differentiable_order_message>(message_);
+                if(message_->sent < step.lower) {
+                    LOG(trace) << (this->describe()) << "blocking because I received stale orders" << std::endl;
+                    break;
+                }
+                orders_.emplace(order_->sender, order_);
+            }
+        }
+
+        auto offs = 0;
+
+        if(!orders_.empty()) {
+            // there is at least one order so we clear the market
+            auto before_ = std::chrono::high_resolution_clock::now();
+            auto scalars_ = clear_market(orders_, step);
+            LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
+            std::vector<price> prices_;
+            for(auto &[k, v]: traded_properties){
+                (void)v;
+                // TODO: generalise to all types of quotes
+                prices_.emplace_back(std::get<price>(v.type));
+                quotes_.emplace_back(quote(v));
+            }
+            LOG(notice) << "quotes: " << quotes_ << std::endl;
+            output_clearing_prices_->put(step.lower, prices_);
+            offs = 1;
+            wake_up_ = step.lower + 1;
+        }else{  // restore previous prices
+            std::cout << "orders are empty at " << step.lower << " so I must block" << std::endl;
+            for(const auto &[k, v]: traded_properties){
                 (void)k;
                 quotes_.push_back(v);
             }
-        }else{
-            std::unordered_map<
-                identity<agent>,
-                std::shared_ptr<walras::differentiable_order_message>>
-                orders_;
-            for(const auto &[k, message_]: inbox) {
-                (void)k;
-                if(walras::differentiable_order_message::code == message_->type) {
-                    auto order_ = std::dynamic_pointer_cast<
-                        walras::differentiable_order_message>(message_);
-
-                    if(message_->sent < step.lower) {
-
-                        LOG(trace) << "blocking because I received stale orders" << std::endl;
-                        next_ = step.lower;
-                        break;
-                    }
-                    orders_.emplace(order_->sender, order_);
-                }
-            }
-
-            if(!orders_.empty()) {
-                // there is at least one order so we clear the market
-                auto before_ = std::chrono::high_resolution_clock::now();
-                auto scalars_ = clear_market(orders_, step);
-//                LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
-
-                std::vector<price> prices_;
-                for(auto &[k, v]: traded_properties){
-                    (void)v;
-                    // TODO: generalise to all types of quotes
-                    prices_.emplace_back(std::get<price>(v.type));
-                    quotes_.emplace_back(quote(v));
-                }
-
-//                LOG(notice) << "quotes: " << quotes_ << std::endl;
-
-                output_clearing_prices_->put(step.lower, prices_);
-
-            }else{  // restore previous prices
-                for(const auto &[k, v]: traded_properties){
-                    (void)k;
-                    quotes_.push_back(v);
-                }
-                if(step.lower > 1){
-
-                    LOG(trace) << "blocking to receive orders" << std::endl;
-                    next_ = step.lower;
-                }
-            }
+            wake_up_ = step.lower;
         }
 
         law::property_map<quote> quote_map_;
@@ -170,14 +153,114 @@ namespace esl::economics::markets::walras {
                 ++sequence_;
             }
         }
-//        LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
 
-        for(const auto &p : participants) {
-            auto m = this->template create_message<walras::quote_message>(
-                p, step.lower + 1, identifier, p, quote_map_);
+        if((sending_quotes == state && 0 == next_market_date) || next_market_date <step.lower + offs ){
+
+            for(const auto &p : participants) {
+
+                std::cout << "sending quotes to participants to arrive at " << (step.lower + offs) << " and sleeping until " << wake_up_ << std::endl;
+
+                auto m = this->template create_message<walras::quote_message>(
+                        p, step.lower + offs, identifier, p, quote_map_);
+            }
+            next_market_date = step.lower + offs;
         }
         state = clearing_market;
-        return next_;
+        return wake_up_;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//        if(state == sending_quotes){
+//            // send out initial quotes and wait for orders,
+//            // scheduled in the same time step
+//            LOG(trace) << "   (sending_quotes)   blocking to send quotes and receive orders" << std::endl;
+//            for(const auto &[k, v]: traded_properties) {
+//                (void)k;
+//                quotes_.push_back(v);
+//            }
+//            spoopy=0;
+//            wake_up_ = step.lower;
+//        }else{
+//            std::unordered_map<identity<agent>, std::shared_ptr<differentiable_order_message>> orders_;
+//            for(const auto &[k, message_]: inbox) {
+//                (void)k;
+//                if(walras::differentiable_order_message::code == message_->type) {
+//                    auto order_ = std::dynamic_pointer_cast<walras::differentiable_order_message>(message_);
+//                    if(message_->sent < step.lower) {
+//                        LOG(trace) << (this->describe()) << "blocking because I received stale orders" << std::endl;
+//                        wake_up_ = step.lower;
+//                        break;
+//                    }
+//                    orders_.emplace(order_->sender, order_);
+//                }
+//            }
+//
+//            if(!orders_.empty()) {
+//                // there is at least one order so we clear the market
+//                auto before_ = std::chrono::high_resolution_clock::now();
+//                auto scalars_ = clear_market(orders_, step);
+//                LOG(notice) << "clearing market took " << (double((std::chrono::high_resolution_clock::now()-before_).count()) / 1e+6) <<  " milliseconds" << std::endl;
+//                std::vector<price> prices_;
+//                for(auto &[k, v]: traded_properties){
+//                    (void)v;
+//                    // TODO: generalise to all types of quotes
+//                    prices_.emplace_back(std::get<price>(v.type));
+//                    quotes_.emplace_back(quote(v));
+//                }
+//                LOG(notice) << "quotes: " << quotes_ << std::endl;
+//                output_clearing_prices_->put(step.lower, prices_);
+//                wake_up_ = step.lower + 1;
+//                spoopy = 1;
+//            }else{  // restore previous prices
+//                std::cout << "orders are empty at " << step.lower << " so I must block" << std::endl;
+//                for(const auto &[k, v]: traded_properties){
+//                    (void)k;
+//                    quotes_.push_back(v);
+//                }
+//                wake_up_ = step.lower;
+//            }
+//        }
+//
+//        law::property_map<quote> quote_map_;
+//        {
+//            size_t sequence_ = 0;
+//            for(const auto &[k, v]: traded_properties) {
+//                quote_map_.insert({k, quotes_[sequence_]});
+//                ++sequence_;
+//            }
+//        }
+////        LOG(trace) << describe() << " " << identifier << " time " << step.lower <<  " clearing prices " << quote_map_ << std::endl;
+//
+//        //std::cout << std::endl << "spoopy" <<  spoopy << std::endl << std::endl;
+//
+//        for(const auto &p : participants) {
+//
+//            std::cout << "sending quotes to participants to arrive at " << (step.lower + spoopy) << " and sleeping until " << wake_up_ + spoopy << std::endl;
+//
+//            auto m = this->template create_message<walras::quote_message>(
+//                    p, step.lower + spoopy, identifier, p, quote_map_);
+//        }
+//        state = clearing_market;
+//        return wake_up_ + spoopy;
     }
 
 
@@ -202,8 +285,7 @@ namespace esl::economics::markets::walras {
                 [&, result_, p = p](auto &quote) {
                     using type_ = std::decay_t<decltype(quote)>;
                     if constexpr(std::is_same_v<type_, price>) {
-                        auto value_ = int64_t(quote.value
-                                              * result_.find(p->identifier)->second);
+                        auto value_ = int64_t(quote.value * result_.find(p->identifier)->second);
                         if(0 == value_){
                             value_ = 1;
                         }

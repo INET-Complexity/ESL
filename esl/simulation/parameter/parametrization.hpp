@@ -64,9 +64,14 @@ namespace esl::simulation::parameter {
             values["threads"]   = std::make_shared<constant<std::uint64_t>>(verbosity);
         }
 
-
+        ///
+        /// \brief
+        ///
+        /// \tparam parameter_t_
+        /// \param name
+        /// \return
         template<typename parameter_t_>
-        parameter_t_ get(const std::string &name) const
+        const parameter_t_ &get(const std::string &name) const
         {
             auto iterator_ = values.find(name);
             if(values.end() == iterator_) {

@@ -57,6 +57,8 @@ namespace esl::economics::markets::walras {
 
         explicit price_setter( );
 
+        simulation::time_point next_market_date;
+
         //tatonnement::excess_demand_model model_;
 
     public:
