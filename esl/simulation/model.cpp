@@ -233,8 +233,10 @@ LOG(trace) << "act " << a->identifier << std::endl;
                 }
             }
 
-            environment_.send_messages(*this);
-            first_event_   = determine_next_event();
+            auto messages_sent_ = environment_.send_messages(*this);
+            if(0 < messages_sent_){
+                first_event_   = determine_next_event();
+            }
 
             ++round_;
             ++rounds_;
