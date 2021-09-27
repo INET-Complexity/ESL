@@ -201,8 +201,9 @@ jobs:
 ########################################################################################################################
 
       - name: "[Windows] Install boost"
+      #- uses: jfrog/setup-jfrog-cli@v1
         run: |
-          Invoke-WebRequest https://boostorg.jfrog.io/native/main/release/1.76.0/source/boost_1_76_0.tar.gz -UseBasicParsing -OutFile boost_1_76_0.tar.gz
+          wget -q -N https://boostorg.jfrog.io/native/main/release/1.76.0/source/boost_1_76_0.tar.gz
           tar -xzf boost_1_76_0.tar.gz
           cd boost_1_76_0
           ./bootstrap.bat --prefix=C:/Boost
