@@ -1599,19 +1599,26 @@ BOOST_PYTHON_MODULE(_esl)
 
         //class_<entity<void>>("entity");
 
-        class_<python_agent, boost::noncopyable
-              //, bases<entity<void>>
+        class_< python_agent
+              , boost::noncopyable
+              //, bases<communicator>
               >("agent", init<python_identity>())
+
             .def("describe", &python_agent::describe)
             .def("act", &python_agent::act)
+            .add_property( "identifier"
+                         , +[](const python_agent &a){return (python_identity)(a.identifier); }
+                         )
 
-            //.def_readonly("identifier", &agent::identifier)
-            .add_property("identifier"
-                , +[](const property &r){return (python_identity)(r.identifier); }
-                //, +[](property &r, const python_identity &i){ r.identifier = i; }
-            )
+            .add_property( "inbox"
+                         , +[](const python_agent &a){return a.inbox; }
+                         )
+
+            .add_property("outbox"
+                         , +[](const python_agent &a){return a.outbox; }
+                         )
+
             .def("create", &create_identity<agent>)
-
             .def("__repr__", &python_agent::describe)
             .def("__str__", &python_agent::describe)
             ;
@@ -2558,7 +2565,11 @@ BOOST_PYTHON_MODULE(_esl)
             .value("random", communicator::scheduling::random);
 
         class_<communicator::inbox_t>("inbox_t").def(
-            multimap_indexing_suite<communicator::inbox_t>());
+            multimap_indexing_suite<communicator::inbox_t>())
+//            .def( "insert"
+//                , +[](const ... &r){return ; }
+//                )
+            ;
 
 
         class_<communicator::outbox_t>("outbox_t")
