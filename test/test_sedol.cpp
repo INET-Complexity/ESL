@@ -1,9 +1,9 @@
-/// \file   test_legal_entity.cpp
+/// \file   test_cusip.cpp
 ///
 /// \brief
 ///
 /// \authors    Maarten P. Scholl
-/// \date       2019-10-01
+/// \date       2021-09-17
 /// \copyright  Copyright 2017-2019 The Institute for New Economic Thinking,
 ///             Oxford Martin School, University of Oxford
 ///
@@ -23,49 +23,72 @@
 ///             requirements in CITATION.cff
 ///
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE legal_entity
+#define BOOST_TEST_MODULE sedol
 
 #include <boost/test/included/unit_test.hpp>
 
-#include <esl/law/legal_entity.hpp>
+#include <esl/economics/finance/sedol.hpp>
+using namespace esl::economics::finance;
 
 
 BOOST_AUTO_TEST_SUITE(ESL)
 
-BOOST_AUTO_TEST_CASE(legal_entity_examples)
+
+BOOST_AUTO_TEST_CASE(sedol_test_checksum)
 {
-    // Jaguar Land Rover Ltd
-    // 2138
-    //     00
-    //       WSGIIZCXF1P5
-    //                   72
-    BOOST_CHECK_NO_THROW(esl::law::iso_17442("213800WSGIIZCXF1P572"));
 
-    // BBC
-    // 5493
-    //     00
-    //       0IBP32UQZ0KL
-    //                   24
-    std::array<char, 4> local_ = {'5', '4', '9', '3'};
-    std::array<char, 12> code_ = {'0', 'I', 'B', 'P', '3', '2',
-                                  'U', 'Q', 'Z', '0', 'K', 'L'};
+    {
+        std::array<char, 6> code_ = {'7', '1', '0', '8', '8', '9'};
 
-    auto lei_      = esl::law::iso_17442(local_, code_);
-    auto checksum_ = lei_.checksum();
+        sedol c(code_);
+        BOOST_CHECK_EQUAL(c.checksum(), '9');
+    }
 
-    BOOST_CHECK_EQUAL(std::get<0>(checksum_), '2');
-    BOOST_CHECK_EQUAL(std::get<1>(checksum_), '4');
-}
+    {
+        sedol c("B0YBKJ");
+        BOOST_CHECK_EQUAL(c.checksum(), '7');
+    }
 
+    {
+        sedol c("4065663");
+        BOOST_CHECK_EQUAL(c.checksum(), '3');
+    }
 
-BOOST_AUTO_TEST_CASE(legal_entity_representation)
-{
-    auto lei_ = esl::law::iso_17442("213800WSGIIZCXF1P572");
-    std::stringstream stream_;
+    {
+        sedol c("B0YBLH");
+        BOOST_CHECK_EQUAL(c.checksum(), '2');
+    }
 
-    stream_ << lei_;
+    {
+        sedol c("228276");
+        BOOST_CHECK_EQUAL(c.checksum(), '5');
+    }
 
-    BOOST_CHECK_EQUAL(stream_.str(), "213800WSGIIZCXF1P572");
+    {
+        sedol c("B0YBKL");
+        BOOST_CHECK_EQUAL(c.checksum(), '9');
+    }
+
+    {
+        sedol c("557910");
+        BOOST_CHECK_EQUAL(c.checksum(), '7');
+    }
+
+    {
+        sedol c("B0YBKR");
+        BOOST_CHECK_EQUAL(c.checksum(), '5');
+    }
+
+    {
+        sedol c("585284");
+        BOOST_CHECK_EQUAL(c.checksum(), '2');
+    }
+
+    {
+        sedol c("B0YBKT");
+        BOOST_CHECK_EQUAL(c.checksum(), '7');
+    }
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

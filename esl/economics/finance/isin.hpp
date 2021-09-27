@@ -27,6 +27,7 @@
 
 
 #include <esl/geography/iso_3166_1_alpha_2.hpp>
+#include <esl/economics/finance/cusip.hpp>
 #include <esl/algorithms.hpp>
 
 
@@ -87,12 +88,25 @@ namespace esl::economics::finance {
         /// \brief  Constructs an ISIN from a complete code minus checksum.
         ///
         /// \param code     The code part describing a security
-        isin(const std::string &code = "AA000000000")
+        explicit isin(const std::string &code = "AA000000000")
         : isin(esl::to_array<0, 11, char>(code))
         {
 
         }
 
+        ///
+        /// \brief  Constructs an ISIN from a CUSIP code which is a United States specific code system
+        ///
+        /// \param code     The code part describing a security
+        explicit isin(const cusip &c)
+        : isin( geography::iso_3166_1_alpha_2(std::array<char, 2>({'U', 'S'}))
+              , esl::array_concatenate( esl::array_concatenate(c.issuer, c.code)
+                                      , std::array<char, 1>({c.checksum()})
+                                      )
+              )
+        {
+
+        }
     protected:
         ///
         /// \brief Converts ISIN symbol to numerical value

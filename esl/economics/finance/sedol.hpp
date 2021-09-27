@@ -1,4 +1,4 @@
-/// \file   cusip.hpp
+/// \file   sedol.hpp
 ///
 /// \brief
 ///
@@ -22,8 +22,8 @@
 ///             You may obtain instructions to fulfill the attribution
 ///             requirements in CITATION.cff
 ///
-#ifndef ESL_CUSIP_HPP
-#define ESL_CUSIP_HPP
+#ifndef ESL_SEDOL_HPP
+#define ESL_SEDOL_HPP
 
 #include <sstream>
 
@@ -34,76 +34,50 @@
 namespace esl::economics::finance {
 
     ///
-    /// \brief  Defines a CUSIP code as specified in the American National Standard under Accredited Standards X9.6
+    /// \brief  Defines a SEDOL code.
     ///
-    struct cusip
+    struct sedol
     {
         ///
-        /// \brief  A code that uniquely identifies a U.S. entity.
+        /// \brief  6 digits, 0-9a-zA-Z
         ///
-        std::array<char, 6> issuer;
+        ///
+        std::array<char, 6> code;
 
         ///
-        /// \brief  A code that is unique per security offered by the issuer.
-        ///
-        ///
-        std::array<char, 2> code;
-
-        ///
-        /// \brief  Constructs a CUSIP from the issuer and code part
+        /// \brief  Constructs a SEDOL from the issuer and code part
         ///
         /// \param issuer   The firm issuing the security
         /// \param code     The code part describing a specific security of the issuer,
         ///                 and "10" is the first issue by convention
-        explicit constexpr cusip( const std::array<char, 6> &issuer
-                                , const std::array<char, 2> &code = {'1', '0'}
-                                )
-        : issuer(issuer), code(code)
+        explicit constexpr sedol( const std::array<char, 6> &code)
+        : code(code)
         {
-
-        }
-
-        ///
-        /// \brief  Constructs a CUSIP from a complete code minus checksum.
-        ///
-        /// \param code     The code part describing a security
-        explicit cusip(const std::array<char, 8> &code = {'0'})
-            : issuer(esl::array_slice<0, 6>(code))
-            , code(esl::array_slice<6, 8>(code))
-        {
-
-        }
-
-        ///
-        /// \brief  Constructs a cusip from a complete code with  checksum,
-        ///         but throws if checksum doesn't match
-        ///
-        /// \param code     The code part describing a security
-        explicit cusip(const std::array<char, 9> &code = {'0'})
-            : issuer(esl::array_slice<0, 6>(code))
-            , code(esl::array_slice<6, 8>(code))
-        {
-            if(this->checksum() != code[8]){
-                throw esl::exception("invalid CUSIP checksum");
+            for(auto c: code){
+                assert(std::isdigit(c) || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'));
             }
         }
 
 
         ///
-        /// \brief  Constructs an cusip from a complete code minus checksum.
+        /// \brief  Constructs an sedol from a complete code minus checksum.
         ///
         /// \param code     The code part describing a security
-        explicit cusip(const std::string &code = "00000000")
-        : cusip(esl::to_array<0, 6, char>(code), esl::to_array<6, 8, char>(code))
+        explicit sedol(const std::string &code = "000000")
+        : sedol(esl::to_array<0, 6, char>(code))
         {
+            assert(6 == code.size() || 7 == code.size());
 
+            if(7 == code.size()){
+                assert(std::isdigit(code[6]));
+            }
         }
 
     protected:
         ///
-        /// \brief Converts CUSIP symbol to numerical value
+        /// \brief Converts sedol symbol to numerical value
         ///
-        /// \param c    symbol in the CUSIP code
+        /// \param c    symbol in the sedol code
         /// \return
         constexpr static std::uint8_t value(char c)
         {
@@ -176,46 +150,35 @@ namespace esl::economics::finance {
             case 'Z':
                 return static_cast<std::uint8_t>(c - 'A') + 10;
 
-            case '*':
-                return 10 + 26 + 0;
-            case '@':
-                return 10 + 26 + 1;
-            case '#':
-                return 10 + 26 + 2;
-
             default:
                 return 0;
             }
         }
     public:
         ///
-        /// \brief  Computes CUSIP checksum and returns checksum symbol.
+        /// \brief  Computes sedol checksum and returns checksum symbol.
         ///
         /// \return checksum symbol
-        [[nodiscard]] constexpr signed char checksum() const
+        [[nodiscard]] constexpr char checksum() const
         {
-            std::uint_fast64_t sum_ = 0;
+            constexpr std::array<std::uint64_t, 6> weights_ = {1, 3, 1, 7, 3, 9};
 
-            for(uint_fast8_t i = 0; i < 8; ++i){
-                auto c = i < 6 ? issuer[i] : code[i-6];
-                std::uint_fast8_t value_ = value(c);
-                value_ = value_ << (i % 2); // max is 38 * 2 <= 255
-                sum_ += (value_ % 10) + (value_ / 10);
+            std::uint_fast16_t sum_ = 0;
+            for(size_t i = 0; i < 6; ++i){
+                sum_ += value( code[i] ) * weights_[i];
             }
-            return static_cast<signed char>('0' + (10 - sum_ % 10) % 10); // second module is to change 10->0
+
+            return static_cast<char>('0' + (10 - (sum_ % 10)) % 10);
         }
 
         ///
-        /// \brief  outputs cusip code including the checksum
+        /// \brief  outputs sedol code including the checksum
         ///
         /// \param stream
         /// \param i
         /// \return
-        friend std::ostream &operator << (std::ostream &stream, const cusip &i)
+        friend std::ostream &operator << (std::ostream &stream, const sedol &i)
         {
-            for(auto c : i.issuer) {
-                stream << c;
-            }
             for(auto c : i.code) {
                 stream << c;
             }
@@ -232,4 +195,4 @@ namespace esl::economics::finance {
     };
 }  // namespace esl::economics::finance
 
-#endif  // ESL_cusip_HPP
+#endif  // ESL_SEDOL_HPP

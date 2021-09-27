@@ -37,8 +37,10 @@ namespace esl::data {
         enum type {
             out, error,
         };
+
     protected:
         const type type_;
+
     public:
         explicit terminal(type standard = out)
         :   stream(standard == out ? std::cout : std::cerr)
