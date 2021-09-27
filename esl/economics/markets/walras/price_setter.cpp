@@ -134,7 +134,6 @@ namespace esl::economics::markets::walras {
             offs = 1;
             wake_up_ = step.lower + 1;
         }else{  // restore previous prices
-            std::cout << "orders are empty at " << step.lower << " so I must block" << std::endl;
             for(const auto &[k, v]: traded_properties){
                 (void)k;
                 quotes_.push_back(v);
@@ -153,8 +152,6 @@ namespace esl::economics::markets::walras {
 
         if((sending_quotes == state && 0 == next_market_date) || next_market_date <step.lower + offs ){
             for(const auto &p : participants) {
-                LOG(trace) << "sending quotes to participants to arrive at " << (step.lower + offs) << " and sleeping until " << wake_up_ << std::endl;
-
                 auto m = this->template create_message<walras::quote_message>(
                         p, step.lower + offs, identifier, p, quote_map_);
             }
