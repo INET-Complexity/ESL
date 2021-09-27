@@ -203,7 +203,9 @@ jobs:
       - name: "[Windows] Install boost"
       #- uses: jfrog/setup-jfrog-cli@v1
         run: |
+      # specific to github actions
           remove-item alias:\wget
+          choco install wget --no-progress
           wget -q -N https://boostorg.jfrog.io/native/main/release/1.76.0/source/boost_1_76_0.tar.gz
           tar -xzf boost_1_76_0.tar.gz
           cd boost_1_76_0
