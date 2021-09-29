@@ -38,7 +38,7 @@
 
 namespace esl::economics::markets::order_book {
 
-    class limit_order_message
+    class limit_order
     {
     private:
     public:
@@ -62,7 +62,7 @@ namespace esl::economics::markets::order_book {
 
         std::uint32_t quantity;
 
-        limit_order_message  ( ticker symbol
+        limit_order  (ticker symbol
                              , const identity<agent> &owner
                              , side_t side
                              , const quote& limit
@@ -80,9 +80,14 @@ namespace esl::economics::markets::order_book {
         }
 
 
-        [[nodiscard]] constexpr bool operator == (const limit_order_message &o) const
+        [[nodiscard]] constexpr bool operator == (const limit_order &o) const
         {
-            return lifetime == o.lifetime && side == o.side && symbol == o.symbol && owner == o.owner &  limit == o.limit && quantity == o.quantity;
+            return lifetime == o.lifetime
+                && side == o.side
+                && symbol == o.symbol
+                && owner == o.owner
+                && limit == o.limit
+                && quantity == o.quantity;
         }
 
         [[nodiscard]] constexpr bool closed() const
@@ -96,10 +101,10 @@ namespace esl::economics::markets::order_book {
         }
 
     protected:
-        friend std::ostream &operator << (std::ostream &, const limit_order_message &);
+        friend std::ostream &operator << (std::ostream &, const limit_order &);
     };
 
-    inline std::ostream &operator << (std::ostream &ostream, const limit_order_message &order)
+    inline std::ostream &operator << (std::ostream &ostream, const limit_order &order)
     {
         (void)ostream;
         (void)order;

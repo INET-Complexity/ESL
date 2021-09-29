@@ -736,16 +736,16 @@ boost::shared_ptr<ticker> python_ticker_constructor(const python_identity &base_
 #include <esl/economics/markets/order_book/python_module_order_book.hpp>
 using namespace esl::economics::markets::order_book;
 
-boost::shared_ptr<limit_order_message> python_limit_order_message_constructor
-    ( ticker symbol
+boost::shared_ptr<limit_order> python_limit_order_message_constructor
+    (ticker symbol
     , const python_identity &owner
-    , limit_order_message::side_t side
+    , limit_order::side_t side
     , const quote &limit
     , std::uint64_t quantity
-    , limit_order_message::lifetime_t lifetime // = good_until_cancelled
+    , limit_order::lifetime_t lifetime // = good_until_cancelled
     )
 {
-    return boost::make_shared<limit_order_message>(
+    return boost::make_shared<limit_order>(
         symbol, reinterpret_identity_cast<agent>(owner), side, limit, quantity, lifetime
         );
 }
@@ -2126,7 +2126,7 @@ BOOST_PYTHON_MODULE(_esl)
 
                 class_<execution_report>("execution_report"
                                          , init<execution_report::state_t
-                    , limit_order_message::side_t
+                    , limit_order::side_t
                     , std::uint32_t
                     , std::uint64_t
                     , quote
@@ -2151,35 +2151,35 @@ BOOST_PYTHON_MODULE(_esl)
                     ;
 
 
-                enum_<limit_order_message::side_t>("side_t")
-                    .value("buy", limit_order_message::side_t::buy)
-                    .value("sell",  limit_order_message::side_t::sell)
+                enum_<limit_order::side_t>("side_t")
+                    .value("buy", limit_order::side_t::buy)
+                    .value("sell",  limit_order::side_t::sell)
                     ;
 
-                enum_<limit_order_message::lifetime_t>("lifetime_t")
-                    .value("good_until_cancelled", limit_order_message::lifetime_t::good_until_cancelled)
-                    .value("fill_or_kill",  limit_order_message::lifetime_t::fill_or_kill)
-                    .value("immediate_or_cancel",  limit_order_message::lifetime_t::immediate_or_cancel)
+                enum_<limit_order::lifetime_t>("lifetime_t")
+                    .value("good_until_cancelled", limit_order::lifetime_t::good_until_cancelled)
+                    .value("fill_or_kill",  limit_order::lifetime_t::fill_or_kill)
+                    .value("immediate_or_cancel",  limit_order::lifetime_t::immediate_or_cancel)
                     ;
 
                 ///
                 /// \brief Export the abstract base class, so that python users too can
                 ///        implement new order books.
                 ///
-                class_<limit_order_message>("limit_order_message", no_init)
+                class_<limit_order>("limit_order", no_init)
                     .def("__init__", make_constructor(python_limit_order_message_constructor))
-                    .def_readwrite("lifetime", &limit_order_message::lifetime)
-                    .def_readwrite("side", &limit_order_message::side)
-                    .def_readwrite("symbol", &limit_order_message::symbol)
+                    .def_readwrite("lifetime", &limit_order::lifetime)
+                    .def_readwrite("side", &limit_order::side)
+                    .def_readwrite("symbol", &limit_order::symbol)
                     .add_property ( "owner"
-                                  , +[](const limit_order_message &r){return (python_identity)(r.owner); }
-                                  , +[](limit_order_message &r, const python_identity &i){ r.owner = i; } )
-                    .def_readwrite("limit", &limit_order_message::limit)
-                    .def_readwrite("quantity", &limit_order_message::quantity)
+                                  , +[](const limit_order &r){return (python_identity)(r.owner); }
+                                  , +[](limit_order &r, const python_identity &i){ r.owner = i; } )
+                    .def_readwrite("limit", &limit_order::limit)
+                    .def_readwrite("quantity", &limit_order::quantity)
                     ;
 
-                class_<std::vector<limit_order_message>>("limit_order_messages")
-                    .def(vector_indexing_suite<std::vector<limit_order_message>>());
+                class_<std::vector<limit_order>>("limit_orders")
+                    .def(vector_indexing_suite<std::vector<limit_order>>());
 
                 ///
                 /// \brief Export the abstract base class, so that python users too can

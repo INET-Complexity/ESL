@@ -44,7 +44,7 @@ using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets::order_book;
 using esl::economics::markets::quote;
-using esl::economics::markets::order_book::limit_order_message;
+using esl::economics::markets::order_book::limit_order;
 
 
 BOOST_AUTO_TEST_SUITE(ESL)
@@ -85,13 +85,13 @@ BOOST_AUTO_TEST_SUITE(ESL)
         esl::economics::markets::ticker ticker_dummy_;
         identity<agent> owner_dummy_;
 
-        auto bid_toosmall_ = limit_order_message
-            ( ticker_dummy_
+        auto bid_toosmall_ = limit_order
+            (ticker_dummy_
                 , owner_dummy_
-                , limit_order_message::side_t::buy
+                , limit_order::side_t::buy
                 , quote(price::approximate(0.001, currencies::USD), 100 *  currencies::USD.denominator)
                 , 1000
-                ,limit_order_message::lifetime_t::good_until_cancelled
+                , limit_order::lifetime_t::good_until_cancelled
             );
 
         book_.insert(bid_toosmall_);
@@ -100,13 +100,13 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.reports.size(), 1);
         BOOST_CHECK_EQUAL(book_.reports.front().state,  execution_report::invalid);
 
-        auto bid_toolarge_ = limit_order_message
-            ( ticker_dummy_
+        auto bid_toolarge_ = limit_order
+            (ticker_dummy_
                 , owner_dummy_
-                , limit_order_message::side_t::buy
+                , limit_order::side_t::buy
                 , quote(price::approximate(10.01, currencies::USD), 100 *  currencies::USD.denominator)
                 , 1000
-                ,limit_order_message::lifetime_t::good_until_cancelled
+                , limit_order::lifetime_t::good_until_cancelled
             );
         book_.insert(bid_toolarge_);
 
@@ -115,36 +115,36 @@ BOOST_AUTO_TEST_SUITE(ESL)
     }
 
 
-    limit_order_message create_bid(double p, size_t q = 1000)
+    limit_order create_bid(double p, size_t q = 1000)
     {
         esl::economics::markets::ticker ticker_dummy_;
         identity<agent> owner_dummy_;
 
-        auto bid_ = limit_order_message
-            ( ticker_dummy_
+        auto bid_ = limit_order
+            (ticker_dummy_
                 , owner_dummy_
-                , limit_order_message::side_t::buy
+                , limit_order::side_t::buy
                 , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
-                ,limit_order_message::lifetime_t::good_until_cancelled
+                , limit_order::lifetime_t::good_until_cancelled
             );
 
         return bid_;
     }
 
 
-    limit_order_message create_ask(double p, size_t q = 1000)
+    limit_order create_ask(double p, size_t q = 1000)
     {
         esl::economics::markets::ticker ticker_dummy_;
         identity<agent> owner_dummy_;
 
-        auto bid_ = limit_order_message
-            ( ticker_dummy_
+        auto bid_ = limit_order
+            (ticker_dummy_
                 , owner_dummy_
-                , limit_order_message::side_t::sell
+                , limit_order::side_t::sell
                 , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
-                ,limit_order_message::lifetime_t::good_until_cancelled
+                , limit_order::lifetime_t::good_until_cancelled
             );
 
         return bid_;
@@ -312,18 +312,18 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
 
 
-    limit_order_message create(double p, size_t q = 1000, limit_order_message::side_t side = limit_order_message::side_t::sell)
+    limit_order create(double p, size_t q = 1000, limit_order::side_t side = limit_order::side_t::sell)
     {
         esl::economics::markets::ticker ticker_dummy_;
         identity<agent> owner_dummy_;
 
-        auto bid_ = limit_order_message
-            ( ticker_dummy_
+        auto bid_ = limit_order
+            (ticker_dummy_
                 , owner_dummy_
                 , side
                 , quote(price::approximate(p, currencies::USD), 100 *  currencies::USD.denominator)
                 , q
-                ,limit_order_message::lifetime_t::good_until_cancelled
+                , limit_order::lifetime_t::good_until_cancelled
             );
 
         return bid_;
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_SUITE(ESL)
         auto  max_ = quote(price::approximate(120.00, currencies::USD), 100 *  currencies::USD.denominator);
         auto book_ = new static_order_book(min_, max_, 1024*1024);
 
-        std::vector<limit_order_message> messages_;
+        std::vector<limit_order> messages_;
 
         std::minstd_rand generator_;
         std::normal_distribution<> order_limit_(100.0, 1.5);
@@ -349,9 +349,9 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
 
             if(generator_() & 0x1){
-                messages_.emplace_back(create(limit_, size_, limit_order_message::side_t::sell));
+                messages_.emplace_back(create(limit_, size_, limit_order::side_t::sell));
             }else{
-                messages_.emplace_back(create(limit_, size_, limit_order_message::side_t::buy));
+                messages_.emplace_back(create(limit_, size_, limit_order::side_t::buy));
             }
         }
 

@@ -64,12 +64,12 @@ namespace esl::economics::markets::order_book {
         }
 
         typedef std::multimap< quote
-                             , std::pair<basic_book::order_identifier , limit_order_message>
+                             , std::pair<basic_book::order_identifier , limit_order>
                              , std::greater<>
                              > bid_t;
 
         typedef std::multimap< quote
-                             , std::pair<basic_book::order_identifier , limit_order_message>
+                             , std::pair<basic_book::order_identifier , limit_order>
                              , std::less<>
                              > ask_t;
 
@@ -97,9 +97,9 @@ namespace esl::economics::markets::order_book {
         /// \brief
         ///
         /// \param order
-        void insert(const limit_order_message &order) override
+        void insert(const limit_order &order) override
         {
-            if(limit_order_message::side_t::buy == order.side){
+            if(limit_order::side_t::buy == order.side){
                 auto remainder_ = order.quantity;
                 for( auto i = orders_ask.begin()
                    ; i != orders_ask.end() && order.limit >= i->first

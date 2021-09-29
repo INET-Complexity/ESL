@@ -306,7 +306,7 @@ namespace esl::economics::markets::order_book {
             /// \param remainder_
             /// \param level
             /// \return
-            inline uint32_t match_at_level( const limit_order_message &order
+            inline uint32_t match_at_level( const limit_order &order
                 , std::uint32_t &remainder_
                 , limit_type *level)
             {
@@ -340,7 +340,7 @@ namespace esl::economics::markets::order_book {
                     // execution report for supplier
                     reports.emplace_back(execution_report
                                              ( execution_report::match
-                                             , (order.side == limit_order_message::sell ?   limit_order_message::buy :  limit_order_message::sell)
+                                             , (order.side == limit_order::sell ? limit_order::buy : limit_order::sell)
                                              ,  execution_size_
                                              , ao->index
                                              , quote_
@@ -356,7 +356,7 @@ namespace esl::economics::markets::order_book {
 
                             // if the aggressor was a buy order, it took away
                             // the best ask
-                            if(order.side == limit_order_message::buy){
+                            if(order.side == limit_order::buy){
                                 //LOG(trace) << quote_ << " ask level depleted" << std::endl;
                                 for(++best_ask_; best_ask_ <= &limits_.back(); ++best_ask_){
                                     if(best_ask_->first || best_ask_ == &limits_.back()){
@@ -382,7 +382,7 @@ namespace esl::economics::markets::order_book {
             ///
             /// \param order
             /// \return
-            void insert(const limit_order_message &order) override
+            void insert(const limit_order &order) override
             {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity || order.limit.lot != valid_limits.lower.lot ){
 
@@ -430,7 +430,7 @@ namespace esl::economics::markets::order_book {
 
                 limit_type *limit_level_ = &limits_[limit_index_];
 
-                if( order.side == limit_order_message::buy
+                if(order.side == limit_order::buy
                     && ask().has_value()
                     && order.limit >= ask().value()) {
                     // direct execution: buyer aggressor
@@ -442,7 +442,7 @@ namespace esl::economics::markets::order_book {
                         remainder_ = match_at_level(order, remainder_, al);
                     }
 
-                }else if(  order.side == limit_order_message::sell
+                }else if(order.side == limit_order::sell
                            && bid().has_value()
                     ){
                     // direct execution: seller aggressor
@@ -455,8 +455,8 @@ namespace esl::economics::markets::order_book {
                         remainder_ = match_at_level(order, remainder_, bl);
                     }
 
-                }else if(  order.lifetime == limit_order_message::immediate_or_cancel
-                           || order.lifetime == limit_order_message::fill_or_kill){
+                }else if(order.lifetime == limit_order::immediate_or_cancel
+                           || order.lifetime == limit_order::fill_or_kill){
                     // cancel an immediate/fill order that could not be matched
                     reports.emplace_back(execution_report
                                              ( execution_report::cancel
@@ -474,7 +474,7 @@ namespace esl::economics::markets::order_book {
                 if(0 >= remainder_){
                     return;
                 }
-                if(order.lifetime == limit_order_message::immediate_or_cancel){
+                if(order.lifetime == limit_order::immediate_or_cancel){
                     reports.emplace_back(execution_report
                                              ( execution_report::cancel
                                              , order.side
@@ -510,9 +510,9 @@ namespace esl::economics::markets::order_book {
                     limit_level_->second = block_.second;
                 }
 
-                if(limit_order_message::buy == order.side){
+                if(limit_order::buy == order.side){
                     best_bid_ = std::max(best_bid_,  limit_level_);
-                }else if(order.side == limit_order_message::sell){
+                }else if(order.side == limit_order::sell){
                     best_ask_ = std::min(best_ask_,  limit_level_);
                 }
                 // TODO: notify new best bid/ask
@@ -530,12 +530,12 @@ namespace esl::economics::markets::order_book {
 
                 const record &order_ = pool_[order];
 
-                auto side_ = limit_order_message::side_t::buy;
+                auto side_ = limit_order::side_t::buy;
                 // if there is no bid, or the best bid is lower than this order,
                 // this must be a sell order.
                 auto bid_ = bid();
                 if(!bid_.has_value() || bid_.value() < order_.limit){
-                    side_ = limit_order_message::side_t::sell;
+                    side_ = limit_order::side_t::sell;
                 }
 
                 reports.emplace_back(execution_report

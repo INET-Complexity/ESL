@@ -86,8 +86,8 @@ namespace esl::economics::markets::order_book {
         ///
         /// \brief  Extracts the order and places it in the book.
         ///
-        /// \param order    limit_order_message sent by the market participant
-        virtual void insert(const limit_order_message &order) = 0;
+        /// \param order    limit_order sent by the market participant
+        virtual void insert(const limit_order &order) = 0;
 
         ///
         /// \brief  Cancels a placed order by its order_identifier

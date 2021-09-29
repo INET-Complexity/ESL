@@ -61,7 +61,7 @@ namespace esl::economics::markets::order_book {
         ///
         /// \param order
         /// \return
-        void insert(const limit_order_message &order)
+        void insert(const limit_order &order)
         {
             auto i = books.find(order.symbol);
 
@@ -85,8 +85,8 @@ namespace esl::economics::markets::order_book {
         /// \param side
         /// \param id
         /// \return
-        limit_order_message &find( const ticker& symbol
-                   , limit_order_message::side_t side
+        limit_order &find( const ticker& symbol
+                   , limit_order::side_t side
                    , const esl::identity<esl::law::property>& identifier)
         {
             auto i = books.find(symbol);
@@ -97,7 +97,7 @@ namespace esl::economics::markets::order_book {
         }
 
 
-        bool match(const ticker &symbol, std::queue<limit_order_message> &orders)
+        bool match(const ticker &symbol, std::queue<limit_order> &orders)
         {
             auto i = books.find(symbol);
             if(i == books.end()) {
@@ -108,7 +108,7 @@ namespace esl::economics::markets::order_book {
             return i->second->insert(orders);
         }
 
-        bool match(std::queue<limit_order_message> &orders)
+        bool match(std::queue<limit_order> &orders)
         {
             for(auto & book : books) {
                 book.second->insert(orders);

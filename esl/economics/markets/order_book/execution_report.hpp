@@ -45,7 +45,7 @@ namespace esl::economics::markets::order_book {
         ///
         /// \brief  Buy or sell
         ///
-        limit_order_message::side_t side;
+        limit_order::side_t side;
 
         ///
         /// \brief  Because a report can apply to only a part of the order,
@@ -70,8 +70,8 @@ namespace esl::economics::markets::order_book {
         identity<agent> owner;
 
 
-        execution_report( state_t state
-                        , limit_order_message::side_t side
+        execution_report(state_t state
+                        , limit_order::side_t side
                         , std::uint32_t quantity
                         , std::uint64_t identifier
                         , const quote& limit
