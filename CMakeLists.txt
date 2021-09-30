@@ -232,6 +232,10 @@ MESSAGE("----------------------------------------")
 IF(MSVC)
     # multi-processor compilation on MSVC
     ADD_DEFINITIONS(/MP)
+
+    # for large object files with inline functions
+    ADD_DEFINITIONS(/bigobj)
+
     # allows for compile-time optimizations
     ADD_DEFINITIONS(-DESL_RELEASE)
 ELSE()
