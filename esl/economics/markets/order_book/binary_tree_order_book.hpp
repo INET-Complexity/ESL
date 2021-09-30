@@ -210,7 +210,8 @@ namespace esl::economics::markets::order_book {
 
         [[nodiscard]] virtual std::vector<basic_book::order_identifier> orders() const
         {
-
+            std::vector<basic_book::order_identifier> result_;
+            return result_;
         }
 
         void display(std::uint64_t levels) const override
