@@ -873,20 +873,18 @@ public:
 ///
 /// \param e
 /// \return
-dict compute_clearing_quotes(python_excess_demand_model *e)
+boost::python::object compute_clearing_quotes(python_excess_demand_model *e)
 {
     auto quotes_ = e->compute_clearing_quotes();
     dict result_;
 
     if(quotes_.has_value()){
-        //LOG(trace) << "clear_market has_value" << std::endl;
         for(const auto &[k,v]: quotes_.value()){
-            //LOG(trace) << k <<" = " << v << std::endl;
             result_[boost::python::object(python_identity(k))] =  v;
         }
     }
 
-    return result_;
+    return boost::python::object(result_);
 }
 
 
