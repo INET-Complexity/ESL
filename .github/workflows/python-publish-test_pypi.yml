@@ -8,7 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019, ubuntu-20.04]
+        os: [macos-10.15]
+        #, windows-2019, ubuntu-20.04]
         python_minor_version: [7,8,9]
     steps:
 
@@ -108,51 +109,6 @@ jobs:
         if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
 ########################################################################################################################
-      - name: "[MacOS] Delocate"
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
-
-          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
-        run: |
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          export DYLD_LIBRARY_PATH=DYLD_LIBRARY_PATH:/usr/local/lib
-          export DYLD_FALLBACK_LIBRARY_PATH=DYLD_FALLBACK_LIBRARY_PATH:/usr/local/lib
-          python -m pip install delocate
-          python -m cibuildwheel --output-dir distribution
-          ls distribution/
-          bindir=$(pwd)/distribution/esl
-          cd distribution && wheelfile=$(ls *.whl)
-          delocate-listdeps $wheelfile
-        continue-on-error: true
-        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
-
-      - name: "[MacOS] Otool"
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
-
-          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
-        run: |
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          export DYLD_LIBRARY_PATH=DYLD_LIBRARY_PATH:/usr/local/lib
-          export DYLD_FALLBACK_LIBRARY_PATH=DYLD_FALLBACK_LIBRARY_PATH:/usr/local/lib
-          python -m pip install delocate
-          python -m cibuildwheel --output-dir distribution
-          ls distribution/
-          bindir=$(pwd)/distribution/esl
-          cd distribution && wheelfile=$(ls *.whl)
-          delocate-listdeps $wheelfile
-          unzip eslpy*
-          cd esl
-          ls
-          otool -L _esl.so
-          cp -v /usr/local/lib/libboost*.dylib .
-
-        continue-on-error: true
-        if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
       # CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
       - name: "[MacOS] Build and publish"
@@ -171,7 +127,7 @@ jobs:
           ls distribution/
           bindir=$(pwd)/distribution/esl
           cd distribution && wheelfile=$(ls *.whl)
-          delocate-listdeps $wheelfile
+          ls
           unzip eslpy*
           cd esl
           ls
