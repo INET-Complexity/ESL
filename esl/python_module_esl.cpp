@@ -792,38 +792,41 @@ public:
         }
 
         // specify the type, so that the return value is converted to python::object
-        boost::python::override return_value_ = get_override("excess_demand")(quotes_);
-        dict excess_ = extract<dict>(return_value_);
-        auto keys = list(excess_.keys());
-        auto values = list(excess_.values());
+        //boost::python::override return_value_ = get_override("excess_demand")(quotes_);
 
-        std::map<esl::identity<esl::law::property>, esl::variable> result_;
+        boost::python::override method_ = get_override("excess_demand");
+        if(!method_.is_none()){
+            boost::python::object return_value_ = method_(quotes_);
 
-        for(int i = 0; i < len(keys); ++i) {
-            extract<esl::identity<esl::law::property>> extractor(keys[i]);
-            extract<double> value_extractor(values[i]);
-            if(extractor.check() && value_extractor.check()) {
-                auto key   = extractor();
-                auto value = value_extractor();
+            dict excess_ = extract<dict>(return_value_);
+            auto keys = list(excess_.keys());
+            auto values = list(excess_.values());
 
-                result_.emplace(key, esl::variable(value));
+            std::map<esl::identity<esl::law::property>, esl::variable> result_;
+
+            for(int i = 0; i < len(keys); ++i) {
+                extract<esl::identity<esl::law::property>> extractor(keys[i]);
+                extract<double> value_extractor(values[i]);
+                if(extractor.check() && value_extractor.check()) {
+                    auto key   = extractor();
+                    auto value = value_extractor();
+
+                    result_.emplace(key, esl::variable(value));
+                }
             }
-        }
 
-        return result_;
+            return result_;
+        }//else{
+        return {};
     }
 };
 
 boost::python::dict get_differentiable_order_message_supply(const esl::economics::markets::walras::differentiable_order_message &m)
 {
     boost::python::dict result_;
-
     for(const auto &[k,v] : m.supply){
-
-        result_[k] = boost::python::make_tuple(std::get<0>(v), std::get<1>(v));
-
+        result_[k] = boost::python::make_tuple(boost::python::object(std::get<0>(v)), boost::python::object(std::get<1>(v)));
     }
-
     return result_;
 }
 
@@ -838,8 +841,6 @@ void set_differentiable_order_message_supply(esl::economics::markets::walras::di
         python_identity k = boost::python::extract<python_identity>(tuple_[0]);
 
         auto v = boost::python::tuple(tuple_[1]);
-        //tuple_
-
         esl::quantity long_ = boost::python::extract<quantity>(v[0]);
         esl::quantity short_ = boost::python::extract<quantity>(v[1]);
 
@@ -847,8 +848,6 @@ void set_differentiable_order_message_supply(esl::economics::markets::walras::di
 
         m.supply.insert({esl::identity<esl::law::property>(k.digits), T});
     }
-
-
 }
 
 
@@ -873,20 +872,20 @@ public:
 ///
 /// \param e
 /// \return
-boost::python::object compute_clearing_quotes(python_excess_demand_model *e)
+boost::python::dict compute_clearing_quotes(python_excess_demand_model *e)
 {
     auto quotes_ = e->compute_clearing_quotes();
-    dict result_;
+    boost::python::dict result_;
 
     if(quotes_.has_value()){
         for(const auto &[k,v]: quotes_.value()){
-            result_[boost::python::object(python_identity(k))] =  v;
+            auto i = python_identity(k);
+            result_[boost::python::object(i)] = boost::python::object(v);
         }
     }
 
-    return boost::python::object(result_);
+    return result_;
 }
-
 
 ///
 /// \brief  Constructor wrapper that deals with the Python-supplied mapping

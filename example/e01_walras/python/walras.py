@@ -91,7 +91,7 @@ class my_order(differentiable_order_message):
         # TODO (Maarten): this should be exposed through base class
         self.sender = sender
 
-    def excess_demand(self, quotes) -> float:
+    def excess_demand(self, quotes: dict) -> float:
         """
             This is our excesss demand function. It receives a dict with:
             - keys being the property identifiers

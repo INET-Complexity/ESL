@@ -88,3 +88,93 @@ import esl.interaction
 import esl.law
 import esl.mathematics
 import esl.simulation
+
+import numpy as np
+
+
+def log(item: object, level: esl.data.severity = esl.data.severity.trace):
+    """
+        Prints the item to the log file. Used for human readable feedback to modelers and developers -
+        for model output, see esl.data.output.
+    :param item:    the Python object to be printed. Uses `str(item)`, and thus expects that item.__str__() is defined
+    :param level:   One value from `esl.data.severity` = {'trace', 'notice', 'warning', 'error'}
+    :return:        void
+    """
+    import inspect
+    esl.data.log_detailed(level, item, inspect.stack()[1].function, inspect.stack()[1].filename, inspect.stack()[1].lineno)
+
+
+def add_constant_parameter_helper(self: esl.simulation.parameter.parametrization, name, value):
+    """
+    Adds a constant (scalar) parameter to the models parameters.
+    :param self:
+    :param name:    the name of the parameter, must be unique, otherwise overwrites previous values
+    :param value:   the default value of the parameter
+    :return:
+    """
+    if isinstance(value, float):
+        p = esl.simulation.parameter.constant_double(float(value))
+    elif isinstance(value, int):
+        p = esl.simulation.parameter.constant_int64(int(value))
+    elif isinstance(value, esl.economics.price):
+        p = esl.simulation.parameter.constant_price(value)
+    elif hasattr(value, 'dtype') and isinstance(value.dtype, np.dtype):
+        # this requires that `value` is a numpy dtype
+        if np.issubdtype(value, np.signedinteger):
+            p = esl.simulation.parameter.constant_int64(int(value))
+        elif np.issubdtype(value, np.integer):
+            p = esl.simulation.parameter.constant_uint64(int(value))
+        elif np.issubdtype(value, np.floating):
+            p = esl.simulation.parameter.constant_double(float(value))
+        else:
+            raise TypeError(f"Unsupported numpy parameter type: {type(value)}")
+    else:
+        raise TypeError(f"Unsupported parameter type: {type(value)}")
+
+    self.values[name] = p
+
+
+setattr(esl.simulation.parameter.parametrization, 'add_constant', add_constant_parameter_helper)
+
+
+def add_closed_interval_parameter_helper(self: esl.simulation.parameter.parametrization, name, value):
+    """
+    Adds a closed interval of possible parameter values
+    :param self:
+    :param name:
+    :param value:
+    :return:
+    """
+    pass
+
+
+setattr(esl.simulation.parameter.parametrization, 'add_constant', add_constant_parameter_helper)
+
+
+
+def simple_experiment(parameters = esl.simulation.parameter.parametrization()):
+    """
+        Sets up an experiment with a single model. The model is empty except for the minimum of required
+        parameters and entities. The parameters are:
+            start   (default: 0)            Point in time at which the simulation starts.
+            end     (default: 1)            Point in time at which the simulation ends, inclusive.
+            sample  (default: 0)            For stochastic models, the sample identifier, effectively the random number seed.
+            threads (default: >= 1)         Number of threads to use in the simulation of one model run. Uses C++'s
+                                            hardware_concurrency() function to set the default value, and defaults to a
+                                            single thread if this method can not determine the number of concurrent threads.
+                                            https://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency
+            verbosity (default: 1)          how frequently to print updates on the simulation progress
+
+        The default single-threaded environment is used to run the model.
+        Convenience functions and syntactic sugar.
+    :return: model, parameters and environment objects
+    """
+    environment = esl.computation.environment()
+    model = esl.simulation.model(environment, parameters)
+
+    # set the seed, in case our user forgets to set the seed for the initalization stage
+    np.random.seed(parameters['sample'])
+
+    # TODO: add experiment class to do a single run
+    return model, environment
+
