@@ -116,7 +116,8 @@ jobs:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-
+          # 'delocate-listdeps {wheel} && delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}'
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
@@ -150,9 +151,9 @@ jobs:
           done
           otool -L _esl.so
           rm -rf .dylibs && cd .. && rm *.whl && zip -r $wheelfile .
-        # delocate-listdeps --all $wheelfile
-        # delocate-wheel -w fixed_wheels -v $wheelfile
-        # python -m twine upload --repository testpypi fixed_wheels/*
+          delocate-listdeps --all $wheelfile
+          delocate-wheel -w fixed_wheels -v $wheelfile
+          python -m twine upload --repository testpypi fixed_wheels/*
         continue-on-error: true
         if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
 
