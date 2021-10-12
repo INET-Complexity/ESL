@@ -110,15 +110,14 @@ jobs:
 
 ########################################################################################################################
 
-      # CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
       - name: "[MacOS] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_MACOS: "x86_64"
           # 'delocate-listdeps {wheel} && delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}'
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64 cp3${{matrix.python_minor_version}}-macosx_arm64'
+          CIBW_BUILD: 'cp3${{matrix.python_minor_version}}-macosx_x86_64'
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           export DYLD_LIBRARY_PATH=DYLD_LIBRARY_PATH:/usr/local/lib
