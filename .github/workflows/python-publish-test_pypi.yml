@@ -142,14 +142,15 @@ jobs:
           install_name_tool -change @rpath/libboost_python3${{matrix.python_minor_version}}.dylib $bindir/libboost_python3${{matrix.python_minor_version}}.dylib  _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib                               $bindir/libboost_date_time.dylib                                _esl.so
           otool -L _esl.so
-          dylibs=$(ls .dylibs/)
-          for d in $dylibs
-          do
-            echo "change load_path" $d
-            install_name_tool -change @loader_path/.dylibs/$d $bindir/$d _esl.so
-          done
+#          dylibs=$(ls .dylibs/)
+#          for d in $dylibs
+#          do
+#            echo "change load_path" $d
+#            install_name_tool -change @loader_path/.dylibs/$d $bindir/$d _esl.so
+#          done
           otool -L _esl.so
-          rm -rf .dylibs && cd .. && rm *.whl && zip -r $wheelfile .
+#          rm -rf .dylibs &&
+          cd .. && rm *.whl && zip -r $wheelfile .
           delocate-listdeps --all $wheelfile
           delocate-wheel -w fixed_wheels -v $wheelfile
           python -m twine upload --repository testpypi fixed_wheels/*
