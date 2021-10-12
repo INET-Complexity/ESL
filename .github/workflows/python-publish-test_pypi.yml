@@ -143,7 +143,6 @@ jobs:
           install_name_tool -change @rpath/libboost_python3${{matrix.python_minor_version}}.dylib $bindir/libboost_python3${{matrix.python_minor_version}}.dylib  _esl.so
           install_name_tool -change @rpath/libboost_date_time.dylib                               $bindir/libboost_date_time.dylib                                _esl.so
           otool -L _esl.so
-          cp -v .dylibs/* .
           dylibs=$(ls .dylibs/)
           for d in $dylibs
           do
