@@ -128,25 +128,26 @@ jobs:
           ls distribution/
           bindir=$(pwd)/distribution/esl
           cd distribution && wheelfile=$(ls *.whl)
+          delocate-listdeps $wheelfile
           ls
           unzip eslpy*
           cd esl
           ls
           otool -L _esl.so
           cp -v /usr/local/lib/libboost*.dylib .
-          install_name_tool -change @rpath/libboost_program_options.dylib     $bindir/libboost_program_options.dylib     _esl.so
-          install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
-          install_name_tool -change @rpath/libboost_serialization.dylib       $bindir/libboost_serialization.dylib       _esl.so
-          install_name_tool -change @rpath/libboost_unit_test_framework.dylib $bindir/libboost_unit_test_framework.dylib _esl.so
-          install_name_tool -change @rpath/libboost_thread.dylib              $bindir/libboost_thread.dylib              _esl.so
-          install_name_tool -change @rpath/libboost_python3${{matrix.python_minor_version}}.dylib            $bindir/libboost_python3${{matrix.python_minor_version}}.dylib            _esl.so
-          install_name_tool -change @rpath/libboost_date_time.dylib           $bindir/libboost_date_time.dylib           _esl.so
+          install_name_tool -change @rpath/libboost_program_options.dylib                         $bindir/libboost_program_options.dylib                          _esl.so
+          install_name_tool -change @rpath/libboost_date_time.dylib                               $bindir/libboost_date_time.dylib                                _esl.so
+          install_name_tool -change @rpath/libboost_serialization.dylib                           $bindir/libboost_serialization.dylib                            _esl.so
+          install_name_tool -change @rpath/libboost_unit_test_framework.dylib                     $bindir/libboost_unit_test_framework.dylib                      _esl.so
+          install_name_tool -change @rpath/libboost_thread.dylib                                  $bindir/libboost_thread.dylib                                   _esl.so
+          install_name_tool -change @rpath/libboost_python3${{matrix.python_minor_version}}.dylib $bindir/libboost_python3${{matrix.python_minor_version}}.dylib  _esl.so
+          install_name_tool -change @rpath/libboost_date_time.dylib                               $bindir/libboost_date_time.dylib                                _esl.so
           otool -L _esl.so
           cp -v .dylibs/* .
           dylibs=$(ls .dylibs/)
           for d in $dylibs
           do
-            echo $d
+            echo "change load_path" $d
             install_name_tool -change @loader_path/.dylibs/$d $bindir/$d _esl.so
           done
           otool -L _esl.so
