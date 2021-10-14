@@ -66,7 +66,7 @@ namespace esl::economics::finance {
         ///
         /// \param code     The code part describing a security
         constexpr isin(const std::array<char, 11> &code = {'0'})
-        : issuer(geography::iso_3166_1_alpha_2({code[0], code[1]}))
+        : issuer(geography::iso_3166_1_alpha_2(std::array<char, 2>{code[0], code[1]}))
         , code(esl::array_slice<0, 9>(code))
         {
 
@@ -98,8 +98,8 @@ namespace esl::economics::finance {
         /// \brief  Constructs an ISIN from a CUSIP code which is a United States specific code system
         ///
         /// \param code     The code part describing a security
-        explicit isin(const cusip &c)
-        : isin( geography::iso_3166_1_alpha_2(std::array<char, 2>({'U', 'S'}))
+        explicit isin(geography::iso_3166_1_alpha_2 issuer, const cusip &c)
+        : isin( issuer
               , esl::array_concatenate( esl::array_concatenate(c.issuer, c.code)
                                       , std::array<char, 1>({c.checksum()})
                                       )

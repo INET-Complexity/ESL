@@ -36,6 +36,8 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/nvp.hpp>
 
+#include <esl/exception.hpp>
+
 
 namespace esl::geography {
 
@@ -49,12 +51,23 @@ namespace esl::geography {
         ///
         /// \param code
         ///
-        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code = {'X',
-                                                                          'X'}) noexcept
+        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code = {'X', 'X'} ) noexcept
         : code(code)
         {
 
         }
+
+        ///
+        /// \param code
+        ///
+        explicit  iso_3166_1_alpha_2(const std::string &code)// noexcept
+        : code(std::array<char, 2>({code[0], code[1]}))
+        {
+            if(2 > code.size()){
+                throw esl::exception("ISO 3166-1 alpha-2 country code needs to be two characters.");
+            }
+        }
+
 
         ~iso_3166_1_alpha_2() = default;
 

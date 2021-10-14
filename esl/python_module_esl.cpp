@@ -1501,8 +1501,6 @@ boost::python::object parametrization_get_helper(const parametrization &p, const
     throw esl::exception("parametrization[" + name + "] can't be converted to Python");
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTATION
 ////////////////////////////////////////////////////////////////////////////////
@@ -2000,12 +1998,32 @@ BOOST_PYTHON_MODULE(_esl)
         {
             boost::python::scope scope_finance = create_scope("_finance");
 
-            class_<finance::isin>(
-                "iso_6166", init<geography::iso_3166_1_alpha_2, std::string>())
+            class_<finance::isin>("iso_6166", no_init)
+                .def(init<geography::iso_3166_1_alpha_2, std::string>())
+                .def(init<std::string>())
+                .def(init<geography::iso_3166_1_alpha_2, cusip>())
+
                 .add_property("issuer", &finance::isin::issuer)
                 .add_property("code", &get_isin_code, &set_isin_code)
                 .def("__repr__", &finance::isin::representation)
-                .def("__str__", &finance::isin::representation);
+                .def("__str__", &finance::isin::representation)
+                .def("checksum", &finance::isin::checksum)
+                ;
+
+
+            class_<finance::cusip>("cusip", no_init)
+            .def(init<std::string>())
+
+            .add_property("issuer"
+                         , +[](const finance::cusip &c){
+                                return std::string(c.issuer.begin(), c.issuer.end());
+                            })
+
+            .def("__repr__", &finance::cusip::representation)
+            .def("__str__", &finance::cusip::representation)
+            .def("checksum", &finance::cusip::checksum)
+            ;
+
 
             class_<finance::share_class>(
                 "share_class",
@@ -2275,7 +2293,7 @@ BOOST_PYTHON_MODULE(_esl)
     {
         boost::python::scope scope_geography_ = create_scope("_geography");
 
-        class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2")
+        class_<esl::geography::iso_3166_1_alpha_2>("iso_3166_1_alpha_2", init<std::string>())
             .add_property("code", python_country_code)
             .def("__repr__",
                  &esl::geography::iso_3166_1_alpha_2::representation)
