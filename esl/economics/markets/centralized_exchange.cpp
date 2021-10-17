@@ -1,4 +1,4 @@
-/// \file   exchange.cpp
+/// \file   centralized_exchange.cpp
 ///
 /// \brief
 ///
@@ -25,4 +25,4 @@
 
 
 
-#include "exchange.hpp"
+#include "centralized_exchange.hpp"
