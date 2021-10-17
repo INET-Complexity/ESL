@@ -677,8 +677,6 @@ void set_isin_code(finance::isin &i, const std::string &code)
     i.code = esl::to_array<0,9,char>(code);
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // esl.economics.markets
 ////////////////////////////////////////////////////////////////////////////////
@@ -2001,19 +1999,19 @@ BOOST_PYTHON_MODULE(_esl)
             class_<finance::isin>("iso_6166", no_init)
                 .def(init<geography::iso_3166_1_alpha_2, std::string>())
                 .def(init<std::string>())
+                .def(init<std::string, std::string>())
                 .def(init<geography::iso_3166_1_alpha_2, cusip>())
 
                 .add_property("issuer", &finance::isin::issuer)
                 .add_property("code", &get_isin_code, &set_isin_code)
                 .def("__repr__", &finance::isin::representation)
                 .def("__str__", &finance::isin::representation)
-                .def("checksum", &finance::isin::checksum)
+                .def("checksum", +[](const finance::isin &i){ std::string s = ""; s += i.checksum(); return s;})
                 ;
 
 
             class_<finance::cusip>("cusip", no_init)
             .def(init<std::string>())
-
             .add_property("issuer"
                          , +[](const finance::cusip &c){
                                 return std::string(c.issuer.begin(), c.issuer.end());
@@ -2021,7 +2019,7 @@ BOOST_PYTHON_MODULE(_esl)
 
             .def("__repr__", &finance::cusip::representation)
             .def("__str__", &finance::cusip::representation)
-            .def("checksum", &finance::cusip::checksum)
+            .def("checksum", +[](const finance::cusip &c){  std::string s = ""; s += c.checksum(); return s; })
             ;
 
 

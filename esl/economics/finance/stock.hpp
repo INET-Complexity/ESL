@@ -53,7 +53,7 @@ namespace esl::economics::finance {
         stock();
 
         ///
-        /// \brief  Creates a fictional ISIN code for the company
+        /// \brief
         ///         This modifies the issuing company, as it needs to create a new
         ///         child property.
         ///
@@ -61,18 +61,17 @@ namespace esl::economics::finance {
 
 
         ///
-        /// \brief  Creates a fictional ISIN code for the company
+        /// \brief
         ///
         stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
               const identity<company> &i, const share_class &s);
 
         ///
-        ///
+        /// \brief  Construct a stock from the issuer and share_class
         ///
         stock(const identity<property> &pi,
               const identity<company> &company_identifier,
-              const share_class &details,
-              const isin &code);
+              const share_class &details);
 
         //price value(const accounting::standard &a,
         //            const quantity &amount) const override;

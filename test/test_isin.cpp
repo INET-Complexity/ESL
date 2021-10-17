@@ -46,14 +46,6 @@ BOOST_AUTO_TEST_SUITE(ESL)
         }
 
         {
-            // us0378331005 Apple Inc, from `cusip` struct
-
-            cusip cusip_(std::array<char, 9>({'0', '3', '7', '8', '3', '3', '1', '0', '0'}));
-            isin i(cusip_);
-            BOOST_CHECK_EQUAL(i.checksum(), '5');
-        }
-
-        {
             // au0000xvgza3 victoria treasury
             std::array<char, 9> cusip_ = {'0', '0', '0', '0', 'X',
                                      'V', 'G', 'Z', 'A'};

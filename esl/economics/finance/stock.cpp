@@ -87,16 +87,16 @@ namespace esl::economics::finance {
 
     stock::stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
                  const identity<company> &i, const share_class &s)
-    : stock(pi, i, s, create_isin(c, i, s))
+    : stock(pi, i, s)
     {
 
     }
 
     stock::stock(const identity<property> &pi,
                  const identity<company> &company_identifier,
-                 const share_class &details, const isin &code)
+                 const share_class &details)
     : property(pi)
-    , security(pi, code)
+    , security(pi)
     , company_identifier(company_identifier)
     , details(details)
     {

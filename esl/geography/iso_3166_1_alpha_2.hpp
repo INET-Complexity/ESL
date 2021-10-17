@@ -51,7 +51,7 @@ namespace esl::geography {
         ///
         /// \param code
         ///
-        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code = {'X', 'X'} ) noexcept
+        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code) noexcept
         : code(code)
         {
 
@@ -60,7 +60,7 @@ namespace esl::geography {
         ///
         /// \param code
         ///
-        explicit  iso_3166_1_alpha_2(const std::string &code)// noexcept
+        explicit  iso_3166_1_alpha_2(const std::string &code = "XX")// noexcept
         : code(std::array<char, 2>({code[0], code[1]}))
         {
             if(2 > code.size()){

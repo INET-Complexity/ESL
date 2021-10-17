@@ -55,7 +55,7 @@ namespace esl::economics::finance {
         /// \param issuer   The country issuing the code
         /// \param code     The code part describing a security
         constexpr isin(geography::iso_3166_1_alpha_2 issuer,
-                       const std::array<char, 9> &code = {'0'})
+                       const std::array<char, 9> &code)
         : issuer(issuer), code(code)
         {
 
@@ -65,7 +65,7 @@ namespace esl::economics::finance {
         /// \brief  Constructs an ISIN from a complete code minus checksum.
         ///
         /// \param code     The code part describing a security
-        constexpr isin(const std::array<char, 11> &code = {'0'})
+        constexpr isin(const std::array<char, 11> &code)
         : issuer(geography::iso_3166_1_alpha_2(std::array<char, 2>{code[0], code[1]}))
         , code(esl::array_slice<0, 9>(code))
         {
@@ -78,20 +78,38 @@ namespace esl::economics::finance {
         /// \param issuer   The country issuing the code
         /// \param code     The code part describing a security as a string with
         ///                 the code symbols in positions 0-8
-        isin(geography::iso_3166_1_alpha_2 issuer, const std::string &code)
-        : isin(issuer, esl::to_array<0, 9, char>(code))
+        isin(geography::iso_3166_1_alpha_2 issuer, const std::string &nsin_code)
+        : isin(issuer, esl::to_array<0, 9, char>(nsin_code))
         {
-
+            if((9 >= code.size()) || (11 <= code.size())){
+                throw esl::exception("A valid ISIN has 9 symbols in the NSIN part, or 9 symbols plus the ISIN checksum.");
+            }
         }
 
         ///
-        /// \brief  Constructs an ISIN from a complete code minus checksum.
+        /// \brief  Constructs an ISIN from the country and the code part.
+        ///
+        /// \param issuer   The country issuing the code
+        /// \param code     The code part describing a security as a string with
+        ///                 the code symbols in positions 0-8
+        isin(const std::string &issuer, const std::string &nsin_code)
+        : isin(geography::iso_3166_1_alpha_2(issuer), esl::to_array<0, 9, char>(nsin_code))
+        {
+            if(2 != issuer.size()){
+                throw esl::exception("The issuer part of the ISIN must be 2 letters (ISO 3166)");
+            }
+        }
+
+        ///
+        /// \brief  Constructs an ISIN from a complete code, and recomputes checksum.
         ///
         /// \param code     The code part describing a security
         explicit isin(const std::string &code = "AA000000000")
         : isin(esl::to_array<0, 11, char>(code))
         {
-
+            if((11 >= code.size()) || (13 <= code.size())){
+                throw esl::exception("A valid ISIN is constructed from 11 or 12 symbols.");
+            }
         }
 
         ///
@@ -107,6 +125,7 @@ namespace esl::economics::finance {
         {
 
         }
+
     protected:
         ///
         /// \brief Converts ISIN symbol to numerical value

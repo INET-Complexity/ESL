@@ -47,14 +47,10 @@ namespace esl::economics::finance {
     , public virtual fungible
     , public law::contract
     {
-        isin code;
-
         explicit security( identity<property> i = identity<property>()
-                         , isin code            = isin(geography::countries::US)
                          , std::vector<identity<agent>> parties = {})
         : asset(i)
         , contract(parties)
-        , code(code)
         {
             
         }
@@ -64,7 +60,7 @@ namespace esl::economics::finance {
         std::string name() const override
         {
             std::stringstream stream_;
-            stream_ << "security" << ' ' << code;
+            stream_ << "security" << ' ' << this->identifier;
             return stream_.str();
         }
 
