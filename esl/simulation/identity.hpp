@@ -360,9 +360,9 @@ namespace esl {
         {
             static_assert(
                 std::is_base_of<base_type_, identifiable_type_>::value
-//#ifdef WITH_PYTON
+#ifdef WITH_PYTON
                     || std::is_base_of<boost::python::object, identifiable_type_>::value
-//#endif
+#endif
                 ,
                 "can not cast identifier, please verify that this "
                 "conversion is allowed");
