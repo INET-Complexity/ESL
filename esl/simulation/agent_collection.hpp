@@ -92,5 +92,4 @@ namespace esl::simulation {
     };
 }  // namespace esl::simulation
 
-
 #endif  // ESL_AGENT_COLLECTION_HPP
