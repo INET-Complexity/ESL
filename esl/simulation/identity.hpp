@@ -59,6 +59,13 @@
 
 namespace esl {
 
+    #ifdef WITH_PYTHON
+    template<typename identifiable_type_>
+    struct identity;
+
+    typedef identity<boost::python::object> python_identity;
+    #endif
+
 
     ///
     /// \brief  An identifier is a code used internally to distinguish entities.
@@ -359,13 +366,18 @@ namespace esl {
         [[nodiscard]] operator identity<base_type_>() const
         {
             static_assert(
-                std::is_base_of<base_type_, identifiable_type_>::value
-#ifdef WITH_PYTON
-                    || std::is_base_of<boost::python::object, identifiable_type_>::value
+                    std::is_base_of<typename std::remove_cv<base_type_>::type, identifiable_type_>::value
+#ifdef WITH_PYTHON // allow free conversion from and to Python
+
+
+                || std::is_base_of<boost::python::api::object, typename std::remove_cv<base_type_>::type >::value
+                || std::is_base_of<boost::python::api::object, typename std::remove_cv<identifiable_type_>::type >::value
+
+
+                || std::is_base_of<python_identity, typename std::remove_cv<base_type_>::type>::value
+                || std::is_base_of<python_identity, typename std::remove_cv<identifiable_type_>::type>::value
 #endif
-                ,
-                "can not cast identifier, please verify that this "
-                "conversion is allowed");
+                , "cannot cast identifier, please verify that this conversion is allowed");
             return identity<base_type_>(this->digits);
         }
     };
@@ -433,9 +445,7 @@ namespace esl {
         }
     };
 
-#ifdef WITH_PYTHON
-    typedef identity<boost::python::object> python_identity;
-#endif
+
 
 }  // namespace esl
 

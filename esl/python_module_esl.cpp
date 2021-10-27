@@ -317,7 +317,7 @@ class python_agent
 {
 public:
     python_agent(python_identity i)
-    : agent(i)
+    : agent(reinterpret_identity_cast<agent>(i))
     {
 
     }
@@ -482,12 +482,12 @@ public:
 
     void activate_agent_python(const python_identity a)
     {
-        environment::activate_agent(a);
+        environment::activate_agent(reinterpret_identity_cast<agent>(a));
     }
 
     void deactivate_agent_python(const python_identity a)
     {
-        environment::deactivate_agent(a);
+        environment::deactivate_agent(reinterpret_identity_cast<agent>(a));
     }
 
     size_t send_messages(simulation::model &simulation)
@@ -579,7 +579,7 @@ struct python_organization
 , public wrapper<organization>
 {
     python_organization(const python_identity &i, const jurisdiction &j)
-    : organization(i,j)
+    : organization(reinterpret_identity_cast<organization>(i),j)
     {
 
     }
@@ -594,7 +594,7 @@ struct python_company
 public:
 
     python_company(const python_identity &i, const law::jurisdiction &j)
-    : company(i,j)
+    : company(reinterpret_identity_cast<company>(i),j)
     , wrapper<company>()
     {
 
@@ -2090,12 +2090,12 @@ BOOST_PYTHON_MODULE(_esl)
                 "ticker", no_init)
                 .def("__init__", make_constructor(python_ticker_constructor))
                 .add_property("base"
-                    , +[](const ticker &r){return (python_identity)(r.base); }
-                    , +[](ticker &r, const python_identity &i){ r.base = i; }
+                    , +[](const ticker &r){return reinterpret_identity_cast<python_identity>(r.base); }
+                    , +[](ticker &r, const python_identity &i){ r.base = reinterpret_identity_cast<law::property>(i); }
                                )
                 .add_property("quote"
                     , +[](const ticker &r){return (python_identity)(r.quote); }
-                    , +[](ticker &r, const python_identity &i){ r.quote = i; }
+                    , +[](ticker &r, const python_identity &i){ r.quote = reinterpret_identity_cast<law::property>(i); }
                 )
                 .def(self == self)
                 .def(self != self)
@@ -2151,8 +2151,8 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("side", &execution_report::side)
                     .def_readwrite("limit", &execution_report::limit)
                     .add_property ("owner"
-                                  , +[](const execution_report &r){return (python_identity)(r.owner); }
-                                  , +[](execution_report &r, const python_identity &i){ r.owner = i; }
+                                   , +[](const execution_report &r){return reinterpret_identity_cast<python_identity>(r.owner); }
+                                  , +[](execution_report &r, const python_identity &i){ r.owner = reinterpret_identity_cast<agent>(i); }
                                   )
                     .def("__repr__", &execution_report::representation)
                     .def("__str__", &execution_report::representation);
@@ -2185,8 +2185,8 @@ BOOST_PYTHON_MODULE(_esl)
                     .def_readwrite("side", &limit_order::side)
                     .def_readwrite("symbol", &limit_order::symbol)
                     .add_property ( "owner"
-                                  , +[](const limit_order &r){return (python_identity)(r.owner); }
-                                  , +[](limit_order &r, const python_identity &i){ r.owner = i; } )
+                                    , +[](const limit_order &r){return reinterpret_identity_cast<python_identity>(r.owner); }
+                                  , +[](limit_order &r, const python_identity &i){ r.owner = reinterpret_identity_cast<agent>(i); } )
                     .def_readwrite("limit", &limit_order::limit)
                     .def_readwrite("quantity", &limit_order::quantity)
                     ;
@@ -2608,12 +2608,12 @@ BOOST_PYTHON_MODULE(_esl)
 
             .add_property("sender"
                 , +[](const header &r){return (python_identity)(r.sender); }
-                , +[](header &r, const python_identity &i){ r.sender = i; }
+                , +[](header &r, const python_identity &i){ r.sender = reinterpret_identity_cast<agent>(i); }
             )
 
             .add_property("recipient"
                 , +[](const header &r){return (python_identity)(r.recipient); }
-                , +[](header &r, const python_identity &i){ r.recipient = i; }
+                , +[](header &r, const python_identity &i){ r.recipient = reinterpret_identity_cast<agent>(i); }
             )
 
             .def_readwrite("sent", &header::sent)
