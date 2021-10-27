@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-10.15, windows-2019, ubuntu-20.04]
-        python_minor_version: [7,8,9, 10]
+        python_minor_version: [7,8,9,10]
     steps:
 
 ########################################################################################################################
@@ -49,9 +49,6 @@ jobs:
 
       - name: "[MacOS] Install gfortran with homebrew"
         run: |
-          brew upgrade
-          brew update >/dev/null
-          brew upgrade
           brew reinstall gcc gfortran automake
           which gfortran
         shell: bash
@@ -59,7 +56,6 @@ jobs:
 
       - name: "[MacOS] Install gsl with homebrew"
         run: |
-          brew update >/dev/null
           brew install gsl
         shell: bash
         if: matrix.os == 'macos-10.15' || matrix.os == 'macos-11.0'
