@@ -30,6 +30,7 @@
 #include <string>
 
 
+
 namespace esl::economics {
     ///
     /// \brief ISO 4217 currencies and codes
@@ -185,7 +186,7 @@ namespace esl::economics {
         constexpr iso_4217 UAH = iso_4217({'U', 'A', 'H'});
         constexpr iso_4217 UGX = iso_4217({'U', 'G', 'X'}, 1);
         constexpr iso_4217 USD = iso_4217({'U', 'S', 'D'});
-        constexpr iso_4217 USN = iso_4217({'U', 'S', 'N'});
+//        constexpr iso_4217 USN = iso_4217({'U', 'S', 'N'});
         constexpr iso_4217 UYI = iso_4217({'U', 'Y', 'I'});
         constexpr iso_4217 UYU = iso_4217({'U', 'Y', 'U'});
         constexpr iso_4217 UZS = iso_4217({'U', 'Z', 'S'});
@@ -231,364 +232,363 @@ namespace esl::economics {
     inline string_t_ currency_name(const iso_4217 &c)
     {
         using detail::unique_hash;
-        using namespace currencies;
 
         switch(std::hash<iso_4217>()(c)) {
-        case unique_hash(AED):
+        case unique_hash(currencies::AED):
             return "UAE Dirham";
-        case unique_hash(AFN):
+        case unique_hash(currencies::AFN):
             return "Afghani";
-        case unique_hash(ALL):
+        case unique_hash(currencies::ALL):
             return "Lek";
-        case unique_hash(AMD):
+        case unique_hash(currencies::AMD):
             return "Armenian Dram";
-        case unique_hash(ANG):
+        case unique_hash(currencies::ANG):
             return "Netherlands Antillean Guilder";
-        case unique_hash(AOA):
+        case unique_hash(currencies::AOA):
             return "Kwanza";
-        case unique_hash(ARS):
+        case unique_hash(currencies::ARS):
             return "Argentine Peso";
-        case unique_hash(AUD):
+        case unique_hash(currencies::AUD):
             return "Australian Dollar";
-        case unique_hash(AWG):
+        case unique_hash(currencies::AWG):
             return "Aruban Florin";
-        case unique_hash(AZN):
+        case unique_hash(currencies::AZN):
             return "Azerbaijan Manat";
-        case unique_hash(BAM):
+        case unique_hash(currencies::BAM):
             return "Convertible Mark";
-        case unique_hash(BBD):
+        case unique_hash(currencies::BBD):
             return "Barbados Dollar";
-        case unique_hash(BDT):
+        case unique_hash(currencies::BDT):
             return "Taka";
-        case unique_hash(BGN):
+        case unique_hash(currencies::BGN):
             return "Bulgarian Lev";
-        case unique_hash(BHD):
+        case unique_hash(currencies::BHD):
             return "Bahraini Dinar";
-        case unique_hash(BIF):
+        case unique_hash(currencies::BIF):
             return "Burundi Franc";
-        case unique_hash(BMD):
+        case unique_hash(currencies::BMD):
             return "Bermudian Dollar";
-        case unique_hash(BND):
+        case unique_hash(currencies::BND):
             return "Brunei Dollar";
-        case unique_hash(BOB):
+        case unique_hash(currencies::BOB):
             return "Boliviano";
-        case unique_hash(BOV):
+        case unique_hash(currencies::BOV):
             return "Mvdol";
-        case unique_hash(BRL):
+        case unique_hash(currencies::BRL):
             return "Brazilian Real";
-        case unique_hash(BSD):
+        case unique_hash(currencies::BSD):
             return "Bahamian Dollar";
-        case unique_hash(BTN):
+        case unique_hash(currencies::BTN):
             return "Ngultrum";
-        case unique_hash(BWP):
+        case unique_hash(currencies::BWP):
             return "Pula";
-        case unique_hash(BYN):
+        case unique_hash(currencies::BYN):
             return "Belarusian Ruble";
-        case unique_hash(BZD):
+        case unique_hash(currencies::BZD):
             return "Belize Dollar";
-        case unique_hash(CAD):
+        case unique_hash(currencies::CAD):
             return "Canadian Dollar";
-        case unique_hash(CDF):
+        case unique_hash(currencies::CDF):
             return "Congolese Franc";
-        case unique_hash(CHE):
+        case unique_hash(currencies::CHE):
             return "WIR Euro";
-        case unique_hash(CHF):
+        case unique_hash(currencies::CHF):
             return "Swiss Franc";
-        case unique_hash(CHW):
+        case unique_hash(currencies::CHW):
             return "WIR Franc";
-        case unique_hash(CLF):
+        case unique_hash(currencies::CLF):
             return "Unidad de Fomento";
-        case unique_hash(CLP):
+        case unique_hash(currencies::CLP):
             return "Chilean Peso";
-        case unique_hash(CNY):
+        case unique_hash(currencies::CNY):
             return "Yuan Renminbi";
-        case unique_hash(COP):
+        case unique_hash(currencies::COP):
             return "Colombian Peso";
-        case unique_hash(COU):
+        case unique_hash(currencies::COU):
             return "Unidad de Valor Real";
-        case unique_hash(CRC):
+        case unique_hash(currencies::CRC):
             return "Costa Rican Colon";
-        case unique_hash(CUC):
+        case unique_hash(currencies::CUC):
             return "Peso Convertible";
-        case unique_hash(CUP):
+        case unique_hash(currencies::CUP):
             return "Cuban Peso";
-        case unique_hash(CVE):
+        case unique_hash(currencies::CVE):
             return "Cabo Verde Escudo";
-        case unique_hash(CZK):
+        case unique_hash(currencies::CZK):
             return "Czech Koruna";
-        case unique_hash(DJF):
+        case unique_hash(currencies::DJF):
             return "Djibouti Franc";
-        case unique_hash(DKK):
+        case unique_hash(currencies::DKK):
             return "Danish Krone";
-        case unique_hash(DOP):
+        case unique_hash(currencies::DOP):
             return "Dominican Peso";
-        case unique_hash(DZD):
+        case unique_hash(currencies::DZD):
             return "Algerian Dinar";
-        case unique_hash(EGP):
+        case unique_hash(currencies::EGP):
             return "Egyptian Pound";
-        case unique_hash(ERN):
+        case unique_hash(currencies::ERN):
             return "Nakfa";
-        case unique_hash(ETB):
+        case unique_hash(currencies::ETB):
             return "Ethiopian Birr";
-        case unique_hash(EUR):
+        case unique_hash(currencies::EUR):
             return "Euro";
-        case unique_hash(FJD):
+        case unique_hash(currencies::FJD):
             return "Fiji Dollar";
-        case unique_hash(FKP):
+        case unique_hash(currencies::FKP):
             return "Falkland Islands Pound";
-        case unique_hash(GBP):
+        case unique_hash(currencies::GBP):
             return "Pound Sterling";
-        case unique_hash(GEL):
+        case unique_hash(currencies::GEL):
             return "Lari";
-        case unique_hash(GHS):
+        case unique_hash(currencies::GHS):
             return "Ghana Cedi";
-        case unique_hash(GIP):
+        case unique_hash(currencies::GIP):
             return "Gibraltar Pound";
-        case unique_hash(GMD):
+        case unique_hash(currencies::GMD):
             return "Dalasi";
-        case unique_hash(GNF):
+        case unique_hash(currencies::GNF):
             return "Guinean Franc";
-        case unique_hash(GTQ):
+        case unique_hash(currencies::GTQ):
             return "Quetzal";
-        case unique_hash(GYD):
+        case unique_hash(currencies::GYD):
             return "Guyana Dollar";
-        case unique_hash(HKD):
+        case unique_hash(currencies::HKD):
             return "Hong Kong Dollar";
-        case unique_hash(HNL):
+        case unique_hash(currencies::HNL):
             return "Lempira";
-        case unique_hash(HRK):
+        case unique_hash(currencies::HRK):
             return "Kuna";
-        case unique_hash(HTG):
+        case unique_hash(currencies::HTG):
             return "Gourde";
-        case unique_hash(HUF):
+        case unique_hash(currencies::HUF):
             return "Forint";
-        case unique_hash(IDR):
+        case unique_hash(currencies::IDR):
             return "Rupiah";
-        case unique_hash(ILS):
+        case unique_hash(currencies::ILS):
             return "New Israeli Sheqel";
-        case unique_hash(INR):
+        case unique_hash(currencies::INR):
             return "Indian Rupee";
-        case unique_hash(IQD):
+        case unique_hash(currencies::IQD):
             return "Iraqi Dinar";
-        case unique_hash(IRR):
+        case unique_hash(currencies::IRR):
             return "Iranian Rial";
-        case unique_hash(ISK):
+        case unique_hash(currencies::ISK):
             return "Iceland Krona";
-        case unique_hash(JMD):
+        case unique_hash(currencies::JMD):
             return "Jamaican Dollar";
-        case unique_hash(JOD):
+        case unique_hash(currencies::JOD):
             return "Jordanian Dinar";
-        case unique_hash(JPY):
+        case unique_hash(currencies::JPY):
             return "Yen";
-        case unique_hash(KES):
+        case unique_hash(currencies::KES):
             return "Kenyan Shilling";
-        case unique_hash(KGS):
+        case unique_hash(currencies::KGS):
             return "Som";
-        case unique_hash(KHR):
+        case unique_hash(currencies::KHR):
             return "Riel";
-        case unique_hash(KMF):
+        case unique_hash(currencies::KMF):
             return "Comorian Franc ";
-        case unique_hash(KPW):
+        case unique_hash(currencies::KPW):
             return "North Korean Won";
-        case unique_hash(KRW):
+        case unique_hash(currencies::KRW):
             return "Won";
-        case unique_hash(KWD):
+        case unique_hash(currencies::KWD):
             return "Kuwaiti Dinar";
-        case unique_hash(KYD):
+        case unique_hash(currencies::KYD):
             return "Cayman Islands Dollar";
-        case unique_hash(KZT):
+        case unique_hash(currencies::KZT):
             return "Tenge";
-        case unique_hash(LAK):
+        case unique_hash(currencies::LAK):
             return "Lao Kip";
-        case unique_hash(LBP):
+        case unique_hash(currencies::LBP):
             return "Lebanese Pound";
-        case unique_hash(LKR):
+        case unique_hash(currencies::LKR):
             return "Sri Lanka Rupee";
-        case unique_hash(LRD):
+        case unique_hash(currencies::LRD):
             return "Liberian Dollar";
-        case unique_hash(LSL):
+        case unique_hash(currencies::LSL):
             return "Loti";
-        case unique_hash(LYD):
+        case unique_hash(currencies::LYD):
             return "Libyan Dinar";
-        case unique_hash(MAD):
+        case unique_hash(currencies::MAD):
             return "Moroccan Dirham";
-        case unique_hash(MDL):
+        case unique_hash(currencies::MDL):
             return "Moldovan Leu";
-        case unique_hash(MGA):
+        case unique_hash(currencies::MGA):
             return "Malagasy Ariary";
-        case unique_hash(MKD):
+        case unique_hash(currencies::MKD):
             return "Denar";
-        case unique_hash(MMK):
+        case unique_hash(currencies::MMK):
             return "Kyat";
-        case unique_hash(MNT):
+        case unique_hash(currencies::MNT):
             return "Tugrik";
-        case unique_hash(MOP):
+        case unique_hash(currencies::MOP):
             return "Pataca";
-        case unique_hash(MRU):
+        case unique_hash(currencies::MRU):
             return "Ouguiya";
-        case unique_hash(MUR):
+        case unique_hash(currencies::MUR):
             return "Mauritius Rupee";
-        case unique_hash(MVR):
+        case unique_hash(currencies::MVR):
             return "Rufiyaa";
-        case unique_hash(MWK):
+        case unique_hash(currencies::MWK):
             return "Malawi Kwacha";
-        case unique_hash(MXN):
+        case unique_hash(currencies::MXN):
             return "Mexican Peso";
-        case unique_hash(MXV):
+        case unique_hash(currencies::MXV):
             return "Mexican Unidad de Inversion (UDI)";
-        case unique_hash(MYR):
+        case unique_hash(currencies::MYR):
             return "Malaysian Ringgit";
-        case unique_hash(MZN):
+        case unique_hash(currencies::MZN):
             return "Mozambique Metical";
-        case unique_hash(NAD):
+        case unique_hash(currencies::NAD):
             return "Namibia Dollar";
-        case unique_hash(NGN):
+        case unique_hash(currencies::NGN):
             return "Naira";
-        case unique_hash(NIO):
+        case unique_hash(currencies::NIO):
             return "Cordoba Oro";
-        case unique_hash(NOK):
+        case unique_hash(currencies::NOK):
             return "Norwegian Krone";
-        case unique_hash(NPR):
+        case unique_hash(currencies::NPR):
             return "Nepalese Rupee";
-        case unique_hash(NZD):
+        case unique_hash(currencies::NZD):
             return "New Zealand Dollar";
-        case unique_hash(OMR):
+        case unique_hash(currencies::OMR):
             return "Rial Omani";
-        case unique_hash(PAB):
+        case unique_hash(currencies::PAB):
             return "Balboa";
-        case unique_hash(PEN):
+        case unique_hash(currencies::PEN):
             return "Sol";
-        case unique_hash(PGK):
+        case unique_hash(currencies::PGK):
             return "Kina";
-        case unique_hash(PHP):
+        case unique_hash(currencies::PHP):
             return "Philippine Piso";
-        case unique_hash(PKR):
+        case unique_hash(currencies::PKR):
             return "Pakistan Rupee";
-        case unique_hash(PLN):
+        case unique_hash(currencies::PLN):
             return "Zloty";
-        case unique_hash(PYG):
+        case unique_hash(currencies::PYG):
             return "Guarani";
-        case unique_hash(QAR):
+        case unique_hash(currencies::QAR):
             return "Qatari Rial";
-        case unique_hash(RON):
+        case unique_hash(currencies::RON):
             return "Romanian Leu";
-        case unique_hash(RSD):
+        case unique_hash(currencies::RSD):
             return "Serbian Dinar";
-        case unique_hash(RUB):
+        case unique_hash(currencies::RUB):
             return "Russian Ruble";
-        case unique_hash(RWF):
+        case unique_hash(currencies::RWF):
             return "Rwanda Franc";
-        case unique_hash(SAR):
+        case unique_hash(currencies::SAR):
             return "Saudi Riyal";
-        case unique_hash(SBD):
+        case unique_hash(currencies::SBD):
             return "Solomon Islands Dollar";
-        case unique_hash(SCR):
+        case unique_hash(currencies::SCR):
             return "Seychelles Rupee";
-        case unique_hash(SDG):
+        case unique_hash(currencies::SDG):
             return "Sudanese Pound";
-        case unique_hash(SEK):
+        case unique_hash(currencies::SEK):
             return "Swedish Krona";
-        case unique_hash(SGD):
+        case unique_hash(currencies::SGD):
             return "Singapore Dollar";
-        case unique_hash(SHP):
+        case unique_hash(currencies::SHP):
             return "Saint Helena Pound";
-        case unique_hash(SLL):
+        case unique_hash(currencies::SLL):
             return "Leone";
-        case unique_hash(SOS):
+        case unique_hash(currencies::SOS):
             return "Somali Shilling";
-        case unique_hash(SRD):
+        case unique_hash(currencies::SRD):
             return "Surinam Dollar";
-        case unique_hash(SSP):
+        case unique_hash(currencies::SSP):
             return "South Sudanese Pound";
-        case unique_hash(STN):
+        case unique_hash(currencies::STN):
             return "Dobra";
-        case unique_hash(SVC):
+        case unique_hash(currencies::SVC):
             return "El Salvador Colon";
-        case unique_hash(SYP):
+        case unique_hash(currencies::SYP):
             return "Syrian Pound";
-        case unique_hash(SZL):
+        case unique_hash(currencies::SZL):
             return "Lilangeni";
-        case unique_hash(THB):
+        case unique_hash(currencies::THB):
             return "Baht";
-        case unique_hash(TJS):
+        case unique_hash(currencies::TJS):
             return "Somoni";
-        case unique_hash(TMT):
+        case unique_hash(currencies::TMT):
             return "Turkmenistan New Manat";
-        case unique_hash(TND):
+        case unique_hash(currencies::TND):
             return "Tunisian Dinar";
-        case unique_hash(TOP):
+        case unique_hash(currencies::TOP):
             return "Pa’anga";
-        case unique_hash(TRY):
+        case unique_hash(currencies::TRY):
             return "Turkish Lira";
-        case unique_hash(TTD):
+        case unique_hash(currencies::TTD):
             return "Trinidad and Tobago Dollar";
-        case unique_hash(TWD):
+        case unique_hash(currencies::TWD):
             return "New Taiwan Dollar";
-        case unique_hash(TZS):
+        case unique_hash(currencies::TZS):
             return "Tanzanian Shilling";
-        case unique_hash(UAH):
+        case unique_hash(currencies::UAH):
             return "Hryvnia";
-        case unique_hash(UGX):
+        case unique_hash(currencies::UGX):
             return "Uganda Shilling";
-        case unique_hash(USD):
+        case unique_hash(currencies::USD):
             return "US Dollar";
-        case unique_hash(USN):
-            return "US Dollar (Next day)";
-        case unique_hash(UYI):
+//        case unique_hash(currencies::USN):
+//            return "US Dollar (Next day)";
+        case unique_hash(currencies::UYI):
             return "Uruguay Peso en Unidades Indexadas (URUIURUI)";
-        case unique_hash(UYU):
+        case unique_hash(currencies::UYU):
             return "Peso Uruguayo";
-        case unique_hash(UZS):
+        case unique_hash(currencies::UZS):
             return "Uzbekistan Sum";
-        case unique_hash(VEF):
+        case unique_hash(currencies::VEF):
             return "Bolívar";
-        case unique_hash(VND):
+        case unique_hash(currencies::VND):
             return "Dong";
-        case unique_hash(VUV):
+        case unique_hash(currencies::VUV):
             return "Vatu";
-        case unique_hash(WST):
+        case unique_hash(currencies::WST):
             return "Tala";
-        case unique_hash(XAF):
+        case unique_hash(currencies::XAF):
             return "CFA Franc BEAC";
-        case unique_hash(XAG):
+        case unique_hash(currencies::XAG):
             return "Silver";
-        case unique_hash(XAU):
+        case unique_hash(currencies::XAU):
             return "Gold";
-        case unique_hash(XBA):
+        case unique_hash(currencies::XBA):
             return "Bond Markets Unit European Composite Unit (EURCO)";
-        case unique_hash(XBB):
+        case unique_hash(currencies::XBB):
             return "Bond Markets Unit European Monetary Unit (E.M.U.-6)";
-        case unique_hash(XBC):
+        case unique_hash(currencies::XBC):
             return "Bond Markets Unit European Unit of Account 9 (E.U.A.-9)";
-        case unique_hash(XBD):
+        case unique_hash(currencies::XBD):
             return "Bond Markets Unit European Unit of Account 17 (E.U.A.-17)";
-        case unique_hash(XCD):
+        case unique_hash(currencies::XCD):
             return "East Caribbean Dollar";
-        case unique_hash(XDR):
+        case unique_hash(currencies::XDR):
             return "SDR (Special Drawing Right)";
-        case unique_hash(XOF):
+        case unique_hash(currencies::XOF):
             return "CFA Franc BCEAO";
-        case unique_hash(XPD):
+        case unique_hash(currencies::XPD):
             return "Palladium";
-        case unique_hash(XPF):
+        case unique_hash(currencies::XPF):
             return "CFP Franc";
-        case unique_hash(XPT):
+        case unique_hash(currencies::XPT):
             return "Platinum";
-        case unique_hash(XSU):
+        case unique_hash(currencies::XSU):
             return "Sucre";
-        // case unique_hash(XTS):
+        // case unique_hash(currencies::XTS):
         //     return "Codes specifically reserved for testing purposes";
-        case unique_hash(XUA):
+        case unique_hash(currencies::XUA):
             return "ADB Unit of Account";
-        // case unique_hash(XXX):
+        // case unique_hash(currencies::XXX):
         //     return "The codes assigned for transactions where no iso_4217 is involved";
-        case unique_hash(YER):
+        case unique_hash(currencies::YER):
             return "Yemeni Rial";
-        case unique_hash(ZAR):
+        case unique_hash(currencies::ZAR):
             return "Rand";
-        case unique_hash(ZMW):
+        case unique_hash(currencies::ZMW):
             return "Zambian Kwacha";
-        case unique_hash(ZWL):
+        case unique_hash(currencies::ZWL):
             return "Zimbabwe Dollar";
 
         default:

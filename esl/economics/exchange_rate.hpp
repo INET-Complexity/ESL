@@ -39,16 +39,26 @@ namespace esl::economics {
         ///
         /// \param quote
         /// \param base
-        constexpr exchange_rate(std::uint64_t quote = 1, std::uint64_t base = 1)
+        constexpr exchange_rate( std::uint64_t quote = 1
+                               , std::uint64_t base  = 1
+                               )
         : rate<std::uint64_t>(quote, base)
         {
             assert(quote > 0);
             assert(base > 0);
         }
 
+                /// \param base
+        constexpr exchange_rate(const rate<std::uint64_t> &r)
+        : rate<std::uint64_t>(r)
+        {
+            //assert(r.numerator   > 0);
+           // assert(r.denominator > 0);
+        }
+
         ///
         /// \param r
-        exchange_rate(const exchange_rate &r)
+        constexpr exchange_rate(const exchange_rate &r)
         : exchange_rate(r.numerator(), r.denominator())
         {
 
@@ -60,31 +70,81 @@ namespace esl::economics {
         ///         rate, meaning with the same precision.
         ///
         /// \param r
-         exchange_rate(double f, const exchange_rate &similar)
+        constexpr exchange_rate(double f, const exchange_rate &similar)
         : exchange_rate(std::uint64_t( f * similar.denominator()), similar.denominator())
         {
 
         }
 
-
-
-
         ///
         /// \param o
         /// \return
-        exchange_rate &operator = (const exchange_rate &o)
-        {
-            rate<std::uint64_t>::operator=(o);
-            return *this;
-        }
+        //exchange_rate &operator = (const exchange_rate &o)
+        //{
+        //    rate<std::uint64_t>::operator=(o);
+        //    return *this;
+        //}
+        
+        //bool operator==(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator==(o);
+        //}
+
+        //bool operator!=(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator!=(o);
+        //}
+        //
+        //bool operator<(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator<(o);
+        //}
+
+        //bool operator>(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator>(o);
+        //}
+
+        //bool operator<=(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator<=(o);
+        //}
+
+        //bool operator>=(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator>=(o);
+        //}
+
+        //exchange_rate operator+(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator+(o);
+        //}
+
+        //exchange_rate operator-(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator-(o);
+        //}
+
+        //exchange_rate operator*(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator*(o);
+        //}
+
+        //exchange_rate operator/(const exchange_rate &o) const
+        //{
+        //    return rate<std::uint64_t>::operator/(o);
+        //}
+
 
         ///
         /// \param p
         /// \return
-        price operator * (const price &p) const
+        constexpr price operator * (const price &p) const
         {
             return price(static_cast<int64_t>((p.value * numerator()) / denominator()), p.valuation);
         }
+
+
 
         ///
         /// \tparam archive_t

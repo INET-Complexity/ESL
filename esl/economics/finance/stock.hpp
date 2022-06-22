@@ -59,13 +59,6 @@ namespace esl::economics::finance {
         ///
         stock(company &issuer, const share_class &details);
 
-
-        ///
-        /// \brief
-        ///
-        stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
-              const identity<company> &i, const share_class &s);
-
         ///
         /// \brief  Construct a stock from the issuer and share_class
         ///

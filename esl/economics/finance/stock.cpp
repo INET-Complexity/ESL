@@ -79,18 +79,11 @@ namespace esl::economics::finance {
 
     stock::stock(company &issuer, const share_class &details)
     : stock::stock(issuer.create<property>(),
-                   issuer.primary_jurisdiction.sovereign,
                    (identity<company>)issuer, details)
     {
 
     }
 
-    stock::stock(const identity<property> &pi, geography::iso_3166_1_alpha_2 c,
-                 const identity<company> &i, const share_class &s)
-    : stock(pi, i, s)
-    {
-
-    }
 
     stock::stock(const identity<property> &pi,
                  const identity<company> &company_identifier,

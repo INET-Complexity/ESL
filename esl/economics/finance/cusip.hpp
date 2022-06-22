@@ -200,9 +200,9 @@ namespace esl::economics::finance {
                 auto c = i < 6 ? issuer[i] : code[i-6];
                 std::uint_fast8_t value_ = value(c);
                 value_ = value_ << (i % 2); // max is 38 * 2 <= 255
-                sum_ += (value_ % 10) + (value_ / 10);
+                sum_ += (value_ % 10) + std::uint_fast64_t(value_ / 10);
             }
-            return static_cast<signed char>('0' + (10 - sum_ % 10) % 10); // second module is to change 10->0
+            return static_cast<signed char>('0' + ((10 - sum_ % 10) % 10)); // second module is to change 10->0
         }
 
         ///
