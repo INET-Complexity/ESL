@@ -11,7 +11,7 @@
 ///             - poisson arrival of orders on either side of the book
 ///             - model for the instrument mid-price is a Brownian motion
 ///             - implementation requires estimate of exponential symmetric arrival times, using lambda = `A` exp(-`k` delta)
-///             - does not use the order book to strategically place orders
+///             - does not use the order book data to strategically place orders
 ///
 ///
 ///
@@ -55,8 +55,8 @@ namespace esl::economics::markets::order_book{
     /// \param k            Arrival rate estimate $\lambda = A \exp(-k \delta)$, default is parameter from paper. Paper uses $k = 1.5$ (and $A = 140)$
     /// \return
     std::pair<price, price> avellaneda_stoikov( const price& mid
-                                              , quantity n_long
-                                              , quantity n_short
+                                              , std::uint64_t n_long
+                                              , std::uint64_t n_short
                                               , double theta
                                               , double sigma
                                               , double gamma
@@ -71,7 +71,7 @@ namespace esl::economics::markets::order_book{
         auto ask_ = static_cast<std::int64_t>(std::ceil( (reservation_ + spread_/2) * mid.valuation.denominator));
 
         // when quote spread is zero and reservation price is integer.
-        // possible solution: do not introduce bias, move both
+        // possible resolution: do not introduce bias, move both ask and bid
         if(bid_ == ask_){
             ask_ += 1;
             bid_ -= 1;

@@ -1,4 +1,4 @@
-/// \file   static_order_book.hpp
+﻿/// \file   static_order_book.hpp
 ///
 /// \brief
 ///
@@ -34,8 +34,9 @@
 
 namespace esl::economics::markets::order_book {
 
-        class static_order_book
-        : public basic_book
+        
+        class static_order_book 
+            : public basic_book 
         {
         public:
             typedef std::uint32_t quantity_t_;
@@ -54,7 +55,7 @@ namespace esl::economics::markets::order_book {
                 ///
                 /// \brief  Order quantity remaining
                 ///
-                quantity_t_ quantity;
+                quantity_t_ quantity = 0;
 
                 ///
                 /// \brief  The market participant that submitted the order.
@@ -62,9 +63,14 @@ namespace esl::economics::markets::order_book {
                 identity<agent> owner;
 
                 ///
-                /// \brief  Pointer to the next block in the order-queue
+                /// \brief  Pointer to the block containing the preceding order in the order-queue
                 ///
-                computation::block_pool::block<record> *successor;
+                computation::block_pool::block<record> *predecessor = nullptr;
+
+                ///
+                /// \brief  Pointer to the block containing the succeeding order in the order-queue
+                ///
+                computation::block_pool::block<record> *successor = nullptr;
             };
 
             typedef computation::block_pool::static_block_pool<record> pool_t;
@@ -162,13 +168,20 @@ namespace esl::economics::markets::order_book {
             /// \return
             /*C++20 constexpr*/  bool default_encode(const mathematics::interval<quote> &limits, const quote &q, limit &out_limit)
             {
-                if(limits.lower > q || limits.upper < q){
+                if(!limits.contains(q)){
                     return false;
                 }
+
+                const auto real_ = double(q);
+
+                const auto high_ = double(limits.upper);
+                const auto low_  = double(limits.lower);
+
                 out_limit = static_cast<limit>(
-                    (double(q) - double(limits.lower))
-                    / (double(limits.upper) - double(limits.lower))
-                    * limits_.size()
+                    round(
+                    (real_ - low_)
+                    / (high_ - low_)
+                    * limits_.size())
                 );
                 return true;
             }
@@ -180,8 +193,12 @@ namespace esl::economics::markets::order_book {
             /// \return
             /*C++20 constexpr*/ quote default_decode(const mathematics::interval<quote> &limits, const limit &limit)
             {
-                auto reverse = (double(limit) * (double(valid_limits.upper) - double(valid_limits.lower))) * limits.lower.lot * limits.lower.lot;
-                auto intercept_ = double(valid_limits.lower) * limits.lower.lot * limits.lower.lot;
+                auto high_ = double(valid_limits.upper);
+                auto low_  = double(valid_limits.lower);
+
+                auto reverse = round((double(limit) * (high_ - low_)) * limits.lower.lot * limits.lower.lot);
+
+                auto intercept_ = low_ * limits.lower.lot * limits.lower.lot;
                 return quote( (reverse/ double(limits_.size()-1) +  intercept_) / limits.lower.lot, valid_limits.lower);
             }
 
@@ -195,14 +212,15 @@ namespace esl::economics::markets::order_book {
             /// \param maximum
             /// \param capacity
             ///
-            static_order_book( const quote &minimum
-                , const quote &maximum
-                , size_t capacity = 128*1024
-            )
-                : basic_book( )
-                , pool_(capacity)
-                , valid_limits(minimum, maximum)
-                , ticks(std::min(minimum.lot, maximum.lot))
+            static_order_book(const quote &minimum
+                             , const quote &maximum
+                             , std::uint32_t capacity = 128*1024
+                             )
+            : basic_book( )
+            , pool_(capacity)
+            , valid_limits(minimum, maximum)
+            , ticks(std::min(static_cast<std::uint32_t >(minimum.lot),
+                             static_cast<std::uint32_t>(maximum.lot)))
             {
 
                 reports.reserve(32);
@@ -251,21 +269,28 @@ namespace esl::economics::markets::order_book {
 
                 std::vector<limit_type> new_limits_;
 
-                // TODO:
+                // TODO: implement
 
                 valid_limits = new_limits;
             }
 
+            /// 
+            /// \brief lists all open orders
+            /// 
             [[nodiscard]] std::vector<basic_book::order_identifier> orders() const
             {
                 std::vector<basic_book::order_identifier> result_;
 
-                auto i = this->pool_.begin();
 
-                while(i->empty != pool_.end()){
-                    result_.push_back(i->index);
-                    i = i->empty;
+                for(auto i = &limits_[0]; i <= &limits_[limits_.size() - 1]; ++i) {
+                    for(auto o = i->first; o; o = o->data.successor) {
+                        result_.push_back(o->index);
+                        if(o->data.successor == o) {
+                            break;
+                        }
+                    }
                 }
+
                 return result_;
             }
 
@@ -307,15 +332,16 @@ namespace esl::economics::markets::order_book {
             /// \param level
             /// \return
             inline uint32_t match_at_level( const limit_order &order
-                , std::uint32_t &remainder_
-                , limit_type *level)
+                                          , std::uint32_t &remainder_
+                                          , limit_type *level)
             {
-                for( auto ao = level->first
-                    ; 0 < remainder_
-                    ; ao = ao->data.successor){
+                for(auto ao = level->first; 0 < remainder_; ao = ao->data.successor){
                     uint32_t execution_size_ = 0;
 
-                    if(ao->data.quantity > remainder_){
+                    const bool exhausted_ = ao->data.quantity <= remainder_;
+
+                    if(!exhausted_) {
+                        // we can meet the entire order, so we finish here
                         execution_size_ = remainder_;
                         ao->data.quantity -= execution_size_;
                         remainder_ = 0;
@@ -323,7 +349,15 @@ namespace esl::economics::markets::order_book {
                         execution_size_ = ao->data.quantity;
                         remainder_ -= execution_size_;
                         ao->data.quantity = 0;
+
+                        // this exhausted the highest-priority order, so we should now erase it
+                        if(ao->data.successor) {
+                            // the preceding order was exhausted
+                            ao->data.successor->data.predecessor = nullptr;
+                        }
+                        // whether there is one or not, move the pointer in the index 
                         level->first = ao->data.successor;
+
                     }
 
                     auto quote_ = decode(valid_limits, level - &limits_[0]);
@@ -347,36 +381,53 @@ namespace esl::economics::markets::order_book {
                                              , ao->data.owner
                                              ));
 
-                    if(!ao->data.successor){
-                        if(0 == ao->data.quantity){
-                            // special case where level is emptied entirely
-                            // we need to reset the pointers in the memory pool
-                            level->first = nullptr;
-                            level->second = nullptr;
+                    auto successor_ = ao->data.successor;
+                    
+                    if(exhausted_) {
+                        //std::cout << "\t\t exhausted order " << ao->index << std::endl;
+                        pool_.erase(ao->index);
+                    }
 
-                            // if the aggressor was a buy order, it took away
-                            // the best ask
-                            if(order.side == limit_order::buy){
-                                //LOG(trace) << quote_ << " ask level depleted" << std::endl;
-                                for(++best_ask_; best_ask_ <= &limits_.back(); ++best_ask_){
-                                    if(best_ask_->first || best_ask_ == &limits_.back()){
-                                        break;
-                                    }
+                    // are there lower priority orders on this level? if so, continue
+                    if(successor_){
+                        continue;
+                    }
+                    
+                    // if all resting orders were exhausted, we have reached the end of the level. 
+                    // Thus if we emptied the last order, then we need to clear our the level index
+                    // and update the best bid and ask
+                    if(exhausted_){
+                        // special case where level is emptied entirely
+                        // we need to reset the pointers in the memory pool
+                        level->first = nullptr;
+                        level->second = nullptr;
+
+                        // if the aggressor was a buy order, it took away
+                        // the best ask
+                        if(order.side == limit_order::buy){
+                            // increase the best ask, until we find an order, or exhaust the order book
+                            // TODO: worst_ask_
+                            for(++best_ask_; best_ask_ <= &limits_.back(); ++best_ask_){
+                                if(best_ask_->first || best_ask_ == &limits_.back()){
+                                    break;
                                 }
-                            }else{
-                                //LOG(trace) << quote_ << " bid level depleted" << std::endl;
-                                for(--best_bid_; best_bid_ >= &limits_[0]; --best_bid_){
-                                    if(best_bid_->first || best_bid_ == &limits_[0]){
-                                        break;
-                                    }
+                            }
+                        }else{
+                            // decrease the best bid, until we find an order, or exhaust the order book
+                            // TODO: worst_bid_
+                            for(--best_bid_; best_bid_ >= &limits_[0]; --best_bid_){
+                                if(best_bid_->first || best_bid_ == &limits_[0]){
+                                    break;
                                 }
                             }
                         }
-                        break;
                     }
+                    break;
+                    
                 }
                 return remainder_;
             }
+
             ///
             /// \brief
             ///
@@ -387,15 +438,21 @@ namespace esl::economics::markets::order_book {
                 if(!valid_limits.contains(order.limit) || 0 >= order.quantity || order.limit.lot != valid_limits.lower.lot ){
 
                     if(!valid_limits.contains(order.limit)){
-                        //LOG(trace) << "Order invalid because it is outside the accepted range: " << this->valid_limits << std::endl;
+                        LOG(warning) << "Order invalid because it is outside the accepted range: " << this->valid_limits << std::endl;
                     }
 
                     if(0 >= order.quantity){
-                        //LOG(trace) << "Order invalid because it does not have positive quantity " << order.quantity << std::endl;
+                        LOG(warning) << "Order invalid because it does not "
+                                        "have positive quantity "
+                                     << order.quantity << std::endl;
                     }
 
                     if(order.limit.lot != valid_limits.lower.lot){
-                        //LOG(trace) << "Order invalid because it does not use an acceptable lot size " << order.limit.lot << " !=  " << valid_limits.lower.lot << std::endl;
+                        LOG(warning)
+                            << "Order invalid because it does not use an "
+                               "acceptable lot size "
+                            << order.limit.lot
+                            << " !=  " << valid_limits.lower.lot << std::endl;
                     }
 
                     reports.emplace_back(execution_report
@@ -423,40 +480,27 @@ namespace esl::economics::markets::order_book {
                     throw esl::exception("quote maps to index beyond maximum value");
                 }
 
-
-//                assert( encode_success_
-//                        && limit_index_ >= 0
-//                        && limits_.size() > static_cast<uint64_t>(limit_index_));
-
                 limit_type *limit_level_ = &limits_[limit_index_];
 
-                if(order.side == limit_order::buy
-                    && ask().has_value()
-                    && order.limit >= ask().value()) {
+                if(order.side == limit_order::buy && ask().has_value() && order.limit >= ask().value()) {
                     // direct execution: buyer aggressor
-                    //LOG(trace) << "buyer aggressor" << std::endl;
                     for(auto al = best_ask_; al <= limit_level_ && 0 < remainder_; ++al){
                         if(!al->first){
                             continue;
                         }
                         remainder_ = match_at_level(order, remainder_, al);
                     }
-
-                }else if(order.side == limit_order::sell
-                           && bid().has_value()
-                    ){
+                }else if(order.side == limit_order::sell && bid().has_value() && order.limit <= bid().value()) {
                     // direct execution: seller aggressor
-                    //LOG(trace) << "seller aggressor" << std::endl;
                     for(auto bl = best_bid_; bl >= limit_level_ && 0 < remainder_; --bl){
                         if(!bl->first){
                             continue;
                         }
-                        //LOG(trace) << "\t ask " << remainder_ << " units found bid(s) at " << (decode(valid_limits, bl - &limits_[0])) << std::endl;
                         remainder_ = match_at_level(order, remainder_, bl);
                     }
 
-                }else if(order.lifetime == limit_order::immediate_or_cancel
-                           || order.lifetime == limit_order::fill_or_kill){
+                }else if(order.lifetime == limit_order::lifetime_t::immediate_or_cancel
+                           || order.lifetime == limit_order::lifetime_t::fill_or_kill){
                     // cancel an immediate/fill order that could not be matched
                     reports.emplace_back(execution_report
                                              ( execution_report::cancel
@@ -474,7 +518,8 @@ namespace esl::economics::markets::order_book {
                 if(0 >= remainder_){
                     return;
                 }
-                if(order.lifetime == limit_order::immediate_or_cancel){
+                if(order.lifetime
+                   == limit_order::lifetime_t::immediate_or_cancel) {
                     reports.emplace_back(execution_report
                                              ( execution_report::cancel
                                              , order.side
@@ -491,8 +536,14 @@ namespace esl::economics::markets::order_book {
                                                 , remainder_
                                                 , order.owner
                                                 , nullptr
+                                                , nullptr
                                                 });
-
+                
+                // we store the identifier in the record
+                if(block_.second) {
+                    block_.second->index = block_.first;
+                }
+                
                 reports.emplace_back(execution_report
                                          ( execution_report::placement
                                          , order.side
@@ -502,20 +553,32 @@ namespace esl::economics::markets::order_book {
                                          , order.owner
                                          ));
 
+                // if this is the first order at this level, then the first of the pair of pointers is null
                 if(!limit_level_->first){
+                    // point the main index to the order
                     limit_level_->first = block_.second;
+                    // point the rear of the main index to this order
                     limit_level_->second = block_.second;
                 }else{
+                    // we assert that because there is at least one order, the second pointer of the pair
+                    // is set too to the least priority order at this level
+                    assert(limit_level_->second != nullptr);
+                    // the previously least priority order now is the second to last. Thus, that order's successor is the new order:
+                    assert(limit_level_->second->data.successor !=
+                               block_.second);
                     limit_level_->second->data.successor = block_.second;
+                    // and the new order's predecessor is the previous least priority order:
+                    block_.second->data.predecessor = limit_level_->second;
+                    // point the rear of the level pointers to the new order
                     limit_level_->second = block_.second;
                 }
 
+                // because we are inserting, the best bid and ask can strictly improve
                 if(limit_order::buy == order.side){
                     best_bid_ = std::max(best_bid_,  limit_level_);
                 }else if(order.side == limit_order::sell){
                     best_ask_ = std::min(best_ask_,  limit_level_);
                 }
-                // TODO: notify new best bid/ask
             }
 
 
@@ -526,9 +589,7 @@ namespace esl::economics::markets::order_book {
             /// \param order
             void cancel(basic_book::order_identifier order) override
             {
-                auto index_ = (std::uint64_t)( order );
-
-                const record &order_ = pool_[order];
+                record &order_ = pool_[order];
 
                 auto side_ = limit_order::side_t::buy;
                 // if there is no bid, or the best bid is lower than this order,
@@ -538,6 +599,49 @@ namespace esl::economics::markets::order_book {
                     side_ = limit_order::side_t::sell;
                 }
 
+                limit limit_index_;
+                auto encode_success_ = encode(valid_limits, order_.limit, limit_index_);
+                limit_type *limit_level_ = &limits_[limit_index_];
+
+                
+                // The order could be cancelled/matched before, and nothing is left at this level
+                if(!limit_level_->first || !limit_level_->second) {
+                    return;
+                }
+
+
+                if(limit_level_->first->index == order) {
+                    limits_[limit_index_].first =
+                        limit_level_->first->data.successor;
+                }
+
+
+                if(limit_level_->second->index == order) {
+                    limits_[limit_index_].second =
+                        limit_level_->second->data.predecessor;
+                }
+
+                // either both were set to an order
+                bool both_set_ = (limits_[limit_index_].first
+                                  && limits_[limit_index_].second);
+                // or both are empty
+                bool none_set_ = (!limits_[limit_index_].first
+                                  && !limits_[limit_index_].second);
+
+                assert(both_set_ || none_set_ );
+
+                auto result_ = pool_.erase(order);
+
+                // canceled
+                if(0 == result_) {
+                    // the order was matched fully/cancelled before, so we can't
+                    // do anything here
+                    //LOG(warning) << "canceled dead order << " << order << std::endl;
+                    return;
+                }
+/*
+                std::cout << "cancelling an order of " << order_.quantity
+                          << " times " << order_.limit << std::endl; */ 
                 reports.emplace_back(execution_report
                                          ( execution_report::cancel
                                          , side_
@@ -547,7 +651,25 @@ namespace esl::economics::markets::order_book {
                                          , order_.owner
                                          ));
 
-                pool_.erase(index_);
+                if(order_.predecessor) {
+                    order_.predecessor->data.successor = order_.successor; 
+                }
+
+                if(order_.successor) {
+                    order_.successor->data.predecessor = order_.predecessor;
+                }
+
+                if(order_.predecessor) {
+                    order_.predecessor = nullptr;
+                }
+
+                if(order_.successor) {
+                    order_.successor = nullptr;
+                }
+
+                order_.limit    = quote();
+                order_.owner    = identity<agent>();
+                order_.quantity = 0;
             }
 
             ///
@@ -557,8 +679,9 @@ namespace esl::economics::markets::order_book {
             /// \param levels
             void display(std::uint64_t levels = 5) const
             {
-                std::cout << "            bid |                | ask            "
-                          << std::endl;
+                std::cout << "            bid |                | ask            " << std::endl;
+
+                std::cout << std::setfill(' ');
 
                 std::uint64_t displayed_ = 0;
                 std::vector<std::pair<std::uint32_t, double>> ask_displayed_;
@@ -567,29 +690,22 @@ namespace esl::economics::markets::order_book {
                         continue;
                     }
                     std::uint64_t quantity_ = 0;
-                    for(auto *j = i->first; nullptr != j;
-                        j       = j->data.successor) {
+                    for(auto *j = i->first; nullptr != j; j = j->data.successor) {
                         quantity_ += j->data.quantity;
                     }
                     if(quantity_ <= 0) {
                         continue;
                     }
 
-                    ask_displayed_.emplace_back(quantity_,double(decode(valid_limits, i - &limits_[0]))*100*100);
-                    /*std::cout << "                | "
-                              << std::left << std::setw(14)
-                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << double(decode(valid_limits, i - &limits_[0]))*100*100
-                              << " | "
-                              << std::left << std::setw(15)
-                              << quantity_
-                              << std::endl;*/
+                    ask_displayed_.emplace_back(quantity_,double(decode(valid_limits, i - &limits_[0]))* valid_limits.lower.lot);
+
                     ++displayed_;
                 }
 
                 for(auto r = ask_displayed_.rbegin(); r!= ask_displayed_.rend(); ++r){
                     std::cout << "                | "
-                              << std::left << std::setw(14)
-                              << std::setprecision(int(std::log10(valid_limits.lower.lot ))) << r->second
+                              << std::left << std::setw(14) << std::setprecision(int(std::log10(valid_limits.lower.lot)))
+                        << std::fixed << r->second
                               << " | "
                               << std::left << std::setw(15)
                               << r->first
@@ -604,8 +720,7 @@ namespace esl::economics::markets::order_book {
                         continue;
                     }
                     std::uint64_t quantity_ = 0;
-                    for(auto *j = i->first; nullptr != j;
-                        j       = j->data.successor) {
+                    for(auto *j = i->first; nullptr != j; j = j->data.successor) {
                         quantity_ += j->data.quantity;
                     }
                     if(quantity_ <= 0) {
@@ -614,7 +729,9 @@ namespace esl::economics::markets::order_book {
                     std::cout << std::right << std::setw(15)
                               << quantity_ << " | "
                               << std::left << std::setw(14)
-                              << std::setprecision(int(std::log10(valid_limits.lower.lot  ))) << double(decode(valid_limits, i - &limits_[0]))*100*100
+                        << std::setprecision(int(std::log10(valid_limits.lower.lot)))
+                        << double(decode(valid_limits, i - &limits_[0])) * valid_limits.lower.lot
+                        //<< double(decode(valid_limits, i - &limits_[0])) * valid_limits.lower.lot
                               << " | "
                               << std::endl;
                     ++displayed_;

@@ -36,10 +36,10 @@ namespace esl::economics::markets::order_book {
         /// \brief
         ///
         enum state_t
-        { invalid
-        , cancel
-        , match
-        , placement
+        { invalid   = 0
+        , cancel    = 1
+        , match     = 2
+        , placement = 3
         } state;
 
         ///
@@ -70,12 +70,19 @@ namespace esl::economics::markets::order_book {
         identity<agent> owner;
 
 
-        execution_report(state_t state
-                        , limit_order::side_t side
-                        , std::uint32_t quantity
-                        , std::uint64_t identifier
-                        , const quote& limit
-                        , const identity<agent>& owner
+        ///
+        /// \param state
+        /// \param side
+        /// \param quantity
+        /// \param identifier
+        /// \param limit
+        /// \param owner
+        execution_report( state_t state = state_t::invalid
+                        , limit_order::side_t side = limit_order::side_t::buy
+                        , std::uint32_t quantity = 0
+                        , std::uint64_t identifier = 0
+                        , const quote& limit = quote(price::approximate(0.))
+                        , const identity<agent> &owner = identity<agent>()
                         )
         : state(state)
         , side(side)

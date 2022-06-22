@@ -38,20 +38,24 @@
 
 namespace esl::economics::markets::order_book {
 
+    ///
+    ///
+    /// \details:   0 is a valid quantity, as it denotes an order that was recently closed
+    ///
     class limit_order
     {
     private:
     public:
 
-        enum lifetime_t
+        enum class lifetime_t
         {   good_until_cancelled = 0 // GTC
         ,   fill_or_kill         = 1 // FOK
         ,   immediate_or_cancel  = 2 // IOC
         } lifetime;
 
         enum side_t
-        { buy
-        , sell
+        { buy  = 0
+        , sell = 1
         } side;
 
         ticker symbol;
@@ -62,12 +66,12 @@ namespace esl::economics::markets::order_book {
 
         std::uint32_t quantity;
 
-        limit_order  (ticker symbol
-                             , const identity<agent> &owner
-                             , side_t side
-                             , const quote& limit
-                             , std::uint64_t quantity
-                             , lifetime_t lifetime = good_until_cancelled
+        explicit limit_order ( ticker symbol = ticker()
+                             , const identity<agent> &owner = identity<agent>()
+                             , side_t side = buy
+                             , const quote& limit = quote(price::approximate(0.))
+                             , std::uint32_t quantity = 0
+                             , lifetime_t lifetime = lifetime_t::good_until_cancelled
                              )
         : lifetime(lifetime)
         , side(side)
@@ -79,7 +83,6 @@ namespace esl::economics::markets::order_book {
 
         }
 
-
         [[nodiscard]] constexpr bool operator == (const limit_order &o) const
         {
             return lifetime == o.lifetime
@@ -90,11 +93,16 @@ namespace esl::economics::markets::order_book {
                 && quantity == o.quantity;
         }
 
+        ///
+        /// \return
         [[nodiscard]] constexpr bool closed() const
         {
             return 0 == quantity;
         }
 
+        ///
+        /// \brief
+        ///
         void cancel()
         {
             quantity = 0;

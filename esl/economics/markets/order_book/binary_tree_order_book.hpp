@@ -45,7 +45,8 @@ namespace esl::economics::markets::order_book {
     ///
     /// \todo:
     ///
-    class binary_tree_order_book
+    
+    class binary_tree_order_book 
     : public basic_book
     {
     public:
@@ -73,9 +74,19 @@ namespace esl::economics::markets::order_book {
                              , std::less<>
                              > ask_t;
 
+        /// 
+        /// \brief  All active buy orders ordered by price descending
+        /// 
         bid_t orders_bid;
+
+        ///
+        /// \brief  All active sell orders ordered by price ascending
+        /// 
         ask_t orders_ask;
 
+        ///
+        /// \brief  The best bid
+        /// 
         [[nodiscard]] std::optional<quote> bid() const override
         {
             if(orders_bid.empty()){
@@ -101,12 +112,20 @@ namespace esl::economics::markets::order_book {
         {
             if(limit_order::side_t::buy == order.side){
                 auto remainder_ = order.quantity;
+
+                std::vector<decltype(orders_ask.begin())> erase_;
+
                 for( auto i = orders_ask.begin()
                    ; i != orders_ask.end() && order.limit >= i->first
                    ; ++ i){
 
-                    auto executed_ = std::min(order.quantity, i->second.second.quantity);
+                    auto executed_ =
+                        std::min(remainder_, i->second.second.quantity);
                     remainder_ -= executed_;
+
+                    if(0 == executed_) {
+                        break;
+                    }
 
                     reports.emplace_back(execution_report (
                         execution_report::match,
@@ -118,32 +137,40 @@ namespace esl::economics::markets::order_book {
                     ));
 
                     i->second.second.quantity -= executed_;
+                    auto matched_identifier_ = i->second.first;
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
                         i->second.second.side,
-                        executed_,
-                        direct_order,
+                        executed_, 
+                        matched_identifier_,
                         i->second.second.limit,
                         i->second.second.owner
                     });
 
                     if(0 == i->second.second.quantity){
-                        orders_ask.erase(i);
-                        i = orders_ask.begin();
-                        limit_orders_.erase(i->second.first);
+                        //orders_ask.erase(i);
+                        //i = orders_ask.begin();
+                        erase_.push_back(i);
+                        limit_orders_.erase(matched_identifier_);
                     }
+                }
+
+                for(const auto it : erase_) {
+                    orders_ask.erase(it);
                 }
 
                 if(remainder_ > 0) {
                     // place remainder
-                    auto pair_ = std::make_pair(next_, order);
+                    limit_order placed_ = order;
+                    placed_.quantity    = remainder_;
+                    auto pair_          = std::make_pair(next_, placed_);
                     orders_bid.emplace(order.limit, pair_);
                     limit_orders_.emplace(next_, order.limit);
                     reports.emplace_back(execution_report {
                         execution_report::placement,
-                        order.side,
-                        order.quantity,
+                        order.side, 
+                        remainder_,
                         next_,
                         order.limit,
                         order.owner});
@@ -151,12 +178,19 @@ namespace esl::economics::markets::order_book {
                 }
             }else{
                 auto remainder_ = order.quantity;
+
+                std::vector<decltype(orders_bid.begin())> erase_;
+
                 for( auto i = orders_bid.begin()
                     ; i != orders_bid.end() && order.limit <= i->first
                     ; ++ i){
 
-                    auto executed_ = std::min(order.quantity, i->second.second.quantity);
+                    auto executed_ = std::min(remainder_, i->second.second.quantity);
                     remainder_ -= executed_;
+
+                    if(0 == executed_) {
+                        break;
+                    }
 
                     reports.emplace_back(execution_report {
                         execution_report::match,
@@ -169,32 +203,40 @@ namespace esl::economics::markets::order_book {
 
                     i->second.second.quantity -= executed_;
 
+                    auto matched_identifier_ = i->second.first;
+
                     reports.emplace_back(execution_report {
                         execution_report::match,
                         i->second.second.side,
                         executed_,
-                        direct_order,
+                        matched_identifier_,
                         i->second.second.limit,
                         i->second.second.owner
                     });
 
                     if(0 == i->second.second.quantity){
-                        orders_bid.erase(i);
-                        i = orders_bid.begin();
-                        limit_orders_.erase(i->second.first);
+                        //
+                        erase_.push_back(i);
+                        limit_orders_.erase(matched_identifier_);
+                        //i = orders_bid.begin();
                     }
                 }
 
+                for(const auto it : erase_) {
+                    orders_bid.erase(it);
+                }
+
                 if(remainder_ > 0) {
-                    // place remainder
-                    auto pair_ = std::make_pair(next_, order);
+                    limit_order placed_ = order;
+                    placed_.quantity    = remainder_;
+                    auto pair_          = std::make_pair(next_, placed_);
                     orders_ask.emplace(order.limit, pair_);
                     limit_orders_.emplace(next_, order.limit);
 
                     reports.emplace_back(execution_report {
                         execution_report::placement,
                         order.side,
-                        order.quantity,
+                        remainder_,
                         next_,
                         order.limit,
                         order.owner});
@@ -203,14 +245,65 @@ namespace esl::economics::markets::order_book {
             }
         }
 
+        /// 
+        /// \brief  
+        /// 
         void cancel(order_identifier order) override
         {
+            auto o = limit_orders_.find(order);
+             
+            if(limit_orders_.end() != o) {
+                
+                if(bid().has_value() && bid().value() >= o->second) {
+                    // canceled order is a buy
+                    auto [begin_, end_] = orders_bid.equal_range(o->second);
 
+                    for(auto i = begin_; i != end_; ++i) {
+                        if(i->second.first == order) {
+                            reports.emplace_back(execution_report 
+                                { execution_report::cancel
+                                , limit_order::buy
+                                , i->second.second.quantity
+                                , order
+                                , o->second
+                                , i->second.second.owner
+                                });
+                            orders_bid.erase(i);
+                            break;
+                        }
+                    }
+
+                } else if(ask().has_value() && ask().value() <= o->second) {
+                    // canceled order is a sell
+                    auto [begin_, end_] = orders_ask.equal_range(o->second);
+
+                    for(auto i = begin_; i != end_; ++i) {
+                        if(i->second.first == order) {
+                            reports.emplace_back(execution_report 
+                                { execution_report::cancel
+                                , limit_order::sell
+                                , i->second.second.quantity
+                                , order
+                                , o->second
+                                , i->second.second.owner});
+                            orders_ask.erase(i);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
-        [[nodiscard]] virtual std::vector<basic_book::order_identifier> orders() const
+        ///
+        /// \brief  Lists all active orders
+        /// 
+        [[nodiscard]] virtual std::vector<typename basic_book::order_identifier> orders() const
         {
-            std::vector<basic_book::order_identifier> result_;
+            std::vector<typename basic_book::order_identifier>
+                result_;
+            for(decltype(limit_orders_)::const_iterator i = limit_orders_.begin(); i != limit_orders_.end(); ++i) {
+                result_.push_back(i->first);
+            }
             return result_;
         }
 
@@ -218,6 +311,8 @@ namespace esl::economics::markets::order_book {
         {
 
         }
+
+
 
     };
 }  // namespace esl::economics::markets::order_book

@@ -48,8 +48,7 @@ namespace esl::economics::markets::order_book {
         /// \brief  This value is returned for orders that are directly executed
         ///         and did not receive an order ID
         ///
-        constexpr static const order_identifier direct_order =
-            std::numeric_limits<order_identifier>::max();
+        constexpr static const order_identifier direct_order = (std::numeric_limits<order_identifier>::max)();
 
         ///
         /// \brief  Sequence of execution reports as they were
@@ -95,7 +94,20 @@ namespace esl::economics::markets::order_book {
         /// \param order identifier the order book gave once the order was places
         virtual void cancel(order_identifier order) = 0;
 
+        ///
+        /// \brief  Obtains a vector of active orders.
+        /// 
         [[nodiscard]] virtual std::vector<basic_book::order_identifier> orders() const = 0;
+
+
+        ///
+        /// \brief  Gets the n-th level in the order book and returns the associated quote and market depth
+        ///
+        /// \param level
+        /// \param side
+        /// \return
+        //virtual std::optional<std::pair<quote, std::uint64_t>> level(std::uint64_t level, limit_order::side_t side) const = 0;
+
 
         ///
         /// \brief  Renders the order book to the console at 80 characters width

@@ -40,11 +40,38 @@
 #undef protected
 #include <esl/data/representation.hpp>
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <esl/economics/markets/centralized_exchange.hpp>
+#include <esl/computation/environment.hpp>
+#include <esl/simulation/model.hpp>
+#include <esl/economics/markets/quote.hpp>
+#include <esl/economics/company.hpp>
+#include <esl/interaction/communication.hpp>
+
 using namespace esl;
 using namespace esl::economics;
 using namespace esl::economics::markets::order_book;
 using esl::economics::markets::quote;
 using esl::economics::markets::order_book::limit_order;
+
+using namespace esl::economics::markets;
+
+using namespace esl::computation;
+using namespace esl::economics;
+using namespace esl::economics::finance;
+using namespace esl::law;
+using namespace esl::economics::currencies;
+using namespace esl::simulation;
+using namespace esl::simulation::parameter;
+
+
+
+
+
+
+
+
+
 
 
 BOOST_AUTO_TEST_SUITE(ESL)
@@ -223,18 +250,18 @@ BOOST_AUTO_TEST_SUITE(ESL)
         book_.insert(create_bid(4.76, 500));
 
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
 
         book_.insert(create_ask(4.69, 750));    // expect: execute 500 at 4.76 and remainder of 250 at 4.75, leaving 750
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
 
         book_.insert(create_ask(4.75, 1000));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.74, currencies::USD), 100 *  currencies::USD.denominator));
         BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
@@ -245,11 +272,11 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.reports.back().quantity, 200);
 
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
         book_.insert(create_bid(4.75, 51));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
         BOOST_CHECK(!book_.ask());
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
@@ -269,22 +296,21 @@ BOOST_AUTO_TEST_SUITE(ESL)
 
         book_.insert(create_bid(5.00, 500));
         book_.insert(create_bid(4.75, 500));
-        book_.insert(create_bid(4.74));
+        book_.insert(create_bid(4.74, 1000));
         book_.insert(create_bid(4.76, 500));
 
 
-        book_.display(); std::cout << std::endl;
-
+//        book_.display(); std::cout << std::endl;
 
         book_.insert(create_ask(4.69, 750));    // expect: execute 500 at 4.76 and remainder of 250 at 4.75, leaving 750
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
-        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
+        BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.76, currencies::USD), 100 *  currencies::USD.denominator));
 
         book_.insert(create_ask(4.75, 1000));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
 
-        book_.display(); std::cout << std::endl;
+//        book_.display(); std::cout << std::endl;
 
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.74, currencies::USD), 100 *  currencies::USD.denominator));
         BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
@@ -294,23 +320,14 @@ BOOST_AUTO_TEST_SUITE(ESL)
         BOOST_CHECK_EQUAL(book_.ask().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
         BOOST_CHECK_EQUAL(book_.reports.back().quantity, 200);
 
+//        book_.display(); std::cout << std::endl;
 
-        book_.display(); std::cout << std::endl;
-
-        book_.insert(create_bid(4.75, 51));   //  expect: execute 750 at 4.75 and then place 250 in book at 4.75, improving best ask
-
-        book_.display(); std::cout << std::endl;
+        book_.insert(create_bid(4.75, 51));
+//        book_.display(); std::cout << std::endl;
 
         BOOST_CHECK(!book_.ask());
         BOOST_CHECK_EQUAL(book_.bid().value(), quote(price::approximate(4.75, currencies::USD), 100 *  currencies::USD.denominator));
     }
-
-
-
-
-
-
-
 
     limit_order create(double p, size_t q = 1000, limit_order::side_t side = limit_order::side_t::sell)
     {
@@ -371,10 +388,205 @@ BOOST_AUTO_TEST_SUITE(ESL)
         std::cout << messages_.size() << " orders in " << time_span.count() << " seconds.";
         std::cout << std::endl;
 
-        book_->display(5);
+//        book_->display(5);
 
         std::cout << book_->pool_.size() << std::endl;
     }
 #endif
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+constexpr time_point market_open_  = time_point(( 9 * 60 * 60 + 30 * 60) * std::nano::den);
+constexpr time_point market_close_ = time_point( 16 * 60 * 60 * std::nano::den);
+
+
+class trader
+: public agent
+, public identifiable_as<trader>
+{
+private:
+public:
+    double inter_wakeup_time_seconds = 120;
+
+    interaction::communication::shifted_gamma_latency network_model;
+
+    struct market_metadata
+    {
+        identity<market> exchange;
+        time_point open;
+        time_point close;
+        std::vector<ticker> traded;
+    };
+
+    std::vector<market_metadata> markets;
+
+    // TODO: non-general
+    price fundamental_estimate;
+
+    time_point next_wakeup = std::numeric_limits<time_point>::max();
+
+
+    explicit trader(const identity<trader> &i)
+    : agent(i)
+    , network_model(2.5, 0.1 * std::nano::den, 0.01 * std::nano::den)
+    {
+
+    }
+
+    ///
+    /// \brief
+    ///
+    void execution_strategy( simulation::time_interval step
+                           , std::seed_seq &seed
+                           , const ticker &t
+                           , const identity<market> &m
+                           )
+    {
+        limit_order o;
+        o.symbol = t;
+
+        o.owner = identifier;
+        o.lifetime = order_book::limit_order::lifetime_t::good_until_cancelled;
+
+        std::binomial_distribution<size_t> binomial_(1000, 0.5);
+
+        std::mt19937 generator_(seed);
+        o.side     = (generator_() % 2 == 0 ? limit_order::buy : limit_order::sell);
+        o.quantity = binomial_(generator_);
+        o.limit    = quote(fundamental_estimate, USD.denominator );
+
+        auto latency = network_model.sample(identifier, m, seed);
+        auto message = this->template create_message<new_order_single>
+                ( m
+                  , step.lower + latency
+                  );
+        message->sent = step.lower;
+        message->order_details = o;
+    }
+
+    time_duration random_sleep(std::seed_seq &seed)
+    {
+        std::exponential_distribution exponential_distribution_(1.0 / (inter_wakeup_time_seconds * std::nano::den) );
+        std::mt19937 genenerator_(seed);
+        auto real_ = exponential_distribution_(genenerator_);
+        return time_duration(real_);
+
+    }
+
+    ///
+    /// \brief
+    ///
+    time_point act(simulation::time_interval step, std::seed_seq &seed) override
+    {
+
+
+
+        bool open_market_ = false;
+        time_point first_market_open_ = step.upper;
+        for(const auto &m: markets){
+            if(m.open > step.lower){
+                first_market_open_ = std::min(first_market_open_, m.open);
+            }
+
+            if(m.open <= step.lower &&  step.lower <= m.close){
+                open_market_ = true;
+                break;
+            }
+        }
+
+        if(!open_market_){
+            next_wakeup = first_market_open_ + random_sleep(seed);
+            return next_wakeup;
+        }
+
+        if(step.lower < next_wakeup){
+            return next_wakeup;
+        }
+
+        for(const auto &m: markets){
+            for(const auto &t: m.traded){
+                execution_strategy(step, seed, t, m.exchange);
+            }
+        }
+
+        next_wakeup = step.lower + random_sleep(seed);
+        if(next_wakeup >= market_close_){
+            next_wakeup = step.upper;
+            return step.upper;
+        }
+        return next_wakeup;
+    }
+};
+
+
+
+BOOST_AUTO_TEST_CASE(chiarella_iori_2002)
+{
+//    std::cout << "sizeof(entity<>) = " << sizeof(simulation::entity<agent>) << std::endl;
+
+    std::cout << "sizeof(communicator) = " << sizeof(interaction::communicator) << std::endl;
+
+    std::cout << "sizeof(agent) = " << sizeof(agent) << std::endl;
+
+    std::cout << "sizeof(trader) = " << sizeof(trader) << std::endl;
+
+
+    size_t lot_size = 1;
+
+    auto  min_ = markets::quote(price(    0.01, USD), lot_size * USD.denominator);
+    auto  max_ = markets::quote(price(10000.00, USD), lot_size * USD.denominator);
+
+    // define the maximum number of open orders
+    // as the static_order_book maintains a fixed-size memory pool
+    constexpr size_t max_orders_ = 1024*1024;
+
+    // creates the order book
+    auto book_ = std::make_shared<static_order_book>(min_, max_, max_orders_);
+
+    size_t sample = 1;
+
+    environment e;
+    model model_(e, parametrization(0, 0, 24 * 60 * 60 * std::nano::den));
+
+
+    markets::ticker ticker_({0,1}, {0,2});
+    std::vector<markets::ticker> traded_ = {ticker_};
+    auto exchange_ = model_.template create<centralized_exchange>(model_.world, traded_);
+    exchange_->books.emplace(ticker_, book_);
+
+    size_t agents = 10;
+    for(size_t a = 1; a < 1 + agents; ++a){
+        centralized_exchange::position_report position_;
+        position_.supply = 1'000;
+
+        auto t = model_.template create<trader>(model_.world);
+
+        // TODO: non-general
+        std::seed_seq seed_ = {a};
+        std::mt19937 generator_(seed_);
+        std::lognormal_distribution<double> normal_(std::log(10.), 0.1);
+        t->fundamental_estimate = price::approximate(normal_(generator_), USD);
+
+        t->markets.push_back( {(*exchange_), market_open_, market_close_, {ticker_}}  );
+
+        exchange_->positions[ticker_].emplace(t->identifier, position_);
+    }
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    e.run(model_);
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+
+    std::cout << agents << " traded in " << time_span.count() << " seconds.";
+    std::cout << std::endl;
+
+    book_->display();
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()  // ESL

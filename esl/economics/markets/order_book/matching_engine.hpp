@@ -30,26 +30,29 @@
 
 #include <iostream>
 #include <map>
+#include <queue>
 
+#include <boost/container/flat_map.hpp>
 
 #include <esl/economics/markets/order_book/binary_tree_order_book.hpp>
 #include <esl/economics/markets/order_book/order.hpp>
 #include <esl/economics/markets/ticker.hpp>
-#include <queue>
 
 
 namespace esl::economics::markets::order_book {
-
     class matching_engine
     {
     protected:
-        std::function<std::shared_ptr<basic_book>(void)> order_book_factory_;
+        std::function<std::shared_ptr<basic_book>(
+            void)>
+            order_book_factory_;
     public:
-        std::map<ticker, std::shared_ptr<basic_book> > books;
+        boost::container::flat_map<ticker, std::shared_ptr<basic_book>> books;
 
-        explicit matching_engine(std::function<std::shared_ptr<basic_book>(void)> order_book_factory =
-                                     [](){
-                                         return std::make_shared<binary_tree_order_book>();
+        explicit matching_engine(
+            std::function< std::shared_ptr<basic_book>(void) >
+                order_book_factory = [](){
+                        return std::make_shared<binary_tree_order_book>();
                                      })
         : order_book_factory_(order_book_factory)
         {
@@ -71,7 +74,9 @@ namespace esl::economics::markets::order_book {
             return i->second->insert(order);
         }
 
-        void cancel(const ticker& symbol, const basic_book::order_identifier identifier)
+        void cancel(const ticker &symbol,
+                    const typename basic_book::order_identifier
+                        identifier)
         {
             auto i = books.find(symbol);
             if(books.end() != i){
