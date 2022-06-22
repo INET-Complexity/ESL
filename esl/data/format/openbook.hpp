@@ -33,8 +33,17 @@
 
 
 namespace esl::data {
+    namespace detail {
+    /// 
+    /// \brief  Utility function, not for general use. 
+    ///         For a buffer of type buffer_t_ *, obtain a reference to an object of type binary_t_, 
+    ///         intrusively modifying the buffer to encode using the proper endianness for this system.
+    ///         The reference points into the buffer, thus deleting the buffer invalidates the reference.
+    ///         Referencing the same or overlapping addresses may result in scrambled data, as the function
+    ///         converts endianness for every call.
+    ///         
     template<typename binary_t_, typename buffer_t_ = char>
-    binary_t_ &extract_e(buffer_t_ *intrusive)
+    binary_t_ &convert_endian_aware(buffer_t_ *intrusive)
     {
         if constexpr(std::endian::native == std::endian::little) {
             buffer_t_ *s = intrusive;
@@ -47,10 +56,10 @@ namespace esl::data {
 
         return *(reinterpret_cast<binary_t_ *>(intrusive));
     }
-
+    }  // namespace detail
 
     ///
-    /// \brief VERSION 1.2b 2017-04-20 and after
+    /// \brief VERSION 1.2b for files created 2017-04-20 and after
     ///
     // template<unsigned int major_version = 1, unsigned int minor_version = 2>
     void read_openbook(
@@ -67,8 +76,9 @@ namespace esl::data {
         fsize = input.tellg() - fsize;
         input.seekg(0, std::ios::beg);
 
+        // accept partial files, but warn user
         if(0 != (fsize % 71)) {
-            std::cout
+            std::cerr
                 << "warning: file does not contain a multiple of 71 bytes "
                    "which is the message size"
                 << std::endl;
@@ -93,17 +103,16 @@ namespace esl::data {
         // Post version 1.2b there are S=71 bytes.
         //
 
-        std::array<char, 71> buffer;
+        std::array<char, 71> buffer; // stores the current message being read
 
-
-        for(int i = 0; i < events; i++) {
+        for(size_t i = 0; i < events; ++i) {
             input.read(&buffer[0], buffer.size());
 
             // +0
-            // auto &MsgSeqNum = extract_e<std::uint32_t>(&buffer[0]);
+            // auto &MsgSeqNum = detail::convert_endian_aware<std::uint32_t>(&buffer[0]);
 
             // +4
-            auto &MsgType = extract_e<std::uint16_t>(&buffer[4]);
+            auto &MsgType = detail::convert_endian_aware<std::uint16_t>(&buffer[4]);
             switch(MsgType) {
             case 1:   //  1 – Sequence Number Reset
             case 2:   //  2 – Heartbeat Message
@@ -138,28 +147,28 @@ namespace esl::data {
             }
 
             // +6
-            // auto &SendTime = extract_e<std::uint32_t>(&buffer[6]);
+            // auto &SendTime = detail::convert_endian_aware<std::uint32_t>(&buffer[6]);
 
             // +10
             std::string Symbol = std::string(&buffer[10], 11);
             boost::trim_right(Symbol);
 
             // +21
-            // auto &MsgSize = extract_e<std::uint16_t>(&buffer[21]);
+            // auto &MsgSize = detail::convert_endian_aware<std::uint16_t>(&buffer[21]);
 
             // +23
             // If version before 1.2b (2017-12-14), this is a uint16_t,
             // afterwards it is uint32_t auto &SecurityIndex =
-            // extract_e<std::uint32_t>(&buffer[23]);
+            // detail::convert_endian_aware<std::uint32_t>(&buffer[23]);
 
             // +27
-            auto &SourceTime = extract_e<std::uint32_t>(&buffer[27]);
+            auto &SourceTime = detail::convert_endian_aware<std::uint32_t>(&buffer[27]);
             // auto source_time_hours   = std::floor(double(SourceTime) / (1000
             // * 60
             // * 60));
 
             // +31
-            auto &SourceTimeMicroSecs = extract_e<std::uint16_t>(&buffer[31]);
+            auto &SourceTimeMicroSecs = detail::convert_endian_aware<std::uint16_t>(&buffer[31]);
 
             // +33
             // This field contains the current quote condition for the symbol.
@@ -221,7 +230,7 @@ namespace esl::data {
             // system to this message. The sequence number is unique only to a
             // given stock, hence orders for two different stocks may share the
             // same source sequence number.
-            // auto &SourceSeqNum = extract_e<std::uint32_t>(&buffer[35]);
+            // auto &SourceSeqNum = detail::convert_endian_aware<std::uint32_t>(&buffer[35]);
 
             // +39
             // This field contains the source-session identifier. This number is
@@ -245,20 +254,20 @@ namespace esl::data {
             // Note: The price is represented by the PriceScaleCode and the
             // PriceNumerator. For example, a price of 12.1 has a “price
             // numerator” of 12 and a scalecode of 1.
-            auto &PriceNumerator = extract_e<std::uint32_t>(&buffer[41]);
+            auto &PriceNumerator = detail::convert_endian_aware<std::uint32_t>(&buffer[41]);
 
             // +45
             // This field contains the total interest quantity at a price point.
-            // auto &Volume         = extract_e<std::uint32_t>(&buffer[45]);
+            // auto &Volume         = detail::convert_endian_aware<std::uint32_t>(&buffer[45]);
 
             // +49
             // The volume of the event taking place (that is, the size of the
             // order, cancel or execution).
-            auto &ChgQty = extract_e<std::uint32_t>(&buffer[49]);
+            auto &ChgQty = detail::convert_endian_aware<std::uint32_t>(&buffer[49]);
 
             // +53
             // This field contains the number of orders at the current price
-            // point. auto &NumOrders = extract_e<std::uint16_t>(&buffer[53]);
+            // point. auto &NumOrders = detail::convert_endian_aware<std::uint16_t>(&buffer[53]);
 
             // +55
             // This field indicates the side of the order Buy/sell. Valid
@@ -297,13 +306,13 @@ namespace esl::data {
             // char Filler2 = buffer[58];
 
             // +59
-            // auto &LinkId1 = extract_e<std::uint32_t>(&buffer[59]);
+            // auto &LinkId1 = detail::convert_endian_aware<std::uint32_t>(&buffer[59]);
 
             // +63
-            // auto &LinkId2 = extract_e<std::uint32_t>(&buffer[63]);
+            // auto &LinkId2 = detail::convert_endian_aware<std::uint32_t>(&buffer[63]);
 
             // +67
-            // auto &LinkId3 = extract_e<std::uint32_t>(&buffer[67]);
+            // auto &LinkId3 = detail::convert_endian_aware<std::uint32_t>(&buffer[67]);
         }
     }
 
