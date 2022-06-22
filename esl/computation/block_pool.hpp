@@ -60,12 +60,12 @@ namespace esl::computation::block_pool {
         ///
         /// \brief  The index associated with this block
         ///
-        index_t index;
+        index_t index = 0;
 
         ///
         /// \brief  A pointer to the next free block
         ///
-        block *empty;
+        block *next = nullptr;
     };
 
     ///
@@ -95,7 +95,7 @@ namespace esl::computation::block_pool {
     private:
 
         ///
-        /// \brief  Underlying container
+        /// \brief  Underlying container. Needs to be array like (not necessarily dynamically allocated and resizable)
         ///
         std::vector<block<element_t_>> blocks;
 
@@ -117,9 +117,16 @@ namespace esl::computation::block_pool {
         index round_;
 
         ///
-        /// \brief
+        /// \brief  Index of the element at the back of the pool
         ///
         index back_;
+
+        
+        ///
+        /// \brief  The highest index *not yet* assigned - to ensure strictly increasing indices awarded
+        ///         after cancellations
+        ///
+        index highest_;
 
         ///
         /// \brief  Number of active element in the container.
@@ -129,16 +136,17 @@ namespace esl::computation::block_pool {
     public:
         static_block_pool(size_t capacity)
         : blocks(capacity, block<element_t_>())
+        , round_(0)
+        , back_(0)
+        , size_(0)
+        , highest_(0)
         {
-            blocks[capacity - 1].empty = nullptr;
+            blocks[capacity - 1].next = nullptr;
             for(size_t i = 1; i < capacity; ++i){
-                blocks[capacity - 1 - i].empty = &blocks[capacity - i];
+                blocks[capacity - 1 - i].next = &blocks[capacity - i];
             }
             begin_  = &blocks[0];
             end_    = &blocks[0];
-            round_  = 0;
-            back_   = 0;
-            size_   = 0;
         }
 
         ~static_block_pool() = default;
@@ -226,23 +234,37 @@ namespace esl::computation::block_pool {
                 back_ = 0;
             }
 
-            end_ = end_->empty;
+            end_ = end_->next;
             ++size_;
 
-            return {round_ * capacity() + offset_, i};
+            // if the offset has decreased, for because of erase()'d elements
+            index assigned_ = round_ * capacity() + offset_;
+            if(assigned_ < highest_) {
+                ++round_;
+                assigned_ = round_ * capacity() + offset_;
+                
+            }
+            highest_ = std::max(highest_, assigned_ + 1);
+
+            return {assigned_, i};
         }
 
         ///
         /// \brief  Erase element at index i (i must be valid)
         ///
         /// \param i
-        /// \return
+        /// \return 0 if no element was deleted (because the index was invalid/not in use), or 1 if the element with the index was located and removed.
         size_type erase(index i)
 #if !DEBUG
             noexcept
 #endif
         {
             block<element_t_> *removed_ = &blocks[i % capacity()];
+            
+            if(removed_->index != i) {
+                return 0;
+                //throw esl::exception("trying to delete stale order");
+            }
 
 #if DEBUG
             if(!removed->set) {
@@ -250,12 +272,16 @@ namespace esl::computation::block_pool {
             }
             removed->set = false;
 #endif
+            // we removed one element, so if this was the first in the list,
+            // we need to move the begin pointer
             if(removed_ == begin_){
-                begin_ = removed_ ->empty;
+                begin_ = removed_ ->next;
             }
 
-            removed_->empty = end_;
-            end_            = removed_;
+            // ->next points to the next *free* element, so we need to add 
+            // the cleared element to the start of the list of free elements
+            removed_->next = end_;
+            end_           = removed_;
 
             if(size_ == 0){
 #if DEBUG
@@ -269,11 +295,18 @@ namespace esl::computation::block_pool {
             return 1;
         }
 
+        ///
+        /// \brief  Returns a reference to the element at index i modulo the pool size.
+        /// 
         constexpr reference operator [] (index i)
         {
+            //assert(blocks[i % capacity()].index == i);
             return blocks[i % capacity()].data;
         }
 
+        ///
+        /// \brief  Returns a const reference to the element at index i.
+        /// 
         constexpr const_reference operator [] (index i) const
         {
             return this->operator[](i);
@@ -281,6 +314,7 @@ namespace esl::computation::block_pool {
 
         constexpr reference at(index i)
         {
+            assert(blocks[i % capacity()].index == i);
             block<element_t_> *element_ = blocks[i % capacity()];
 #if DEBUG
             if(!element_->set) {
