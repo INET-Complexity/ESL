@@ -350,11 +350,11 @@ namespace esl::economics::markets {
             archive &BOOST_SERIALIZATION_NVP(index_);
             switch(index_) {
             case 0:
-                if(auto *vp = std::get_if<exchange_rate>(&type)  ){
-                    archive << boost::serialization::make_nvp(
-                        "exchange_rate", (vp));
-                    break;
-                }
+                //if(auto *vp = std::get_if<exchange_rate>(&type)  ){
+                //    archive << boost::serialization::make_nvp(
+                //        "exchange_rate", (vp));
+                //    break;
+                //}
             case 1:
                 if(auto *vp = std::get_if<price>(&type)  ){
                     archive << boost::serialization::make_nvp(
@@ -376,9 +376,9 @@ namespace esl::economics::markets {
             size_t index_ = 0;
             archive >> BOOST_SERIALIZATION_NVP(index_);
             if(0 == index_) {
-                exchange_rate re;
-                archive >> boost::serialization::make_nvp("exchange_rate", re);
-                type.emplace<0>(re);
+                //exchange_rate re;
+                //archive >> boost::serialization::make_nvp("exchange_rate", re);
+                //type.emplace<0>(re);
             } else if(1 == index_) {
                 price p;
                 archive >> boost::serialization::make_nvp("price", p);
