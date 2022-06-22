@@ -28,6 +28,8 @@
 #include <memory>
 #include <unordered_set>
 
+#include <boost/container/flat_map.hpp>
+
 #include <esl/simulation/time.hpp>
 #include <esl/simulation/world.hpp>
 #include <esl/simulation/agent_collection.hpp>
@@ -107,13 +109,16 @@ namespace esl::simulation {
         ///
         /// \details
         ///
-        unsigned int threads;
+        std::uint64_t threads;
 
         ///
         /// \brief  Stores the next wake-up time for each agent.
         ///
         ///
-        std::map<identity<agent>, time_point> wake_up_times;
+        boost::container::flat_map<identity<agent>, time_point> wake_up_times;
+
+        size_t messages_sent = 0;
+
 
         ///
         /// \brief

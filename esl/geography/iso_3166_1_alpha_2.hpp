@@ -51,8 +51,9 @@ namespace esl::geography {
         ///
         /// \param code
         ///
-        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code) noexcept
-        : code(code)
+        explicit constexpr iso_3166_1_alpha_2(std::array<char, 2> code) //noexcept
+        : code( ('A' <= code[0] && code[0] <= 'Z' &&  'A' <= code[1] && code[1] <= 'Z')
+                ? code : throw esl::exception("ISO 3166-1 alpha-2 country code"))
         {
 
         }
@@ -60,12 +61,11 @@ namespace esl::geography {
         ///
         /// \param code
         ///
-        explicit  iso_3166_1_alpha_2(const std::string &code = "XX")// noexcept
-        : code(std::array<char, 2>({code[0], code[1]}))
+        explicit iso_3166_1_alpha_2(const std::string &code = "XX")// noexcept
+        : iso_3166_1_alpha_2( 2 == code.size()  ? std::array<char, 2>({code[0], code[1]})
+        : throw esl::exception("ISO 3166-1 alpha-2 country code needs to be two characters"))
         {
-            if(2 > code.size()){
-                throw esl::exception("ISO 3166-1 alpha-2 country code needs to be two characters.");
-            }
+
         }
 
 

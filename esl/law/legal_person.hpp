@@ -66,7 +66,8 @@ namespace esl::law {
 
     public:
         explicit legal_person(const identity<agent> &i,
-                              esl::law::jurisdiction primary_jurisdiction)
+                              esl::law::jurisdiction primary_jurisdiction = jurisdiction(esl::geography::countries::US,
+                                                                                         esl::economics::currencies::USD))
         : agent(i)
         , representation(legal_entity())
         , primary_jurisdiction(primary_jurisdiction)

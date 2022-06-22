@@ -96,10 +96,10 @@ simulation_result brock_hommes_model( variable g1, variable g2
     }
 
     return simulation_result {
-        .prices = prices,
-        .n      = n,
-        .U1     = U1,
-        .U2     = U2
+          prices,
+          n,
+          U1,
+          U2
     };
 }
 

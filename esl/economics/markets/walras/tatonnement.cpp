@@ -680,7 +680,7 @@ namespace esl::economics::markets::tatonnement {
                         break;
                     }
 
-                    status = gsl_multimin_test_size (active_.size(), error_tolerance);
+                    status = gsl_multimin_test_size (double(active_.size()), error_tolerance);
 
                     //status = gsl_multimin_test_gradient(minimizer->gradient,
                     //                                    converged_gradient_norm);

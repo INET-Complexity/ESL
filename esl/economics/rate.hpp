@@ -76,11 +76,64 @@ namespace esl::economics {
 
         virtual ~rate() = default;
 
-        rate<integer_type_> &operator=(const rate<integer_type_> &o)
-        {
-            boost::rational<integer_type_>::operator=(o);
-            return *this;
-        }
+        //rate<integer_type_> &operator=(const rate<integer_type_> &o)
+        //{
+        //    boost::rational<integer_type_>::operator=(o);
+        //    return *this;
+        //}
+
+
+        //bool operator==(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator==(o);
+        //}
+
+        //bool operator!=(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator!=(o);
+        //}
+
+        //bool operator<(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator<(o);
+        //}
+
+        //bool operator>(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator>(o);
+        //}
+
+        //bool operator<=(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator<=(o);
+        //}
+
+        //bool operator>=(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator>=(o);
+        //}
+
+        //rate<integer_type_> operator+(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator+(o);
+        //}
+
+        //rate<integer_type_> operator-(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator-(o);
+        //}
+        //
+        //rate<integer_type_> operator*(const rate<integer_type_> &o) const
+        //{
+        //    return boost::rational<integer_type_>::operator*(o);
+        //}
+
+        //rate<integer_type_> operator / (const rate<integer_type_> &o) const
+        //{
+        //    return rate<integer_type_>
+        //        (boost::rational<integer_type_>::operator/(
+        //        (const boost::rational<integer_type_> &)o));
+        //}
 
         template<typename floating_point_t_>
         [[nodiscard]] explicit operator floating_point_t_() const

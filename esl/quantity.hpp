@@ -64,7 +64,7 @@ namespace esl {
         ///
         /// \param q
         ///
-        constexpr quantity(const quantity &q)
+        constexpr quantity(const quantity &q) 
         : quantity(q.amount)
         {
 
@@ -73,7 +73,7 @@ namespace esl {
         ///
         /// \param q
         ///
-        constexpr quantity(const quantity &&q)
+        constexpr quantity(const quantity &&q) noexcept
         : quantity(q.amount)
         {
 

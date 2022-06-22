@@ -34,6 +34,8 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/pool/poolfwd.hpp>
+#include <boost/container/flat_map.hpp>
+
 
 #include <esl/computation/allocator.hpp>
 #include <esl/interaction/header.hpp>
@@ -99,10 +101,10 @@ namespace esl::interaction {
         ///
         /// \brief  The inbox stores messages by delivery time.
         ///
-        typedef std::multimap< simulation::time_point
+        typedef boost::container::flat_multimap< simulation::time_point
                              , message_t
                              , std::less<>
-                             , boost::fast_pool_allocator<std::pair<const simulation::time_point, message_t> >
+                             //, boost::fast_pool_allocator<std::pair<const simulation::time_point, message_t> >
                              //, computation::allocator<std::pair<const simulation::time_point, message_t> >
                              > inbox_t;
 
@@ -133,25 +135,28 @@ namespace esl::interaction {
         friend class ::esl::simulation::agent_collection;
 
         ///
+        /// \brief  Stores message callbacks, the higher the priority the
+        ///         earlier the callback is called when multiple callbacks exist
+        ///
+        boost::container::flat_map<message_code, boost::container::flat_multimap<priority_t, callback_t>>
+            callbacks_;
+
+
+        ///
         /// \brief  when true, modifying the callbacks data structure results
         ///         in an std::logic_error being throw.
         ///
         /// \details    Because callbacks can't be serialized, we only allow
         ///             setting up callbacks during initialization.
         ///
-        bool locked_;
+        bool locked_ : 1;
 
-        ///
-        /// \brief  Stores message callbacks, the higher the priority the
-        ///         earlier the callback is called when multiple callbacks exist
-        ///
-        std::map<message_code, std::multimap<priority_t, callback_t>> callbacks_;
-
+        
     public:
-        enum scheduling
+        enum scheduling: std::uint8_t
         { in_order = 0,
           random   = 1
-        } schedule;
+        } schedule : 1;
 
     public:
         ///

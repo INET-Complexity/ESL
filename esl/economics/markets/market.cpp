@@ -26,18 +26,5 @@
 
 
 namespace esl::economics {
-    market::market()
-    : market(identity<agent>())
-    {
 
-    }
-
-    market::market( identity<agent> i
-                  , std::vector<markets::ticker> traded
-                  )
-    : agent(i)
-    , traded_properties(move(traded))
-    {
-
-    }
 }

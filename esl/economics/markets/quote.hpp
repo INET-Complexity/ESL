@@ -47,31 +47,45 @@ namespace esl::economics::markets {
     struct quote
     {
     private:
+        typedef std::uint32_t lot_t;
         constexpr void assert_equal_type_(const quote& other) const
         {
             if(type.index() != other.type.index()){
-                throw esl::exception("comparing quotes of different types");
+                throw esl::exception("quote types are different");
             }
         }
+
+        /// 
+        /// \brief  Until the rules for conversion have been detailed further, we don't accept lot size conversions
+        /// 
+        constexpr void assert_equal_lot_(const quote &other) const
+        {
+            if(lot != other.lot) {
+                throw esl::exception("quotes have different lot sizes");
+            }
+        }
+
     public:
-        std::variant<exchange_rate, price> type;
+        /// 
+        /// \brief  The number of items this quote applies to. Used to get 
+        /// 
+        lot_t lot;
 
-        uint64_t lot;
+        std::variant<price> type;
 
-        explicit quote(const exchange_rate &er = exchange_rate(),
-                       uint64_t lot            = 1)
+        /*explicit quote(const exchange_rate &er = exchange_rate(), lot_t lot = 1)
         : type(er)
         , lot(lot)
         {
             if(0 >= lot){
                 throw esl::exception("lot size must be strictly positive");
             }
-        }
+        }*/
 
         ///
         /// \param p
         /// \param lot
-        explicit quote(const price &p, uint64_t lot = 1)
+        explicit quote(const price &p = price(), lot_t lot = 1)
         : type(p)
         , lot(lot )
         {
@@ -79,7 +93,6 @@ namespace esl::economics::markets {
                 throw esl::exception("lot size must be strictly positive");
             }
         }
-
 
         explicit quote(double f, const quote &similar)
         {
@@ -94,9 +107,7 @@ namespace esl::economics::markets {
         : type(q.type)
         , lot(q.lot)
         {
-            if(0 >= lot){
-                throw esl::exception("lot size must be strictly positive");
-            }
+            
         }
 
         ///
@@ -116,7 +127,12 @@ namespace esl::economics::markets {
         ///
         /// \param o
         /// \return
-        quote &operator = (const quote &o) = default;
+        quote &operator=(const quote &o)
+        { 
+            this->type = o.type;
+            this->lot  = o.lot;
+            return *this;
+        }
 
         ///
         /// \param other
@@ -124,6 +140,8 @@ namespace esl::economics::markets {
         [[nodiscard]] constexpr bool operator == (const quote &other) const
         {
             assert_equal_type_(other);
+
+            assert_equal_lot_(other);
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
@@ -139,6 +157,8 @@ namespace esl::economics::markets {
         {
             assert_equal_type_(other);
 
+            assert_equal_lot_(other);
+
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
                 if(auto *vp = std::get_if<variant_>(&other.type)  ){
@@ -153,9 +173,10 @@ namespace esl::economics::markets {
         {
             assert_equal_type_(other);
 
+            assert_equal_lot_(other);
+
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
-                //return (lot * k) < (std::get<variant_>(other.type) * other.lot );
                 if(auto *vp = std::get_if<variant_>(&other.type)  ){
                     return (lot * k) < ((*vp) * other.lot );
                 }
@@ -166,6 +187,8 @@ namespace esl::economics::markets {
         [[nodiscard]] constexpr bool operator > (const quote &other) const
         {
             assert_equal_type_(other);
+
+            assert_equal_lot_(other);
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
@@ -180,6 +203,8 @@ namespace esl::economics::markets {
         [[nodiscard]] constexpr bool operator <= (const quote &other) const
         {
             assert_equal_type_(other);
+
+            assert_equal_lot_(other);
 
             return std::visit([&] (const auto& k) {
                 using variant_ = std::decay_t<decltype(k)>;
@@ -204,6 +229,115 @@ namespace esl::economics::markets {
                 throw esl::exception("quote variants do not match");
             }, type);
         }
+
+
+        [[nodiscard]] quote operator + (const quote &addend) const
+        { 
+            assert_equal_type_(addend);
+            assert_equal_lot_(addend);
+
+            auto result_ = std::visit( [&](const auto &augend) 
+                {
+                    return augend + std::get<std::decay_t<decltype(augend)>>(addend.type);
+                }, type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator - (const quote &subtrahend) const
+        {
+            assert_equal_type_(subtrahend);
+            assert_equal_lot_(subtrahend);
+
+            auto result_ = std::visit( [&](const auto &minuend) 
+                {
+                    return minuend - std::get<std::decay_t<decltype(minuend)>>(subtrahend.type);
+                }, type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator * (const quote &multiplicand) const
+        {
+            assert_equal_type_(multiplicand);
+            assert_equal_lot_(multiplicand);
+
+            auto result_ = std::visit(
+                [&](const auto &multiplier) {
+                    return multiplier * std::get<std::decay_t<decltype(multiplier)>>(multiplicand.type);
+                }, type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator / (const quote &denominator) const
+        {
+            assert_equal_type_(denominator);
+            assert_equal_lot_(denominator);
+
+            auto result_ = std::visit(
+                [&](const auto &numerator) {
+                    return numerator / std::get<std::decay_t<decltype(numerator)>>(denominator.type);
+                }, type);
+
+            return quote(result_, lot);
+        }
+
+        
+        ////////////
+
+
+        [[nodiscard]] quote operator+(double addend) const
+        {
+            auto result_ = std::visit(
+                [&](const auto &augend) {
+                    return augend + addend;
+                },
+                type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator-(double subtrahend) const
+        {
+            auto result_ = std::visit(
+                [&](const auto &minuend) {
+                    return minuend - subtrahend;
+                },
+                type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator*(double multiplicand) const
+        {
+            auto result_ = std::visit(
+                [&](const auto &multiplier) {
+                    return multiplier * multiplicand;
+                },
+                type);
+
+            return quote(result_, lot);
+        }
+
+        [[nodiscard]] quote operator/(double denominator) const
+        {
+            auto result_ = std::visit(
+                [&](const auto &numerator) {
+                    return numerator / denominator;
+                },
+                type);
+
+            return quote(result_, lot);
+        }
+
+
+        
+
+
+
+
+
 
 
         template<class archive_t>

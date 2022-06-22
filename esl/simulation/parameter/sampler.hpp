@@ -102,7 +102,7 @@ namespace esl::simulation::parameter {
                 indices_.emplace(p, 0);
                 for(unsigned int s = 0; s < d; ++s){
                     auto v = p->lower + (p->upper - p->lower) / (d - 1) * s;
-                    values_[p].template emplace_back(v);
+                    values_[p].emplace_back(v);
                 }
             }
             std::vector<std::map<std::shared_ptr<parameter::interval<number_t_>>, number_t_>> result_;
@@ -110,14 +110,14 @@ namespace esl::simulation::parameter {
                 unsigned int prefix_ = 1;
                 indices_.clear();
                 for(const auto &[p, d] : parameter_densities) {
-                    indices_.template emplace(p,  (s / prefix_) % d);
+                    indices_. emplace(p,  (s / prefix_) % d);
                     prefix_ *= d;
                 }
                 std::map<std::shared_ptr<parameter::interval<number_t_>>, number_t_> sample_;
                 for(const auto &[p, i] :indices_) {
                     sample_[p] = values_.find(p)->second[i];
                 }
-                result_.template emplace_back(sample_);
+                result_. emplace_back(sample_);
             }
             return result_;
         }
@@ -147,8 +147,8 @@ namespace esl::simulation::parameter {
                 indices_[p].reserve(density);
                 for(unsigned int s = 0; s < density; ++s){
                     auto v = p->lower + (p->upper - p->lower) / (density - 1) * s;
-                    auto i = values_[p].template emplace_back(v);
-                    indices_[p].template emplace_back(s);
+                    auto i = values_[p]. emplace_back(v);
+                    indices_[p]. emplace_back(s);
                 }
                 std::shuffle(indices_[p].begin(), indices_[p].end(), generator_);
             }
@@ -159,7 +159,7 @@ namespace esl::simulation::parameter {
                 for(const auto &[p, index_]: indices_){
                     sample_[p] = values_[p][index_[s]];
                 }
-                result_.template emplace_back(sample_);
+                result_. emplace_back(sample_);
             }
 
             return result_;
@@ -266,6 +266,7 @@ namespace esl::simulation::parameter {
             , unsigned int duplication = 5
         )
         {
+            assert(samples > 0);
             auto result_ = std::vector<std::vector<unsigned int>>(dimensions, std::vector<unsigned int>(samples, 0));
 
             std::mt19937_64 generator_(seed);
@@ -279,7 +280,7 @@ namespace esl::simulation::parameter {
             typedef std::tuple<unsigned int,unsigned int> key_t_;
 
             struct key_hash
-                : public std::unary_function<key_t_, std::size_t>
+                : public std::function<size_t(key_t_)>
             {
                 std::size_t operator()(const key_t_ &k) const
                 {

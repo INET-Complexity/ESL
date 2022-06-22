@@ -29,6 +29,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <boost/container/flat_set.hpp>
+#include <boost/container/flat_map.hpp>
+
 #include <esl/simulation/identity.hpp>
 
 
@@ -56,9 +59,9 @@ namespace esl::simulation {
         ///         of a trie datastructure.
         ///
     public:
-        std::unordered_set<identity<agent>> global_agents_;
+        boost::container::flat_set<identity<agent>> global_agents_;
 
-        std::unordered_map<identity<agent>, std::shared_ptr<agent>> local_agents_;
+        boost::container::flat_map<identity<agent>, std::shared_ptr<agent>> local_agents_;
 
         explicit agent_collection(std::reference_wrapper<computation::environment> environment_);
 

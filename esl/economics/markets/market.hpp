@@ -76,15 +76,23 @@ namespace esl::economics {
         /// \brief  default constructor is restricted, because we need the
         ///         identifier and ticker collection
         ///
-        market();
+        market() 
+        : market(identity<agent>())
+        {
+
+        }
 
     public:
         ///
         /// \brief  Construct a market with a collection of tickers
         ///
-        explicit market( identity<agent> i
-                       , std::vector<markets::ticker> traded = {}
-                       );
+        explicit market(identity<agent> i,
+                        std::vector<markets::ticker> traded = {})
+        : agent(i)
+        , traded_properties(move(traded))
+        { 
+        
+        }
 
         virtual ~market() = default;
 

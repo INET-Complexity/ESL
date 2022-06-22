@@ -156,7 +156,7 @@ namespace esl {
         /// \param i    Other identity
         ///
         /// \param i
-        identity(const identity<identifiable_type_> &i)
+        constexpr identity(const identity<identifiable_type_> &i)
         : digits(i.digits)
         {
 
@@ -271,6 +271,15 @@ namespace esl {
         operator>=(const identity<identifiable_other_type_> &rhs) const
         {
             return (*this > rhs) || (*this == rhs);
+        }
+
+        ///
+        /// \brief  returns the n-th digit of the identifier
+        /// 
+        [[nodiscard]] constexpr inline digit_t
+        operator[](const size_t &index) const
+        {
+            return this->digits[index];
         }
 
 
@@ -444,11 +453,7 @@ namespace esl {
             return (*lhs) == (*rhs);
         }
     };
-
-
-
 }  // namespace esl
-
 
 
 namespace std {

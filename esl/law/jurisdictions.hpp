@@ -134,7 +134,7 @@ namespace esl::law {
         constexpr jurisdiction HN = {geography::countries::HN, economics::currencies::HNL};
         constexpr jurisdiction HU = {geography::countries::HU, economics::currencies::HUF};
         constexpr jurisdiction IS = {geography::countries::IS, economics::currencies::ISK};
-        constexpr jurisdiction IN = {geography::countries::IN, economics::currencies::INR};
+//        constexpr jurisdiction IN = {geography::countries::IN, economics::currencies::INR};
         constexpr jurisdiction ID = {geography::countries::ID, economics::currencies::IDR};
         constexpr jurisdiction IR = {geography::countries::IR, economics::currencies::IRR};
         constexpr jurisdiction IQ = {geography::countries::IQ, economics::currencies::IQD};

@@ -46,7 +46,7 @@ namespace esl::simulation {
         , sample(parameters.get<std::uint64_t>("sample"))
         , agents(e)
         , verbosity(parameters.get<std::uint64_t>("verbosity"))
-        , threads( std::max<std::uint64_t>(1, parameters.get<std::uint64_t>("threads")))
+        , threads( std::max<std::uint64_t>(1ull, parameters.get<std::uint64_t>("threads")))
     {
 
     }
@@ -60,7 +60,6 @@ namespace esl::simulation {
     //std::map<esl::identity<esl::agent>, double> timings_cb_;
     //std::map<esl::identity<esl::agent>, double> timings_act_;
 
-
     ///
     /// \brief  Determines the next event as the minimum of the wake-up times of the agents.
     ///
@@ -69,20 +68,19 @@ namespace esl::simulation {
     {
         time_point result_ = end;
         std::vector<identity<agent>> blockers_;
-        for(auto &[i, a] : agents.local_agents_) {
-            auto iterator_ = wake_up_times.find(i);
-            if(wake_up_times.end() == iterator_){
-                continue;
-            }else if(result_ > iterator_->second){
-                blockers_.clear();
-                result_ = std::min(result_ , iterator_->second);
-            }
-
-            if(result_ == iterator_->second){
+        //for(auto &[i, a] : agents.local_agents_) {
+        //    auto iterator_ = wake_up_times.find(i);
+        for(const auto &[i, t] : wake_up_times) {
+            if(result_ > t) {
+                blockers_ = {i};  //.clear();
+                result_   = std::min(result_, t);
+            } else if(result_ == t) {
                 blockers_.push_back(i);
             }
         }
-        LOG(trace) << "blockers at t=" << result_ << ": " << blockers_ << std::endl;
+        //}
+        // 
+        //LOG(trace) << "blockers at t=" << result_ << ": " << blockers_ << std::endl;
         return result_;
     }
 
@@ -106,7 +104,7 @@ namespace esl::simulation {
         unsigned int round_ = 0;
         do {
             if (verbosity > 0 && 0 == (rounds_ % verbosity)){
-                LOG(notice) << "time " << step << " round " << round_  << std::endl;
+                //LOG(notice) << "time " << step << " round " << round_  << std::endl;
             }
 
             // the next event is the first time one of the agents wants to act
@@ -114,7 +112,7 @@ namespace esl::simulation {
             first_event_   = determine_next_event();
 
             auto job_ = [&](std::shared_ptr<agent> a){
-LOG(trace) << "act " << a->identifier << std::endl;
+                //LOG(trace) << "act " << a->identifier << std::endl;
                 // double agent_cb_end_;
                 // timings_.emplace(i, 0.);
                 // timings_cb_.emplace(i, 0.);
@@ -130,6 +128,12 @@ LOG(trace) << "act " << a->identifier << std::endl;
                 // try {
 
                 {
+                    /*if(a->identifier.digits[0] == 56 && a->inbox.size() > 0) {
+                        std::cout << "56 " << a->inbox.size() << " at time "
+                                  << step.lower << std::endl;
+                    }*/
+
+
                     auto message_time_ = a->process_messages(step, seed_);
                     // agent_cb_end_ = double((high_resolution_clock::now() - agent_start_).count()); agent_act_ = high_resolution_clock::now();
                     auto act_time_ = a->act(step, seed_);
@@ -237,6 +241,8 @@ LOG(trace) << "act " << a->identifier << std::endl;
             if(0 < messages_sent_){
                 first_event_   = determine_next_event();
             }
+
+            messages_sent += messages_sent_;
 
             ++round_;
             ++rounds_;

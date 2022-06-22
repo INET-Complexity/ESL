@@ -530,16 +530,16 @@ void python_log_detailed( esl::data::severity level
     auto render_ = boost::python::extract<const char *>(boost::python::str(o));
     switch(level){
     case severity::trace:
-        main_log.get<severity::trace>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        main_log.get<severity::trace>(function.c_str(), file.c_str(), static_cast<unsigned int>(line)) << render_ << std::endl;
         break;
     case severity::notice:
-        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), static_cast<unsigned int>(line)) << render_ << std::endl;
         break;
     case severity::warning:
-        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), static_cast<unsigned int>(line)) << render_ << std::endl;
         break;
     case severity::errorlog:
-        main_log.get<severity::notice>(function.c_str(), file.c_str(), line) << render_ << std::endl;
+        main_log.get<severity::notice>(function.c_str(), file.c_str(), static_cast<unsigned int>(line)) << render_ << std::endl;
         break;
 
     default:
@@ -684,6 +684,8 @@ void set_isin_code(finance::isin &i, const std::string &code)
 #include <esl/economics/markets/quote.hpp>
 #include <esl/economics/markets/iso_10383.hpp>
 #include <esl/economics/markets/ticker.hpp>
+
+#include <esl/economics/markets/centralized_exchange.hpp>
 using namespace esl::economics::markets;
 
 
@@ -721,6 +723,16 @@ boost::shared_ptr<ticker> python_ticker_constructor(const python_identity &base_
 {
     return boost::make_shared<ticker>( reinterpret_identity_cast<esl::law::property>(base_property)
                  , reinterpret_identity_cast<esl::law::property>(quote_property));
+}
+
+
+boost::shared_ptr<centralized_exchange> python_centralized_exchange_constructor(const python_identity &identity = python_identity())
+{
+
+    std::vector<markets::ticker> traded_;
+
+    return boost::make_shared<centralized_exchange>(
+        reinterpret_identity_cast<centralized_exchange>(identity), traded_);
 }
 
 
@@ -1945,7 +1957,7 @@ BOOST_PYTHON_MODULE(_esl)
             scope().attr("UAH")                    = currencies::UAH;
             scope().attr("UGX")                    = currencies::UGX;
             scope().attr("USD")                    = currencies::USD;
-            scope().attr("USN")                    = currencies::USN;
+//            scope().attr("USN")                    = currencies::USN;
             scope().attr("UYI")                    = currencies::UYI;
             scope().attr("UYU")                    = currencies::UYU;
             scope().attr("UZS")                    = currencies::UZS;
@@ -2086,8 +2098,7 @@ BOOST_PYTHON_MODULE(_esl)
             implicitly_convertible<quote, double>();
 
 
-            class_<ticker>(
-                "ticker", no_init)
+            class_<ticker>("ticker", no_init)
                 .def("__init__", make_constructor(python_ticker_constructor))
                 .add_property("base"
                     , +[](const ticker &r){return reinterpret_identity_cast<python_identity>(r.base); }
@@ -2107,6 +2118,69 @@ BOOST_PYTHON_MODULE(_esl)
             enum_<indication>("indication")
                 .value("firm", indication::firm)
                 .value("indicative", indication::indicative);
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // centralized exchange
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            class_<centralized_exchange, bases<market>>("centralized_exchange", no_init)
+                .def("__init__", make_constructor(python_centralized_exchange_constructor))
+                .def_readwrite("positions", &centralized_exchange::positions)
+            ;
+
+            class_<centralized_exchange::position_report>("position_report", init<std::uint64_t,std::uint64_t,std::uint64_t>())
+            .def_readwrite("supply", &centralized_exchange::position_report::supply)//, "The number of tradeable economic property brought to the exchange by the agent")
+            .def_readwrite("bought", &centralized_exchange::position_report::bought)
+            .def_readwrite("sold", &centralized_exchange::position_report::sold)
+            .def("liquidity_provided", &centralized_exchange::position_report::liquidity_provided)
+            .def("liquidity_taken", &centralized_exchange::position_report::liquidity_taken)
+
+            ;
+
+
+            class_<logon_message, bases<header>>("logon_message", init<>())
+            .def_readwrite("supply", &logon_message::supply)
+            ;
+
+
+            class_<logout_message, bases<header>>("logout_message", init<>())
+            ;
+
+
+            enum_<market_data_request_message::request_t>("request_t")
+            .value("snapshot", market_data_request_message::request_t::snapshot)
+            .value("stream", market_data_request_message::request_t::stream)
+            .value("cancel", market_data_request_message::request_t::cancel)
+            ;
+
+
+
+            class_<market_data_request_message, bases<header>>("market_data_request_message", init<>())
+            .def_readwrite("instruments", &market_data_request_message::instruments)
+            .def_readwrite("type", &market_data_request_message::type)
+            .def_readwrite("depth", &market_data_request_message::depth)
+            ;
+
+
+            class_<order_status_request, bases<header>>("order_status_request")
+            ;
+
+
+            class_<order_status_response_message, bases<header>>("order_status_response_message")
+            ;
+
+
+            class_<new_order_single, bases<header>>("new_order_single")
+            .def_readwrite("order_details", &new_order_single::order_details)
+            ;
+
+
+
+            class_<execution_report_message, bases<header>>("execution_report_message")
+            .def_readwrite("report", &execution_report_message::report)
+            ;
 
 
             ////////////////////////////////////////////////////////////////////

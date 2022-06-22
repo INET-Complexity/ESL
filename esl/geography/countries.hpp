@@ -140,7 +140,7 @@ namespace esl::geography {
         constexpr iso_3166_1_alpha_2 IE = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'E'});
         constexpr iso_3166_1_alpha_2 IL = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'L'});
         constexpr iso_3166_1_alpha_2 IM = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'M'});
-        constexpr iso_3166_1_alpha_2 IN = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'N'});
+//        constexpr iso_3166_1_alpha_2 IN = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'N'});
         constexpr iso_3166_1_alpha_2 IO = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'O'});
         constexpr iso_3166_1_alpha_2 IQ = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'Q'});
         constexpr iso_3166_1_alpha_2 IR = iso_3166_1_alpha_2( std::array<char, 2> {'I', 'R'});

@@ -189,6 +189,38 @@ namespace esl::economics {
             return *this;
         }
 
+
+        [[nodiscard]] constexpr price operator*(const price &operand) const
+        {
+            assert(valuation == operand.valuation);
+            return price(value * operand.value, valuation);
+        }
+
+        constexpr price &operator*=(const price &operand)
+        {
+            assert(valuation == operand.valuation);
+            value *= operand.value;
+            return *this;
+        }
+
+        [[nodiscard]] constexpr price operator/(const price &operand) const
+        {
+            assert(valuation == operand.valuation);
+            return price(value / operand.value, valuation);
+        }
+
+        constexpr price &operator/=(const price &operand)
+        {
+            assert(valuation == operand.valuation);
+            value /= operand.value;
+            return *this;
+        }
+
+
+
+
+
+
         template<typename integer_t_>
         [[nodiscard]] constexpr price operator * (const integer_t_ &scalar) const
         {
@@ -211,17 +243,46 @@ namespace esl::economics {
             return (double)(value) / valuation.denominator;
         }
 
-        ///
-        /// \brief  Computes the ratios between two prices. Used to reduce
-        ///         syntax required to compute returns.
-        ///
-        /// \weakgroup  syntactic-sugar
-        /// \param      operand
-        /// \return ratio between first and second price
-        [[nodiscard]] constexpr double operator / (const price &operand) const
+
+
+
+        [[nodiscard]] price operator+(double addend) const
         {
-            return (double)(*this) / (double)(operand);
+            return price(static_cast<decltype(value)>(value + addend), valuation);
         }
+
+        [[nodiscard]] price operator-(double subtrahend) const
+        {
+            return price(static_cast<decltype(value)>(value - subtrahend), valuation);
+        }
+
+        [[nodiscard]] price operator*(double multiplicand) const
+        {
+            return price(static_cast<decltype(value)>(value * multiplicand), valuation);
+        }
+
+        [[nodiscard]] price operator/(double denominator) const
+        {
+            return price(static_cast<decltype(value)>(value / denominator), valuation);
+        }
+
+
+
+
+
+
+
+        /////
+        ///// \brief  Computes the ratios between two prices. Used to reduce
+        /////         syntax required to compute returns.
+        /////
+        ///// \weakgroup  syntactic-sugar
+        ///// \param      operand
+        ///// \return ratio between first and second price
+        //[[nodiscard]] constexpr double operator / (const price &operand) const
+        //{
+        //    return (double)(*this) / (double)(operand);
+        //}
 
         ///
         //  /
