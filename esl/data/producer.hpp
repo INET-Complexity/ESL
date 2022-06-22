@@ -29,6 +29,8 @@
 
 //#include <boost/serialization/unordered_map.hpp>
 
+#include <boost/container/flat_map.hpp>
+
 #include <esl/data/output.hpp>
 
 
@@ -39,7 +41,7 @@ namespace esl::data {
         ///
         /// \brief  The observables in (this shard of -) the simulation.
         ///
-        std::unordered_map<std::string, std::shared_ptr<output_base>> outputs;
+        boost::container::flat_map<std::string, std::shared_ptr<output_base>> outputs;
 
         void add_output_stream(const std::string &name, std::shared_ptr<stream> s)
         {

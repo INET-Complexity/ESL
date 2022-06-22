@@ -26,7 +26,8 @@ namespace esl::data {
         /// TODO: move to parametrization input directory and output directory
         ///
         /// \param x
-        explicit file(const std::filesystem::path &name, const std::filesystem::path &prefix);
+        explicit file(const std::filesystem::path &name,
+                      const std::filesystem::path &prefix = "");
 
         virtual ~file() = default;
 

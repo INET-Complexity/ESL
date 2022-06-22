@@ -203,15 +203,54 @@ namespace esl::computation {
     {
         auto timer_start_run_ = high_resolution_clock::now();
         simulation.initialize();
-        auto timer_initialization_ = high_resolution_clock::now() - timer_start_run_;
+        auto duration_initialization_ = high_resolution_clock::now() - timer_start_run_;
 
         simulation::time_interval step_ = {simulation.start, simulation.end};
+
+
+        const auto simulation_time_start = simulation.start;
+        const auto timer_run_start_ = high_resolution_clock::now();
+        auto timer_run_             = timer_run_start_;  
+        std::cout << "run " << step_.lower << "/" << step_.upper << std::flush;
+        constexpr double update_interval_ = 0.200; // seconds
+        unsigned int width_ = 60;
+
+
+
+
         do {
             size_t changes_ = 0;
             changes_ += activate();
             changes_ += deactivate();
             step_.lower = simulation.step(step_);
+
+            auto clock_ = high_resolution_clock::now();
+            if((clock_ - timer_run_).count() / 1e+9 >= update_interval_) {
+                timer_run_ = clock_;
+
+
+
+                std::cout << "\rrun " << step_.lower << "/" << step_.upper << " [";
+                auto progress_ = double(step_.upper - step_.lower) / (step_.upper - simulation_time_start);
+                for(auto i = 0; i < width_; ++i) {
+                    if(i < unsigned int((1.-progress_) * width_)) {
+                        std::cout << '|';
+                    } else {
+                        std::cout << ' ';
+                    }
+                }
+                std::cout << ']' << std::flush;
+            }
+
         } while(step_.lower < simulation.end);
+        
+        std::cout << "\rrun " << step_.lower << "/" << step_.upper << " [";
+        for(auto i = 0; i < width_; ++i) {
+            std::cout << '|';
+        }
+        std::cout << ']' << std::flush;
+        std::cout << std::endl;
+
         auto timer_simulation_ = high_resolution_clock::now() - timer_start_run_;
 
         LOG(notice) << "simulation took "

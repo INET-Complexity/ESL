@@ -118,7 +118,7 @@ namespace esl::data {
                               const char *source_file   = nullptr,
                               unsigned int line         = 0)
         {
-            if(level_ < filter_) {
+            if constexpr (level_ < filter_) {
                 return channel(level_, null_, function_name,
                                source_file, line);
             }

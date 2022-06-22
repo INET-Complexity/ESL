@@ -106,6 +106,7 @@ jobs:
 
 ########################################################################################################################
 
+      # TODO: with ARM and Universal 2, there are multiple wheel files. We need to edit the script to process all files.
       - name: "[MacOS] Build and publish"
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}

@@ -34,7 +34,7 @@ namespace esl::data {
     : public stream
     {
     public:
-        enum type {
+        enum class type {
             out, error,
         };
 
@@ -42,8 +42,8 @@ namespace esl::data {
         const type type_;
 
     public:
-        explicit terminal(type standard = out)
-        :   stream(standard == out ? std::cout : std::cerr)
+        explicit terminal(type standard = terminal::type::out)
+        : stream(standard == terminal::type::out ? std::cout : std::cerr)
         ,   type_(standard)
         {
 

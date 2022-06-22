@@ -25,7 +25,6 @@
 #ifndef ME_BALANCE_SHEET_HPP
 #define ME_BALANCE_SHEET_HPP
 
-#include <esl/economics/asset.hpp>
 #include <esl/economics/accounting/standard.hpp>
 #include <esl/economics/owner.hpp>
 

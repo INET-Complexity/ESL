@@ -39,6 +39,8 @@
 #include <list>
 #include <forward_list>
 
+#include <boost/container/flat_map.hpp>
+
 namespace std {
     ///
     /// \tparam key_t_
@@ -53,6 +55,33 @@ namespace std {
     constexpr std::ostream &operator<<(
         std::ostream &stream,
         const std::map<key_t_, value_t_, comparator_, allocator_> &associative)
+    {
+        stream << '{';
+        if(!associative.empty()) {
+            auto b = associative.cbegin();
+            stream << b->first << ": " << b->second;
+            ++b;
+            for(auto i = b; i != associative.end(); ++i) {
+                stream << ", " << i->first << ": " << i->second;
+            }
+        }
+        stream << '}';
+        return stream;
+    }
+
+    ///
+    /// \tparam key_t_
+    /// \tparam value_t_
+    /// \tparam comparator_
+    /// \tparam allocator_
+    /// \param stream
+    /// \param associative
+    /// \return
+    template<typename key_t_, typename value_t_, typename comparator_,
+             typename allocator_>
+    constexpr std::ostream &operator<<(
+        std::ostream &stream,
+        const boost::container::flat_map<key_t_, value_t_, comparator_, allocator_> &associative)
     {
         stream << '{';
         if(!associative.empty()) {

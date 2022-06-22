@@ -64,7 +64,7 @@ ENDIF()
 
 IF(MSVC OR MINGW)
     # this prevents windows from defining IN and OUT macros globally
-    ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS)
+    ADD_DEFINITIONS(-D_NO_W32_PSEUDO_MODIFIERS -DNOMINMAX)
 ENDIF()
 
 IF(APPLE)
