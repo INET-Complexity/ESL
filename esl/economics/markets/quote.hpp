@@ -38,12 +38,20 @@ namespace esl::economics::markets {
 
     ///
     /// \brief  A quote is a numerical value around which the market is
-    ///     organised. Most commonly, this is a monetary value
+    ///         organised. Most commonly, this is a monetary value
     ///         (a price), but different markets may use different types of
     ///         quotes such as interest rates in a mortgage market, or a ratio
     ///         (exchange rate) when bartering.
-    ///
-    ///
+    ///         
+    ///         The quote class provides a generic interface, provided that 
+    ///         all quote type variants allow conversion from and to 
+    ///         floating point numbers at double precision.
+    /// 
+    ///         The lot size can be used to gain precision in quoting (setting prices). 
+    ///         E.g., for a lot size of one and a `price`, the minimum increment is one cent in that currency.
+    ///         If instead we set the lot size to 10, the minimum price increment is one tenth cent per unit. 
+    ///         @TODO for raw exchange rates, the lot should match the base amount.        
+    /// 
     struct quote
     {
     private:
@@ -67,10 +75,14 @@ namespace esl::economics::markets {
 
     public:
         /// 
-        /// \brief  The number of items this quote applies to. Used to get 
+        /// \brief  The number of items this quote applies to. The default is 1.
+        /// 
         /// 
         lot_t lot;
 
+        /// 
+        /// \brief  The quote type variant. E.g. price, interest rate or exchange rate, or more exotically model volatility 
+        /// 
         std::variant<price> type;
 
         /*explicit quote(const exchange_rate &er = exchange_rate(), lot_t lot = 1)
@@ -282,10 +294,8 @@ namespace esl::economics::markets {
 
             return quote(result_, lot);
         }
-
         
         ////////////
-
 
         [[nodiscard]] quote operator+(double addend) const
         {
@@ -332,14 +342,6 @@ namespace esl::economics::markets {
         }
 
 
-        
-
-
-
-
-
-
-
         template<class archive_t>
         void save(archive_t &archive, const unsigned int version) const
         {
@@ -382,7 +384,7 @@ namespace esl::economics::markets {
             } else if(1 == index_) {
                 price p;
                 archive >> boost::serialization::make_nvp("price", p);
-                type.emplace<1>(p);
+                type.emplace<price>(p);
             }
         }
 
@@ -391,17 +393,6 @@ namespace esl::economics::markets {
         {
             boost::serialization::split_member(archive, *this, version);
         }
-
-//        std::ostream &operator << (std::ostream &stream) const
-//        {
-//            stream << lot << '@';
-//            std::visit([&](const auto &elem)
-//                       {
-//                           stream << elem;
-//                       },
-//                       type);
-//            return stream;
-//        }
 
         friend std::ostream &operator << (std::ostream &stream, const quote &q)
         {
